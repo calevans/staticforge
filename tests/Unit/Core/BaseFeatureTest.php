@@ -20,94 +20,71 @@ class BaseFeatureTest extends TestCase
         $this->feature = new TestFeature();
     }
 
-    public function testRegisterStoresReferences(): void
-    {
-        $this->feature->register($this->eventManager, $this->container);
-
-        $this->assertSame($this->container, $this->feature->getContainer());
-        $this->assertSame($this->eventManager, $this->feature->getEventManager());
-    }
-
-    public function testGetEventListeners(): void
-    {
-        $listeners = $this->feature->getEventListeners();
-
-        $this->assertEquals(['TEST_EVENT', 'ANOTHER_EVENT'], $listeners);
-    }
-
     public function testRegisterEventListeners(): void
     {
         $this->feature->register($this->eventManager, $this->container);
 
+        // Test that events are actually registered with correct priorities
         $listeners = $this->eventManager->getListeners('TEST_EVENT');
         $this->assertCount(1, $listeners);
-        $this->assertEquals(150, $listeners[0]['priority']);
+        $this->assertEquals(100, $listeners[0]['priority']);
+
+        $listeners = $this->eventManager->getListeners('ANOTHER_EVENT');
+        $this->assertCount(1, $listeners);
+        $this->assertEquals(50, $listeners[0]['priority']);
     }
 
-    public function testFeatureDataMethods(): void
+    public function testEventListenerExecution(): void
     {
         $this->feature->register($this->eventManager, $this->container);
 
-        // Initialize features array (simulating FeatureManager)
-        $this->container->setVariable('features', ['existing' => ['data' => 'test']]);
+        // Test that event listeners are properly callable and modify parameters
+        $parameters = ['test' => 'value'];
+        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
 
-        // Test getting feature data
-        $retrievedData = $this->feature->getTestFeatureData('existing');
-        $this->assertEquals(['data' => 'test'], $retrievedData);
+        $this->assertEquals(['test' => 'value', 'processed' => true], $result);
+    }
 
-        // Test getting nonexistent feature data
+    public function testFeatureDataAccess(): void
+    {
+        $this->feature->register($this->eventManager, $this->container);
+
+        // Initialize features array in container
+        $this->container->setVariable('features', [
+            'TestFeature' => ['setting' => 'enabled'],
+            'OtherFeature' => ['config' => 'value']
+        ]);
+
+        // Test accessing feature data
+        $data = $this->feature->getTestFeatureData('TestFeature');
+        $this->assertEquals(['setting' => 'enabled'], $data);
+
+        // Test accessing nonexistent feature data
         $emptyData = $this->feature->getTestFeatureData('NonexistentFeature');
         $this->assertEquals([], $emptyData);
-    }
-
-    public function testGetFeaturesMethod(): void
-    {
-        $this->feature->register($this->eventManager, $this->container);
-
-        // Test with no features array
-        $features = $this->feature->getTestFeatures();
-        $this->assertEquals([], $features);
-
-        // Test with features array
-        $this->container->setVariable('features', ['test' => ['data' => 'value']]);
-        $features = $this->feature->getTestFeatures();
-        $this->assertEquals(['test' => ['data' => 'value']], $features);
     }
 }
 
 class TestFeature extends BaseFeature
 {
     protected array $eventListeners = [
-        'TEST_EVENT' => ['method' => 'handleTestEvent', 'priority' => 150],
-        'ANOTHER_EVENT' => ['method' => 'handleAnotherEvent']
+        'TEST_EVENT' => ['method' => 'handleTestEvent', 'priority' => 100],
+        'ANOTHER_EVENT' => ['method' => 'handleAnotherEvent', 'priority' => 50]
     ];
 
     public function handleTestEvent(Container $container, array $parameters): array
     {
+        $parameters['processed'] = true;
         return $parameters;
     }
 
     public function handleAnotherEvent(Container $container, array $parameters): array
     {
+        $parameters['another'] = true;
         return $parameters;
     }
 
-    // Expose protected methods for testing
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
-    public function getEventManager(): EventManager
-    {
-        return $this->eventManager;
-    }
-
-    public function getTestFeatures(): array
-    {
-        return $this->getFeatures();
-    }
-
+    // Expose protected method for testing feature data access
     public function getTestFeatureData(string $featureName): array
     {
         return $this->getFeatureData($featureName);

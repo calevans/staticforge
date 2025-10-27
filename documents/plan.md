@@ -1,5 +1,7 @@
 # StaticForge Implementation Plan
 
+
+
 ## Overview
 Build StaticForge as a PHP-based static site generator with event-driven architecture. Focus on getting to MVP (basic workflow + HTML renderer) quickly, then layer on features building on each previous step. Use TDD with PHPUnit throughout.
 
@@ -17,7 +19,13 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 **CRITICAL**: When implementing steps, ACTUALLY CREATE the required files using create_file tool. Do not describe what files to create - create them immediately.
 
-
+## Testing Policy
+**DO NOT CREATE TRIVIAL UNIT TESTS.** Tests must verify meaningful behavior and business logic, not simple getters/setters or interface contracts. Focus on:
+- Core system functionality that could break
+- Complex business logic and edge cases
+- Integration between components
+- Error handling and validation
+- Avoid testing: autoloading, interface implementations, trivial property access
 ---
 
 ## Step 0. Composer Project Setup & Dependencies ✅

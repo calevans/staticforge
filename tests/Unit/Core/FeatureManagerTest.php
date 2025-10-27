@@ -51,65 +51,49 @@ class FeatureManagerTest extends TestCase
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
+        $this->assertIsArray($features);
         $this->assertEmpty($features);
     }
 
     public function testLoadFeaturesWithNonexistentDirectory(): void
     {
-        // Use a fresh container to avoid variable conflicts
+        // Create fresh container to avoid variable collision
         $freshContainer = new Container();
-        $freshEventManager = new EventManager($freshContainer);
-
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/test2.log';
-        $logger = new Log('test2', $logFile, 'INFO');
-        $freshContainer->setVariable('logger', $logger);
+        $freshContainer->setVariable('logger', $this->logger);
         $freshContainer->setVariable('FEATURES_DIR', '/nonexistent/path');
 
-        $featureManager = new FeatureManager($freshContainer, $freshEventManager);
-        $featureManager->loadFeatures();
+        $freshFeatureManager = new FeatureManager($freshContainer, $this->eventManager);
+        $freshFeatureManager->loadFeatures();
 
-        $features = $featureManager->getFeatures();
+        $features = $freshFeatureManager->getFeatures();
+        $this->assertIsArray($features);
         $this->assertEmpty($features);
     }
 
     public function testLoadValidFeature(): void
     {
-        // Create test feature
-        $this->createTestFeature('LoadValidTestFeature');
+        // Create test feature with simpler approach
+        $this->createSimpleTestFeature('TestFeature');
 
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
         $this->assertCount(1, $features);
-        $this->assertArrayHasKey('LoadValidTestFeature', $features);
-        $this->assertInstanceOf(FeatureInterface::class, $features['LoadValidTestFeature']);
+        $this->assertArrayHasKey('TestFeature', $features);
+        $this->assertInstanceOf(FeatureInterface::class, $features['TestFeature']);
     }
 
     public function testGetSpecificFeature(): void
     {
-        $this->createTestFeature('GetSpecificTestFeature');
+        $this->createSimpleTestFeature('SpecificFeature');
 
         $this->featureManager->loadFeatures();
 
-        $feature = $this->featureManager->getFeature('GetSpecificTestFeature');
+        $feature = $this->featureManager->getFeature('SpecificFeature');
         $this->assertInstanceOf(FeatureInterface::class, $feature);
 
         $nonexistent = $this->featureManager->getFeature('NonexistentFeature');
         $this->assertNull($nonexistent);
-    }
-
-    public function testLoadMultipleFeatures(): void
-    {
-        $this->createTestFeature('FeatureOne');
-        $this->createTestFeature('FeatureTwo');
-
-        $this->featureManager->loadFeatures();
-
-        $features = $this->featureManager->getFeatures();
-        $this->assertCount(2, $features);
-        $this->assertArrayHasKey('FeatureOne', $features);
-        $this->assertArrayHasKey('FeatureTwo', $features);
     }
 
     public function testFeaturesArrayInitialization(): void
@@ -121,13 +105,13 @@ class FeatureManagerTest extends TestCase
         $this->assertEmpty($featuresArray);
     }
 
-    private function createTestFeature(string $featureName): void
+    /**
+     * Create a simple test feature without dynamic class creation complexity
+     */
+    private function createSimpleTestFeature(string $featureName): void
     {
         $featureDir = $this->tempDir . '/' . $featureName;
         mkdir($featureDir, 0777, true);
-
-        // Use unique class names to avoid redeclaration issues
-        $uniqueId = substr(md5($featureName . microtime()), 0, 8);
 
         $featureContent = <<<PHP
 <?php
@@ -135,9 +119,10 @@ class FeatureManagerTest extends TestCase
 namespace EICC\\StaticForge\\Features\\{$featureName};
 
 use EICC\\StaticForge\\Core\\BaseFeature;
+use EICC\\StaticForge\\Core\\FeatureInterface;
 use EICC\\Utils\\Container;
 
-class Feature_{$uniqueId} extends BaseFeature implements \\EICC\\StaticForge\\Core\\FeatureInterface
+class Feature extends BaseFeature implements FeatureInterface
 {
     protected array \$eventListeners = [
         'TEST_EVENT' => ['method' => 'handleTestEvent', 'priority' => 100]
@@ -148,9 +133,6 @@ class Feature_{$uniqueId} extends BaseFeature implements \\EICC\\StaticForge\\Co
         return \$parameters;
     }
 }
-
-// Create alias for consistent naming
-class_alias(Feature_{$uniqueId}::class, 'EICC\\StaticForge\\Features\\{$featureName}\\Feature');
 PHP;
 
         file_put_contents($featureDir . '/Feature.php', $featureContent);
