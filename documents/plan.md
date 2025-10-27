@@ -110,20 +110,21 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 5. File Discovery & Content Processing Pipeline
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `FileProcessor` class to discover content files in source directory
-- Implement YAML metadata parsing from HTML comment headers (use the symfont yaml class to process yaml)
-- Create content file data structure with metadata and file path
-- Add file filtering by supported extensions (.html initially)
-- Write unit tests for file discovery and metadata extraction
-  - Apply YAGNI: Basic file discovery only, support .html first
-  - Apply KISS: Simple recursive directory scanning
-  - Apply SOLID: FileProcessor handles single file processing concern
-  - Apply DRY: Centralized metadata parsing logic
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 5. File Discovery & Content Processing Pipeline ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `ExtensionRegistry` class for renderer features to register supported file extensions
+- ✅ Create `FileDiscovery` class to discover content files in configured directories
+- ✅ Create `FileProcessor` class as the main processing loop (PRE-RENDER, RENDER, POST-RENDER events)
+- ✅ Implement workflow: PRE-GLOB → FileDiscovery → POST-GLOB → FileProcessor loop
+- ✅ Update `BaseFeature` to support extension registration for renderer features
+- ✅ Write comprehensive unit tests for all new classes (20 tests, 52 assertions)
+  - ✅ Apply YAGNI: Essential file discovery and processing workflow only
+  - ✅ Apply KISS: Clear separation between discovery and processing
+  - ✅ Apply SOLID: Each class handles single responsibility (registry, discovery, processing)
+  - ✅ Apply DRY: Centralized extension registry and event-driven processing
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 

@@ -20,12 +20,13 @@ abstract class BaseFeature implements FeatureInterface
     {
         $this->container = $container;
         $this->eventManager = $eventManager;
-
+        
+        // Register extensions if this feature processes files
+        $this->registerExtensions();
+        
         // Register event listeners defined by the feature
         $this->registerEventListeners();
-    }
-
-    /**
+    }    /**
      * Get list of events this feature listens to
      */
     public function getEventListeners(): array
@@ -66,6 +67,27 @@ abstract class BaseFeature implements FeatureInterface
         $features = $this->getFeatures();
         $features[$featureName] = $data;
         // Note: Cannot update container directly due to setVariable constraints
+    }
+
+    /**
+     * Register extensions this feature can process
+     * Override in concrete features to register file extensions
+     */
+    protected function registerExtensions(): void
+    {
+        // Default implementation does nothing
+        // Override in renderer features to register extensions
+    }
+
+    /**
+     * Register a file extension with the extension registry
+     */
+    protected function registerExtension(string $extension): void
+    {
+        $extensionRegistry = $this->container->getVariable('extension_registry');
+        if ($extensionRegistry instanceof ExtensionRegistry) {
+            $extensionRegistry->registerExtension($extension);
+        }
     }
 
     /**

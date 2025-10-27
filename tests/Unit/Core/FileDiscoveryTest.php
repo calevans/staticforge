@@ -1,0 +1,189 @@
+<?php
+
+namespace EICC\StaticForge\Tests\Unit\Core;
+
+use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Core\FileDiscovery;
+use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\Utils\Container;
+use EICC\Utils\Log;
+
+class FileDiscoveryTest extends TestCase
+{
+    private FileDiscovery $fileDiscovery;
+    private ExtensionRegistry $extensionRegistry;
+    private Container $container;
+    private Log $logger;
+    private string $tempDir;
+
+    protected function setUp(): void
+    {
+        $this->container = new Container();
+        
+        // Create a temporary log file for testing
+        $logFile = sys_get_temp_dir() . '/file_discovery_test.log';
+        $this->logger = new Log('test', $logFile, 'INFO');
+        $this->container->setVariable('logger', $this->logger);
+        
+        $this->extensionRegistry = new ExtensionRegistry($this->container);
+        
+        // Create temporary directory for test files
+        $this->tempDir = sys_get_temp_dir() . '/staticforge_discovery_' . uniqid();
+        mkdir($this->tempDir, 0777, true);
+        
+        $this->fileDiscovery = new FileDiscovery($this->container, $this->extensionRegistry);
+    }
+
+    protected function tearDown(): void
+    {
+        // Clean up temporary directory
+        if (is_dir($this->tempDir)) {
+            $this->removeDirectory($this->tempDir);
+        }
+    }
+
+    public function testDiscoverFilesWithSourceDir(): void
+    {
+        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->extensionRegistry->registerExtension('.html');
+        
+        $this->createTestFile('test1.html', '<h1>Test 1</h1>');
+        $this->createTestFile('test2.html', '<h1>Test 2</h1>');
+        $this->createTestFile('ignored.txt', 'This should be ignored');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertIsArray($discoveredFiles);
+        $this->assertCount(2, $discoveredFiles);
+    }
+
+    public function testDiscoverFilesWithScanDirectories(): void
+    {
+        $this->container->setVariable('SCAN_DIRECTORIES', [$this->tempDir]);
+        $this->extensionRegistry->registerExtension('.md');
+        
+        $this->createTestFile('test.md', '# Test');
+        $this->createTestFile('ignored.html', '<h1>Ignored</h1>');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertCount(1, $discoveredFiles);
+        $this->assertStringContainsString('test.md', $discoveredFiles[0]);
+    }
+
+    public function testDiscoverFilesWithMultipleDirectories(): void
+    {
+        $dir1 = $this->tempDir . '/dir1';
+        $dir2 = $this->tempDir . '/dir2';
+        mkdir($dir1, 0777, true);
+        mkdir($dir2, 0777, true);
+        
+        $this->container->setVariable('SCAN_DIRECTORIES', [$dir1, $dir2]);
+        $this->extensionRegistry->registerExtension('.html');
+        
+        file_put_contents($dir1 . '/test1.html', '<h1>Test 1</h1>');
+        file_put_contents($dir2 . '/test2.html', '<h1>Test 2</h1>');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertCount(2, $discoveredFiles);
+    }
+
+    public function testDiscoverFilesWithNonexistentDirectory(): void
+    {
+        $this->container->setVariable('SOURCE_DIR', '/nonexistent/path');
+        $this->extensionRegistry->registerExtension('.html');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertIsArray($discoveredFiles);
+        $this->assertEmpty($discoveredFiles);
+    }
+
+    public function testDiscoverFilesWithNoRegisteredExtensions(): void
+    {
+        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        // No extensions registered
+        
+        $this->createTestFile('test.html', '<h1>Test</h1>');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertEmpty($discoveredFiles);
+    }
+
+    public function testDiscoverFilesInNestedDirectories(): void
+    {
+        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->extensionRegistry->registerExtension('.html');
+        
+        mkdir($this->tempDir . '/subdir', 0777, true);
+        mkdir($this->tempDir . '/subdir/deeper', 0777, true);
+        
+        $this->createTestFile('root.html', '<h1>Root</h1>');
+        $this->createTestFile('subdir/sub.html', '<h1>Sub</h1>');
+        $this->createTestFile('subdir/deeper/deep.html', '<h1>Deep</h1>');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertCount(3, $discoveredFiles);
+    }
+
+    public function testDiscoverFilesWithMultipleExtensions(): void
+    {
+        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->extensionRegistry->registerExtension('.html');
+        $this->extensionRegistry->registerExtension('.md');
+        $this->extensionRegistry->registerExtension('.txt');
+        
+        $this->createTestFile('test.html', '<h1>Test</h1>');
+        $this->createTestFile('test.md', '# Test');
+        $this->createTestFile('test.txt', 'Test');
+        $this->createTestFile('ignored.php', '<?php echo "ignored"; ?>');
+        
+        $this->fileDiscovery->discoverFiles();
+        
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertCount(3, $discoveredFiles);
+    }
+
+    private function createTestFile(string $relativePath, string $content): string
+    {
+        $fullPath = $this->tempDir . '/' . $relativePath;
+        $dir = dirname($fullPath);
+        
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        
+        file_put_contents($fullPath, $content);
+        
+        return $fullPath;
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        
+        $files = array_diff(scandir($dir), ['.', '..']);
+        
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+        
+        rmdir($dir);
+    }
+}
