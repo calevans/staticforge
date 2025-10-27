@@ -1,3 +1,28 @@
-public
-node_modules
-vendor
+# Dependencies
+/vendor/
+/node_modules/
+
+# Generated files
+/output/
+/build/
+/temp/
+/public/
+composer.lock
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/logs/
