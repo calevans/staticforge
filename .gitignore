@@ -3,15 +3,12 @@
 /node_modules/
 
 # Generated files
-/output/
-/build/
-/temp/
+/public/
 /public/
 composer.lock
 
 # Environment
 .env
-.env.local
 
 # IDE
 .vscode/
@@ -25,4 +22,4 @@ Thumbs.db
 
 # Logs
 *.log
-/logs/
+logs/
