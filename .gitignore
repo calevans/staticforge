@@ -7,7 +7,6 @@
 /public/
 composer.lock
 .phpunit.result.cache
-
 # Environment
 .env
 
