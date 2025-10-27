@@ -3,6 +3,21 @@
 ## Overview
 Build StaticForge as a PHP-based static site generator with event-driven architecture. Focus on getting to MVP (basic workflow + HTML renderer) quickly, then layer on features building on each previous step. Use TDD with PHPUnit throughout.
 
+## Step Completion Format
+When marking steps as complete, add ✅ to the step title and mark each individual task with ✅. Follow this exact pattern:
+
+```
+## Step X. Step Title ✅
+- ✅ Task 1
+- ✅ Task 2
+  - ✅ Apply PRINCIPLE: Description
+- ✅ Update documents/plan.md with ✅ after verification
+- ✅ Wait for further instructions
+```
+
+**CRITICAL**: When implementing steps, ACTUALLY CREATE the required files using create_file tool. Do not describe what files to create - create them immediately.
+
+
 ---
 
 ## Step 0. Composer Project Setup & Dependencies ✅
@@ -23,7 +38,6 @@ Build StaticForge as a PHP-based static site generator with event-driven archite
 ✅ Apply YAGNI: Only packages explicitly needed by the steps, no extras
 ✅ Apply KISS: Standard composer.json structure, essential dependencies only
 ✅ Apply SOLID: Clear namespace organization from the beginning
-✅ Apply DRY: Centralized dependency management for entire project
 ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
 ✅ Wait for further instructions.
 
@@ -62,20 +76,20 @@ Build StaticForge as a PHP-based static site generator with event-driven archite
 
 ---
 
-## Step 3. Event System Foundation
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `EventManager` class with register/fire/unregister methods
-- Implement priority-based event listener ordering (0-999, default 100)
-- Create event data structure that passes container + parameters
-- Write unit tests for event registration, firing, and parameter passing
-- Test event chain processing (multiple listeners modifying parameters)
-  - Apply YAGNI: Core event functionality only, no complex features
-  - Apply KISS: Simple priority queue, clear event data flow
-  - Apply SOLID: EventManager single responsibility, clean interfaces
-  - Apply DRY: Reusable event processing pattern
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 3. Event System Foundation ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `EventManager` class with register/fire/unregister methods
+- ✅ Implement priority-based event listener ordering (0-999, default 100)
+- ✅ Create event data structure that passes container + parameters
+- ✅ Write unit tests for event registration, firing, and parameter passing
+- ✅ Test event chain processing (multiple listeners modifying parameters)
+  - ✅ Apply YAGNI: Core event functionality only, no complex features
+  - ✅ Apply KISS: Simple priority queue, clear event data flow
+  - ✅ Apply SOLID: EventManager single responsibility, clean interfaces
+  - ✅ Apply DRY: Reusable event processing pattern
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
