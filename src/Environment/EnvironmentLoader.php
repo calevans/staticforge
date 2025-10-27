@@ -1,0 +1,84 @@
+<?php
+
+namespace EICC\StaticForge\Environment;
+
+use EICC\Utils\Container;
+use Dotenv\Dotenv;
+use InvalidArgumentException;
+
+/**
+ * Loads environment configuration and validates required variables
+ */
+class EnvironmentLoader
+{
+    private Container $container;
+    private array $requiredVariables = [
+        'SITE_NAME',
+        'SITE_BASE_URL',
+        'SOURCE_DIR',
+        'OUTPUT_DIR',
+        'TEMPLATE_DIR',
+        'FEATURES_DIR'
+    ];
+
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * Load environment file and populate container
+     */
+    public function load(string $envPath = '.env'): void
+    {
+        if (!file_exists($envPath)) {
+            throw new InvalidArgumentException("Environment file not found: {$envPath}");
+        }
+
+        $dotenv = Dotenv::createImmutable(dirname($envPath), basename($envPath));
+        $dotenv->load();
+
+        $this->validateRequiredVariables();
+        $this->populateContainer();
+    }
+
+    /**
+     * Validate all required environment variables are present
+     */
+    private function validateRequiredVariables(): void
+    {
+        $missing = [];
+
+        foreach ($this->requiredVariables as $variable) {
+            if (!isset($_ENV[$variable]) || empty($_ENV[$variable])) {
+                $missing[] = $variable;
+            }
+        }
+
+        if (!empty($missing)) {
+            throw new InvalidArgumentException(
+                'Missing required environment variables: ' . implode(', ', $missing)
+            );
+        }
+    }
+
+    /**
+     * Push all environment variables into container
+     */
+    private function populateContainer(): void
+    {
+        foreach ($_ENV as $key => $value) {
+            $this->container->setVariable($key, $value);
+        }
+    }
+
+    /**
+     * Add additional required variables for validation
+     */
+    public function addRequiredVariable(string $variable): void
+    {
+        if (!in_array($variable, $this->requiredVariables)) {
+            $this->requiredVariables[] = $variable;
+        }
+    }
+}
