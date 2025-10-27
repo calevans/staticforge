@@ -1,0 +1,49 @@
+---
+description: PHP specific instructions
+applyTo: '**/*.php'
+---
+- Target the version of php specified in composer.json.
+- Implement all new features from the specified version of php as is reasonable.
+- Use the latest stable version of PHPUnit for testing.
+- Use EICC\Utils for logging and utility functions.
+- We use Doctrine DBAL for database layer.
+- Before installing a package, make sure that we aren't already using it or something similar.
+- Follow PSR-12 coding standards for PHP (PSR-2 is deprecated).
+- Do not use static methods unless there is no other way to achieve the same functionality.
+- Use meaningful variable and function names - avoid abbreviations and single letters except for standard iterators.
+- Write docblocks for all public methods, classes, and properties using proper PHPDoc syntax.
+- Include @param, @return, @throws annotations in docblocks.
+- Prefer explicit over implicit code - be clear about types and intentions.
+- Handle errors gracefully with try-catch blocks and meaningful error messages.
+- Use strict typing: declare(strict_types=1) at the top of all PHP files.
+- Use type hints for all method parameters and return types.
+- Use nullable types (?string) instead of union types where appropriate.
+- Implement proper input validation and sanitization for all user data.
+- Use prepared statements for all database queries via Doctrine DBAL.
+- Use transactions for multi-step database operations.
+- Implement proper error logging using EICC\Utils with appropriate log levels.
+- Use constants for magic numbers and strings - define them as class constants or global constants.
+- Follow single responsibility principle - one class, one purpose.
+- Use dependency injection instead of global variables or singletons.
+- Implement proper exception handling with custom exception classes when needed.
+- Use early returns to reduce nesting and improve readability.
+- Validate method inputs at the beginning of methods.
+- Leverage PHP 8+ features like match expressions, named arguments, and constructor property promotion.
+- Use readonly properties for immutable data (PHP 8.1+).
+- Use enums instead of class constants for fixed sets of values (PHP 8.1+).
+- Implement proper namespace usage - one class per file, namespace matches directory structure.
+- Use composer autoloading - never use require/include for classes.
+- Write unit tests for all public methods with meaningful test names.
+- All business logic should have meaningful, not superficial unit tests.
+- Use data providers for testing multiple scenarios.
+- Mock external dependencies in tests using PHPUnit's mocking framework.
+- Maintain consistent indentation (4 spaces, no tabs).
+- Keep line length under 120 characters.
+- Use trailing commas in multi-line arrays and function calls.
+- Add return type declarations even for void methods.
+- Use arrow functions for simple callbacks when appropriate.
+- Implement proper memory management - unset large variables when done.
+- Use generators for large datasets to avoid memory issues.
+- Cache expensive operations when possible.
+- Document complex business logic with inline comments.
+- Use meaningful commit messages when updating code.
