@@ -1,0 +1,44 @@
+name: static-forge
+recipe: lamp
+config:
+  webroot: public
+
+services:
+
+  appserver:
+    type: php:8.4
+    extensions:
+      - gd
+    build_as_root:
+      - /app/scripts/build-as-root.sh
+      - a2enmod headers rewrite deflate expires
+    build:
+      - /app/scripts/build.sh
+    run_as_root:
+      - rm -rf /etc/localtime
+      - ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
+    overrides:
+      environment:
+        COMPOSER_HOME: /user/.composer
+        COMPOSER_VENDOR_DIR: /app/vendor
+  mailhog:
+   type: mailhog
+   portforward: false
+   hogfrom:
+     - appserver
+
+tooling:
+
+  phpcbf:
+    service: appserver
+    description:  Clean and beautify
+    cmd: vendor/bin/phpcbf
+
+  phpcs:
+    service: appserver
+    description: Report style issues
+    cmd: vendor/bin/phpcs
+
+  phpunit:
+    service: appserver
+    cmd: vendor/bin/phpunit
