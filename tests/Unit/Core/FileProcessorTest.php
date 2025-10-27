@@ -18,12 +18,12 @@ class FileProcessorTest extends TestCase
     protected function setUp(): void
     {
         $this->container = new Container();
-        
+
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/file_processor_test.log';
         $this->logger = new Log('test', $logFile, 'INFO');
         $this->container->setVariable('logger', $this->logger);
-        
+
         $this->eventManager = new EventManager($this->container);
         $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
     }
@@ -32,7 +32,7 @@ class FileProcessorTest extends TestCase
     {
         // No discovered_files in container
         $this->fileProcessor->processFiles();
-        
+
         // Should complete without error
         $this->assertTrue(true);
     }
@@ -40,9 +40,9 @@ class FileProcessorTest extends TestCase
     public function testProcessFilesWithEmptyArray(): void
     {
         $this->container->setVariable('discovered_files', []);
-        
+
         $this->fileProcessor->processFiles();
-        
+
         // Should complete without error
         $this->assertTrue(true);
     }
@@ -53,18 +53,18 @@ class FileProcessorTest extends TestCase
             '/tmp/test1.html',
             '/tmp/test2.html'
         ];
-        
+
         $this->container->setVariable('discovered_files', $testFiles);
-        
+
         // Track events fired
         $eventsTracked = [];
-        
+
         $this->eventManager->registerListener('PRE_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
         $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
         $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
-        
+
         $this->fileProcessor->processFiles();
-        
+
         // Should have fired 6 events (3 per file)
         $this->assertCount(6, $eventsTracked);
         $this->assertEquals('PRE_RENDER', $eventsTracked[0]['event']);
@@ -79,16 +79,16 @@ class FileProcessorTest extends TestCase
     {
         $testFiles = ['/tmp/test.html'];
         $this->container->setVariable('discovered_files', $testFiles);
-        
+
         $eventsTracked = [];
-        
+
         // Listener that sets skip_file flag in PRE_RENDER
         $this->eventManager->registerListener('PRE_RENDER', [new SkipFileListener($eventsTracked), 'handleEvent'], 100);
         $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
         $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
-        
+
         $this->fileProcessor->processFiles();
-        
+
         // Should only have PRE_RENDER event, not RENDER or POST_RENDER
         $this->assertCount(1, $eventsTracked);
         $this->assertEquals('PRE_RENDER', $eventsTracked[0]['event']);
@@ -98,19 +98,19 @@ class FileProcessorTest extends TestCase
     {
         $testFiles = ['/tmp/test.html'];
         $this->container->setVariable('discovered_files', $testFiles);
-        
+
         $contextData = [];
-        
+
         $this->eventManager->registerListener('PRE_RENDER', [new ContextCapturingListener($contextData), 'handleEvent'], 100);
-        
+
         $this->fileProcessor->processFiles();
-        
+
         $this->assertArrayHasKey('file_path', $contextData);
         $this->assertArrayHasKey('rendered_content', $contextData);
         $this->assertArrayHasKey('metadata', $contextData);
         $this->assertArrayHasKey('output_path', $contextData);
         $this->assertArrayHasKey('skip_file', $contextData);
-        
+
         $this->assertEquals('/tmp/test.html', $contextData['file_path']);
         $this->assertNull($contextData['rendered_content']);
         $this->assertIsArray($contextData['metadata']);
@@ -133,7 +133,7 @@ class TestEventListener
         // Determine which event this is based on call stack
         $trace = debug_backtrace();
         $eventName = null;
-        
+
         foreach ($trace as $frame) {
             if (isset($frame['function']) && $frame['function'] === 'fire') {
                 // Get the event name from the previous frame
@@ -141,12 +141,12 @@ class TestEventListener
                 break;
             }
         }
-        
+
         $this->eventsTracked[] = [
             'event' => $eventName,
             'parameters' => $parameters
         ];
-        
+
         return $parameters;
     }
 }
@@ -166,7 +166,7 @@ class SkipFileListener
             'event' => 'PRE_RENDER',
             'parameters' => $parameters
         ];
-        
+
         $parameters['skip_file'] = true;
         return $parameters;
     }

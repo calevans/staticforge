@@ -35,7 +35,7 @@ class EnvironmentLoader
             throw new InvalidArgumentException("Environment file not found: {$envPath}");
         }
 
-        $dotenv = Dotenv::createImmutable(dirname($envPath), basename($envPath));
+        $dotenv = Dotenv::createUnsafeImmutable(dirname($envPath), basename($envPath));
         $dotenv->load();
 
         $this->validateRequiredVariables();

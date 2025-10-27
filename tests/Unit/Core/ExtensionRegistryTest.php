@@ -16,19 +16,19 @@ class ExtensionRegistryTest extends TestCase
     protected function setUp(): void
     {
         $this->container = new Container();
-        
+
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/extension_registry_test.log';
         $this->logger = new Log('test', $logFile, 'INFO');
         $this->container->setVariable('logger', $this->logger);
-        
+
         $this->registry = new ExtensionRegistry($this->container);
     }
 
     public function testRegisterExtension(): void
     {
         $this->registry->registerExtension('.html');
-        
+
         $this->assertTrue($this->registry->isRegistered('.html'));
         $this->assertContains('.html', $this->registry->getRegisteredExtensions());
     }
@@ -36,7 +36,7 @@ class ExtensionRegistryTest extends TestCase
     public function testRegisterExtensionWithoutDot(): void
     {
         $this->registry->registerExtension('html');
-        
+
         $this->assertTrue($this->registry->isRegistered('.html'));
         $this->assertTrue($this->registry->isRegistered('html'));
     }
@@ -44,7 +44,7 @@ class ExtensionRegistryTest extends TestCase
     public function testRegisterExtensionCaseInsensitive(): void
     {
         $this->registry->registerExtension('.HTML');
-        
+
         $this->assertTrue($this->registry->isRegistered('.html'));
         $this->assertTrue($this->registry->isRegistered('.HTML'));
         $this->assertContains('.html', $this->registry->getRegisteredExtensions());
@@ -54,7 +54,7 @@ class ExtensionRegistryTest extends TestCase
     {
         $this->registry->registerExtension('.html');
         $this->registry->registerExtension('.html');
-        
+
         $extensions = $this->registry->getRegisteredExtensions();
         $this->assertEquals(1, array_count_values($extensions)['.html']);
     }
@@ -63,7 +63,7 @@ class ExtensionRegistryTest extends TestCase
     {
         $this->registry->registerExtension('.html');
         $this->registry->registerExtension('.md');
-        
+
         $this->assertTrue($this->registry->canProcess('test.html'));
         $this->assertTrue($this->registry->canProcess('test.HTML'));
         $this->assertTrue($this->registry->canProcess('/path/to/test.md'));
@@ -80,7 +80,7 @@ class ExtensionRegistryTest extends TestCase
     public function testGetRegisteredExtensionsEmpty(): void
     {
         $extensions = $this->registry->getRegisteredExtensions();
-        
+
         $this->assertIsArray($extensions);
         $this->assertEmpty($extensions);
     }
@@ -90,9 +90,9 @@ class ExtensionRegistryTest extends TestCase
         $this->registry->registerExtension('.html');
         $this->registry->registerExtension('.md');
         $this->registry->registerExtension('.txt');
-        
+
         $extensions = $this->registry->getRegisteredExtensions();
-        
+
         $this->assertCount(3, $extensions);
         $this->assertContains('.html', $extensions);
         $this->assertContains('.md', $extensions);

@@ -19,18 +19,18 @@ class FileDiscoveryTest extends TestCase
     protected function setUp(): void
     {
         $this->container = new Container();
-        
+
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/file_discovery_test.log';
         $this->logger = new Log('test', $logFile, 'INFO');
         $this->container->setVariable('logger', $this->logger);
-        
+
         $this->extensionRegistry = new ExtensionRegistry($this->container);
-        
+
         // Create temporary directory for test files
         $this->tempDir = sys_get_temp_dir() . '/staticforge_discovery_' . uniqid();
         mkdir($this->tempDir, 0777, true);
-        
+
         $this->fileDiscovery = new FileDiscovery($this->container, $this->extensionRegistry);
     }
 
@@ -46,13 +46,13 @@ class FileDiscoveryTest extends TestCase
     {
         $this->container->setVariable('SOURCE_DIR', $this->tempDir);
         $this->extensionRegistry->registerExtension('.html');
-        
+
         $this->createTestFile('test1.html', '<h1>Test 1</h1>');
         $this->createTestFile('test2.html', '<h1>Test 2</h1>');
         $this->createTestFile('ignored.txt', 'This should be ignored');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertIsArray($discoveredFiles);
         $this->assertCount(2, $discoveredFiles);
@@ -62,12 +62,12 @@ class FileDiscoveryTest extends TestCase
     {
         $this->container->setVariable('SCAN_DIRECTORIES', [$this->tempDir]);
         $this->extensionRegistry->registerExtension('.md');
-        
+
         $this->createTestFile('test.md', '# Test');
         $this->createTestFile('ignored.html', '<h1>Ignored</h1>');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertCount(1, $discoveredFiles);
         $this->assertStringContainsString('test.md', $discoveredFiles[0]);
@@ -79,15 +79,15 @@ class FileDiscoveryTest extends TestCase
         $dir2 = $this->tempDir . '/dir2';
         mkdir($dir1, 0777, true);
         mkdir($dir2, 0777, true);
-        
+
         $this->container->setVariable('SCAN_DIRECTORIES', [$dir1, $dir2]);
         $this->extensionRegistry->registerExtension('.html');
-        
+
         file_put_contents($dir1 . '/test1.html', '<h1>Test 1</h1>');
         file_put_contents($dir2 . '/test2.html', '<h1>Test 2</h1>');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertCount(2, $discoveredFiles);
     }
@@ -96,9 +96,9 @@ class FileDiscoveryTest extends TestCase
     {
         $this->container->setVariable('SOURCE_DIR', '/nonexistent/path');
         $this->extensionRegistry->registerExtension('.html');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertIsArray($discoveredFiles);
         $this->assertEmpty($discoveredFiles);
@@ -108,11 +108,11 @@ class FileDiscoveryTest extends TestCase
     {
         $this->container->setVariable('SOURCE_DIR', $this->tempDir);
         // No extensions registered
-        
+
         $this->createTestFile('test.html', '<h1>Test</h1>');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertEmpty($discoveredFiles);
     }
@@ -121,16 +121,16 @@ class FileDiscoveryTest extends TestCase
     {
         $this->container->setVariable('SOURCE_DIR', $this->tempDir);
         $this->extensionRegistry->registerExtension('.html');
-        
+
         mkdir($this->tempDir . '/subdir', 0777, true);
         mkdir($this->tempDir . '/subdir/deeper', 0777, true);
-        
+
         $this->createTestFile('root.html', '<h1>Root</h1>');
         $this->createTestFile('subdir/sub.html', '<h1>Sub</h1>');
         $this->createTestFile('subdir/deeper/deep.html', '<h1>Deep</h1>');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertCount(3, $discoveredFiles);
     }
@@ -141,14 +141,14 @@ class FileDiscoveryTest extends TestCase
         $this->extensionRegistry->registerExtension('.html');
         $this->extensionRegistry->registerExtension('.md');
         $this->extensionRegistry->registerExtension('.txt');
-        
+
         $this->createTestFile('test.html', '<h1>Test</h1>');
         $this->createTestFile('test.md', '# Test');
         $this->createTestFile('test.txt', 'Test');
         $this->createTestFile('ignored.php', '<?php echo "ignored"; ?>');
-        
+
         $this->fileDiscovery->discoverFiles();
-        
+
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertCount(3, $discoveredFiles);
     }
@@ -157,13 +157,13 @@ class FileDiscoveryTest extends TestCase
     {
         $fullPath = $this->tempDir . '/' . $relativePath;
         $dir = dirname($fullPath);
-        
+
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        
+
         file_put_contents($fullPath, $content);
-        
+
         return $fullPath;
     }
 
@@ -172,9 +172,9 @@ class FileDiscoveryTest extends TestCase
         if (!is_dir($dir)) {
             return;
         }
-        
+
         $files = array_diff(scandir($dir), ['.', '..']);
-        
+
         foreach ($files as $file) {
             $path = $dir . '/' . $file;
             if (is_dir($path)) {
@@ -183,7 +183,7 @@ class FileDiscoveryTest extends TestCase
                 unlink($path);
             }
         }
-        
+
         rmdir($dir);
     }
 }

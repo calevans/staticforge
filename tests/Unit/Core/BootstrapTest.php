@@ -7,6 +7,9 @@ use EICC\StaticForge\Core\Bootstrap;
 use EICC\Utils\Container;
 use InvalidArgumentException;
 
+/**
+ * @backupGlobals enabled
+ */
 class BootstrapTest extends TestCase
 {
     private Bootstrap $bootstrap;
@@ -22,6 +25,16 @@ class BootstrapTest extends TestCase
     {
         if (file_exists($this->testEnvFile)) {
             unlink($this->testEnvFile);
+        }
+
+        // Clean up environment variables to prevent cross-test pollution
+        foreach (['SITE_NAME', 'SITE_BASE_URL', 'SOURCE_DIR', 'OUTPUT_DIR', 'TEMPLATE_DIR', 'FEATURES_DIR'] as $var) {
+            if (isset($_ENV[$var])) {
+                unset($_ENV[$var]);
+            }
+            if (getenv($var) !== false) {
+                putenv($var);
+            }
         }
     }
 

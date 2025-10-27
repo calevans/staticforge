@@ -28,7 +28,7 @@ class FileProcessor
     public function processFiles(): void
     {
         $files = $this->container->getVariable('discovered_files') ?? [];
-        
+
         if (empty($files)) {
             $this->logger->log('INFO', 'No files to process');
             return;
@@ -62,7 +62,7 @@ class FileProcessor
         try {
             // PRE-RENDER event
             $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
-            
+
             if ($renderContext['skip_file'] ?? false) {
                 $this->logger->log('INFO', "Skipping file: {$filePath}");
                 return;

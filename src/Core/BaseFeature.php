@@ -20,10 +20,10 @@ abstract class BaseFeature implements FeatureInterface
     {
         $this->container = $container;
         $this->eventManager = $eventManager;
-        
+
         // Register extensions if this feature processes files
         $this->registerExtensions();
-        
+
         // Register event listeners defined by the feature
         $this->registerEventListeners();
     }    /**

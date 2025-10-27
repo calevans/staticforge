@@ -7,6 +7,9 @@ use EICC\Utils\Container;
 use EICC\StaticForge\Environment\EnvironmentLoader;
 use InvalidArgumentException;
 
+/**
+ * @backupGlobals enabled
+ */
 class EnvironmentLoaderTest extends TestCase
 {
     private Container $container;

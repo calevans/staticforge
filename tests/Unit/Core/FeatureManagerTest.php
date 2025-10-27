@@ -76,23 +76,23 @@ class FeatureManagerTest extends TestCase
     public function testLoadValidFeature(): void
     {
         // Create test feature
-        $this->createTestFeature('TestFeature');
+        $this->createTestFeature('LoadValidTestFeature');
 
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
         $this->assertCount(1, $features);
-        $this->assertArrayHasKey('TestFeature', $features);
-        $this->assertInstanceOf(FeatureInterface::class, $features['TestFeature']);
+        $this->assertArrayHasKey('LoadValidTestFeature', $features);
+        $this->assertInstanceOf(FeatureInterface::class, $features['LoadValidTestFeature']);
     }
 
     public function testGetSpecificFeature(): void
     {
-        $this->createTestFeature('TestFeature');
+        $this->createTestFeature('GetSpecificTestFeature');
 
         $this->featureManager->loadFeatures();
 
-        $feature = $this->featureManager->getFeature('TestFeature');
+        $feature = $this->featureManager->getFeature('GetSpecificTestFeature');
         $this->assertInstanceOf(FeatureInterface::class, $feature);
 
         $nonexistent = $this->featureManager->getFeature('NonexistentFeature');
