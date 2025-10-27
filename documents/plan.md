@@ -136,20 +136,20 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 6. Core Application & Event Pipeline
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create main `Application` class that orchestrates generation process
-- Implement the 9-step event pipeline (CREATE, PRE_GLOB, POST_GLOB, etc.)
-- Add error handling with graceful feature failure and core failure modes
-- Create logging integration using simple error_log for now
-- Write unit tests for application workflow and event sequence
-  - Apply YAGNI: Core pipeline only, basic error handling
-  - Apply KISS: Straightforward event sequence, simple logging
-  - Apply SOLID: Application orchestrates, doesn't implement details
-  - Apply DRY: Reusable pipeline pattern for all generation runs
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 6. Core Application & Event Pipeline ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create main `Application` class that orchestrates generation process
+- ✅ Implement the 9-step event pipeline (CREATE, PRE_GLOB, POST_GLOB, etc.)
+- ✅ Add error handling with graceful feature failure and core failure modes
+- ✅ Create logging integration using EiccUtils Log class
+- ✅ Write unit tests for application workflow and event sequence
+  - ✅ Apply YAGNI: Core pipeline only, basic error handling
+  - ✅ Apply KISS: Straightforward event sequence, simple logging
+  - ✅ Apply SOLID: Application orchestrates, doesn't implement details
+  - ✅ Apply DRY: Reusable pipeline pattern for all generation runs
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
