@@ -56,7 +56,7 @@ This matters now because power users need a static site generator they can fully
 
 ## 5. Core Concepts & Domain Model
 
-**Feature**: Self-contained functionality unit that listens to events and processes content. Each feature handles a specific aspect of site generation (rendering, menu creation, categorization).
+**Feature**: Self-contained functionality unit that listens to events and responds. SOme features are renders, other create menu systems, others create taxonomies. Others still will do things we've not thought of yet. Each feature handles a specific aspect of site generation (rendering, menu creation, categorization).
 
 **Event**: Named trigger points in the generation pipeline where features can hook in to process content or modify system state. Events fire in predetermined sequence with data passed between listeners.
 
