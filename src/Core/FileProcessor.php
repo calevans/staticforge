@@ -56,7 +56,7 @@ class FileProcessor
 
         // Check for output path conflicts before processing
         $expectedOutputPath = $this->calculateOutputPath($filePath);
-        
+
         if ($expectedOutputPath && $this->hasOutputConflict($expectedOutputPath, $filePath)) {
             return; // Skip this file due to conflict
         }
@@ -105,7 +105,7 @@ class FileProcessor
 
         // Remove source directory from path
         $relativePath = str_replace($sourceDir . '/', '', $inputPath);
-        
+
         // Convert known extensions to .html
         $extension = pathinfo($inputPath, PATHINFO_EXTENSION);
         if (in_array($extension, ['md', 'html'])) {
@@ -122,15 +122,15 @@ class FileProcessor
     {
         if (isset($this->processedOutputPaths[$expectedOutputPath])) {
             $conflictingFile = $this->processedOutputPaths[$expectedOutputPath];
-            
-            $this->logger->log('WARNING', 
+
+            $this->logger->log('WARNING',
                 "Output path conflict detected! Both '{$conflictingFile}' and '{$currentInputPath}' " .
                 "would generate '{$expectedOutputPath}'. Skipping '{$currentInputPath}' to prevent overwrite."
             );
-            
+
             return true;
         }
-        
+
         // Reserve this output path for the current file
         $this->processedOutputPaths[$expectedOutputPath] = $currentInputPath;
         return false;
