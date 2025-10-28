@@ -169,6 +169,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
             // Set up Twig with security enabled
             $loader = new FilesystemLoader($templateDir);
+            // Add the specific template theme directory so includes work
+            $loader->addPath($templateDir . '/' . $templateTheme);
             $twig = new Environment($loader, [
                 'debug' => true,
                 'strict_variables' => false,
@@ -182,6 +184,7 @@ class Feature extends BaseFeature implements FeatureInterface
                 'content' => $parsedContent['content'],
                 'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
+                'features' => $container->getVariable('features') ?? [],
             ]);
 
             $this->logger->log('DEBUG', "Template variables: " . json_encode(array_keys($templateVars)));

@@ -203,10 +203,20 @@ class Feature extends BaseFeature implements FeatureInterface
 
     private function generateUrlFromPath(string $filePath): string
     {
-        // Convert file path to URL
+        // Convert file path to URL (strip content directory, use only relative path)
         $contentDir = $this->container->getVariable('CONTENT_DIR') ?? 'content';
-        $baseDir = getcwd() . '/' . $contentDir . '/';
-        $relativePath = str_replace($baseDir, '', $filePath);
+
+        // File paths are relative: content/filename.md or content/subdir/filename.md
+        // We want: /filename.html or /subdir/filename.html
+
+        // Remove the content directory prefix
+        if (str_starts_with($filePath, $contentDir . '/')) {
+            $relativePath = substr($filePath, strlen($contentDir) + 1);
+        } else {
+            $relativePath = $filePath;
+        }
+
+        // Convert to URL
         $url = '/' . str_replace(['\\', '.md'], ['/', '.html'], $relativePath);
 
         // Clean up the URL

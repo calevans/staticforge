@@ -202,31 +202,32 @@ $menuHtml = $features['MenuBuilder']['html'][1]; // Get menu 1
 
 ### Example CSS for Dropdown Menus
 
+The included templates (terminal, sample, vaulttech) already have full dropdown support. If you're creating a custom template, here's a minimal example:
+
 ```css
-/* Base menu styles */
+/* Base menu styles - works in nav, footer, sidebar, anywhere */
 .menu {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
+    gap: 20px;
 }
 
-.menu li {
+/* Dropdown container */
+.menu .dropdown {
     position: relative;
 }
 
-/* Dropdown */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-title {
+/* Dropdown trigger (non-clickable title) */
+.menu .dropdown-title {
     cursor: pointer;
     padding: 10px 15px;
-    display: block;
+    display: inline-block;
 }
 
-.dropdown-menu {
+/* Dropdown panel (hidden by default) */
+.menu .dropdown-menu {
     display: none;
     position: absolute;
     top: 100%;
@@ -234,14 +235,31 @@ $menuHtml = $features['MenuBuilder']['html'][1]; // Get menu 1
     background: #fff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     min-width: 200px;
+    z-index: 1000;
 }
 
-/* Show on hover */
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu {
+/* Show dropdown on hover */
+.menu .dropdown:hover .dropdown-menu {
     display: block;
 }
+
+/* Dropdown menu items */
+.menu .dropdown-menu li {
+    display: block;
+}
+
+.menu .dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+}
 ```
+
+**Key points:**
+- Scope all dropdown styles to `.menu` so they work anywhere
+- Use `.menu .dropdown:hover .dropdown-menu` for hover functionality
+- Set `position: relative` on `.dropdown` and `position: absolute` on `.dropdown-menu`
+- Add `z-index: 1000` to ensure dropdowns appear above other content
+
 
 ## Development
 

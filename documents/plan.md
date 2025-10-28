@@ -223,20 +223,26 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 11. Menu Generation Feature
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `MenuFeature` that listens to POST_GLOB event
-- Implement menu structure building from content metadata (position field)
-- Generate HTML menu structure and store in features array
-- Integrate menu HTML into template rendering process
-- Write unit tests for menu generation and template integration
-  - Apply YAGNI: Basic hierarchical menu only, position-based ordering
-  - Apply KISS: Simple menu structure, straightforward HTML generation
-  - Apply SOLID: Menu feature handles single responsibility of navigation
-  - Apply DRY: Reusable menu generation pattern
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 11. Menu Generation Feature ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `MenuFeature` that listens to POST_GLOB event
+- ✅ Implement menu structure building from content metadata (position field)
+- ✅ Generate HTML menu structure and store in features array
+- ✅ Integrate menu HTML into template rendering process
+- ✅ Write unit tests for menu generation and template integration
+  - ✅ Apply YAGNI: Basic hierarchical menu only, position-based ordering
+  - ✅ Apply KISS: Simple menu structure, straightforward HTML generation
+  - ✅ Apply SOLID: Menu feature handles single responsibility of navigation
+  - ✅ Apply DRY: Reusable menu generation pattern
+- ✅ Added dropdown menu support (up to 3 levels: 1, 1.2, 1.2.3)
+- ✅ Created generic, composable CSS classes (.menu, .dropdown, .dropdown-menu)
+- ✅ Integrated menus into all three template themes (terminal, sample, vaulttech)
+- ✅ Fixed URL generation to exclude content directory from paths
+- ✅ Created menu1.html.twig and menu2.html.twig partials for each theme
+- ✅ Updated README.md with comprehensive menu documentation and CSS examples
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
