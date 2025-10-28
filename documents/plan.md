@@ -303,20 +303,21 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 15. Tags Feature
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `TagsFeature` that listens to POST_GLOB event
-- Extract tag metadata from content files and store in features array
-- Add tag information to template variables for display
-- Implement basic tag-based content organization (optional tag pages)
-- Write unit tests for tag extraction and template integration
-  - Apply YAGNI: Basic tag support only, simple display functionality
-  - Apply KISS: Tag array in templates, optional tag page generation
-  - Apply SOLID: Tags feature handles single responsibility for tag processing
-  - Apply DRY: Reuse metadata extraction and template patterns
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 15. Tags Feature ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `TagsFeature` that listens to POST_GLOB event
+- ✅ Extract tag metadata from content files and store in features array
+- ✅ Add tag information to template variables for display via PRE_RENDER event
+- ✅ Implement tag index (tag → file mapping) and tag counts
+- ✅ Implement related files feature (find files with shared tags)
+- ✅ Write unit tests for tag extraction and template integration (10 tests, 42 assertions)
+  - ✅ Apply YAGNI: Basic tag support only, simple display functionality
+  - ✅ Apply KISS: Tag array in templates, straightforward tag indexing
+  - ✅ Apply SOLID: Tags feature handles single responsibility for tag processing
+  - ✅ Apply DRY: Reuse metadata extraction and template patterns
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
