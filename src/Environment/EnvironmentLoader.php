@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Environment;
 
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 
@@ -60,6 +61,7 @@ class EnvironmentLoader
 
         $this->validateRequiredVariables();
         $this->populateContainer();
+        $this->initializeLogger();
     }
 
     /**
@@ -100,5 +102,26 @@ class EnvironmentLoader
         if (!in_array($variable, $this->requiredVariables)) {
             $this->requiredVariables[] = $variable;
         }
+    }
+
+    /**
+     * Initialize logger from environment configuration
+     */
+    private function initializeLogger(): void
+    {
+        $logFile = $this->container->getVariable('LOG_FILE') ?? 'logs/staticforge.log';
+        $logLevel = $this->container->getVariable('LOG_LEVEL') ?? 'INFO';
+
+        // Ensure logs directory exists
+        $logDir = dirname($logFile);
+        if (!is_dir($logDir)) {
+            if (!mkdir($logDir, 0755, true)) {
+                throw new InvalidArgumentException("Cannot create log directory: {$logDir}");
+            }
+        }
+
+        // Create logger instance
+        $logger = new Log('staticforge', $logFile, $logLevel);
+        $this->container->setVariable('logger', $logger);
     }
 }

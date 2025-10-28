@@ -41,9 +41,11 @@ class Application
         $bootstrap = new Bootstrap();
         $this->container = $bootstrap->initialize($envPath);
 
-        // Get logger from container
-        $this->logger = $this->container->getVariable('logger') ?? $this->createDefaultLogger();
-        $this->container->setVariable('logger', $this->logger);
+        // Get logger from container (should be set by EnvironmentLoader)
+        $this->logger = $this->container->getVariable('logger');
+        if (!$this->logger) {
+            throw new \RuntimeException('Logger not initialized by EnvironmentLoader');
+        }
     }
 
     /**
@@ -215,15 +217,6 @@ class Application
             $this->logger->log('ERROR', 'File processing failed: ' . $e->getMessage());
             // File processing failures are not fatal, but logged
         }
-    }
-
-    /**
-     * Create default logger if none provided
-     */
-    private function createDefaultLogger(): Log
-    {
-        $logFile = sys_get_temp_dir() . '/staticforge.log';
-        return new Log('staticforge', $logFile, 'INFO');
     }
 
     /**
