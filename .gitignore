@@ -1,26 +1,15 @@
-# Dependencies
-/vendor/
-/node_modules/
+# Directories
+vendor/
+node_modules/
 templates/
-
-# Generated files
-/public/
-/public/
-composer.lock
-.phpunit.result.cache
-# Environment
-.env
-
-# IDE
+content/
+public/
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
 logs/
+
+# Files
+composer.lock
+.phpunit.result.cache
+.env
+*.log
