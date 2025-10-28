@@ -88,7 +88,33 @@ class EventManager
             }
         }
 
+        // If features data was returned, store it in the container
+        if (isset($currentParameters['features']) && is_array($currentParameters['features'])) {
+            $this->updateFeaturesInContainer($currentParameters['features']);
+        }
+
         return $currentParameters;
+    }
+
+    /**
+     * Update features data in container
+     */
+    private function updateFeaturesInContainer(array $newFeaturesData): void
+    {
+        // Get existing features or initialize empty array
+        $features = $this->container->getVariable('features') ?? [];
+
+        // Merge new feature data
+        foreach ($newFeaturesData as $featureName => $featureData) {
+            $features[$featureName] = $featureData;
+        }
+
+        // Update or set the features variable
+        if ($this->container->hasVariable('features')) {
+            $this->container->updateVariable('features', $features);
+        } else {
+            $this->container->setVariable('features', $features);
+        }
     }
 
     /**

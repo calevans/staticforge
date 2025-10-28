@@ -21,6 +21,7 @@ use Twig\Loader\FilesystemLoader;
  */
 class Feature extends BaseFeature implements FeatureInterface
 {
+    protected string $name = 'MarkdownRenderer';
     protected $logger;
     private MarkdownConverter $markdownConverter;
 

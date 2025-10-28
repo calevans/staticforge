@@ -14,6 +14,24 @@ abstract class BaseFeature implements FeatureInterface
     protected array $eventListeners = [];
 
     /**
+     * Simple name for this feature (used as key in FEATURES array)
+     * Defaults to the class namespace, but features should override this
+     */
+    protected string $name;
+
+    /**
+     * Get the simple name for this feature
+     */
+    public function getName(): string
+    {
+        // If name is empty, use class name
+        if (empty($this->name)) {
+            $this->name = static::class;
+        }
+        return $this->name;
+    }
+
+    /**
      * Store container and event manager references
      */
     public function register(EventManager $eventManager, Container $container): void

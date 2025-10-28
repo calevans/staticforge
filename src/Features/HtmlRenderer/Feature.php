@@ -17,6 +17,7 @@ use Twig\Loader\FilesystemLoader;
  */
 class Feature extends BaseFeature implements FeatureInterface
 {
+    protected string $name = 'HtmlRenderer';
     protected $logger;
 
     protected array $eventListeners = [

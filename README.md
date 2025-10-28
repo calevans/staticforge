@@ -94,6 +94,155 @@ Templates use Twig templating engine. Available variables:
 - `{{ title }}` - Page title from front matter
 - Any custom variables from front matter
 
+## Menu System
+
+StaticForge includes a powerful menu builder that generates semantic HTML menus from your content files.
+
+### Adding Pages to Menus
+
+Add a `menu:` entry to your content's frontmatter:
+
+**Markdown files:**
+```markdown
+---
+title: Home
+menu: 1
+---
+```
+
+**HTML files:**
+```html
+<!-- INI
+title: Home
+menu: 1
+-->
+```
+
+### Menu Positioning
+
+**Simple menu items:**
+```yaml
+menu: 1        # First item in menu 1
+menu: 2        # First item in menu 2
+```
+
+**Dropdown menus:**
+```yaml
+menu: 2.0      # Dropdown title (not clickable)
+menu: 2.1      # First item in dropdown
+menu: 2.2      # Second item in dropdown
+```
+
+**Three-level menus:**
+```yaml
+menu: 1.2.0    # Nested dropdown title
+menu: 1.2.1    # First item in nested dropdown
+menu: 1.2.2    # Second item in nested dropdown
+```
+
+*Note: Only 3 levels are supported.*
+
+### Generated HTML Structure
+
+**Simple menu:**
+```html
+<ul class="menu menu-1">
+  <li class="menu-1">
+    <a href="/home.html">Home</a>
+  </li>
+</ul>
+```
+
+**Dropdown menu:**
+```html
+<ul class="menu menu-2">
+  <li class="dropdown menu-2-0">
+    <span class="dropdown-title">Services</span>
+    <ul class="dropdown-menu menu-2-submenu">
+      <li class="menu-2-1">
+        <a href="/web-dev.html">Web Development</a>
+      </li>
+      <li class="menu-2-2">
+        <a href="/mobile.html">Mobile Apps</a>
+      </li>
+    </ul>
+  </li>
+</ul>
+```
+
+### CSS Class Reference
+
+**Top-level classes:**
+- `menu` - Base class for all menus
+- `menu-{N}` - Specific menu number (e.g., `menu-1`, `menu-2`)
+
+**Dropdown classes:**
+- `dropdown` - Dropdown container
+- `menu-{N}-{P}` - Dropdown at position P in menu N
+- `dropdown-title` - Non-clickable dropdown label
+- `dropdown-menu` - Container for dropdown items
+- `menu-{N}-submenu` - Submenu within menu N
+
+**Item classes:**
+- `menu-{N}` - Simple menu item in menu N
+- `menu-{N}-{P}` - Item at position P within menu N
+
+### Using Menus in Templates
+
+**In PHP:**
+```php
+$features = $container->getVariable('features');
+$menuHtml = $features['MenuBuilder']['html'][1]; // Get menu 1
+```
+
+**In Twig (future):**
+```twig
+{{ features.MenuBuilder.html.1|raw }}
+```
+
+### Example CSS for Dropdown Menus
+
+```css
+/* Base menu styles */
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+.menu li {
+    position: relative;
+}
+
+/* Dropdown */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-title {
+    cursor: pointer;
+    padding: 10px 15px;
+    display: block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    min-width: 200px;
+}
+
+/* Show on hover */
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+    display: block;
+}
+```
+
 ## Development
 
 ### Using Lando (Recommended)

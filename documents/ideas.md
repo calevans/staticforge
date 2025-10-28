@@ -9,11 +9,11 @@ zthis system should be extensionable. Users should be able to add "features" whi
 The core application should ONLY do the following
 
 - Load the .env file
-- Create a list of all the feautres installed. For each feature, instantiate the feature object and store it in the Container. By doing this, each feature has the opportunity to register for any an all events. 
+- Create a list of all the feautres installed. For each feature, instantiate the feature object and store it in the Container. By doing this, each feature has the opportunity to register for any an all events.
 - Fire the CREATE event that allows any feature that want to hook in as easrly as possible to hook in
 - Fire the PRE-GLOB event. This fired before it locates all the files to be processed. In the Container should be an array of all the directories to scan for files. This event can be used to modify that list, add, or delete directories.
 - Iterate over the list of directories and build an array of all files that we have renderers for. This is the glob. (I'm open for a better name)
-- Fire the POST-GLOB event. This hapens after we build a list of all the files to be processed. This even can access the array of files to be processedn and modify the list any way it needs to. This is probably where the menu feature want's to hook in as it can iterate over the list and gather all of the menu info from the files, construct the proper menu html, and put it in the Features array so that it can be rendered during render. 
+- Fire the POST-GLOB event. This hapens after we build a list of all the files to be processed. This even can access the array of files to be processedn and modify the list any way it needs to. This is probably where the menu feature want's to hook in as it can iterate over the list and gather all of the menu info from the files, construct the proper menu html, and put it in the Features array so that it can be rendered during render.
 - Fire the PRE-LOOP event
 - Iterate over the content list.
   - For each file in out list of files to render, fire the PRE-RENDER event.
@@ -23,9 +23,9 @@ The core application should ONLY do the following
 - Fire the POST-LOOP event
 - Fire the DESTROY event.
 
-The code necessary to do those things should be core. Everything else should be a feature. 
+The code necessary to do those things should be core. Everything else should be a feature.
 
-The system should be installable using `composer project` command. 
+The system should be installable using `composer project` command.
 The system reauires vlucas/dotenv
 The system requires symfony/twig
 The system requires eicc/utils
@@ -49,10 +49,10 @@ A feautre is only installable via composer.
 A feature can require additional composer packages.
 A feature should accomplish a single thing.
 
-A feature can require packages installable via composer. 
+A feature can require packages installable via composer.
 There is be an array $FEATURES that is stored in the container and NOT a global. Each feature will have an element in the array that it can read and write to. Beyond tht, any feature can READ the $FEATURES array but cannot write to any other element in the array,
 
-The system will ship with the following features. These features can be removed and replaced. 
+The system will ship with the following features. These features can be removed and replaced.
 
 1. **Menu**
 This will create the menus and render the html for them.
@@ -65,7 +65,7 @@ This is part of the main loop. It will take an html file and reder it inside the
     - PRE-CONTENT
     - POST_CONTENT
 1. **Render Markdown**
-This will convert Markdown into a snippet and then redner it inside of the template. This will then store it on filesystem. 
+This will convert Markdown into a snippet and then redner it inside of the template. This will then store it on filesystem.
   - **Events Fired**
     - PRE-CONTENT
     - POST_CONTENT
@@ -76,16 +76,16 @@ This will convert Markdown into a snippet and then redner it inside of the templ
 1. **Categories**
 This will allow the user to specify a category in the inf section of the content and all files with a given category will be placed in a subdirectory named for the category.
 1. **Category Index Pages**
-If Categories is installed this will accumulate a list of all the pages in a given category. In POST-LOOP, it will create `index.html` in each category subdriectory, complete with pagination. 
+If Categories is installed this will accumulate a list of all the pages in a given category. In POST-LOOP, it will create `index.html` in each category subdriectory, complete with pagination.
   - **EVENTS-LISTENDED**
     - POST-LOOP
 1. **Tags**
   Add tags to the header of a page.
 
 # Events
-This system should be event driven. A feature register an event that will be fired. feature can also register as a listener for events that the system or other features will call. 
+This system should be event driven. A feature register an event that will be fired. feature can also register as a listener for events that the system or other features will call.
 
-Features should, in the docblock header of feature.php, list each event it FIRES and it's purpose, as well as each event it OBSERVES. 
+Features should, in the docblock header of feature.php, list each event it FIRES and it's purpose, as well as each event it OBSERVES.
 
 The events system should be managed by a class, `EventManager`, stored in the Continer. It should be able to fire(), registerListener(), unregisterListener(), registerEvent(),  and list() events. Registereding to listen for an even should take a reference to an instantiated object and method. [$object,'method'] notation.
 
@@ -93,22 +93,22 @@ Registereting to listen for an event should take a priority beeween 0 and 999. I
 
 When a Feature is instantiated, it can register for any events it wants to be notified about. It should also register any new events it will fire so that others can register for.
 
-When an event is fired, all of the objects who have registered for that event will be called, one at a time. As each event is called, a single array of parameters are passed in. The opbject that fired the event will determin what parametrs are passed in. It will also determine what is done with the return value of the the observer method. 
+When an event is fired, all of the objects who have registered for that event will be called, one at a time. As each event is called, a single array of parameters are passed in. The opbject that fired the event will determin what parametrs are passed in. It will also determine what is done with the return value of the the observer method.
 
 Events should always pass the container as the first parameter and an array of other parameters as needed. The called method should return the array, modified as needed. This modified array is passed as the second parameter to the next listener in the chain. The array from the final listener is then used by the method firing the event.
 
 
 
 # Execution
-The system will use the Symfony Console to execute. 
-The system will have the following commands 
+The system will use the Symfony Console to execute.
+The system will have the following commands
   - `render:site` Render the entire site.
   - `render:page` Render a single page or a glob of pages such as *.html if a glob is passed in.
 
-# Templates 
-The output of the RENDER event should be intersted into a template. Each file has a header section and that should stripped out and not renered. That contains information important to the rendering process. 
+# Templates
+The output of the RENDER event should be intersted into a template. Each file has a header section and that should stripped out and not renered. That contains information important to the rendering process.
 
-Templates are stored in the templat directory and should be twig templets. The system will use twig to render them before saving them. 
+Templates are stored in the templat directory and should be twig templets. The system will use twig to render them before saving them.
 
 # INF section
 Each file can have an INF section. In html it will be YAML stored in an HTML comment
@@ -121,9 +121,9 @@ in Markdown it's just YAML at the head of the file and at the end a simple
 ---
 
 Each feature can add to the list of YAML attributes it wants The basics are:
-- Name : This will override the use of th file name for the name of the article. 
+- Name : This will override the use of th file name for the name of the article.
 
-Feautres are have their own YAML section they look for. these are optional because features may or may not exist. it is up to each feature to decide what to do if a file does not contain the proper INF section. The default SHOULD be to render anyhow using defaults 
+Feautres are have their own YAML section they look for. these are optional because features may or may not exist. it is up to each feature to decide what to do if a file does not contain the proper INF section. The default SHOULD be to render anyhow using defaults
 
 - Menu
   - position
@@ -144,3 +144,5 @@ DO NOT INCLUDE THIS SECTION IN ANY PLANS. It just exists for me to hold ideas.
 - **Forms Feature**
   Create forms using a YAML definition. Send the results of all forms to an email address.
 - All core features need to be broken into individual composer packages The crete project will include them in the initial composer.json` but they can be removed and replaced.
+- Upload that uses sftp to upload the site to a remote server. MUST HONOR CLEAN!
+- Github pages ingegration.
