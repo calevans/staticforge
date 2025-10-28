@@ -283,20 +283,23 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 14. Category Index Pages Feature
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `CategoryIndexFeature` that listens to POST_LOOP event
-- Generate index.html pages for each category directory
-- Implement basic pagination for categories with many items
-- Add category index pages to menu system appropriately
-- Write unit tests for index generation and pagination logic
-  - Apply YAGNI: Basic pagination only, simple index page format
-  - Apply KISS: Standard index page template, straightforward pagination
-  - Apply SOLID: Index feature handles single responsibility for category indexes
-  - Apply DRY: Reuse template rendering and pagination patterns
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 14. Category Index Pages Feature ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `CategoryIndexFeature` that listens to POST_LOOP event
+- ✅ Generate index.html pages for each category directory
+- ✅ Implement client-side pagination for categories with many items using jQuery
+- ✅ Add category index pages to menu system via .ini file configuration
+- ✅ Implement .ini file scanning at POST_GLOB event (priority 200, after MenuBuilder at 100)
+- ✅ Inject category menu entries before files are generated
+- ✅ Write INI frontmatter to generated index.html files
+- ✅ Write unit tests for index generation and pagination logic (7 tests, 20 assertions)
+  - ✅ Apply YAGNI: Basic pagination only, simple index page format
+  - ✅ Apply KISS: Standard index page template, straightforward pagination
+  - ✅ Apply SOLID: Index feature handles single responsibility for category indexes
+  - ✅ Apply DRY: Reuse template rendering and pagination patterns
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
