@@ -246,20 +246,20 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 12. PDF Renderer Feature
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `PdfRendererFeature` that processes .pdf files during RENDER event
-- Implement .pdf.ini metadata file reading for PDF documents
-- Generate HTML link pages for PDF files (no content conversion)
-- Add PDF files to menu system when appropriate metadata exists
-- Write unit tests for PDF link generation and metadata handling
-  - Apply YAGNI: Link generation only, no PDF content processing
-  - Apply KISS: External .ini files for metadata, simple link pages
-  - Apply SOLID: PDF renderer handles single responsibility for PDF linking
-  - Apply DRY: Reuse metadata patterns and template rendering
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 12. PDF Renderer Feature ❌ (NOT IMPLEMENTING)
+- ~~Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.~~
+- ~~Review all code about to be edited and any related code.~~
+- ~~Create `PdfRendererFeature` that processes .pdf files during RENDER event~~
+- ~~Implement .pdf.ini metadata file reading for PDF documents~~
+- ~~Generate HTML link pages for PDF files (no content conversion)~~
+- ~~Add PDF files to menu system when appropriate metadata exists~~
+- ~~Write unit tests for PDF link generation and metadata handling~~
+  - ~~Apply YAGNI: Link generation only, no PDF content processing~~
+  - ~~Apply KISS: External .ini files for metadata, simple link pages~~
+  - ~~Apply SOLID: PDF renderer handles single responsibility for PDF linking~~
+  - ~~Apply DRY: Reuse metadata patterns and template rendering~~
+- ~~Update `documents/plan.md` to show completed tasks and step with ✅ after verification.~~
+- ~~Wait for further instructions.~~
 
 ---
 
