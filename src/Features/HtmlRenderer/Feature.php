@@ -166,11 +166,13 @@ class Feature extends BaseFeature implements FeatureInterface
 
             $this->logger->log('INFO', "Using template: {$templatePath}");
 
-            // Set up Twig
+            // Set up Twig with security enabled
             $loader = new FilesystemLoader($templateDir);
             $twig = new Environment($loader, [
                 'debug' => true,
-                'strict_variables' => false
+                'strict_variables' => false,
+                'autoescape' => 'html',  // Enable auto-escaping for security
+                'cache' => false,        // Disable cache for development
             ]);
 
             // Prepare template variables
