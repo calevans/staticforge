@@ -71,12 +71,14 @@ class Feature extends BaseFeature implements FeatureInterface
             // Apply basic template
             $renderedContent = $this->applyTemplate($parsedContent, $container);
 
-            $this->logger->log('INFO', "HTML file rendered: {$filePath}");
+            // Write output file
+            $this->writeOutputFile($outputPath, $renderedContent);
 
-            // Store rendered content and metadata for Core to write
-            $parameters['rendered_content'] = $renderedContent;
+            $this->logger->log('INFO', "HTML file processed successfully: {$filePath} -> {$outputPath}");
+
+            // Mark as processed
+            $parameters['processed'] = true;
             $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $parsedContent['metadata'];
 
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process HTML file {$filePath}: " . $e->getMessage());
@@ -130,13 +132,21 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     private function generateOutputPath(string $inputPath, Container $container): string
     {
+        $sourceDir = $container->getVariable('SOURCE_DIR');
         $outputDir = $container->getVariable('OUTPUT_DIR');
 
-        // Get just the filename (flatten subdirectories from content/)
-        $filename = basename($inputPath);
+        // Get relative path from source directory
+        $relativePath = str_replace($sourceDir, '', $inputPath);
+        $relativePath = ltrim($relativePath, '/\\');
 
-        // Build output path (flat in webroot by default)
-        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $filename;
+        // Build output path
+        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $relativePath;
+
+        // Ensure output directory exists
+        $outputDirPath = dirname($outputPath);
+        if (!is_dir($outputDirPath)) {
+            mkdir($outputDirPath, 0755, true);
+        }
 
         return $outputPath;
     }
@@ -242,4 +252,19 @@ class Feature extends BaseFeature implements FeatureInterface
 </body>
 </html>
 HTML;
-    }}
+    }
+
+    /**
+     * Write rendered content to output file
+     */
+    private function writeOutputFile(string $outputPath, string $content): void
+    {
+        $bytesWritten = file_put_contents($outputPath, $content);
+
+        if ($bytesWritten === false) {
+            throw new Exception("Failed to write output file: {$outputPath}");
+        }
+
+        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}");
+    }
+}

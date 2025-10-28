@@ -81,14 +81,12 @@ class Feature extends BaseFeature implements FeatureInterface
             // Apply template
             $renderedContent = $this->applyTemplate($parsedContent, $container);
 
-            // Write output file
-            $this->writeOutputFile($outputPath, $renderedContent);
+            $this->logger->log('INFO', "Markdown file rendered: {$filePath}");
 
-            $this->logger->log('INFO', "Markdown file processed successfully: {$filePath} -> {$outputPath}");
-
-            // Mark as processed
-            $parameters['processed'] = true;
+            // Store rendered content and metadata for Core to write
+            $parameters['rendered_content'] = $renderedContent;
             $parameters['output_path'] = $outputPath;
+            $parameters['metadata'] = $parsedContent['metadata'];
 
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process Markdown file {$filePath}: " . $e->getMessage());
@@ -159,17 +157,12 @@ class Feature extends BaseFeature implements FeatureInterface
         $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
         $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
 
-        // Remove source directory from path and change extension
-        $relativePath = str_replace($sourceDir . '/', '', $inputPath);
-        $relativePath = preg_replace('/\.md$/', '.html', $relativePath);
+        // Get just the filename (flatten subdirectories from content/)
+        $filename = basename($inputPath);
+        $filename = preg_replace('/\.md$/', '.html', $filename);
 
-        // Ensure output directory exists
-        $outputPath = $outputDir . '/' . $relativePath;
-        $outputDirPath = dirname($outputPath);
-
-        if (!is_dir($outputDirPath)) {
-            mkdir($outputDirPath, 0755, true);
-        }
+        // Build output path (flat in webroot by default)
+        $outputPath = $outputDir . '/' . $filename;
 
         return $outputPath;
     }
@@ -277,17 +270,4 @@ class Feature extends BaseFeature implements FeatureInterface
 HTML;
     }
 
-    /**
-     * Write rendered content to output file
-     */
-    private function writeOutputFile(string $outputPath, string $content): void
-    {
-        $bytesWritten = file_put_contents($outputPath, $content);
-
-        if ($bytesWritten === false) {
-            throw new Exception("Failed to write output file: {$outputPath}");
-        }
-
-        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}");
-    }
 }

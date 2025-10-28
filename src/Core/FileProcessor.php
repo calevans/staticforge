@@ -90,6 +90,11 @@ class FileProcessor
             // POST-RENDER event
             $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
 
+            // Write file to disk after POST-RENDER (Core responsibility)
+            if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
+                $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
+            }
+
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to process file {$filePath}: " . $e->getMessage());
         }
@@ -131,8 +136,28 @@ class FileProcessor
             return true;
         }
 
-        // Reserve this output path for the current file
+                // Reserve this output path for the current file
         $this->processedOutputPaths[$expectedOutputPath] = $currentInputPath;
         return false;
+    }
+
+    /**
+     * Write rendered content to output file
+     */
+    private function writeOutputFile(string $outputPath, string $content): void
+    {
+        // Ensure output directory exists
+        $outputDirPath = dirname($outputPath);
+        if (!is_dir($outputDirPath)) {
+            mkdir($outputDirPath, 0755, true);
+        }
+
+        $bytesWritten = file_put_contents($outputPath, $content);
+
+        if ($bytesWritten === false) {
+            throw new \Exception("Failed to write output file: {$outputPath}");
+        }
+
+        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}");
     }
 }

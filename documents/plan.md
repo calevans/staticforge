@@ -263,20 +263,23 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 13. Categories Feature
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `CategoriesFeature` that listens to POST_RENDER event
-- Implement category-based output directory organization
-- Move generated files to category subdirectories based on metadata
-- Maintain proper relative links and asset paths after moving
-- Write unit tests for category organization and link maintenance
-  - Apply YAGNI: Basic category organization only, single category per file
-  - Apply KISS: Directory-based organization, straightforward file moving
-  - Apply SOLID: Categories feature handles single organization responsibility
-  - Apply DRY: Reusable file organization patterns
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 13. Categories Feature ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Modified HtmlRenderer to generate content only, not write files
+- ✅ Modified MarkdownRenderer to generate content only, not write files
+- ✅ Updated FileProcessor to write files after POST-RENDER event
+- ✅ Create `CategoriesFeature` that listens to POST_RENDER event
+- ✅ Implement category-based output directory organization
+- ✅ Move generated files to category subdirectories based on metadata
+- ✅ Maintain proper relative links and asset paths after moving
+- ✅ Write unit tests for category organization and link maintenance
+  - ✅ Apply YAGNI: Basic category organization only, single category per file
+  - ✅ Apply KISS: Directory-based organization, straightforward file moving
+  - ✅ Apply SOLID: Categories feature handles single organization responsibility
+  - ✅ Apply DRY: Reusable file organization patterns
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 

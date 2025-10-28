@@ -56,61 +56,73 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         $content = file_get_contents($filePath);
-        $menuEntry = $this->extractMenuFromFile($content, $filePath);
+        $metadata = $this->extractMetadataFromFile($content, $filePath);
 
-        if ($menuEntry !== null) {
-            $this->addMenuEntry($menuEntry, $filePath, $menuData);
+        if (isset($metadata['menu'])) {
+            $this->addMenuEntry($metadata['menu'], $filePath, $metadata['category'] ?? null, $menuData);
         }
     }
 
-    private function extractMenuFromFile(string $content, string $filePath): ?string
+    private function extractMetadataFromFile(string $content, string $filePath): array
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         if ($extension === 'md') {
-            return $this->extractMenuFromMarkdown($content);
+            return $this->extractMetadataFromMarkdown($content);
         } elseif ($extension === 'html') {
-            return $this->extractMenuFromHtml($content);
+            return $this->extractMetadataFromHtml($content);
         }
 
-        return null;
+        return [];
     }
 
-    private function extractMenuFromMarkdown(string $content): ?string
+    private function extractMetadataFromMarkdown(string $content): array
     {
         // Extract YAML frontmatter
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
-            return null;
+            return [];
         }
 
         $frontmatter = $matches[1];
+        $metadata = [];
 
         // Look for menu: entry
         if (preg_match('/^menu:\s*(.+)$/m', $frontmatter, $menuMatches)) {
-            return trim($menuMatches[1]);
+            $metadata['menu'] = trim($menuMatches[1]);
         }
 
-        return null;
+        // Look for category: entry
+        if (preg_match('/^category:\s*(.+)$/m', $frontmatter, $categoryMatches)) {
+            $metadata['category'] = trim($categoryMatches[1]);
+        }
+
+        return $metadata;
     }
 
-    private function extractMenuFromHtml(string $content): ?string
+    private function extractMetadataFromHtml(string $content): array
     {
         // Look for <!-- INI ... --> block
         if (!preg_match('/<!--\s*INI\s*\n(.*?)\n-->/s', $content, $matches)) {
-            return null;
+            return [];
         }
 
         $iniContent = $matches[1];
+        $metadata = [];
 
         // Look for menu: entry
         if (preg_match('/^menu:\s*(.+)$/m', $iniContent, $menuMatches)) {
-            return trim($menuMatches[1]);
+            $metadata['menu'] = trim($menuMatches[1]);
         }
 
-        return null;
+        // Look for category: entry
+        if (preg_match('/^category:\s*(.+)$/m', $iniContent, $categoryMatches)) {
+            $metadata['category'] = trim($categoryMatches[1]);
+        }
+
+        return $metadata;
     }
 
-    private function addMenuEntry(string $menuPosition, string $filePath, array &$menuData): void
+    private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void
     {
         // Parse menu position (e.g., "1", "1.2", "1.2.3")
         $parts = explode('.', $menuPosition);
@@ -122,7 +134,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Get file metadata
         $title = $this->extractTitleFromFile($filePath);
-        $url = $this->generateUrlFromPath($filePath);
+        $url = $this->generateUrlFromPath($filePath, $category);
 
         $menuEntry = [
             'title' => $title,
@@ -139,15 +151,24 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         if (count($parts) === 1) {
-            // Top level menu item
-            $menuData[$menu][] = $menuEntry;
+            // Top level menu item - store with 'direct' key to distinguish from dropdown items
+            // Don't use numeric keys as 0 is reserved for dropdown titles
+            if (!isset($menuData[$menu]['direct'])) {
+                $menuData[$menu]['direct'] = [];
+            }
+            // Use string keys to avoid conflict with position 0
+            $menuData[$menu]['direct'][] = $menuEntry;
         } elseif (count($parts) === 2) {
-            // Second level menu item
+            // Second level menu item (menu: X.Y)
             $position = (int)$parts[1];
+
             if (!isset($menuData[$menu][$position])) {
                 $menuData[$menu][$position] = [];
             }
-            $menuData[$menu][$position][] = $menuEntry;
+
+            // Store as single item (not array of items) since positions are explicit
+            // This avoids using [] which could create index 0
+            $menuData[$menu][$position] = $menuEntry;
         } elseif (count($parts) === 3) {
             // Third level menu item
             $subMenu = (int)$parts[1];
@@ -201,23 +222,19 @@ class Feature extends BaseFeature implements FeatureInterface
         return ucfirst(pathinfo($filePath, PATHINFO_FILENAME));
     }
 
-    private function generateUrlFromPath(string $filePath): string
+    private function generateUrlFromPath(string $filePath, ?string $category = null): string
     {
-        // Convert file path to URL (strip content directory, use only relative path)
-        $contentDir = $this->container->getVariable('CONTENT_DIR') ?? 'content';
+        // Get just the filename (flatten subdirectories from content/)
+        $filename = basename($filePath);
+        $filename = str_replace(['.md', '.html'], ['.html', '.html'], $filename);
 
-        // File paths are relative: content/filename.md or content/subdir/filename.md
-        // We want: /filename.html or /subdir/filename.html
-
-        // Remove the content directory prefix
-        if (str_starts_with($filePath, $contentDir . '/')) {
-            $relativePath = substr($filePath, strlen($contentDir) + 1);
+        // If there's a category, add it as a subdirectory
+        if ($category) {
+            $categorySlug = strtolower(str_replace([' ', '_'], '-', $category));
+            $url = '/' . $categorySlug . '/' . $filename;
         } else {
-            $relativePath = $filePath;
+            $url = '/' . $filename;
         }
-
-        // Convert to URL
-        $url = '/' . str_replace(['\\', '.md'], ['/', '.html'], $relativePath);
 
         // Clean up the URL
         $url = preg_replace('/\/index\.html$/', '/', $url);
@@ -241,31 +258,82 @@ class Feature extends BaseFeature implements FeatureInterface
         $menuClass = $menuNumber > 0 ? "menu menu-{$menuNumber}" : "menu";
         $html = '<ul class="' . $menuClass . '">' . "\n";
 
-        ksort($menuItems); // Sort by position
+        // Collect all direct items and positioned items at this level
+        $allItems = [];
 
-        // Check if this menu has submenus (contains items with numeric keys)
-        $hasSubmenus = false;
+        // Get direct items (menu: X format) - these have no explicit position
+        if (isset($menuItems['direct'])) {
+            foreach ($menuItems['direct'] as $item) {
+                $allItems[] = [
+                    'item' => $item,
+                    'position' => 999, // Put at end if no other positioning
+                    'type' => 'direct'
+                ];
+            }
+            unset($menuItems['direct']);
+        }
+
+        // Check for positioned single items (menu: X.Y where we want them as direct items, not dropdown)
+        // These should be treated as regular menu items with explicit positions
+        ksort($menuItems);
+
+        // Check if this is a dropdown structure (has 0 key with submenu items)
+        $hasDropdownTitle = isset($menuItems[0]);
+        $hasSubmenuItems = false;
         foreach ($menuItems as $key => $item) {
             if (is_numeric($key) && $key > 0) {
-                $hasSubmenus = true;
+                $hasSubmenuItems = true;
                 break;
             }
         }
 
-        if ($hasSubmenus) {
+        // If we have positioned items that aren't a dropdown structure, treat them as direct items
+        if (!$hasDropdownTitle || !$hasSubmenuItems) {
+            // These are direct positioned items (like menu: 1.1)
+            foreach ($menuItems as $key => $item) {
+                if (is_numeric($key)) {
+                    // Item is now stored directly, not in array
+                    $allItems[] = [
+                        'item' => $item,
+                        'position' => $key,
+                        'type' => 'positioned'
+                    ];
+                }
+            }
+
+            // Sort all items by position
+            usort($allItems, function($a, $b) {
+                return $a['position'] <=> $b['position'];
+            });
+
+            // Render all items
+            foreach ($allItems as $entry) {
+                $item = $entry['item'];
+                $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
+                $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
+                $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
+                         htmlspecialchars($item['title']) . '</a></li>' . "\n";
+            }
+
+            $html .= '</ul>' . "\n";
+            return $html;
+        }
+
+        // This is a dropdown structure
+        if ($hasDropdownTitle && $hasSubmenuItems) {
             // This is a menu with submenus
             $dropdownTitle = 'Menu';
             $submenuItems = [];
             $submenuPosition = 0;
 
             foreach ($menuItems as $key => $item) {
-                if ($key === 0 && isset($item[0]['title'])) {
+                if ($key === 0 && isset($item['title'])) {
                     // This is the dropdown title (position x.0)
-                    $dropdownTitle = $item[0]['title'];
+                    $dropdownTitle = $item['title'];
                     $submenuPosition = $key;
-                } elseif ($key > 0 && isset($item[0]['title'])) {
+                } elseif ($key > 0 && isset($item['title'])) {
                     // These are submenu items (position x.1, x.2, etc.)
-                    $submenuItems[$key] = $item[0];
+                    $submenuItems[$key] = $item;
                 }
             }
 
@@ -288,13 +356,7 @@ class Feature extends BaseFeature implements FeatureInterface
         } else {
             // This is a simple menu with direct items
             foreach ($menuItems as $key => $item) {
-                if (isset($item[0]['title'])) {
-                    $menuItem = $item[0];
-                    $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
-                    $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-                    $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($menuItem['url']) . '">' .
-                             htmlspecialchars($menuItem['title']) . '</a></li>' . "\n";
-                } elseif (isset($item['title'])) {
+                if (isset($item['title'])) {
                     $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
                     $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
                     $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
