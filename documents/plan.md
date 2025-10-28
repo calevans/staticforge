@@ -171,21 +171,21 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 8. CLI Interface with Symfony Console
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Add Symfony Console dependency and create `bin/console.php` entry point
-- Create `RenderSiteCommand` that triggers full site generation
-- Add command options: `--clean` (remove output directory before generation), `--verbose` for basic control
-- Implement proper exit codes and error reporting
-- Write integration tests for CLI command execution
-  - Apply YAGNI: Basic command interface only, essential options
-  - Apply KISS: Single command for now, clear success/failure reporting
-  - Apply SOLID: Command handles CLI concerns, delegates to Application
-  - Apply REST: Command represents resource action (render site)
-  - Apply DRY: Reusable command pattern for additional commands
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 8. CLI Interface with Symfony Console ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Add Symfony Console dependency and create `bin/console.php` entry point
+- ✅ Create `RenderSiteCommand` that triggers full site generation
+- ✅ Add command options: `--clean` (remove output directory before generation), `--verbose` for basic control
+- ✅ Implement proper exit codes and error reporting
+- ✅ Write integration tests for CLI command execution
+  - ✅ Apply YAGNI: Basic command interface only, essential options
+  - ✅ Apply KISS: Single command for now, clear success/failure reporting
+  - ✅ Apply SOLID: Command handles CLI concerns, delegates to Application
+  - ✅ Apply REST: Command represents resource action (render site)
+  - ✅ Apply DRY: Reusable command pattern for additional commands
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 

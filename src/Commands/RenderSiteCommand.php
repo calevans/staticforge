@@ -56,7 +56,7 @@ class RenderSiteCommand extends Command
 
             if ($input->getOption('clean')) {
                 $output->writeln('<comment>Cleaning output directory...</comment>');
-                // TODO: Implement clean functionality
+                $this->cleanOutputDirectory($application->getContainer());
             }
 
             $output->writeln('<info>Starting site generation...</info>');
@@ -86,5 +86,43 @@ class RenderSiteCommand extends Command
 
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * Clean the output directory before generation
+     */
+    private function cleanOutputDirectory($container): void
+    {
+        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
+
+        if (is_dir($outputDir)) {
+            $this->removeDirectory($outputDir);
+        }
+
+        // Recreate the directory
+        mkdir($outputDir, 0755, true);
+    }
+
+    /**
+     * Recursively remove a directory and its contents
+     */
+    private function removeDirectory(string $dir): bool
+    {
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        return rmdir($dir);
     }
 }

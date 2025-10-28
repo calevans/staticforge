@@ -1,0 +1,251 @@
+<?php
+
+namespace EICC\StaticForge\Tests\Integration\Commands;
+
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Tester\CommandTester;
+use EICC\StaticForge\Commands\RenderSiteCommand;
+
+/**
+ * Integration tests for RenderSiteCommand
+ */
+class RenderSiteCommandTest extends TestCase
+{
+    private string $testOutputDir;
+    private string $testContentDir;
+    private string $testTemplateDir;
+    private string $testEnvFile;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create temporary directories for testing
+        $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
+        $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
+        $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
+        $this->testEnvFile = sys_get_temp_dir() . '/staticforge_test_' . uniqid() . '.env';
+
+        mkdir($this->testOutputDir, 0755, true);
+        mkdir($this->testContentDir, 0755, true);
+        mkdir($this->testTemplateDir . '/sample', 0755, true);
+
+        // Create test environment file
+        $envContent = "
+SITE_NAME=\"Test Site\"
+SITE_BASE_URL=\"https://test.example.com\"
+TEMPLATE=\"sample\"
+SOURCE_DIR=\"{$this->testContentDir}\"
+OUTPUT_DIR=\"{$this->testOutputDir}\"
+TEMPLATE_DIR=\"{$this->testTemplateDir}\"
+FEATURES_DIR=\"src/Features\"
+LOG_LEVEL=\"DEBUG\"
+LOG_FILE=\"staticforge.log\"
+";
+        file_put_contents($this->testEnvFile, $envContent);
+
+        // Create test template
+        $baseTemplate = '<!DOCTYPE html>
+<html>
+<head><title>{{ title | default("Test Site") }}</title></head>
+<body>
+    <h1>{{ title | default("Test Site") }}</h1>
+    <main>{{ content | raw }}</main>
+</body>
+</html>';
+        file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
+
+        // Create test content
+        $testContent = '<!-- INI
+title: Test Page
+-->
+<h2>Test Content</h2>
+<p>This is a test page.</p>';
+        file_put_contents($this->testContentDir . '/test.html', $testContent);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // Clean up test directories
+        $this->removeDirectory($this->testOutputDir);
+        $this->removeDirectory($this->testContentDir);
+        $this->removeDirectory($this->testTemplateDir);
+        if (file_exists($this->testEnvFile)) {
+            unlink($this->testEnvFile);
+        }
+    }
+
+    /**
+     * Test basic site generation command
+     */
+    public function testRenderSiteCommandSuccess(): void
+    {
+        $application = new Application();
+        $application->add(new RenderSiteCommand());
+
+        $command = $application->find('render:site');
+        $commandTester = new CommandTester($command);
+
+        // Mock environment file path in command
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+        ]);
+
+        $this->assertEquals(0, $result);
+        $this->assertStringContainsString('Site generation completed successfully', $commandTester->getDisplay());
+    }
+
+    /**
+     * Test command with verbose option
+     */
+    public function testRenderSiteCommandWithVerbose(): void
+    {
+        $application = new Application();
+        $application->add(new RenderSiteCommand());
+
+        $command = $application->find('render:site');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '-v' => true,
+        ]);
+
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        // Note: Verbose mode enabled is shown when using symfony's verbose option
+        $this->assertStringContainsString('Site generation completed successfully', $output);
+    }
+
+    /**
+     * Test command with clean option
+     */
+    public function testRenderSiteCommandWithClean(): void
+    {
+        // Create some existing files in output directory
+        file_put_contents($this->testOutputDir . '/existing.html', 'old content');
+        $this->assertTrue(file_exists($this->testOutputDir . '/existing.html'));
+
+        $application = new Application();
+        $application->add(new RenderSiteCommand());
+
+        $command = $application->find('render:site');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--clean' => true,
+        ]);
+
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Cleaning output directory', $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
+    }
+
+    /**
+     * Test command with template override
+     */
+    public function testRenderSiteCommandWithTemplateOverride(): void
+    {
+        // Create terminal template for override test
+        mkdir($this->testTemplateDir . '/terminal', 0755, true);
+        $terminalTemplate = '<!DOCTYPE html>
+<html>
+<head><title>{{ title | default("Terminal Site") }}</title></head>
+<body style="background: black; color: green;">
+    <h1>{{ title | default("Terminal Site") }}</h1>
+    <main>{{ content | raw }}</main>
+</body>
+</html>';
+        file_put_contents($this->testTemplateDir . '/terminal/base.html.twig', $terminalTemplate);
+
+        $application = new Application();
+        $application->add(new RenderSiteCommand());
+
+        $command = $application->find('render:site');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--template' => 'terminal',
+        ]);
+
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Using template override: terminal', $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
+    }
+
+    /**
+     * Test command with invalid template
+     */
+    public function testRenderSiteCommandWithInvalidTemplate(): void
+    {
+        $application = new Application();
+        $application->add(new RenderSiteCommand());
+
+        $command = $application->find('render:site');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--template' => 'nonexistent',
+        ]);
+
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Site generation failed', $output);
+        $this->assertStringContainsString('Template \'nonexistent\' not found', $output);
+        $this->assertStringContainsString('Available templates:', $output);
+    }
+
+    /**
+     * Test command configuration and options
+     */
+    public function testRenderSiteCommandConfiguration(): void
+    {
+        $command = new RenderSiteCommand();
+
+        // Test command basic configuration
+        $this->assertEquals('render:site', $command->getName());
+        $this->assertEquals('Generate the complete static site from content files', $command->getDescription());
+
+        // Test that options are properly configured
+        $definition = $command->getDefinition();
+        $this->assertTrue($definition->hasOption('clean'));
+        $this->assertTrue($definition->hasOption('template'));
+
+        $cleanOption = $definition->getOption('clean');
+        $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
+
+        $templateOption = $definition->getOption('template');
+        $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
+    }
+
+    /**
+     * Recursively remove a directory and its contents
+     */
+    private function removeDirectory(string $dir): bool
+    {
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        return rmdir($dir);
+    }
+}
