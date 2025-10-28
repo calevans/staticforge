@@ -26,9 +26,10 @@ class Application
     private FileProcessor $fileProcessor;
     private Log $logger;
 
-    public function __construct(string $envPath = '.env')
+    public function __construct(string $envPath = '.env', ?string $templateOverride = null)
     {
         $this->bootstrap($envPath);
+        $this->applyTemplateOverride($templateOverride);
         $this->initializeComponents();
     }
 
@@ -43,6 +44,54 @@ class Application
         // Get logger from container
         $this->logger = $this->container->getVariable('logger') ?? $this->createDefaultLogger();
         $this->container->setVariable('logger', $this->logger);
+    }
+
+    /**
+     * Apply template override if provided
+     */
+    private function applyTemplateOverride(?string $templateOverride): void
+    {
+        if ($templateOverride === null) {
+            return;
+        }
+
+        // Validate template directory exists
+        $templateDir = $this->container->getVariable('TEMPLATE_DIR') ?? 'templates';
+        $templatePath = $templateDir . DIRECTORY_SEPARATOR . $templateOverride;
+
+        if (!is_dir($templatePath)) {
+            $availableTemplates = $this->getAvailableTemplates($templateDir);
+            $availableList = empty($availableTemplates) ? 'No templates found' : implode(', ', $availableTemplates);
+
+            throw new InvalidArgumentException(
+                "Template '{$templateOverride}' not found in {$templateDir}/. Available templates: {$availableList}"
+            );
+        }
+
+        // Override the TEMPLATE variable using updateVariable
+        $this->container->updateVariable('TEMPLATE', $templateOverride);
+        $this->logger->log('INFO', "Template overridden to: {$templateOverride}");
+    }
+
+    /**
+     * Get list of available templates
+     */
+    private function getAvailableTemplates(string $templateDir): array
+    {
+        if (!is_dir($templateDir)) {
+            return [];
+        }
+
+        $templates = [];
+        $directories = scandir($templateDir);
+
+        foreach ($directories as $dir) {
+            if ($dir !== '.' && $dir !== '..' && is_dir($templateDir . DIRECTORY_SEPARATOR . $dir)) {
+                $templates[] = $dir;
+            }
+        }
+
+        return $templates;
     }
 
     /**

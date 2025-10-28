@@ -8,6 +8,8 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use Exception;
 use Symfony\Component\Yaml\Yaml;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 /**
  * HTML Renderer Feature - processes .html files during RENDER event
@@ -86,25 +88,30 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * Parse HTML file content, extracting YAML metadata if present
+     * Parse HTML file content, extracting INI metadata if present
      */
     private function parseHtmlFile(string $content): array
     {
         $metadata = [];
         $htmlContent = $content;
 
-        // Check for YAML frontmatter (--- at start, --- to end)
-        if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
-            try {
-                $yamlContent = $matches[1];
-                $htmlContent = $matches[2];
+        // Check for INI frontmatter (<!-- INI ... -->)
+        if (preg_match('/^<!--\s*INI\s*(.*?)\s*-->\s*\n(.*)$/s', $content, $matches)) {
+            $iniContent = trim($matches[1]);
+            $htmlContent = $matches[2];
 
-                if (!empty(trim($yamlContent))) {
-                    $metadata = Yaml::parse($yamlContent) ?: [];
+            // Parse INI content if present
+            if (!empty($iniContent)) {
+                $lines = explode("\n", $iniContent);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (empty($line) || strpos($line, ':') === false) {
+                        continue;
+                    }
+
+                    list($key, $value) = array_map('trim', explode(':', $line, 2));
+                    $metadata[$key] = $value;
                 }
-            } catch (Exception $e) {
-                $this->logger->log('WARNING', "Failed to parse YAML metadata: " . $e->getMessage());
-                // Continue with empty metadata
             }
         }
 
@@ -112,9 +119,10 @@ class Feature extends BaseFeature implements FeatureInterface
             'metadata' => $metadata,
             'content' => $htmlContent,
             'title' => $metadata['title'] ?? 'Untitled Page',
+            'template' => $metadata['template'] ?? 'base',
             'menu_position' => $metadata['menu_position'] ?? null,
             'category' => $metadata['category'] ?? null,
-            'tags' => $metadata['tags'] ?? []
+            'tags' => isset($metadata['tags']) ? explode(',', $metadata['tags']) : []
         ];
     }
 
@@ -143,11 +151,55 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * Apply basic template to rendered content
+     * Apply Twig template to rendered content
      */
     private function applyTemplate(array $parsedContent, Container $container): string
     {
-        // Basic template - simple string replacement for now
+        try {
+            // Get template configuration
+            $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+            $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
+            $templateName = $parsedContent['template'] . '.html.twig';
+
+            // Full template path
+            $templatePath = $templateTheme . '/' . $templateName;
+
+            $this->logger->log('INFO', "Using template: {$templatePath}");
+
+            // Set up Twig
+            $loader = new FilesystemLoader($templateDir);
+            $twig = new Environment($loader, [
+                'debug' => true,
+                'strict_variables' => false
+            ]);
+
+            // Prepare template variables
+            $templateVars = array_merge($parsedContent['metadata'], [
+                'title' => $parsedContent['title'],
+                'content' => $parsedContent['content'],
+                'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
+                'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
+            ]);
+
+            $this->logger->log('DEBUG', "Template variables: " . json_encode(array_keys($templateVars)));
+
+            // Render template
+            return $twig->render($templatePath, $templateVars);
+
+        } catch (Exception $e) {
+            $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
+
+            // Fallback to basic template
+            return $this->applyBasicTemplate($parsedContent, $container);
+        }
+    }
+
+    /**
+     * Apply basic template as fallback
+     */
+    private function applyBasicTemplate(array $parsedContent, Container $container): string
+    {
+        // Basic template - simple string replacement for fallback
         $siteName = $container->getVariable('SITE_NAME') ?? 'Static Site';
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
 
