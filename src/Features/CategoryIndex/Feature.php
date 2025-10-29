@@ -204,11 +204,11 @@ class Feature extends BaseFeature implements FeatureInterface
     // Include the files array in metadata so Twig can access it
     $frontmatter = "---\n";
     foreach ($metadata as $key => $value) {
-      if ($key !== 'type') {  // Don't include type: category in output
-        $frontmatter .= "{$key}: {$value}\n";
+      if ($key !== 'type') {  // Don't include type = category in output
+        $frontmatter .= "{$key} = {$value}\n";
       }
     }
-    $frontmatter .= "category_files_count: " . count($categoryData['files']) . "\n";
+    $frontmatter .= "category_files_count = " . count($categoryData['files']) . "\n";
     $frontmatter .= "---\n\n";
     $markdownContent = $frontmatter . "<!-- Category file listing will be rendered by template -->";
 
@@ -414,7 +414,7 @@ JAVASCRIPT;
   }
 
   /**
-   * Scan discovered files for category files (type: category in frontmatter)
+   * Scan discovered files for category files (type = category in frontmatter)
    */
   private function scanCategoryFiles(Container $container): void
   {
@@ -427,9 +427,9 @@ JAVASCRIPT;
 
       $content = file_get_contents($filePath);
 
-      // Check for YAML frontmatter with type: category
+      // Check for INI frontmatter with type = category
       if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
-        $metadata = $this->parseYamlFrontmatter($matches[1]);
+        $metadata = $this->parseIniFrontmatter($matches[1]);
 
         if (isset($metadata['type']) && $metadata['type'] === 'category') {
           $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
@@ -444,20 +444,24 @@ JAVASCRIPT;
   }
 
   /**
-   * Parse YAML frontmatter into metadata array
+   * Parse INI frontmatter into metadata array
    */
-  private function parseYamlFrontmatter(string $yaml): array
+  private function parseIniFrontmatter(string $ini): array
   {
     $metadata = [];
-    $lines = explode("\n", $yaml);
+    $lines = explode("\n", $ini);
 
     foreach ($lines as $line) {
       $line = trim($line);
-      if (empty($line) || strpos($line, ':') === false) {
+      if (empty($line) || strpos($line, '=') === false) {
         continue;
       }
 
-      list($key, $value) = array_map('trim', explode(':', $line, 2));
+      list($key, $value) = array_map('trim', explode('=', $line, 2));
+
+      // Strip quotes from value
+      $value = trim($value, '"\'');
+
       $metadata[$key] = $value;
     }
 
