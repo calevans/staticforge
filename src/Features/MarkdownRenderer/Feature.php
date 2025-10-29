@@ -68,7 +68,8 @@ class Feature extends BaseFeature implements FeatureInterface
             $this->logger->log('INFO', "Processing Markdown file: {$filePath}");
 
             // Read and parse the Markdown file
-            $content = @file_get_contents($filePath);
+            // Use provided content if available (e.g., from CategoryIndex)
+            $content = $parameters['file_content'] ?? @file_get_contents($filePath);
             if ($content === false) {
                 throw new Exception("Failed to read file: {$filePath}");
             }
@@ -76,7 +77,8 @@ class Feature extends BaseFeature implements FeatureInterface
             $parsedContent = $this->parseMarkdownFile($content);
 
             // Generate output file path (change .md to .html)
-            $outputPath = $this->generateOutputPath($filePath, $container);
+            // Use existing output_path if already set (e.g., by CategoryIndex)
+            $outputPath = $parameters['output_path'] ?? $this->generateOutputPath($filePath, $container);
 
             // Apply template
             $renderedContent = $this->applyTemplate($parsedContent, $container);

@@ -18,14 +18,17 @@ class Feature extends BaseFeature implements FeatureInterface
   protected string $name = 'CategoryIndex';
   protected $logger;
   private array $categoryFiles = [];
+  private array $deferredCategoryFiles = [];  // Track category files to process later
+  private bool $processingDeferred = false;  // Flag to prevent re-deferring during POST_LOOP
 
   protected array $eventListeners = [
     'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 200],
+    'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 150],  // Before other features
     'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 50],
-    'POST_LOOP' => ['method' => 'generateCategoryIndexes', 'priority' => 100]
+    'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 100]
   ];
 
-  private array $categoryMetadata = []; // Stores metadata from .ini files
+  private array $categoryMetadata = []; // Stores metadata from category files
 
   public function register(EventManager $eventManager, Container $container): void
   {
@@ -38,12 +41,14 @@ class Feature extends BaseFeature implements FeatureInterface
   }
 
   /**
-   * Handle POST_GLOB event - scan .ini files and inject category menu entries
+   * Handle POST_GLOB event - scan for category files and inject category menu entries
    */
   public function handlePostGlob(Container $container, array $parameters): array
   {
-    // Scan for category .ini files
-    $this->scanCategoryIniFiles($container);
+    $this->logger->log('INFO', 'CategoryIndex: Scanning for category files');
+
+    // Scan for category markdown/html files (type: category in frontmatter)
+    $this->scanCategoryFiles($container);
 
     // Get existing menu data from MenuBuilder
     $features = $parameters['features'] ?? [];
@@ -61,14 +66,51 @@ class Feature extends BaseFeature implements FeatureInterface
       }
     }
 
-    // Update menu data in parameters if we added anything
+    // Update menu data in parameters
     if (isset($features['MenuBuilder'])) {
       $features['MenuBuilder']['files'] = $menuData;
-
-      // Regenerate menu HTML with category entries included
       $features['MenuBuilder']['html'] = $this->rebuildMenuHtml($menuData);
-
       $parameters['features'] = $features;
+    }
+
+    return $parameters;
+  }
+
+  /**
+   * PRE_RENDER: Detect category files and defer their rendering
+   */
+  public function handlePreRender(Container $container, array $parameters): array
+  {
+    // If bypass_category_defer flag is set, don't defer (used during POST_LOOP processing)
+    if (!empty($parameters['bypass_category_defer'])) {
+      return $parameters;
+    }
+
+    $filePath = $parameters['file_path'] ?? null;
+
+    if (!$filePath) {
+      return $parameters;
+    }
+
+    // Check if this file is in our scanned category metadata
+    $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
+
+    if (isset($this->categoryMetadata[$categorySlug])) {
+      // Determine correct output path: public/{category}/index.html
+      $publicDir = $this->container->getVariable('PUBLIC_DIR') ?? 'public';
+      $outputPath = $publicDir . DIRECTORY_SEPARATOR . $categorySlug . DIRECTORY_SEPARATOR . 'index.html';
+
+      // Store this file for later processing
+      $this->deferredCategoryFiles[] = [
+        'file_path' => $filePath,
+        'metadata' => $this->categoryMetadata[$categorySlug],
+        'output_path' => $outputPath
+      ];
+
+      // Skip rendering this file in the main loop
+      $parameters['skip_file'] = true;
+
+      $this->logger->log('INFO', "Deferring category file for later processing: {$filePath}");
     }
 
     return $parameters;
@@ -82,9 +124,11 @@ class Feature extends BaseFeature implements FeatureInterface
 
     if ($category) {
       $outputPath = $parameters['output_path'] ?? null;
+      $filePath = $parameters['file_path'] ?? null;
+      $renderedContent = $parameters['rendered_content'] ?? '';
       $title = $metadata['title'] ?? 'Untitled';
 
-      if ($outputPath) {
+      if ($outputPath && $filePath && $renderedContent) {
         // Sanitize category name to match filesystem
         $sanitizedCategory = $this->sanitizeCategoryName($category);
 
@@ -95,9 +139,15 @@ class Feature extends BaseFeature implements FeatureInterface
           ];
         }
 
+        // Extract hero image from rendered content (not from disk - file doesn't exist yet)
+        $imageUrl = $this->extractHeroImageFromHtml($renderedContent, $filePath, $container);
+        $date = $this->getFileDate($metadata, $filePath);
+
         $this->categoryFiles[$sanitizedCategory]['files'][] = [
           'title' => $title,
-          'url' => $this->convertPathToUrl($outputPath, $container),
+          'url' => '/' . $sanitizedCategory . '/' . basename($outputPath),
+          'image' => $imageUrl,
+          'date' => $date,
           'metadata' => $metadata
         ];
       }
@@ -107,88 +157,128 @@ class Feature extends BaseFeature implements FeatureInterface
   }
 
   /**
-   * Generate index.html pages for each category after all files processed
+   * POST_LOOP: Process deferred category files through the rendering pipeline
    */
-  public function generateCategoryIndexes(Container $container, array $parameters): array
+  public function processDeferredCategoryFiles(Container $container, array $parameters): array
   {
-    if (empty($this->categoryFiles)) {
-      $this->logger->log('INFO', 'No categories found, skipping index generation');
+    if (empty($this->deferredCategoryFiles)) {
+      $this->logger->log('INFO', 'No deferred category files to process');
       return $parameters;
     }
 
-    $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
-    $perPage = (int)($container->getVariable('CATEGORY_PAGINATION') ?? 10);
+    $this->logger->log('INFO', 'Processing ' . count($this->deferredCategoryFiles) . ' deferred category files');
 
-    foreach ($this->categoryFiles as $categorySlug => $categoryData) {
-      $this->generateCategoryIndex($categorySlug, $categoryData, $outputDir, $perPage);
+    foreach ($this->deferredCategoryFiles as $categoryFile) {
+      $this->processCategoryFile($categoryFile, $container);
     }
 
     return $parameters;
   }
 
   /**
-   * Generate a single category index page
+   * Process a single category file through the rendering pipeline
    */
-  private function generateCategoryIndex(
-    string $categorySlug,
-    array $categoryData,
-    string $outputDir,
-    int $perPage
-  ): void {
-    $categoryDir = $outputDir . DIRECTORY_SEPARATOR . $categorySlug;
-    $indexPath = $categoryDir . DIRECTORY_SEPARATOR . 'index.html';
+  private function processCategoryFile(array $categoryFile, Container $container): void
+  {
+    $filePath = $categoryFile['file_path'];
+    $metadata = $categoryFile['metadata'];
 
-    // Ensure category directory exists
-    if (!is_dir($categoryDir)) {
-      mkdir($categoryDir, 0755, true);
+    // Determine category slug from file path (e.g., business.md -> business)
+    $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
+
+    // Get collected files for this category
+    $categoryData = $this->categoryFiles[$categorySlug] ?? ['files' => []];
+
+    $this->logger->log('INFO', "Processing category file: {$filePath} with " . count($categoryData['files']) . " files");
+
+    // Build complete markdown content with frontmatter
+    // Include the files array in metadata so Twig can access it
+    $frontmatter = "---\n";
+    foreach ($metadata as $key => $value) {
+      if ($key !== 'type') {  // Don't include type: category in output
+        $frontmatter .= "{$key}: {$value}\n";
+      }
     }
+    $frontmatter .= "category_files_count: " . count($categoryData['files']) . "\n";
+    $frontmatter .= "---\n\n";
+    $markdownContent = $frontmatter . "<!-- Category file listing will be rendered by template -->";
 
-    // Get category metadata from .ini file (if exists)
-    $iniMetadata = $this->categoryMetadata[$categorySlug] ?? [];
+    // Build render context with updated content
+    // Store category_files in container features so template can access it
+    $features = $container->getVariable('features') ?? [];
+    $features['CategoryIndex']['category_files'] = $categoryData['files'];
+    $container->updateVariable('features', $features);
 
-    // Apply metadata overrides
-    $title = $iniMetadata['title'] ?? $categoryData['display_name'];
-    $description = $iniMetadata['description'] ?? '';
-    $template = $iniMetadata['template'] ?? 'category-index.html.twig';
-    $categoryPerPage = $iniMetadata['per_page'] ?? $perPage;
-
-    // Prepare data for template
-    $templateData = [
-      'title' => $title,
-      'category' => $title,
-      'description' => $description,
-      'files' => $categoryData['files'],
-      'total_files' => count($categoryData['files']),
-      'per_page' => $categoryPerPage,
-      'site_name' => $this->container->getVariable('SITE_NAME') ?? 'My Static Site',
-      'base_url' => $this->container->getVariable('SITE_BASE_URL') ?? '/'
+    $renderContext = [
+      'file_path' => $filePath,
+      'file_content' => $markdownContent,  // Provide the content to MarkdownRenderer
+      'metadata' => array_merge($metadata, [
+        'category_files' => $categoryData['files'],  // Pass files to template
+        'total_files' => count($categoryData['files']),
+      ]),
+      'output_path' => $categoryFile['output_path'],
+      'skip_file' => false,
+      'bypass_category_defer' => true  // Tell PRE_RENDER to not defer this file
     ];
 
-    // Render template
-    $content = $this->renderTemplate($templateData, $template);
+    try {
+      // Fire PRE_RENDER event
+      $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
 
-    // Prepare INI metadata for the generated index
-    $indexMetadata = [
-      'title' => $title,
-    ];
+      if ($renderContext['skip_file'] ?? false) {
+        $this->logger->log('INFO', "Category file skipped by PRE_RENDER: {$filePath}");
+        return;
+      }
 
-    // Add menu if specified in .ini file
-    if (isset($iniMetadata['menu'])) {
-      $indexMetadata['menu'] = $iniMetadata['menu'];
+      // Fire RENDER event (let MarkdownRenderer/HtmlRenderer handle it)
+      $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+
+      // Fire POST_RENDER event
+      $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
+
+      // Write the rendered output
+      if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
+        $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
+        $this->logger->log('INFO', "Category file rendered: {$renderContext['output_path']}");
+      }
+
+    } catch (\Exception $e) {
+      $this->logger->log('ERROR', "Failed to process category file {$filePath}: " . $e->getMessage());
+    }
+  }
+
+  /**
+   * Write output file to disk
+   */
+  private function writeOutputFile(string $outputPath, string $content): void
+  {
+    $outputDir = dirname($outputPath);
+
+    if (!is_dir($outputDir)) {
+      mkdir($outputDir, 0755, true);
     }
 
-    // Add other metadata
-    if ($description) {
-      $indexMetadata['description'] = $description;
+    file_put_contents($outputPath, $content);
+  }  /**
+   * Generate HTML listing of files for content variable
+   */
+  private function generateFilesListingHTML(array $files): string
+  {
+    $html = '<div class="category-files-list">' . "\n";
+    $html .= '  <div class="terminal-line">Category Files:</div>' . "\n";
+    $html .= '  <div class="terminal-line">&nbsp;</div>' . "\n";
+
+    foreach ($files as $file) {
+      $html .= '  <div class="file-listing-item">' . "\n";
+      $html .= '    <span class="file-icon">📄</span> ';
+      $html .= '<a href="' . htmlspecialchars($file['url']) . '">';
+      $html .= htmlspecialchars($file['title']);
+      $html .= '</a>' . "\n";
+      $html .= '  </div>' . "\n";
     }
 
-    // Write index file with INI frontmatter
-    $this->writeCategoryIndexWithIni($indexPath, $content, $indexMetadata);
-
-    $this->logger->log(
-      'INFO',
-      "Generated category index: {$indexPath} ({$templateData['total_files']} files)"
-    );
+    $html .= '</div>';
+    return $html;
   }
 
   /**
@@ -199,16 +289,20 @@ class Feature extends BaseFeature implements FeatureInterface
     try {
       $templateDir = $this->container->getVariable('TEMPLATE_DIR') ?? 'templates';
       $theme = $this->container->getVariable('TEMPLATE') ?? 'terminal';
-      $themePath = $templateDir . DIRECTORY_SEPARATOR . $theme;
 
-      $loader = new FilesystemLoader($themePath);
+      // Set loader to templates directory (not theme subdirectory)
+      // This allows templates to use {% extends "terminal/base.html.twig" %}
+      $loader = new FilesystemLoader($templateDir);
       $twig = new Environment($loader, [
         'cache' => false,
         'autoescape' => 'html',
         'strict_variables' => false
       ]);
 
-      return $twig->render($template, $data);
+      // Prepend theme to template path
+      $templatePath = $theme . DIRECTORY_SEPARATOR . $template;
+
+      return $twig->render($templatePath, $data);
     } catch (\Exception $e) {
       $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
 
@@ -342,118 +436,54 @@ JAVASCRIPT;
   }
 
   /**
-   * Scan content directory for category .ini files
+   * Scan discovered files for category files (type: category in frontmatter)
    */
-  private function scanCategoryIniFiles(Container $container): void
+  private function scanCategoryFiles(Container $container): void
   {
-    $contentDir = $container->getVariable('SOURCE_DIR') ?? 'content';
+    $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
-    if (!is_dir($contentDir)) {
-      return;
-    }
-
-    // Recursively find all .ini files
-    $iniFiles = $this->findIniFiles($contentDir);
-
-    foreach ($iniFiles as $iniFile) {
-      $this->loadCategoryIniFile($iniFile);
-    }
-
-    $this->logger->log('INFO', 'Loaded ' . count($this->categoryMetadata) . ' category .ini files');
-  }
-
-  /**
-   * Recursively find all .ini files in directory
-   */
-  private function findIniFiles(string $dir): array
-  {
-    $iniFiles = [];
-
-    $items = scandir($dir);
-    foreach ($items as $item) {
-      if ($item === '.' || $item === '..') {
+    foreach ($discoveredFiles as $filePath) {
+      if (!file_exists($filePath)) {
         continue;
       }
 
-      $path = $dir . DIRECTORY_SEPARATOR . $item;
+      $content = file_get_contents($filePath);
 
-      if (is_dir($path)) {
-        $iniFiles = array_merge($iniFiles, $this->findIniFiles($path));
-      } elseif (is_file($path) && strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'ini') {
-        $iniFiles[] = $path;
+      // Check for YAML frontmatter with type: category
+      if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
+        $metadata = $this->parseYamlFrontmatter($matches[1]);
+
+        if (isset($metadata['type']) && $metadata['type'] === 'category') {
+          $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
+          $this->categoryMetadata[$categorySlug] = $metadata;
+
+          $this->logger->log('INFO', "Found category file: {$filePath}");
+        }
       }
     }
 
-    return $iniFiles;
+    $this->logger->log('INFO', 'Found ' . count($this->categoryMetadata) . ' category files');
   }
 
   /**
-   * Load and parse a category .ini file
+   * Parse YAML frontmatter into metadata array
    */
-  private function loadCategoryIniFile(string $filePath): void
+  private function parseYamlFrontmatter(string $yaml): array
   {
-    $content = file_get_contents($filePath);
-    if ($content === false) {
-      return;
-    }
+    $metadata = [];
+    $lines = explode("\n", $yaml);
 
-    // Parse INI format
-    $metadata = parse_ini_string($content);
-    if ($metadata === false) {
-      $this->logger->log('WARNING', "Failed to parse INI file: {$filePath}");
-      return;
-    }
-
-    // Check if this is a category config file
-    if (!isset($metadata['type']) || $metadata['type'] !== 'category') {
-      return;
-    }
-
-    // Extract category name from filename (e.g., business.ini -> business)
-    $filename = pathinfo($filePath, PATHINFO_FILENAME);
-    $categorySlug = $this->sanitizeCategoryName($filename);
-
-    // Store metadata (only optional fields)
-    $this->categoryMetadata[$categorySlug] = [
-      'menu' => $metadata['menu'] ?? null,
-      'title' => $metadata['title'] ?? null,
-      'description' => $metadata['description'] ?? null,
-      'template' => $metadata['template'] ?? null,
-      'per_page' => isset($metadata['per_page']) ? (int)$metadata['per_page'] : null,
-      'sort_by' => $metadata['sort_by'] ?? null,
-      'sort_order' => $metadata['sort_order'] ?? null,
-      'robots.txt' => $metadata['robots.txt'] ?? null,
-    ];
-
-    // Remove null values
-    $this->categoryMetadata[$categorySlug] = array_filter(
-      $this->categoryMetadata[$categorySlug],
-      fn($value) => $value !== null
-    );
-
-    $this->logger->log('INFO', "Loaded category config: {$filePath} for category '{$categorySlug}'");
-  }
-
-  /**
-   * Write INI frontmatter to index file
-   */
-  private function writeCategoryIndexWithIni(string $indexPath, string $htmlContent, array $metadata): void
-  {
-    $iniBlock = "<!-- INI\n";
-
-    // Add metadata to INI block
-    foreach ($metadata as $key => $value) {
-      if ($value !== null && $value !== '') {
-        $iniBlock .= "{$key}: {$value}\n";
+    foreach ($lines as $line) {
+      $line = trim($line);
+      if (empty($line) || strpos($line, ':') === false) {
+        continue;
       }
+
+      list($key, $value) = array_map('trim', explode(':', $line, 2));
+      $metadata[$key] = $value;
     }
 
-    $iniBlock .= "-->\n";
-
-    // Combine INI block with HTML content
-    $fullContent = $iniBlock . $htmlContent;
-
-    file_put_contents($indexPath, $fullContent);
+    return $metadata;
   }
 
   /**
@@ -596,6 +626,185 @@ JAVASCRIPT;
     $html .= '</ul>' . "\n";
 
     return $html;
+  }
+
+  /**
+   * Extract hero image from rendered HTML content
+   */
+  private function extractHeroImageFromHtml(string $html, string $sourcePath, Container $container): string
+  {
+    // Extract first image tag
+    if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $html, $matches)) {
+      $imageSrc = $matches[1];
+
+      // Check if it's an external URL
+      if (preg_match('/^https?:\/\//i', $imageSrc)) {
+        // Download and cache external image
+        return $this->downloadAndCacheImage($imageSrc, $sourcePath, $container);
+      }
+
+      // Convert relative URL to filesystem path
+      $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
+      $imagePath = $publicDir . $imageSrc;
+
+      if (file_exists($imagePath)) {
+        // Generate thumbnail
+        return $this->generateThumbnail($imagePath, $sourcePath, $container);
+      }
+    }
+
+    return $this->getPlaceholderImage($container);
+  }  /**
+   * Generate thumbnail from source image
+   */
+  private function generateThumbnail(string $sourcePath, string $contentPath, Container $container): string
+  {
+    $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
+    $thumbnailDir = $publicDir . '/images';
+
+    // Create images directory if it doesn't exist
+    if (!is_dir($thumbnailDir)) {
+      mkdir($thumbnailDir, 0755, true);
+    }
+
+    // Generate thumbnail filename based on content file
+    $basename = pathinfo($contentPath, PATHINFO_FILENAME);
+    $thumbnailPath = $thumbnailDir . '/' . $basename . '.jpg';
+    $thumbnailUrl = '/images/' . $basename . '.jpg';
+
+    // Check if thumbnail already exists and is newer than source
+    if (file_exists($thumbnailPath) && filemtime($thumbnailPath) >= filemtime($sourcePath)) {
+      return $thumbnailUrl;
+    }
+
+    // Use ImageMagick to resize
+    try {
+      $imagick = new \Imagick($sourcePath);
+      $imagick->thumbnailImage(300, 200, true); // 300x200, best fit
+      $imagick->setImageFormat('jpeg');
+      $imagick->setImageCompressionQuality(85);
+      $imagick->writeImage($thumbnailPath);
+      $imagick->clear();
+
+      $this->logger->log('INFO', "Generated thumbnail: {$thumbnailPath}");
+      return $thumbnailUrl;
+    } catch (\Exception $e) {
+      $this->logger->log('ERROR', "Failed to generate thumbnail: " . $e->getMessage());
+      return $this->getPlaceholderImage($container);
+    }
+  }
+
+  /**
+   * Get or generate placeholder image
+   */
+  private function getPlaceholderImage(Container $container): string
+  {
+    $theme = $container->getVariable('TEMPLATE') ?? 'terminal';
+    $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+    $placeholderPath = $templateDir . '/' . $theme . '/placeholder.jpg';
+
+    // Check if placeholder exists
+    if (file_exists($placeholderPath)) {
+      return '/templates/' . $theme . '/placeholder.jpg';
+    }
+
+    // Generate placeholder
+    try {
+      $imagick = new \Imagick();
+      $imagick->newImage(300, 200, new \ImagickPixel('#808080')); // Gray background
+      $imagick->setImageFormat('jpeg');
+
+      // Ensure directory exists
+      $dir = dirname($placeholderPath);
+      if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+      }
+
+      $imagick->writeImage($placeholderPath);
+      $imagick->clear();
+
+      $this->logger->log('INFO', "Generated placeholder image: {$placeholderPath}");
+      return '/templates/' . $theme . '/placeholder.jpg';
+    } catch (\Exception $e) {
+      $this->logger->log('ERROR', "Failed to generate placeholder: " . $e->getMessage());
+      return ''; // Return empty string if all fails
+    }
+  }
+
+  /**
+   * Download external image and cache it locally
+   */
+  private function downloadAndCacheImage(string $url, string $sourcePath, Container $container): string
+  {
+    $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
+    $cacheDir = $publicDir . '/images/cache';
+
+    // Create cache directory if it doesn't exist
+    if (!is_dir($cacheDir)) {
+      mkdir($cacheDir, 0755, true);
+    }
+
+    // Generate cache filename from URL hash
+    $urlHash = md5($url);
+    $basename = pathinfo($sourcePath, PATHINFO_FILENAME);
+    $cachedImagePath = $cacheDir . '/' . $basename . '_' . $urlHash . '.jpg';
+    $cachedImageUrl = '/images/cache/' . $basename . '_' . $urlHash . '.jpg';
+
+    // Check if cached version exists
+    if (file_exists($cachedImagePath)) {
+      $this->logger->log('DEBUG', "Using cached image: {$cachedImagePath}");
+      return $cachedImageUrl;
+    }
+
+    // Download the image
+    try {
+      $this->logger->log('INFO', "Downloading external image: {$url}");
+
+      $imageData = @file_get_contents($url);
+      if ($imageData === false) {
+        throw new \Exception("Failed to download image from URL");
+      }
+
+      // Save to temporary file
+      $tempFile = tempnam(sys_get_temp_dir(), 'img_');
+      file_put_contents($tempFile, $imageData);
+
+      // Use ImageMagick to resize and convert to thumbnail
+      $imagick = new \Imagick($tempFile);
+      $imagick->thumbnailImage(300, 200, true); // 300x200, best fit
+      $imagick->setImageFormat('jpeg');
+      $imagick->setImageCompressionQuality(85);
+      $imagick->writeImage($cachedImagePath);
+      $imagick->clear();
+
+      // Clean up temp file
+      unlink($tempFile);
+
+      $this->logger->log('INFO', "Cached external image: {$cachedImagePath}");
+      return $cachedImageUrl;
+
+    } catch (\Exception $e) {
+      $this->logger->log('ERROR', "Failed to download/cache image from {$url}: " . $e->getMessage());
+      return $this->getPlaceholderImage($container);
+    }
+  }
+
+  /**
+   * Get file date from metadata or filesystem
+   */
+  private function getFileDate(array $metadata, string $filePath): string
+  {
+    // Check for published_date in metadata
+    if (isset($metadata['published_date'])) {
+      return $metadata['published_date'];
+    }
+
+    // Fall back to source file modification time
+    if (file_exists($filePath)) {
+      return date('Y-m-d', filemtime($filePath));
+    }
+
+    return date('Y-m-d'); // Current date as last resort
   }
 }
 
