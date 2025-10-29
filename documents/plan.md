@@ -354,20 +354,20 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 18. Integration Testing & End-to-End Validation
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create comprehensive integration test suite for full site generation
-- Test mixed content scenarios (HTML, Markdown, PDF together)
-- Validate feature interaction and event pipeline processing
-- Test error scenarios and graceful failure modes
-- Create test fixtures for various site configurations and content types
-  - Apply YAGNI: Essential integration scenarios only, realistic test data
-  - Apply KISS: Clear test scenarios, straightforward validation
-  - Apply SOLID: Tests validate component integration without implementation details
-  - Apply DRY: Reusable test fixtures and validation patterns
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 18. Integration Testing & End-to-End Validation ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create comprehensive integration test suite for full site generation
+- ✅ Test mixed content scenarios (HTML, Markdown, PDF together)
+- ✅ Validate feature interaction and event pipeline processing
+- ✅ Test error scenarios and graceful failure modes
+- ✅ Create test fixtures for various site configurations and content types
+  - ✅ Apply YAGNI: Essential integration scenarios only, realistic test data
+  - ✅ Apply KISS: Clear test scenarios, straightforward validation
+  - ✅ Apply SOLID: Tests validate component integration without implementation details
+  - ✅ Apply DRY: Reusable test fixtures and validation patterns
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 
