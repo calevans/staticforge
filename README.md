@@ -2,6 +2,14 @@
 
 A PHP-based static site generator that processes content files through an event-driven pipeline to produce deployment-ready static websites.
 
+## Documentation
+
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get running in 5 minutes
+- **[Configuration Guide](docs/CONFIGURATION.md)** - All configuration options
+- **[Feature Development](docs/FEATURE_DEVELOPMENT.md)** - Create custom features
+- **[Technical Documentation](documents/technical.md)** - Architecture details
+- **[Design Documentation](documents/design.md)** - Design decisions
+
 ## Installation
 
 ```bash
