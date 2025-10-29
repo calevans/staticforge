@@ -139,7 +139,7 @@ class Feature extends BaseFeature implements FeatureInterface
         // Normalize paths for comparison (handle both real and virtual filesystems)
         $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
         $normalizedInputPath = $inputPath;
-        
+
         // Check if input path starts with source directory
         if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
             // Get path relative to source directory
