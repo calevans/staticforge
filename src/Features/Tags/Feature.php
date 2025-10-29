@@ -136,27 +136,25 @@ class Feature extends BaseFeature implements FeatureInterface
   }
 
   /**
-   * Extract tags from Markdown YAML frontmatter
+   * Extract tags from Markdown INI frontmatter
    */
   private function extractTagsFromMarkdown(string $content): array
   {
-    // Check for YAML frontmatter (--- ... ---)
+    // Check for INI frontmatter (--- ... ---)
     if (preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
-      $yamlContent = trim($matches[1]);
+      $iniContent = trim($matches[1]);
 
-      // Look for tags line in YAML
-      if (preg_match('/^tags:\s*\[([^\]]+)\]/m', $yamlContent, $tagMatches)) {
-        // Array format: tags: [tag1, tag2, tag3]
+      // Look for tags line in INI format: tags = [tag1, tag2, tag3]
+      if (preg_match('/^tags\s*=\s*\[([^\]]+)\]/m', $iniContent, $tagMatches)) {
+        // Array format: tags = [tag1, tag2, tag3]
         $tagString = $tagMatches[1];
         $tags = array_map('trim', explode(',', $tagString));
         return $tags;
-      } elseif (preg_match('/^tags:\s*$/m', $yamlContent)) {
-        // List format: tags:\n  - tag1\n  - tag2
-        $pattern = '/^tags:\s*\n((?:\s*-\s*.+\n?)+)/m';
-        if (preg_match($pattern, $yamlContent, $listMatches)) {
-          preg_match_all('/^\s*-\s*(.+)$/m', $listMatches[1], $itemMatches);
-          return $itemMatches[1];
-        }
+      } elseif (preg_match('/^tags\s*=\s*"?([^"\n]+)"?/m', $iniContent, $tagMatches)) {
+        // String format: tags = "tag1, tag2, tag3"
+        $tagString = trim($tagMatches[1], '"\'');
+        $tags = array_map('trim', explode(',', $tagString));
+        return $tags;
       }
     }
 
@@ -174,8 +172,8 @@ class Feature extends BaseFeature implements FeatureInterface
     if (preg_match('/<!--\s*INI\s*\n(.*?)\n-->/s', $content, $matches)) {
       $iniContent = $matches[1];
 
-      // Look for tags line
-      if (preg_match('/^tags:\s*(.+)$/m', $iniContent, $tagMatches)) {
+      // Look for tags line in INI format: tags = [tag1, tag2, tag3]
+      if (preg_match('/^tags\s*=\s*(.+)$/m', $iniContent, $tagMatches)) {
         $tagString = trim($tagMatches[1]);
 
         // Remove brackets if present

@@ -70,7 +70,7 @@ title = "Test Page 2"
     file_put_contents($this->testContentDir . '/test2.html', $testContent2);
 
     $testMarkdown = '---
-title: Markdown Test
+title = Markdown Test
 ---
 # Markdown Content
 This is **markdown** content.';

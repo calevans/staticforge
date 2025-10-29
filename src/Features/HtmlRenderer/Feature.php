@@ -112,6 +112,12 @@ class Feature extends BaseFeature implements FeatureInterface
                     list($key, $value) = array_map('trim', explode('=', $line, 2));
                     // Remove quotes if present
                     $value = trim($value, '"\'');
+
+                    // Handle arrays in square brackets [item1, item2]
+                    if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
+                        $value = array_map('trim', explode(',', $arrayMatch[1]));
+                    }
+
                     $metadata[$key] = $value;
                 }
             }
@@ -124,7 +130,7 @@ class Feature extends BaseFeature implements FeatureInterface
             'template' => $metadata['template'] ?? 'base',
             'menu_position' => $metadata['menu_position'] ?? null,
             'category' => $metadata['category'] ?? null,
-            'tags' => isset($metadata['tags']) ? explode(',', $metadata['tags']) : []
+            'tags' => isset($metadata['tags']) ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags'])) : []
         ];
     }
 

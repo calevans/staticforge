@@ -89,17 +89,17 @@ class FeatureTest extends TestCase
     }
 
     /**
-     * Test Markdown processing with YAML frontmatter
+     * Test Markdown processing with INI frontmatter
      */
     public function testMarkdownWithYAMLFrontmatter(): void
     {
         $markdownContent = <<<MD
 ---
-title: Custom Title
-description: This is a test page description
-author: Test Author
-tags: [test, markdown, yaml]
-template: base
+title = "Custom Title"
+description = "This is a test page description"
+author = "Test Author"
+tags = [test, markdown, ini]
+template = "base"
 ---
 
 # Heading from Content
@@ -149,8 +149,8 @@ MD;
     {
         $markdownContent = <<<MD
 ---
-title: Fallback Test
-template: nonexistent
+title = "Fallback Test"
+template = "nonexistent"
 ---
 
 # Test Content
@@ -291,10 +291,10 @@ MD;
     {
         $markdownContent = <<<MD
 ---
-title: Variable Test
-custom_var: Custom Value
-keywords: test, variables
-template: variables
+title = "Variable Test"
+custom_var = "Custom Value"
+keywords = "test, variables"
+template = "variables"
 ---
 
 # Variable Test Content

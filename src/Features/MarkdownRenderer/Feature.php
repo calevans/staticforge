@@ -99,24 +99,39 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * Parse Markdown file content, extracting YAML frontmatter if present
+     * Parse Markdown file content, extracting INI frontmatter if present
      */
     private function parseMarkdownFile(string $content): array
     {
         $metadata = [];
         $markdownContent = $content;
 
-        // Check for YAML frontmatter (--- ... ---)
+        // Check for INI frontmatter (--- ... ---)
         if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
-            $yamlContent = trim($matches[1]);
+            $iniContent = trim($matches[1]);
             $markdownContent = trim($matches[2]);
 
-            try {
-                $metadata = Yaml::parse($yamlContent) ?? [];
-                $this->logger->log('DEBUG', "Parsed YAML frontmatter: " . json_encode($metadata));
-            } catch (Exception $e) {
-                $this->logger->log('ERROR', "Failed to parse YAML frontmatter: " . $e->getMessage());
-                $metadata = [];
+            // Parse INI content
+            if (!empty($iniContent)) {
+                $lines = explode("\n", $iniContent);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    // INI format uses = not :
+                    if (empty($line) || strpos($line, '=') === false) {
+                        continue;
+                    }
+
+                    list($key, $value) = array_map('trim', explode('=', $line, 2));
+                    // Remove quotes if present
+                    $value = trim($value, '"\'');
+
+                    // Handle arrays in square brackets [item1, item2]
+                    if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
+                        $value = array_map('trim', explode(',', $arrayMatch[1]));
+                    }
+
+                    $metadata[$key] = $value;
+                }
             }
         }
 

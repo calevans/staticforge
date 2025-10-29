@@ -52,8 +52,8 @@ class TagsFeatureTest extends TestCase
     // Create test Markdown file with tags
     $mdContent = <<<'MD'
 ---
-title: Test Post
-tags: [php, testing, unit-tests]
+title = Test Post
+tags = [php, testing, unit-tests]
 ---
 
 # Test Post
@@ -89,8 +89,8 @@ MD;
     // Create test HTML file with INI frontmatter
     $htmlContent = <<<'HTML'
 <!-- INI
-title: Test Page
-tags: web, html, frontend
+title = Test Page
+tags = web, html, frontend
 -->
 
 <!DOCTYPE html>
@@ -132,16 +132,16 @@ HTML;
     // Create files with tags in different cases
     $md1 = <<<'MD'
 ---
-title: Post 1
-tags: [PHP, Testing]
+title = Post 1
+tags = [PHP, Testing]
 ---
 Content
 MD;
 
     $md2 = <<<'MD'
 ---
-title: Post 2
-tags: [php, TESTING, Web]
+title = Post 2
+tags = [php, TESTING, Web]
 ---
 Content
 MD;
@@ -173,16 +173,16 @@ MD;
   {
     $md1 = <<<'MD'
 ---
-title: Post 1
-tags: [php, testing]
+title = Post 1
+tags = [php, testing]
 ---
 Content
 MD;
 
     $md2 = <<<'MD'
 ---
-title: Post 2
-tags: [php, web]
+title = Post 2
+tags = [php, web]
 ---
 Content
 MD;
@@ -220,19 +220,19 @@ MD;
   {
     $md1 = <<<'MD'
 ---
-tags: [php]
+tags = [php]
 ---
 Content 1
 MD;
     $md2 = <<<'MD'
 ---
-tags: [php]
+tags = [php]
 ---
 Content 2
 MD;
     $md3 = <<<'MD'
 ---
-tags: [web]
+tags = [web]
 ---
 Content 3
 MD;
@@ -268,14 +268,14 @@ MD;
     // First run POST_GLOB to collect tags
     $md1 = <<<'MD'
 ---
-title: Post 1
-tags: [php, testing]
+title = Post 1
+tags = [php, testing]
 ---
 MD;
     $md2 = <<<'MD'
 ---
-title: Post 2
-tags: [php, web]
+title = Post 2
+tags = [php, web]
 ---
 MD;
 
@@ -318,22 +318,22 @@ MD;
   {
     $md1 = <<<'MD'
 ---
-title: Post 1
-tags: [php, testing, web]
+title = Post 1
+tags = [php, testing, web]
 ---
 Content 1
 MD;
     $md2 = <<<'MD'
 ---
-title: Post 2
-tags: [php, testing]
+title = Post 2
+tags = [php, testing]
 ---
 Content 2
 MD;
     $md3 = <<<'MD'
 ---
-title: Post 3
-tags: [python]
+title = Post 3
+tags = [python]
 ---
 Content 3
 MD;
@@ -381,7 +381,7 @@ MD;
   {
     $mdContent = <<<'MD'
 ---
-title: Test Post
+title = Test Post
 ---
 
 # No Tags Here
