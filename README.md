@@ -94,6 +94,50 @@ Templates use Twig templating engine. Available variables:
 - `{{ title }}` - Page title from front matter
 - Any custom variables from front matter
 
+### Theme Structure
+
+Each theme directory in `templates/` should contain:
+
+- `base.html.twig` - Base template with site layout
+- `index.html.twig` - Home page template
+- `menu1.html.twig` - Primary navigation menu
+- `menu2.html.twig` - Secondary/footer navigation menu
+- `partials/` - Reusable template components
+- `placeholder.jpg` - (Optional) Default thumbnail for category index pages
+
+### Placeholder Images for Category Index Pages
+
+The `placeholder.jpg` file is used by the CategoryIndex feature when generating category index pages.
+
+**When is it used?**
+
+When a page in a category doesn't have a hero image (first `<img>` tag in the content), the CategoryIndex feature will use `placeholder.jpg` as the thumbnail.
+
+**Specifications:**
+- **Recommended size**: 300x200 pixels (matches the thumbnail size)
+- **Format**: JPEG
+- **Location**: `templates/{theme_name}/placeholder.jpg`
+
+**Image Handling Behavior:**
+
+1. If a category page has a hero image:
+   - Local images are resized to 300x200 and cached in `public/images/`
+   - External images are downloaded, resized to 300x200, and cached in `public/images/cache/`
+
+2. If no hero image exists:
+   - CategoryIndex looks for `templates/{theme_name}/placeholder.jpg`
+   - If found, uses it as the thumbnail
+   - If not found, generates a gray 300x200 placeholder automatically
+
+**Customization:**
+
+Create a custom `placeholder.jpg` for your theme to match your site's aesthetic:
+- Brand colors with your logo
+- A "no image" icon in your theme style
+- A terminal-style placeholder for terminal theme
+
+The placeholder will be visible in category index pages whenever content doesn't include an image.
+
 ## Menu System
 
 StaticForge includes a powerful menu builder that generates semantic HTML menus from your content files.
