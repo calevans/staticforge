@@ -159,12 +159,24 @@ class Feature extends BaseFeature implements FeatureInterface
         $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
         $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
 
-        // Get just the filename (flatten subdirectories from content/)
-        $filename = basename($inputPath);
-        $filename = preg_replace('/\.md$/', '.html', $filename);
+        // Normalize paths for comparison (handle both real and virtual filesystems)
+        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
+        $normalizedInputPath = $inputPath;
+        
+        // Check if input path starts with source directory
+        if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
+            // Get path relative to source directory
+            $relativePath = substr($normalizedInputPath, strlen($normalizedSourceDir) + 1);
+            // Change .md extension to .html
+            $relativePath = preg_replace('/\.md$/', '.html', $relativePath);
+        } else {
+            // Fallback to filename only
+            $relativePath = basename($inputPath);
+            $relativePath = preg_replace('/\.md$/', '.html', $relativePath);
+        }
 
-        // Build output path (flat in webroot by default)
-        $outputPath = $outputDir . '/' . $filename;
+        // Build output path preserving directory structure
+        $outputPath = $outputDir . '/' . $relativePath;
 
         return $outputPath;
     }

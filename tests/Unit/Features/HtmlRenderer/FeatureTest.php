@@ -108,10 +108,10 @@ class FeatureTest extends TestCase
         // Create test HTML file with INI frontmatter
         $htmlContent = <<<HTML
 <!-- INI
-title: My Test Page
-description: A test page for StaticForge
-tags: test, example
-category: documentation
+title = "My Test Page"
+description = "A test page for StaticForge"
+tags = "test, example"
+category = "documentation"
 -->
 <h1>Welcome</h1>
 <p>This is the main content.</p>
@@ -238,9 +238,9 @@ HTML;
 
         $htmlContent = <<<HTML
 <!-- INI
-title: Full Test Page
-description: Complete test with all metadata
-tags: complete, testing, metadata
+title = "Full Test Page"
+description = "Complete test with all metadata"
+tags = "complete, testing, metadata"
 -->
 <h1>Complete Test</h1>
 <p>All variables should be replaced.</p>

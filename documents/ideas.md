@@ -145,7 +145,6 @@ DO NOT INCLUDE THIS SECTION IN ANY PLANS. It just exists for me to hold ideas.
   Create forms using a YAML definition. Send the results of all forms to an email address.
 - All core features need to be broken into individual composer packages The crete project will include them in the initial composer.json` but they can be removed and replaced.
 - Upload that uses sftp to upload the site to a remote server. MUST HONOR CLEAN!
-- Github pages ingegration.
 - RSS feed creator for categories
 - Podcast feed creator for categories.
 - robots.txt generator feature

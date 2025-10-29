@@ -58,14 +58,14 @@ LOG_FILE=\"staticforge.log\"
 
     // Create multiple test content files
     $testContent1 = '<!-- INI
-title: Test Page 1
+title = "Test Page 1"
 -->
 <h2>Test Content 1</h2>
 <p>This is test page 1.</p>';
     file_put_contents($this->testContentDir . '/test1.html', $testContent1);
 
     $testContent2 = '<!-- INI
-title: Test Page 2
+title = "Test Page 2"
 -->
 <h2>Test Content 2</h2>
 <p>This is test page 2.</p>';

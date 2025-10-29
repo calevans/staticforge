@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Core;
 
+use EICC\StaticForge\Exceptions\FileProcessingException;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -14,6 +15,7 @@ class FileProcessor
     private Container $container;
     private Log $logger;
     private EventManager $eventManager;
+    private ErrorHandler $errorHandler;
     private array $processedOutputPaths = [];
 
     public function __construct(Container $container, EventManager $eventManager)
@@ -21,6 +23,7 @@ class FileProcessor
         $this->container = $container;
         $this->logger = $container->getVariable('logger');
         $this->eventManager = $eventManager;
+        $this->errorHandler = $container->get('error_handler');
     }
 
     /**
@@ -35,16 +38,33 @@ class FileProcessor
             return;
         }
 
-        $this->logger->log('INFO', "Processing " . count($files) . " files");
+        $this->logger->log('INFO', "Processing " . count($files) . " files", [
+            'file_count' => count($files),
+        ]);
 
         // Reset processed output paths for this run
         $this->processedOutputPaths = [];
 
+        $successCount = 0;
+        $failCount = 0;
+
         foreach ($files as $filePath) {
-            $this->processFile($filePath);
+            try {
+                $this->processFile($filePath);
+                $this->errorHandler->recordFileSuccess($filePath);
+                $successCount++;
+            } catch (\Exception $e) {
+                $this->errorHandler->handleFileError($e, $filePath, 'process');
+                $failCount++;
+                // Continue processing other files
+            }
         }
 
-        $this->logger->log('INFO', 'File processing complete');
+        $this->logger->log('INFO', 'File processing complete', [
+            'total' => count($files),
+            'success' => $successCount,
+            'failed' => $failCount,
+        ]);
     }
 
     /**
@@ -52,13 +72,20 @@ class FileProcessor
      */
     protected function processFile(string $filePath): void
     {
-        $this->logger->log('DEBUG', "Processing file: {$filePath}");
+        $this->logger->log('DEBUG', "Processing file: {$filePath}", [
+            'file' => $filePath,
+            'size' => file_exists($filePath) ? filesize($filePath) : 0,
+        ]);
 
         // Check for output path conflicts before processing
         $expectedOutputPath = $this->calculateOutputPath($filePath);
 
         if ($expectedOutputPath && $this->hasOutputConflict($expectedOutputPath, $filePath)) {
-            return; // Skip this file due to conflict
+            throw new FileProcessingException(
+                "Output path conflict for {$expectedOutputPath}",
+                $filePath,
+                'conflict_check'
+            );
         }
 
         // Initialize render context
@@ -70,33 +97,28 @@ class FileProcessor
             'skip_file' => false
         ];
 
-        try {
-            // PRE-RENDER event
-            $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
+        // PRE-RENDER event
+        $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
 
-            if ($renderContext['skip_file'] ?? false) {
-                $this->logger->log('INFO', "Skipping file: {$filePath}");
-                return;
-            }
+        if ($renderContext['skip_file'] ?? false) {
+            $this->logger->log('INFO', "Skipping file: {$filePath}");
+            return;
+        }
 
-            // RENDER event
-            $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+        // RENDER event
+        $renderContext = $this->eventManager->fire('RENDER', $renderContext);
 
-            // Track the actual output path after processing
-            if (isset($renderContext['output_path']) && $renderContext['output_path']) {
-                $this->processedOutputPaths[$renderContext['output_path']] = $filePath;
-            }
+        // Track the actual output path after processing
+        if (isset($renderContext['output_path']) && $renderContext['output_path']) {
+            $this->processedOutputPaths[$renderContext['output_path']] = $filePath;
+        }
 
-            // POST-RENDER event
-            $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
+        // POST-RENDER event
+        $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
 
-            // Write file to disk after POST-RENDER (Core responsibility)
-            if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
-                $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
-            }
-
-        } catch (\Exception $e) {
-            $this->logger->log('ERROR', "Failed to process file {$filePath}: " . $e->getMessage());
+        // Write file to disk after POST-RENDER (Core responsibility)
+        if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
+            $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
         }
     }
 
@@ -149,15 +171,28 @@ class FileProcessor
         // Ensure output directory exists
         $outputDirPath = dirname($outputPath);
         if (!is_dir($outputDirPath)) {
-            mkdir($outputDirPath, 0755, true);
+            if (!mkdir($outputDirPath, 0755, true) && !is_dir($outputDirPath)) {
+                throw new FileProcessingException(
+                    "Failed to create output directory: {$outputDirPath}",
+                    $outputPath,
+                    'write'
+                );
+            }
         }
 
         $bytesWritten = file_put_contents($outputPath, $content);
 
         if ($bytesWritten === false) {
-            throw new \Exception("Failed to write output file: {$outputPath}");
+            throw new FileProcessingException(
+                "Failed to write output file: {$outputPath}",
+                $outputPath,
+                'write'
+            );
         }
 
-        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}");
+        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}", [
+            'output' => $outputPath,
+            'size' => $bytesWritten,
+        ]);
     }
 }

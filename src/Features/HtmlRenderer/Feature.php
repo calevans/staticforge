@@ -104,11 +104,14 @@ class Feature extends BaseFeature implements FeatureInterface
                 $lines = explode("\n", $iniContent);
                 foreach ($lines as $line) {
                     $line = trim($line);
-                    if (empty($line) || strpos($line, ':') === false) {
+                    // INI format uses = not : (unlike YAML)
+                    if (empty($line) || strpos($line, '=') === false) {
                         continue;
                     }
 
-                    list($key, $value) = array_map('trim', explode(':', $line, 2));
+                    list($key, $value) = array_map('trim', explode('=', $line, 2));
+                    // Remove quotes if present
+                    $value = trim($value, '"\'');
                     $metadata[$key] = $value;
                 }
             }
@@ -126,17 +129,28 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * Generate output file path based on input file and configuration
+     * Generate output path for rendered HTML file
      */
     private function generateOutputPath(string $inputPath, Container $container): string
     {
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
+        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
 
-        // Get just the filename (flatten subdirectories from content/)
-        $filename = basename($inputPath);
+        // Normalize paths for comparison (handle both real and virtual filesystems)
+        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
+        $normalizedInputPath = $inputPath;
+        
+        // Check if input path starts with source directory
+        if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
+            // Get path relative to source directory
+            $relativePath = substr($normalizedInputPath, strlen($normalizedSourceDir) + 1);
+        } else {
+            // Fallback to filename only
+            $relativePath = basename($inputPath);
+        }
 
-        // Build output path (flat in webroot by default)
-        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $filename;
+        // Build output path preserving directory structure
+        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $relativePath;
 
         return $outputPath;
     }

@@ -8,6 +8,8 @@ use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\FileProcessor;
+use EICC\StaticForge\Core\ErrorHandler;
+use EICC\StaticForge\Exceptions\CoreException;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
@@ -24,6 +26,7 @@ class Application
     private ExtensionRegistry $extensionRegistry;
     private FileDiscovery $fileDiscovery;
     private FileProcessor $fileProcessor;
+    private ErrorHandler $errorHandler;
     private Log $logger;
 
     public function __construct(string $envPath = '.env', ?string $templateOverride = null)
@@ -105,9 +108,14 @@ class Application
         $this->featureManager = new FeatureManager($this->container, $this->eventManager);
         $this->extensionRegistry = new ExtensionRegistry($this->container);
         $this->fileDiscovery = new FileDiscovery($this->container, $this->extensionRegistry);
+
+        // Create and register ErrorHandler BEFORE FileProcessor (FileProcessor depends on it)
+        $this->errorHandler = new ErrorHandler($this->container);
+        $this->container->add('error_handler', $this->errorHandler);
+
         $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
 
-        // Register core services in container
+        // Register remaining core services in container
         $this->container->add('event_manager', $this->eventManager);
         $this->container->add('feature_manager', $this->featureManager);
         $this->container->add('extension_registry', $this->extensionRegistry);
@@ -122,7 +130,11 @@ class Application
     public function generate(): bool
     {
         try {
-            $this->logger->log('INFO', 'Starting static site generation');
+            $this->errorHandler->reset();
+            $this->logger->log('INFO', 'Starting static site generation', [
+                'pid' => getmypid(),
+                'memory_limit' => ini_get('memory_limit'),
+            ]);
 
             // Step 1: Load and register features
             $this->featureManager->loadFeatures();
@@ -130,11 +142,19 @@ class Application
             // Step 2: Execute 9-step event pipeline
             $this->executeEventPipeline();
 
+            // Log error summary
+            $this->errorHandler->logSummary();
+
+            if ($this->errorHandler->hasCriticalErrors()) {
+                $this->logger->log('ERROR', 'Generation completed with critical errors');
+                return false;
+            }
+
             $this->logger->log('INFO', 'Static site generation completed successfully');
             return true;
 
         } catch (Exception $e) {
-            $this->logger->log('ERROR', 'Core system failure during generation: ' . $e->getMessage());
+            $this->errorHandler->handleCoreError($e, ['stage' => 'generation']);
             return false;
         }
     }
@@ -175,11 +195,14 @@ class Application
     private function fireEvent(string $eventName, array $parameters): void
     {
         try {
-            $this->logger->log('INFO', "Firing event: {$eventName}");
+            $this->logger->log('INFO', "Firing event: {$eventName}", [
+                'event' => $eventName,
+                'parameter_keys' => array_keys($parameters),
+            ]);
             $this->eventManager->fire($eventName, $parameters);
         } catch (Exception $e) {
             // Feature failures should not stop generation
-            $this->logger->log('ERROR', "Feature error during {$eventName} event: " . $e->getMessage());
+            $this->errorHandler->handleFeatureError($e, 'Unknown', $eventName);
             // Continue execution - feature failures are not fatal
         }
     }
@@ -190,15 +213,23 @@ class Application
     private function discoverFiles(): void
     {
         try {
-            $this->logger->log('INFO', 'Discovering content files');
+            $contentDir = $this->container->getVariable('CONTENT_DIR') ?? 'content';
+            $this->logger->log('INFO', 'Discovering content files', ['content_dir' => $contentDir]);
+
             $this->fileDiscovery->discoverFiles();
 
             // FileDiscovery sets discovered_files in container, get count for logging
             $discoveredFiles = $this->container->getVariable('discovered_files');
             $fileCount = is_array($discoveredFiles) ? count($discoveredFiles) : 0;
-            $this->logger->log('INFO', 'Discovered ' . $fileCount . ' content files');
+            $this->logger->log('INFO', 'Discovered ' . $fileCount . ' content files', [
+                'file_count' => $fileCount,
+                'content_dir' => $contentDir,
+            ]);
         } catch (Exception $e) {
-            $this->logger->log('ERROR', 'File discovery failed: ' . $e->getMessage());
+            $this->errorHandler->handleCoreError(
+                new CoreException('File discovery failed', 'FileDiscovery', [], 0, $e),
+                ['stage' => 'discovery']
+            );
             // Set empty array to allow processing to continue
             if (!$this->container->hasVariable('discovered_files')) {
                 $this->container->setVariable('discovered_files', []);
@@ -212,10 +243,16 @@ class Application
     private function processFiles(): void
     {
         try {
-            $this->logger->log('INFO', 'Processing content files');
+            $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
+            $this->logger->log('INFO', 'Processing content files', [
+                'file_count' => count($discoveredFiles),
+            ]);
             $this->fileProcessor->processFiles();
         } catch (Exception $e) {
-            $this->logger->log('ERROR', 'File processing failed: ' . $e->getMessage());
+            $this->errorHandler->handleCoreError(
+                new CoreException('File processing failed', 'FileProcessor', [], 0, $e),
+                ['stage' => 'processing']
+            );
             // File processing failures are not fatal, but logged
         }
     }
@@ -264,6 +301,11 @@ class Application
         ], $additionalContext);
 
         try {
+            $this->logger->log('DEBUG', "Rendering file: {$filePath}", [
+                'file' => $filePath,
+                'additional_context_keys' => array_keys($additionalContext),
+            ]);
+
             // Fire PRE_RENDER event
             $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
 
@@ -281,13 +323,16 @@ class Application
             // Write the rendered output if content and path are available
             if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
                 $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
-                $this->logger->log('INFO', "File rendered: {$renderContext['output_path']}");
+                $this->logger->log('INFO', "File rendered: {$renderContext['output_path']}", [
+                    'output' => $renderContext['output_path'],
+                    'size' => strlen($renderContext['rendered_content']),
+                ]);
             }
 
             return $renderContext;
 
         } catch (Exception $e) {
-            $this->logger->log('ERROR', "Failed to render file {$filePath}: " . $e->getMessage());
+            $this->errorHandler->handleFileError($e, $filePath, 'render');
             throw $e;
         }
     }

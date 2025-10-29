@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Core;
 use PHPUnit\Framework\TestCase;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\ErrorHandler;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -12,6 +13,7 @@ class FileProcessorTest extends TestCase
 {
     private FileProcessor $fileProcessor;
     private EventManager $eventManager;
+    private ErrorHandler $errorHandler;
     private Container $container;
     private Log $logger;
 
@@ -25,6 +27,9 @@ class FileProcessorTest extends TestCase
         $this->container->setVariable('logger', $this->logger);
 
         $this->eventManager = new EventManager($this->container);
+        $this->errorHandler = new ErrorHandler($this->container);
+        $this->container->add('error_handler', $this->errorHandler);
+
         $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
     }
 
