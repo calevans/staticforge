@@ -28,6 +28,7 @@ class Application
     private FileProcessor $fileProcessor;
     private ErrorHandler $errorHandler;
     private Log $logger;
+    private bool $featuresLoaded = false;
 
     public function __construct(string $envPath = '.env', ?string $templateOverride = null)
     {
@@ -343,11 +344,10 @@ class Application
      */
     public function ensureFeaturesLoaded(): void
     {
-        static $featuresLoaded = false;
-
-        if (!$featuresLoaded) {
+        // Don't use static - allow features to reload for each Application instance
+        if (!$this->featuresLoaded) {
             $this->featureManager->loadFeatures();
-            $featuresLoaded = true;
+            $this->featuresLoaded = true;
         }
     }    /**
      * Write output file to disk
@@ -360,9 +360,13 @@ class Application
         $outputDir = dirname($outputPath);
 
         if (!is_dir($outputDir)) {
-            mkdir($outputDir, 0755, true);
+            if (!mkdir($outputDir, 0755, true) && !is_dir($outputDir)) {
+                throw new \RuntimeException("Failed to create output directory: {$outputDir}");
+            }
         }
 
-        file_put_contents($outputPath, $content);
+        if (file_put_contents($outputPath, $content) === false) {
+            throw new \RuntimeException("Failed to write output file: {$outputPath}");
+        }
     }
 }

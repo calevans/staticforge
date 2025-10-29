@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Integration\Commands;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use EICC\StaticForge\Commands\RenderPageCommand;
@@ -10,12 +10,12 @@ use EICC\StaticForge\Commands\RenderPageCommand;
 /**
  * Integration tests for RenderPageCommand
  */
-class RenderPageCommandTest extends TestCase
+class RenderPageCommandTest extends IntegrationTestCase
 {
   private string $testOutputDir;
   private string $testContentDir;
   private string $testTemplateDir;
-  private string $testEnvFile;
+  private string $envPath;
 
   protected function setUp(): void
   {
@@ -25,25 +25,23 @@ class RenderPageCommandTest extends TestCase
     $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
     $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
     $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
-    $this->testEnvFile = sys_get_temp_dir() . '/staticforge_test_' . uniqid() . '.env';
 
     mkdir($this->testOutputDir, 0755, true);
     mkdir($this->testContentDir, 0755, true);
     mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-    // Create test environment file
-    $envContent = "
-SITE_NAME=\"Test Site\"
-SITE_BASE_URL=\"https://test.example.com\"
-TEMPLATE=\"sample\"
-SOURCE_DIR=\"{$this->testContentDir}\"
-OUTPUT_DIR=\"{$this->testOutputDir}\"
-TEMPLATE_DIR=\"{$this->testTemplateDir}\"
-FEATURES_DIR=\"src/Features\"
-LOG_LEVEL=\"DEBUG\"
-LOG_FILE=\"staticforge.log\"
-";
-    file_put_contents($this->testEnvFile, $envContent);
+    // Create test .env (returns path to use in commands)
+    $this->envPath = $this->createTestEnv([
+      'SITE_NAME' => 'Test Site',
+      'SITE_BASE_URL' => 'https://test.example.com',
+      'TEMPLATE' => 'sample',
+      'SOURCE_DIR' => $this->testContentDir,
+      'OUTPUT_DIR' => $this->testOutputDir,
+      'TEMPLATE_DIR' => $this->testTemplateDir,
+      'FEATURES_DIR' => 'src/Features',
+      'LOG_LEVEL' => 'DEBUG',
+      'LOG_FILE' => 'staticforge.log',
+    ]);
 
     // Create test template
     $baseTemplate = '<!DOCTYPE html>
@@ -87,9 +85,8 @@ This is **markdown** content.';
     $this->removeDirectory($this->testOutputDir);
     $this->removeDirectory($this->testContentDir);
     $this->removeDirectory($this->testTemplateDir);
-    if (file_exists($this->testEnvFile)) {
-      unlink($this->testEnvFile);
-    }
+
+    parent::tearDown();
   }
 
   /**
@@ -302,28 +299,5 @@ This is **markdown** content.';
     // May succeed or fail depending on implementation
     // This test documents the expected behavior
     $this->assertContains($result, [0, 1]);
-  }
-
-  /**
-   * Recursively remove a directory and its contents
-   */
-  private function removeDirectory(string $dir): bool
-  {
-    if (!is_dir($dir)) {
-      return false;
-    }
-
-    $files = array_diff(scandir($dir), ['.', '..']);
-
-    foreach ($files as $file) {
-      $path = $dir . DIRECTORY_SEPARATOR . $file;
-      if (is_dir($path)) {
-        $this->removeDirectory($path);
-      } else {
-        unlink($path);
-      }
-    }
-
-    return rmdir($dir);
   }
 }

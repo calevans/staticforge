@@ -49,8 +49,11 @@ class RenderSiteCommand extends Command
                 $output->writeln("<comment>Using template override: {$templateOverride}</comment>");
             }
 
+            // Get env path from environment variable (for testing) or use default
+            $envPath = getenv('STATICFORGE_ENV_PATH') ?: '.env';
+
             // Initialize application with template override
-            $application = new Application('.env', $templateOverride);
+            $application = new Application($envPath, $templateOverride);
             $container = $application->getContainer();
 
             if ($output->isVerbose()) {

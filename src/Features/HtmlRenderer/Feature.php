@@ -221,7 +221,7 @@ class Feature extends BaseFeature implements FeatureInterface
             '{{PAGE_TITLE}}' => $parsedContent['title'],
             '{{CONTENT}}' => $parsedContent['content'],
             '{{META_DESCRIPTION}}' => $parsedContent['metadata']['description'] ?? '',
-            '{{META_KEYWORDS}}' => is_array($parsedContent['tags']) ? implode(', ', $parsedContent['tags']) : ''
+            '{{META_KEYWORDS}}' => isset($parsedContent['tags']) && is_array($parsedContent['tags']) ? implode(', ', $parsedContent['tags']) : ''
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);

@@ -22,6 +22,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
   private array $allTags = [];
   private array $tagIndex = []; // tag => [file paths]
+  private $logger;
 
   public function register(EventManager $eventManager, Container $container): void
   {

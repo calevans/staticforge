@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Integration\Commands;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use EICC\StaticForge\Commands\RenderSiteCommand;
@@ -10,43 +10,41 @@ use EICC\StaticForge\Commands\RenderSiteCommand;
 /**
  * Integration tests for RenderSiteCommand
  */
-class RenderSiteCommandTest extends TestCase
+class RenderSiteCommandTest extends IntegrationTestCase
 {
-    private string $testOutputDir;
-    private string $testContentDir;
-    private string $testTemplateDir;
-    private string $testEnvFile;
+  private string $testOutputDir;
+  private string $testContentDir;
+  private string $testTemplateDir;
+  private string $envPath;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+  protected function setUp(): void
+  {
+    parent::setUp();
 
-        // Create temporary directories for testing
-        $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
-        $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
-        $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
-        $this->testEnvFile = sys_get_temp_dir() . '/staticforge_test_' . uniqid() . '.env';
+    // Create temporary directories for testing
+    $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
+    $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
+    $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
 
-        mkdir($this->testOutputDir, 0755, true);
-        mkdir($this->testContentDir, 0755, true);
-        mkdir($this->testTemplateDir . '/sample', 0755, true);
+    mkdir($this->testOutputDir, 0755, true);
+    mkdir($this->testContentDir, 0755, true);
+    mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-        // Create test environment file
-        $envContent = "
-SITE_NAME=\"Test Site\"
-SITE_BASE_URL=\"https://test.example.com\"
-TEMPLATE=\"sample\"
-SOURCE_DIR=\"{$this->testContentDir}\"
-OUTPUT_DIR=\"{$this->testOutputDir}\"
-TEMPLATE_DIR=\"{$this->testTemplateDir}\"
-FEATURES_DIR=\"src/Features\"
-LOG_LEVEL=\"DEBUG\"
-LOG_FILE=\"staticforge.log\"
-";
-        file_put_contents($this->testEnvFile, $envContent);
+    // Create test .env (returns path to use in commands)
+    $this->envPath = $this->createTestEnv([
+      'SITE_NAME' => 'Test Site',
+      'SITE_BASE_URL' => 'https://test.example.com',
+      'TEMPLATE' => 'sample',
+      'SOURCE_DIR' => $this->testContentDir,
+      'OUTPUT_DIR' => $this->testOutputDir,
+      'TEMPLATE_DIR' => $this->testTemplateDir,
+      'FEATURES_DIR' => 'src/Features',
+      'LOG_LEVEL' => 'DEBUG',
+      'LOG_FILE' => 'staticforge.log',
+    ]);
 
-        // Create test template
-        $baseTemplate = '<!DOCTYPE html>
+    // Create test template
+    $baseTemplate = '<!DOCTYPE html>
 <html>
 <head><title>{{ title | default("Test Site") }}</title></head>
 <body>
@@ -54,29 +52,26 @@ LOG_FILE=\"staticforge.log\"
     <main>{{ content | raw }}</main>
 </body>
 </html>';
-        file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
+    file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
 
-        // Create test content
-        $testContent = '<!-- INI
-title: Test Page
+    // Create test content
+    $testContent = '<!-- INI
+title = "Test Page"
 -->
 <h2>Test Content</h2>
 <p>This is a test page.</p>';
-        file_put_contents($this->testContentDir . '/test.html', $testContent);
-    }
+    file_put_contents($this->testContentDir . '/test.html', $testContent);
+  }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
+  protected function tearDown(): void
+  {
+    // Clean up test directories
+    $this->removeDirectory($this->testOutputDir);
+    $this->removeDirectory($this->testContentDir);
+    $this->removeDirectory($this->testTemplateDir);
 
-        // Clean up test directories
-        $this->removeDirectory($this->testOutputDir);
-        $this->removeDirectory($this->testContentDir);
-        $this->removeDirectory($this->testTemplateDir);
-        if (file_exists($this->testEnvFile)) {
-            unlink($this->testEnvFile);
-        }
-    }
+    parent::tearDown();
+  }
 
     /**
      * Test basic site generation command
@@ -214,38 +209,15 @@ title: Test Page
         $this->assertEquals('render:site', $command->getName());
         $this->assertEquals('Generate the complete static site from content files', $command->getDescription());
 
-        // Test that options are properly configured
-        $definition = $command->getDefinition();
-        $this->assertTrue($definition->hasOption('clean'));
-        $this->assertTrue($definition->hasOption('template'));
+    // Test that options are properly configured
+    $definition = $command->getDefinition();
+    $this->assertTrue($definition->hasOption('clean'));
+    $this->assertTrue($definition->hasOption('template'));
 
-        $cleanOption = $definition->getOption('clean');
-        $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
+    $cleanOption = $definition->getOption('clean');
+    $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
 
-        $templateOption = $definition->getOption('template');
-        $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
-    }
-
-    /**
-     * Recursively remove a directory and its contents
-     */
-    private function removeDirectory(string $dir): bool
-    {
-        if (!is_dir($dir)) {
-            return false;
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        return rmdir($dir);
-    }
+    $templateOption = $definition->getOption('template');
+    $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
+  }
 }
