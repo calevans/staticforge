@@ -113,6 +113,7 @@ class Application
         $this->container->add('extension_registry', $this->extensionRegistry);
         $this->container->add('file_discovery', $this->fileDiscovery);
         $this->container->add('file_processor', $this->fileProcessor);
+        $this->container->add('application', $this);  // Add application instance for features
     }
 
     /**
@@ -241,5 +242,82 @@ class Application
     public function getFeatureManager(): FeatureManager
     {
         return $this->featureManager;
+    }
+
+    /**
+     * Render a single file through the PRE_RENDER -> RENDER -> POST_RENDER pipeline
+     *
+     * @param string $filePath Path to the file to render
+     * @param array $additionalContext Additional context to merge into render context
+     * @return array The final render context after all events
+     * @throws Exception If rendering fails
+     */
+    public function renderSingleFile(string $filePath, array $additionalContext = []): array
+    {
+        // Build initial render context
+        $renderContext = array_merge([
+            'file_path' => $filePath,
+            'rendered_content' => null,
+            'metadata' => [],
+            'output_path' => null,
+            'skip_file' => false
+        ], $additionalContext);
+
+        try {
+            // Fire PRE_RENDER event
+            $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
+
+            if ($renderContext['skip_file'] ?? false) {
+                $this->logger->log('INFO', "File skipped by PRE_RENDER: {$filePath}");
+                return $renderContext;
+            }
+
+            // Fire RENDER event
+            $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+
+            // Fire POST_RENDER event
+            $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
+
+            // Write the rendered output if content and path are available
+            if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
+                $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
+                $this->logger->log('INFO', "File rendered: {$renderContext['output_path']}");
+            }
+
+            return $renderContext;
+
+        } catch (Exception $e) {
+            $this->logger->log('ERROR', "Failed to render file {$filePath}: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Ensure features are loaded before rendering files
+     * Call this explicitly before using renderSingleFile() outside of generate()
+     */
+    public function ensureFeaturesLoaded(): void
+    {
+        static $featuresLoaded = false;
+
+        if (!$featuresLoaded) {
+            $this->featureManager->loadFeatures();
+            $featuresLoaded = true;
+        }
+    }    /**
+     * Write output file to disk
+     *
+     * @param string $outputPath Path to write the file
+     * @param string $content Content to write
+     */
+    private function writeOutputFile(string $outputPath, string $content): void
+    {
+        $outputDir = dirname($outputPath);
+
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        file_put_contents($outputPath, $content);
     }
 }

@@ -2,6 +2,7 @@
 <?php
 
 use EICC\StaticForge\Commands\RenderSiteCommand;
+use EICC\StaticForge\Commands\RenderPageCommand;
 use Symfony\Component\Console\Application;
 
 // Include Composer autoloader
@@ -17,6 +18,7 @@ $app = new Application('StaticForge', '1.0.0');
 
 // Add commands
 $app->add(new RenderSiteCommand());
+$app->add(new RenderPageCommand());
 
 // Run the application
 $app->run();

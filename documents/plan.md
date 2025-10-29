@@ -321,21 +321,19 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 16. Enhanced CLI Commands
-- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
-- Review all code about to be edited and any related code.
-- Create `RenderPageCommand` for single file/pattern processing
-- Add pattern matching support for selective rendering
-- Implement `--output` option for custom output directories
-- Add verbose logging and progress reporting for large sites
-- Write integration tests for all CLI command variations
-  - Apply YAGNI: Essential command options only, clear parameter handling
-  - Apply KISS: Standard CLI patterns, straightforward option processing
-  - Apply SOLID: Commands handle CLI concerns, delegate processing
-  - Apply REST: Commands represent clear resource actions
-  - Apply DRY: Reusable command patterns and option handling
-- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
-- Wait for further instructions.
+## Step 16. Enhanced CLI Commands ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `RenderPageCommand` for single file/pattern processing
+- ✅ Add verbose logging and progress reporting for large sites
+- ✅ Write integration tests for all CLI command variations
+  - ✅ Apply YAGNI: Essential command options only, clear parameter handling
+  - ✅ Apply KISS: Standard CLI patterns, straightforward option processing
+  - ✅ Apply SOLID: Commands handle CLI concerns, delegate processing
+  - ✅ Apply REST: Commands represent clear resource actions
+  - ✅ Apply DRY: Reusable command patterns and option handling
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
 
 ---
 

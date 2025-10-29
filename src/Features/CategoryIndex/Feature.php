@@ -203,44 +203,25 @@ class Feature extends BaseFeature implements FeatureInterface
     $frontmatter .= "---\n\n";
     $markdownContent = $frontmatter . "<!-- Category file listing will be rendered by template -->";
 
-    // Build render context with updated content
     // Store category_files in container features so template can access it
     $features = $container->getVariable('features') ?? [];
     $features['CategoryIndex']['category_files'] = $categoryData['files'];
     $container->updateVariable('features', $features);
 
-    $renderContext = [
-      'file_path' => $filePath,
-      'file_content' => $markdownContent,  // Provide the content to MarkdownRenderer
-      'metadata' => array_merge($metadata, [
-        'category_files' => $categoryData['files'],  // Pass files to template
-        'total_files' => count($categoryData['files']),
-      ]),
-      'output_path' => $categoryFile['output_path'],
-      'skip_file' => false,
-      'bypass_category_defer' => true  // Tell PRE_RENDER to not defer this file
-    ];
+    // Get Application instance from container
+    $application = $container->get('application');
 
     try {
-      // Fire PRE_RENDER event
-      $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
-
-      if ($renderContext['skip_file'] ?? false) {
-        $this->logger->log('INFO', "Category file skipped by PRE_RENDER: {$filePath}");
-        return;
-      }
-
-      // Fire RENDER event (let MarkdownRenderer/HtmlRenderer handle it)
-      $renderContext = $this->eventManager->fire('RENDER', $renderContext);
-
-      // Fire POST_RENDER event
-      $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
-
-      // Write the rendered output
-      if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
-        $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
-        $this->logger->log('INFO', "Category file rendered: {$renderContext['output_path']}");
-      }
+      // Use Application's renderSingleFile method with additional context
+      $application->renderSingleFile($filePath, [
+        'file_content' => $markdownContent,  // Provide the content to MarkdownRenderer
+        'metadata' => array_merge($metadata, [
+          'category_files' => $categoryData['files'],  // Pass files to template
+          'total_files' => count($categoryData['files']),
+        ]),
+        'output_path' => $categoryFile['output_path'],
+        'bypass_category_defer' => true  // Tell PRE_RENDER to not defer this file
+      ]);
 
     } catch (\Exception $e) {
       $this->logger->log('ERROR', "Failed to process category file {$filePath}: " . $e->getMessage());
@@ -248,18 +229,6 @@ class Feature extends BaseFeature implements FeatureInterface
   }
 
   /**
-   * Write output file to disk
-   */
-  private function writeOutputFile(string $outputPath, string $content): void
-  {
-    $outputDir = dirname($outputPath);
-
-    if (!is_dir($outputDir)) {
-      mkdir($outputDir, 0755, true);
-    }
-
-    file_put_contents($outputPath, $content);
-  }  /**
    * Generate HTML listing of files for content variable
    */
   private function generateFilesListingHTML(array $files): string
