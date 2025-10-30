@@ -150,7 +150,8 @@ class FileProcessor
         if (isset($this->processedOutputPaths[$expectedOutputPath])) {
             $conflictingFile = $this->processedOutputPaths[$expectedOutputPath];
 
-            $this->logger->log('WARNING',
+            $this->logger->log(
+                'WARNING',
                 "Output path conflict detected! Both '{$conflictingFile}' and '{$currentInputPath}' " .
                 "would generate '{$expectedOutputPath}'. Skipping '{$currentInputPath}' to prevent overwrite."
             );

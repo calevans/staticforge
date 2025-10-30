@@ -141,7 +141,6 @@ class RenderSiteCommand extends Command
             }
 
             return Command::SUCCESS;
-
         } catch (Exception $e) {
             $output->writeln('');
             $output->writeln('<error>❌ Site generation failed:</error>');

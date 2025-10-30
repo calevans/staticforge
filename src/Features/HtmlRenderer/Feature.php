@@ -77,7 +77,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             $parameters['rendered_content'] = $renderedContent;
             $parameters['output_path'] = $outputPath;
             $parameters['metadata'] = $parsedContent['metadata'];
-
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process HTML file {$filePath}: " . $e->getMessage());
             $parameters['error'] = $e->getMessage();
@@ -205,7 +204,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
             // Render template
             return $twig->render($templatePath, $templateVars);
-
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
 
@@ -266,4 +264,5 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 </body>
 </html>
 HTML;
-    }}
+    }
+}

@@ -153,7 +153,6 @@ class Application
 
             $this->logger->log('INFO', 'Static site generation completed successfully');
             return true;
-
         } catch (Exception $e) {
             $this->errorHandler->handleCoreError($e, ['stage' => 'generation']);
             return false;
@@ -331,7 +330,6 @@ class Application
             }
 
             return $renderContext;
-
         } catch (Exception $e) {
             $this->errorHandler->handleFileError($e, $filePath, 'render');
             throw $e;

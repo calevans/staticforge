@@ -127,7 +127,6 @@ class FeatureManager
             $this->features[$featureName] = $feature;
 
             $this->logger->log('INFO', "Loaded feature: {$featureName}");
-
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to load feature {$featureName}: " . $e->getMessage());
         }

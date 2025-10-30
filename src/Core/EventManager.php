@@ -44,7 +44,7 @@ class EventManager
         ];
 
         // Sort by priority (lower numbers = higher priority)
-        usort($this->listeners[$eventName], function($a, $b) {
+        usort($this->listeners[$eventName], function ($a, $b) {
             return $a['priority'] <=> $b['priority'];
         });
     }
@@ -60,7 +60,7 @@ class EventManager
 
         $this->listeners[$eventName] = array_filter(
             $this->listeners[$eventName],
-            function($listener) use ($callback) {
+            function ($listener) use ($callback) {
                 return $listener['callback'] !== $callback;
             }
         );

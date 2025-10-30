@@ -337,7 +337,7 @@ class Feature extends BaseFeature implements FeatureInterface
             }
 
             // Sort all items by position
-            usort($allItems, function($a, $b) {
+            usort($allItems, function ($a, $b) {
                 return $a['position'] <=> $b['position'];
             });
 
