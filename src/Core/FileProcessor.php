@@ -19,7 +19,8 @@ class FileProcessor
 
     /**
      * Track processed output paths to detect duplicates
-     * @var array<string, bool>
+     * Maps output path to input file path
+     * @var array<string, string>
      */
     private array $processedOutputPaths = [];
 
