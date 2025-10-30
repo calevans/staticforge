@@ -78,6 +78,10 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         $content = file_get_contents($filePath);
+        if ($content === false) {
+            return;
+        }
+
         $metadata = $this->extractMetadataFromFile($content, $filePath);
 
         if (isset($metadata['menu'])) {
@@ -251,6 +255,10 @@ class Feature extends BaseFeature implements FeatureInterface
     private function extractTitleFromFile(string $filePath): string
     {
         $content = file_get_contents($filePath);
+        if ($content === false) {
+            return ucfirst(pathinfo($filePath, PATHINFO_FILENAME));
+        }
+
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         if ($extension === 'md') {
