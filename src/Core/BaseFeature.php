@@ -58,7 +58,7 @@ abstract class BaseFeature implements FeatureInterface
      */
     public function getEventListeners(): array
     {
-        return array_keys($this->eventListeners);
+        return $this->eventListeners;
     }
 
     /**
