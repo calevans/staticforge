@@ -11,6 +11,9 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'MenuBuilder';
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 100]
     ];
@@ -21,6 +24,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_GLOB event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
@@ -48,6 +53,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
+    /**
+     * @return array<int, array<int, array{title: string, url: string, file: string, position: string}>>
+     */
     private function scanFilesForMenus(): array
     {
         $menuData = [];
@@ -60,6 +68,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return $menuData;
     }
 
+    /**
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     */
     private function processFileForMenu(string $filePath, array &$menuData): void
     {
         if (!file_exists($filePath)) {
@@ -78,6 +89,9 @@ class Feature extends BaseFeature implements FeatureInterface
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function extractMetadataFromFile(string $content, string $filePath): array
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
@@ -91,6 +105,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return [];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function extractMetadataFromMarkdown(string $content): array
     {
         // Extract YAML/INI frontmatter
@@ -114,6 +131,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return $metadata;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function extractMetadataFromHtml(string $content): array
     {
         // Look for <!-- INI ... --> block
@@ -140,6 +160,8 @@ class Feature extends BaseFeature implements FeatureInterface
     /**
      * Parse menu value into array of positions
      * Supports: "1.2", "1.2, 2.3", "[1.2, 2.3]", etc.
+     *
+     * @return array<int, string>
      */
     private function parseMenuValue(string $rawValue): array
     {
@@ -163,6 +185,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return array_values($items);
     }
 
+    /**
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     */
     private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void
     {
         // Parse menu position (e.g., "1", "1.2", "1.2.3")
@@ -283,6 +308,10 @@ class Feature extends BaseFeature implements FeatureInterface
         return $url;
     }
 
+    /**
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     * @return array<int, string>
+     */
     private function buildMenuHtml(array $menuData): array
     {
         $menuHtml = [];
@@ -294,6 +323,9 @@ class Feature extends BaseFeature implements FeatureInterface
         return $menuHtml;
     }
 
+    /**
+     * @param array<int, array{title: string, url: string, file: string, position: string}> $menuItems
+     */
     private function generateMenuHtml(array $menuItems, int $menuNumber = 0): string
     {
         $menuClass = $menuNumber > 0 ? "menu menu-{$menuNumber}" : "menu";

@@ -21,6 +21,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     protected string $name = 'HtmlRenderer';
     protected Log $logger;
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
     ];
@@ -45,6 +48,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
      * Called dynamically by EventManager when RENDER event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handleRender(Container $container, array $parameters): array
     {
@@ -92,6 +97,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
     /**
      * Parse HTML file content, extracting INI metadata if present
+     *
+     * @return array{metadata: array<string, mixed>, content: string}
      */
     private function parseHtmlFile(string $content): array
     {
@@ -171,6 +178,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
     /**
      * Apply Twig template to rendered content
+     *
+     * @param array{metadata: array<string, mixed>, content: string} $parsedContent
      */
     private function applyTemplate(array $parsedContent, Container $container, string $sourceFile = ''): string
     {
@@ -221,6 +230,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
     /**
      * Apply basic template as fallback
+     *
+     * @param array{metadata: array<string, mixed>, content: string} $parsedContent
      */
     private function applyBasicTemplate(array $parsedContent, Container $container): string
     {

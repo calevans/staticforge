@@ -15,9 +15,18 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $prevSymbol = '←';
     protected string $nextSymbol = '→';
     protected string $separator = '|';
+
+    /**
+     * Map of file paths to their sequential navigation context
+     * @var array<string, array{prev: array{title: string, url: string}|null, next: array{title: string, url: string}|null}>
+     */
     private array $chapterNavData = [];
+
     private Log $logger;
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
     'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150]
     ];
@@ -34,6 +43,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_GLOB event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
@@ -109,6 +120,9 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract sequential pages from menu data, ignoring dropdown items
+   *
+   * @param array<string, mixed> $menuData
+   * @return array<int, array{title: string, url: string}>
    */
     protected function extractSequentialPages(array $menuData, int $menuNumber): array
     {
@@ -154,6 +168,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Build HTML for chapter navigation
+   *
+   * @param array{title: string, url: string}|null $prev
+   * @param array{title: string, url: string} $current
+   * @param array{title: string, url: string}|null $next
    */
     protected function buildChapterNavHtml(?array $prev, array $current, ?array $next): string
     {

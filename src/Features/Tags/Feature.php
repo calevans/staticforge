@@ -16,12 +16,22 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'Tags';
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
     'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150],
     'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 100]
     ];
 
+    /**
+     * @var array<string, array<string, mixed>>
+     */
     private array $allTags = [];
+
+    /**
+     * @var array<string, array<int, string>>
+     */
     private array $tagIndex = []; // tag => [file paths]
     private Log $logger;
 
@@ -41,6 +51,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_GLOB event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
@@ -75,6 +87,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when PRE_RENDER event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePreRender(Container $container, array $parameters): array
     {
@@ -149,6 +163,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract tags from Markdown INI frontmatter
+   *
+   * @return array<int, string>
    */
     private function extractTagsFromMarkdown(string $content): array
     {
@@ -175,6 +191,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract tags from HTML meta or frontmatter
+   *
+   * @return array<int, string>
    */
     private function extractTagsFromHtml(string $content): array
     {
@@ -208,6 +226,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Get all tags sorted alphabetically
+   *
+   * @return array<int, string>
    */
     private function getAllTagsSorted(): array
     {
@@ -218,6 +238,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Get count of files for each tag
+   *
+   * @return array<string, int>
    */
     private function getTagCounts(): array
     {
@@ -231,6 +253,9 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Get files related to the current file by shared tags
+   *
+   * @param array<int, string> $tags
+   * @return array<int, string>
    */
     private function getRelatedFilesByTags(string $currentFile, array $tags): array
     {

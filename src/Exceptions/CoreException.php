@@ -13,8 +13,16 @@ use Exception;
 class CoreException extends Exception
 {
     private string $component;
+
+    /**
+     * Additional context for debugging
+     * @var array<string, mixed>
+     */
     private array $context;
 
+    /**
+     * @param array<string, mixed> $context
+     */
     public function __construct(
         string $message,
         string $component,
@@ -32,6 +40,9 @@ class CoreException extends Exception
         return $this->component;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getContext(): array
     {
         return array_merge(

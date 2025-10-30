@@ -37,6 +37,9 @@ class FeatureException extends Exception
         return $this->eventName;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getContext(): array
     {
         return [

@@ -37,6 +37,9 @@ class FileProcessingException extends Exception
         return $this->processingStage;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getContext(): array
     {
         return [

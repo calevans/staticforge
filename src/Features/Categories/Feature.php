@@ -17,6 +17,9 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'Categories';
     protected Log $logger;
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
     'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
     ];
@@ -37,6 +40,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_RENDER event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePostRender(Container $container, array $parameters): array
     {

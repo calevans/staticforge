@@ -18,9 +18,22 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'CategoryIndex';
     protected Log $logger;
+
+    /**
+     * Files organized by category
+     * @var array<string, array<string>>
+     */
     private array $categoryFiles = [];
+
+    /**
+     * Category files to generate after main loop
+     * @var array<string, array{files: array<string>, output_path: string}>
+     */
     private array $deferredCategoryFiles = [];  // Track category files to process later
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [
     'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 200],
     'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 150],  // Before other features
@@ -46,6 +59,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_GLOB event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
@@ -86,6 +101,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when PRE_RENDER event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function handlePreRender(Container $container, array $parameters): array
     {
@@ -130,6 +147,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_RENDER event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function collectCategoryFiles(Container $container, array $parameters): array
     {
@@ -176,6 +195,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Called dynamically by EventManager when POST_LOOP event fires.
      *
      * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function processDeferredCategoryFiles(Container $container, array $parameters): array
     {
