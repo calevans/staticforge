@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Commands;
 
 use EICC\StaticForge\Core\Application;
+use EICC\Utils\Container;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -158,8 +159,11 @@ class RenderSiteCommand extends Command
 
     /**
      * Display configuration in verbose mode
+     *
+     * @param Container $container Dependency injection container
+     * @param OutputInterface $output Console output
      */
-    private function displayConfiguration($container, OutputInterface $output): void
+    private function displayConfiguration(Container $container, OutputInterface $output): void
     {
         $output->writeln('');
         $output->writeln('<comment>Configuration:</comment>');
@@ -172,8 +176,12 @@ class RenderSiteCommand extends Command
 
     /**
      * Display generation statistics in verbose mode
+     *
+     * @param Container $container Dependency injection container
+     * @param OutputInterface $output Console output
+     * @param float $duration Generation time in seconds
      */
-    private function displayStats($container, OutputInterface $output, float $duration): void
+    private function displayStats(Container $container, OutputInterface $output, float $duration): void
     {
         $output->writeln('');
         $output->writeln('<comment>Generation Statistics:</comment>');
@@ -205,8 +213,10 @@ class RenderSiteCommand extends Command
 
     /**
      * Clean the output directory before generation
+     *
+     * @param Container $container Dependency injection container
      */
-    private function cleanOutputDirectory($container): void
+    private function cleanOutputDirectory(Container $container): void
     {
         $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
 

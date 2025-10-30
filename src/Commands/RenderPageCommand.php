@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Commands;
 
 use EICC\StaticForge\Core\Application;
+use EICC\Utils\Container;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -162,8 +163,13 @@ class RenderPageCommand extends Command
 
   /**
    * Resolve a file pattern to actual files
+   *
+   * @param string $pattern File pattern or path
+   * @param Container $container Dependency injection container
+   * @param OutputInterface $output Console output
+   * @return array<string> Array of resolved file paths
    */
-    private function resolvePattern(string $pattern, $container, OutputInterface $output): array
+    private function resolvePattern(string $pattern, Container $container, OutputInterface $output): array
     {
         $contentDir = $container->getVariable('CONTENT_DIR') ?? 'content';
         $files = [];
@@ -212,8 +218,10 @@ class RenderPageCommand extends Command
 
   /**
    * Clean the output directory before generation
+   *
+   * @param Container $container Dependency injection container
    */
-    private function cleanOutputDirectory($container): void
+    private function cleanOutputDirectory(Container $container): void
     {
         $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
 

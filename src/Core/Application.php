@@ -81,6 +81,9 @@ class Application
 
     /**
      * Get list of available templates
+     *
+     * @param string $templateDir Template directory path
+     * @return array<string> Array of template names
      */
     private function getAvailableTemplates(string $templateDir): array
     {
@@ -191,6 +194,9 @@ class Application
 
     /**
      * Fire an event with error handling
+     *
+     * @param string $eventName Name of the event to fire
+     * @param array<string, mixed> $parameters Event parameters
      */
     private function fireEvent(string $eventName, array $parameters): void
     {
@@ -285,8 +291,8 @@ class Application
      * Render a single file through the PRE_RENDER -> RENDER -> POST_RENDER pipeline
      *
      * @param string $filePath Path to the file to render
-     * @param array $additionalContext Additional context to merge into render context
-     * @return array The final render context after all events
+     * @param array<string, mixed> $additionalContext Additional context to merge into render context
+     * @return array<string, mixed> The final render context after all events
      * @throws Exception If rendering fails
      */
     public function renderSingleFile(string $filePath, array $additionalContext = []): array
