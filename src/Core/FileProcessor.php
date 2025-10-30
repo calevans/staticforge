@@ -131,7 +131,7 @@ class FileProcessor
     /**
      * Calculate the expected output path for a given input file
      */
-    private function calculateOutputPath(string $inputPath): ?string
+    private function calculateOutputPath(string $inputPath): string
     {
         $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
         $outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';

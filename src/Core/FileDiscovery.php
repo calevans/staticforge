@@ -66,7 +66,9 @@ class FileDiscovery
     /**
      * Recursively scan directory for processable files
      *
-     * @param array<string> &$files
+     * @param string $directory Directory to scan
+     * @param array<string> &$files Files array passed by reference
+     * @param-out array<string> $files Modified array after scanning
      */
     protected function scanDirectory(string $directory, array &$files): void
     {
