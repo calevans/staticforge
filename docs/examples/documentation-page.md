@@ -7,6 +7,7 @@ tags = [api, authentication, security, developers]
 
 # API Authentication
 
+This is a dummy guide
 This guide explains how to authenticate requests to our API.
 
 ## Overview

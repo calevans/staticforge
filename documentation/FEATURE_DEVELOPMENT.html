@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Development Guide | My Static Site</title>
+    <base href="https://static-forge.lndo.site/">            <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            line-height: 1.6;
+            font-size: 14px;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        .terminal-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #111111;
+            border: 2px solid #333333;
+            border-radius: 8px;
+            box-shadow:
+                0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+            padding: 10px 15px;
+            border-bottom: 1px solid #333333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid #444;
+        }
+
+        .terminal-button.close { background: #ff5f56; }
+        .terminal-button.minimize { background: #ffbd2e; }
+        .terminal-button.maximize { background: #27ca3f; }
+
+        .terminal-title {
+            color: #888;
+            font-size: 12px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .prompt {
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .prompt::before {
+            content: "user@staticforge:~$ ";
+            color: #00ff00;
+        }
+
+        header {
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid #333333;
+        }
+
+        header h1 {
+            color: #00ffff;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+            to { text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6); }
+        }
+
+        header p {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        nav {
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-bottom: 1px solid #333333;
+        }
+
+        /* Generic menu styles - works anywhere */
+        .menu {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        .menu a {
+            color: #00ff00;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .menu a:hover {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Dropdown menu styles - generic, works in any .menu */
+        .menu .dropdown {
+            position: relative;
+        }
+
+        .menu .dropdown-title {
+            color: #00ff00;
+            padding: 8px 16px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .menu .dropdown-title:hover {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .menu .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            margin-top: 5px;
+            min-width: 200px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .menu .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .menu .dropdown-menu li {
+            display: block;
+        }
+
+        .menu .dropdown-menu a {
+            display: block;
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid #222222;
+        }
+
+        .menu .dropdown-menu li:last-child a {
+            border-bottom: none;
+        }
+
+        main {
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .content h1, .content h2, .content h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .content h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        .content h2 {
+            font-size: 1.4rem;
+            color: #00ff00;
+            margin-top: 25px;
+        }
+
+        .content p {
+            color: #cccccc;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .content ul, .content ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #cccccc;
+        }
+
+        .content li {
+            margin-bottom: 5px;
+        }
+
+        .content code {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid #333333;
+            font-family: inherit;
+        }
+
+        .content pre {
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333333;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: 1px solid #00ff00;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #00cc00 0%, #009900 100%);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        footer {
+            padding: 20px 0;
+            border-top: 1px solid #333333;
+            text-align: center;
+        }
+
+        footer p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Footer-specific menu positioning */
+        footer .menu {
+            margin-bottom: 20px;
+        }
+
+        .typing-effect {
+            border-right: 2px solid #00ff00;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: #00ff00; }
+            51%, 100% { border-color: transparent; }
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+        }
+
+        .terminal-line::before {
+            content: "> ";
+            color: #00ffff;
+        }
+
+        @media (max-width: 768px) {
+            .terminal-container {
+                margin: 10px;
+                border-radius: 4px;
+            }
+
+            .terminal-body {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            nav a {
+                text-align: center;
+            }
+        }
+
+        /* Scanlines effect */
+        .terminal-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                transparent 50%,
+                rgba(0, 255, 0, 0.03) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Category Files Grid - Responsive */
+        .category-files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .category-file-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .category-file-item:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .file-thumbnail {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .file-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .category-file-item:hover .file-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .file-info {
+            padding: 15px;
+        }
+
+        .file-title {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .file-title a {
+            color: #00ffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .file-title a:hover {
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .file-date {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .terminal-prompt {
+            color: #00ff00;
+        }
+
+        .file-description {
+            color: #999;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .category-files-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .category-files-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    </head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="button red"></span>
+                <span class="button yellow"></span>
+                <span class="button green"></span>
+            </div>
+            <div class="terminal-title">My Static Site</div>
+        </div>
+
+        <div class="terminal-body">
+            <div class="prompt">cat welcome.txt</div>
+
+            <header>
+                                <h1>StaticForge Terminal</h1>
+                <p>> A PHP-based static site generator</p>
+                            </header>
+
+            <nav>
+                                                            </nav>
+
+            <main>
+                <div class="content">
+                                        <h1>Feature Development Guide</h1>
+<p>This guide explains how to create custom features for StaticForge's event-driven architecture.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#understanding-features">Understanding Features</a></li>
+<li><a href="#event-system-overview">Event System Overview</a></li>
+<li><a href="#creating-a-feature">Creating a Feature</a></li>
+<li><a href="#event-hooks-reference">Event Hooks Reference</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#examples">Examples</a></li>
+</ul>
+<hr />
+<h2>Understanding Features</h2>
+<p>Features in StaticForge are self-contained modules that extend the static site generator's functionality. They work by listening to events in the site generation pipeline and responding to them.</p>
+<h3>Core Concepts</h3>
+<ol>
+<li>
+<p><strong>Features implement <code>FeatureInterface</code></strong>: All features must implement the <code>FeatureInterface</code> which defines:</p>
+<ul>
+<li><code>register(EventManager $eventManager)</code>: Register event listeners</li>
+<li><code>getName()</code>: Return unique feature identifier</li>
+</ul>
+</li>
+<li>
+<p><strong>Features extend <code>BaseFeature</code></strong>: The <code>BaseFeature</code> abstract class provides:</p>
+<ul>
+<li>Event manager access</li>
+<li>Container access for dependency injection</li>
+<li>Common utility methods</li>
+</ul>
+</li>
+<li>
+<p><strong>Features are event-driven</strong>: Features respond to events fired during site generation:</p>
+<ul>
+<li>Content discovery events</li>
+<li>Processing events</li>
+<li>Rendering events</li>
+<li>Completion events</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2>Event System Overview</h2>
+<p>StaticForge uses a priority-based event system where:</p>
+<ul>
+<li>Events are fired at specific points in the generation pipeline</li>
+<li>Multiple features can listen to the same event</li>
+<li>Priority determines execution order (0-999, higher = later)</li>
+<li>Event data can be modified and passed between listeners</li>
+</ul>
+<h3>Event Flow</h3>
+<pre><code>Application Start
+  ↓
+CREATE (initialize features)
+  ↓
+PRE_GLOB (before file discovery)
+  ↓
+POST_GLOB (after file discovery, before processing)
+  ↓
+PRE_LOOP (before processing loop starts)
+  ↓
+For each file:
+  ↓
+  PRE_RENDER (before rendering)
+  ↓
+  RENDER (during rendering)
+  ↓
+  POST_RENDER (after rendering)
+  ↓
+POST_LOOP (after all files processed)
+  ↓
+DESTROY (cleanup)
+</code></pre>
+<hr />
+<h2>Creating a Feature</h2>
+<h3>Step 1: Create Feature Directory</h3>
+<pre><code class="language-bash">mkdir -p src/Features/YourFeature
+</code></pre>
+<h3>Step 2: Create Feature Class</h3>
+<pre><code class="language-php">&lt;?php
+
+namespace StaticForge\Features\YourFeature;
+
+use StaticForge\Core\BaseFeature;
+use StaticForge\Core\EventManager;
+
+class Feature extends BaseFeature
+{
+  /**
+   * Register event listeners
+   */
+  public function register(EventManager $eventManager): void
+  {
+    // Register listeners with priority (0-999)
+    $eventManager-&gt;on('PRE_RENDER', [$this, 'onPreRender'], 500);
+    $eventManager-&gt;on('POST_RENDER', [$this, 'onPostRender'], 500);
+  }
+
+  /**
+   * Get feature name
+   */
+  public function getName(): string
+  {
+    return 'your-feature';
+  }
+
+  /**
+   * Handle PRE_RENDER event
+   */
+  public function onPreRender(array $data): array
+  {
+    // Access file metadata
+    $file = $data['file'];
+    $metadata = $data['metadata'] ?? [];
+
+    // Process and modify data
+    $metadata['custom_field'] = $this-&gt;processFile($file);
+
+    // Return modified data
+    return array_merge($data, ['metadata' =&gt; $metadata]);
+  }
+
+  /**
+   * Handle POST_RENDER event
+   */
+  public function onPostRender(array $data): array
+  {
+    // Access rendered content
+    $content = $data['content'];
+
+    // Post-process content if needed
+    $data['content'] = $this-&gt;enhanceContent($content);
+
+    return $data;
+  }
+
+  /**
+   * Custom processing method
+   */
+  private function processFile(string $file): string
+  {
+    // Your custom logic
+    return 'processed';
+  }
+
+  /**
+   * Custom enhancement method
+   */
+  private function enhanceContent(string $content): string
+  {
+    // Your custom logic
+    return $content;
+  }
+}
+</code></pre>
+<h3>Step 3: Register in FeatureManager</h3>
+<p>Features are auto-discovered from <code>src/Features/*/Feature.php</code>, so no manual registration needed.</p>
+<hr />
+<h2>Event Hooks Reference</h2>
+<h3>CREATE</h3>
+<p><strong>When</strong>: Application initialization, before any processing
+<strong>Purpose</strong>: Initialize feature state, set up resources
+<strong>Data</strong>: <code>[]</code> (empty array)
+<strong>Returns</strong>: <code>[]</code> (ignored)</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onCreate(array $data): array
+{
+  $this-&gt;cache = [];
+  $this-&gt;logger = $this-&gt;container-&gt;get('logger');
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>PRE_GLOB</h3>
+<p><strong>When</strong>: Before file discovery
+<strong>Purpose</strong>: Prepare for file discovery, set up filters
+<strong>Data</strong>: <code>['pattern' =&gt; string]</code>
+<strong>Returns</strong>: Modified data array</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPreGlob(array $data): array
+{
+  // Could modify the glob pattern if needed
+  $this-&gt;log('Starting file discovery');
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>POST_GLOB</h3>
+<p><strong>When</strong>: After file discovery, before processing
+<strong>Purpose</strong>: Review discovered files, prepare processing
+<strong>Data</strong>: <code>['files' =&gt; array]</code>
+<strong>Returns</strong>: Modified data array (can filter files)</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPostGlob(array $data): array
+{
+  $files = $data['files'] ?? [];
+  $this-&gt;log('Found ' . count($files) . ' files');
+
+  // Could filter files
+  $data['files'] = array_filter($files, function($file) {
+    return !str_contains($file, 'draft');
+  });
+
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>PRE_LOOP</h3>
+<p><strong>When</strong>: Before processing loop starts
+<strong>Purpose</strong>: Final preparation before file processing
+<strong>Data</strong>: <code>['files' =&gt; array]</code>
+<strong>Returns</strong>: Modified data array</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPreLoop(array $data): array
+{
+  $this-&gt;processedCount = 0;
+  $this-&gt;startTime = microtime(true);
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>PRE_RENDER</h3>
+<p><strong>When</strong>: Before each file is rendered
+<strong>Purpose</strong>: Modify file metadata, prepare for rendering
+<strong>Data</strong>:</p>
+<pre><code class="language-php">[
+  'file' =&gt; string,           // Source file path
+  'metadata' =&gt; array,        // Parsed frontmatter
+  'content' =&gt; string,        // File content (without frontmatter)
+  'outputPath' =&gt; string      // Destination path
+]
+</code></pre>
+<p><strong>Returns</strong>: Modified data array</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPreRender(array $data): array
+{
+  $metadata = $data['metadata'] ?? [];
+
+  // Add reading time
+  $content = $data['content'];
+  $wordCount = str_word_count(strip_tags($content));
+  $metadata['reading_time'] = ceil($wordCount / 200);
+
+  // Add last modified date
+  $metadata['modified'] = date('Y-m-d', filemtime($data['file']));
+
+  return array_merge($data, ['metadata' =&gt; $metadata]);
+}
+</code></pre>
+<hr />
+<h3>RENDER</h3>
+<p><strong>When</strong>: During file rendering
+<strong>Purpose</strong>: Transform content, inject data
+<strong>Data</strong>:</p>
+<pre><code class="language-php">[
+  'file' =&gt; string,
+  'metadata' =&gt; array,
+  'content' =&gt; string,        // Content to render
+  'outputPath' =&gt; string,
+  'template' =&gt; string        // Template name
+]
+</code></pre>
+<p><strong>Returns</strong>: Modified data array</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onRender(array $data): array
+{
+  $content = $data['content'];
+
+  // Process shortcodes
+  $content = preg_replace_callback(
+    '/\[youtube id=&quot;([^&quot;]+)&quot;\]/',
+    function($matches) {
+      return $this-&gt;renderYoutubeEmbed($matches[1]);
+    },
+    $content
+  );
+
+  $data['content'] = $content;
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>POST_RENDER</h3>
+<p><strong>When</strong>: After file is rendered
+<strong>Purpose</strong>: Post-process output, collect data for indexes
+<strong>Data</strong>:</p>
+<pre><code class="language-php">[
+  'file' =&gt; string,
+  'metadata' =&gt; array,
+  'content' =&gt; string,        // Rendered HTML
+  'outputPath' =&gt; string
+]
+</code></pre>
+<p><strong>Returns</strong>: Modified data array</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPostRender(array $data): array
+{
+  // Collect for search index
+  $this-&gt;searchIndex[] = [
+    'url' =&gt; $data['outputPath'],
+    'title' =&gt; $data['metadata']['title'] ?? '',
+    'content' =&gt; strip_tags($data['content'])
+  ];
+
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>POST_LOOP</h3>
+<p><strong>When</strong>: After all files processed
+<strong>Purpose</strong>: Generate indexes, create aggregate pages
+<strong>Data</strong>: <code>[]</code>
+<strong>Returns</strong>: <code>[]</code> (ignored)</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onPostLoop(array $data): array
+{
+  // Generate search index file
+  $indexPath = $this-&gt;container-&gt;get('outputPath') . '/search.json';
+  file_put_contents($indexPath, json_encode($this-&gt;searchIndex));
+
+  $this-&gt;log('Created search index with ' . count($this-&gt;searchIndex) . ' entries');
+
+  return $data;
+}
+</code></pre>
+<hr />
+<h3>DESTROY</h3>
+<p><strong>When</strong>: Application shutdown
+<strong>Purpose</strong>: Cleanup, final logging
+<strong>Data</strong>: <code>[]</code>
+<strong>Returns</strong>: <code>[]</code> (ignored)</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-php">public function onDestroy(array $data): array
+{
+  $elapsed = microtime(true) - $this-&gt;startTime;
+  $this-&gt;log(&quot;Processed {$this-&gt;processedCount} items in {$elapsed}s&quot;);
+
+  // Cleanup resources
+  $this-&gt;cache = null;
+
+  return $data;
+}
+</code></pre>
+<hr />
+<h2>Best Practices</h2>
+<h3>1. Use Appropriate Priority</h3>
+<pre><code class="language-php">// Early processing (lower priority number)
+$eventManager-&gt;on('PRE_RENDER', [$this, 'extract'], 100);
+
+// Normal processing
+$eventManager-&gt;on('PRE_RENDER', [$this, 'process'], 500);
+
+// Late processing (higher priority number)
+$eventManager-&gt;on('PRE_RENDER', [$this, 'finalize'], 900);
+</code></pre>
+<p><strong>Common Priorities:</strong></p>
+<ul>
+<li><code>100-200</code>: Data extraction and parsing</li>
+<li><code>300-400</code>: Data transformation</li>
+<li><code>500-600</code>: Default processing</li>
+<li><code>700-800</code>: Enhancement and enrichment</li>
+<li><code>900-999</code>: Finalization and cleanup</li>
+</ul>
+<h3>2. Return Modified Data</h3>
+<p>Always return the data array, even if unchanged:</p>
+<pre><code class="language-php">public function onEvent(array $data): array
+{
+  // Process data
+
+  return $data;  // Always return
+}
+</code></pre>
+<h3>3. Use Container for Dependencies</h3>
+<pre><code class="language-php">public function register(EventManager $eventManager): void
+{
+  // Get dependencies from container
+  $this-&gt;logger = $this-&gt;container-&gt;get('logger');
+  $this-&gt;config = $this-&gt;container-&gt;get('config');
+
+  $eventManager-&gt;on('CREATE', [$this, 'onCreate']);
+}
+</code></pre>
+<h3>4. Handle Missing Data Gracefully</h3>
+<pre><code class="language-php">public function onPreRender(array $data): array
+{
+  $metadata = $data['metadata'] ?? [];
+  $content = $data['content'] ?? '';
+
+  if (empty($content)) {
+    return $data;  // Skip processing
+  }
+
+  // Process...
+
+  return $data;
+}
+</code></pre>
+<h3>5. Log Important Operations</h3>
+<pre><code class="language-php">use EiccUtils;
+
+public function onCreate(array $data): array
+{
+  EiccUtils::log('YourFeature initialized');
+  return $data;
+}
+
+public function onPostLoop(array $data): array
+{
+  EiccUtils::log(&quot;YourFeature processed {$this-&gt;count} items&quot;);
+  return $data;
+}
+</code></pre>
+<h3>6. Use INI Format for Frontmatter</h3>
+<pre><code class="language-php">private function parseIniFrontmatter(string $content): array
+{
+  if (!preg_match('/^---\n(.*?)\n---\n/s', $content, $matches)) {
+    return [];
+  }
+
+  $frontmatter = $matches[1];
+  $metadata = [];
+
+  foreach (explode(&quot;\n&quot;, $frontmatter) as $line) {
+    if (strpos($line, '=') !== false) {
+      list($key, $value) = explode('=', $line, 2);
+      $key = trim($key);
+      $value = trim($value);
+
+      // Handle arrays: key = [item1, item2]
+      if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
+        $items = array_map('trim', explode(',', $arrayMatch[1]));
+        $metadata[$key] = $items;
+      } else {
+        // Remove quotes
+        $metadata[$key] = trim($value, '&quot;\'');
+      }
+    }
+  }
+
+  return $metadata;
+}
+</code></pre>
+<h3>7. Test Your Feature</h3>
+<p>Create unit tests in <code>tests/Unit/Features/YourFeature/</code>:</p>
+<pre><code class="language-php">&lt;?php
+
+namespace Tests\Unit\Features\YourFeature;
+
+use PHPUnit\Framework\TestCase;
+use StaticForge\Features\YourFeature\Feature;
+
+class FeatureTest extends TestCase
+{
+  public function testFeatureName(): void
+  {
+    $feature = new Feature();
+    $this-&gt;assertEquals('your-feature', $feature-&gt;getName());
+  }
+
+  public function testPreRender(): void
+  {
+    $feature = new Feature();
+    $data = [
+      'file' =&gt; 'test.md',
+      'content' =&gt; 'test content',
+      'metadata' =&gt; []
+    ];
+
+    $result = $feature-&gt;onPreRender($data);
+
+    $this-&gt;assertArrayHasKey('metadata', $result);
+    // Add assertions for your feature's behavior
+  }
+}
+</code></pre>
+<hr />
+<h2>Examples</h2>
+<h3>Example 1: Reading Time Calculator</h3>
+<pre><code class="language-php">&lt;?php
+
+namespace StaticForge\Features\ReadingTime;
+
+use StaticForge\Core\BaseFeature;
+use StaticForge\Core\EventManager;
+
+class Feature extends BaseFeature
+{
+  public function register(EventManager $eventManager): void
+  {
+    $eventManager-&gt;on('PRE_RENDER', [$this, 'addReadingTime'], 500);
+  }
+
+  public function getName(): string
+  {
+    return 'reading-time';
+  }
+
+  public function addReadingTime(array $data): array
+  {
+    $content = $data['content'] ?? '';
+    $metadata = $data['metadata'] ?? [];
+
+    // Calculate reading time (200 words per minute)
+    $wordCount = str_word_count(strip_tags($content));
+    $minutes = ceil($wordCount / 200);
+
+    $metadata['reading_time'] = $minutes;
+    $metadata['word_count'] = $wordCount;
+
+    return array_merge($data, ['metadata' =&gt; $metadata]);
+  }
+}
+</code></pre>
+<h3>Example 2: Table of Contents Generator</h3>
+<pre><code class="language-php">&lt;?php
+
+namespace StaticForge\Features\TableOfContents;
+
+use StaticForge\Core\BaseFeature;
+use StaticForge\Core\EventManager;
+
+class Feature extends BaseFeature
+{
+  public function register(EventManager $eventManager): void
+  {
+    $eventManager-&gt;on('RENDER', [$this, 'generateToc'], 500);
+  }
+
+  public function getName(): string
+  {
+    return 'table-of-contents';
+  }
+
+  public function generateToc(array $data): array
+  {
+    $content = $data['content'] ?? '';
+    $metadata = $data['metadata'] ?? [];
+
+    // Only generate TOC if requested
+    if (empty($metadata['toc'])) {
+      return $data;
+    }
+
+    // Extract headings
+    preg_match_all('/&lt;h([2-3])&gt;(.*?)&lt;\/h\1&gt;/', $content, $matches, PREG_SET_ORDER);
+
+    if (empty($matches)) {
+      return $data;
+    }
+
+    // Build TOC HTML
+    $toc = '&lt;nav class=&quot;toc&quot;&gt;&lt;ul&gt;';
+    foreach ($matches as $match) {
+      $level = $match[1];
+      $text = strip_tags($match[2]);
+      $id = $this-&gt;slugify($text);
+
+      // Add ID to heading in content
+      $content = str_replace($match[0],
+        &quot;&lt;h{$level} id=\&quot;{$id}\&quot;&gt;{$match[2]}&lt;/h{$level}&gt;&quot;,
+        $content
+      );
+
+      $toc .= &quot;&lt;li class=\&quot;toc-h{$level}\&quot;&gt;&lt;a href=\&quot;#{$id}\&quot;&gt;{$text}&lt;/a&gt;&lt;/li&gt;&quot;;
+    }
+    $toc .= '&lt;/ul&gt;&lt;/nav&gt;';
+
+    // Add TOC to metadata for template access
+    $metadata['toc_html'] = $toc;
+
+    return array_merge($data, [
+      'content' =&gt; $content,
+      'metadata' =&gt; $metadata
+    ]);
+  }
+
+  private function slugify(string $text): string
+  {
+    return strtolower(preg_replace('/[^a-z0-9]+/', '-', $text));
+  }
+}
+</code></pre>
+<h3>Example 3: Related Posts</h3>
+<pre><code class="language-php">&lt;?php
+
+namespace StaticForge\Features\RelatedPosts;
+
+use StaticForge\Core\BaseFeature;
+use StaticForge\Core\EventManager;
+
+class Feature extends BaseFeature
+{
+  private array $allPosts = [];
+
+  public function register(EventManager $eventManager): void
+  {
+    $eventManager-&gt;on('POST_RENDER', [$this, 'collectPost'], 500);
+    $eventManager-&gt;on('POST_LOOP', [$this, 'findRelated'], 500);
+  }
+
+  public function getName(): string
+  {
+    return 'related-posts';
+  }
+
+  public function collectPost(array $data): array
+  {
+    $metadata = $data['metadata'] ?? [];
+    $tags = $metadata['tags'] ?? [];
+
+    if (!empty($tags)) {
+      $this-&gt;allPosts[] = [
+        'url' =&gt; $data['outputPath'],
+        'title' =&gt; $metadata['title'] ?? '',
+        'tags' =&gt; is_array($tags) ? $tags : explode(',', $tags)
+      ];
+    }
+
+    return $data;
+  }
+
+  public function findRelated(array $data): array
+  {
+    foreach ($this-&gt;allPosts as $i =&gt; $post) {
+      $related = [];
+
+      foreach ($this-&gt;allPosts as $j =&gt; $candidate) {
+        if ($i === $j) continue;
+
+        // Find common tags
+        $common = array_intersect($post['tags'], $candidate['tags']);
+
+        if (!empty($common)) {
+          $related[] = [
+            'url' =&gt; $candidate['url'],
+            'title' =&gt; $candidate['title'],
+            'score' =&gt; count($common)
+          ];
+        }
+      }
+
+      // Sort by score and take top 5
+      usort($related, fn($a, $b) =&gt; $b['score'] - $a['score']);
+      $this-&gt;allPosts[$i]['related'] = array_slice($related, 0, 5);
+    }
+
+    // Save related posts data
+    $outputPath = $this-&gt;container-&gt;get('outputPath');
+    file_put_contents(
+      $outputPath . '/related.json',
+      json_encode($this-&gt;allPosts)
+    );
+
+    return $data;
+  }
+}
+</code></pre>
+<hr />
+<h2>Debugging Features</h2>
+<h3>Enable Verbose Logging</h3>
+<pre><code class="language-bash">lando php bin/console.php render:site -v
+</code></pre>
+<h3>Add Debug Logging</h3>
+<pre><code class="language-php">use EiccUtils;
+
+public function onPreRender(array $data): array
+{
+  EiccUtils::log('PreRender: ' . ($data['file'] ?? 'unknown'));
+  EiccUtils::log('Metadata: ' . json_encode($data['metadata'] ?? []));
+
+  // Your processing
+
+  return $data;
+}
+</code></pre>
+<h3>Check Event Order</h3>
+<pre><code class="language-php">public function register(EventManager $eventManager): void
+{
+  $eventManager-&gt;on('PRE_RENDER', function($data) {
+    error_log('YourFeature: PRE_RENDER triggered');
+    return $data;
+  }, 500);
+}
+</code></pre>
+<hr />
+<h2>Common Patterns</h2>
+<h3>Pattern 1: Collect-Process-Output</h3>
+<ol>
+<li><strong>PRE_RENDER/POST_RENDER</strong>: Collect data from each file</li>
+<li><strong>POST_LOOP</strong>: Process collected data</li>
+<li><strong>POST_LOOP</strong>: Generate output files</li>
+</ol>
+<p>Used by: Categories, Tags, Related Posts</p>
+<h3>Pattern 2: Enrich-and-Pass</h3>
+<ol>
+<li><strong>PRE_RENDER</strong>: Add metadata</li>
+<li><strong>RENDER</strong>: Template uses enriched metadata</li>
+</ol>
+<p>Used by: Reading Time, Last Modified</p>
+<h3>Pattern 3: Transform Content</h3>
+<ol>
+<li><strong>RENDER</strong>: Parse and transform content</li>
+<li><strong>POST_RENDER</strong>: Post-process HTML</li>
+</ol>
+<p>Used by: Markdown Renderer, Shortcodes</p>
+<hr />
+<h2>Next Steps</h2>
+<ol>
+<li>Study existing features in <code>src/Features/</code></li>
+<li>Plan your feature's event hooks</li>
+<li>Create your feature class</li>
+<li>Write tests</li>
+<li>Test with real content</li>
+<li>Document feature-specific configuration</li>
+</ol>
+<p>For questions, see the main README or open an issue on GitHub.</p>
+
+                                    </div>
+            </main>
+
+            <footer>
+                                                <p>© 2025 My Static Site. Built with ❤️ and PHP.</p>
+                            </footer>
+        </div>
+    </div>
+
+    </body>
+</html>

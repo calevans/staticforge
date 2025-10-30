@@ -1,6 +1,13 @@
+---
+template = "docs"
+menu = 1.4
+---
+
 # Feature Development Guide
 
 This guide explains how to create custom features for StaticForge's event-driven architecture.
+
+> **Quick Reference**: See [Core Events Reference](EVENTS.md) for complete documentation of all core events.
 
 ## Table of Contents
 - [Understanding Features](#understanding-features)
@@ -806,12 +813,9 @@ Used by: Markdown Renderer, Shortcodes
 ---
 
 ## Next Steps
-
-1. Study existing features in `src/Features/`
-2. Plan your feature's event hooks
-3. Create your feature class
-4. Write tests
-5. Test with real content
-6. Document feature-specific configuration
-
-For questions, see the main README or open an issue on GitHub.
+- [QuickStart Guide](QUICK_START_GUIDE.html)
+- [Configuration Guide](CONFIGURATION.html)
+- [Template Development](TEMPLATE_DEVELOPMENT.html)
+- Feature Development
+- [Core Events](EVENTS.html)
+- [Additional Commands](ADDITIONAL_COMMANDS.html)

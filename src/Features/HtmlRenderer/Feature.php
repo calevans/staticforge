@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Features\HtmlRenderer;
 
-use EICC\StaticForge\Core\BaseFeature;
+use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
@@ -15,7 +15,7 @@ use Twig\Loader\FilesystemLoader;
  * HTML Renderer Feature - processes .html files during RENDER event
  * Extracts YAML metadata, processes content, and writes output files
  */
-class Feature extends BaseFeature implements FeatureInterface
+class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'HtmlRenderer';
     protected $logger;
@@ -123,11 +123,14 @@ class Feature extends BaseFeature implements FeatureInterface
             }
         }
 
+        // Apply default metadata
+        $metadata = $this->applyDefaultMetadata($metadata);
+
         return [
             'metadata' => $metadata,
             'content' => $htmlContent,
-            'title' => $metadata['title'] ?? 'Untitled Page',
-            'template' => $metadata['template'] ?? 'base',
+            'title' => $metadata['title'],
+            'template' => $metadata['template'],
             'menu_position' => $metadata['menu_position'] ?? null,
             'category' => $metadata['category'] ?? null,
             'tags' => isset($metadata['tags']) ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags'])) : []
@@ -194,6 +197,7 @@ class Feature extends BaseFeature implements FeatureInterface
                 'content' => $parsedContent['content'],
                 'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
+                'site_tagline' => $container->getVariable('SITE_TAGLINE') ?? '',
                 'features' => $container->getVariable('features') ?? [],
             ]);
 

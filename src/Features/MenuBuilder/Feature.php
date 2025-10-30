@@ -24,6 +24,11 @@ class Feature extends BaseFeature implements FeatureInterface
         // Generate HTML from menu data
         $menuHtml = $this->buildMenuHtml($menuData);
 
+        // Store each menu in the container for template access
+        foreach ($menuHtml as $menuNumber => $html) {
+            $container->setVariable("menu{$menuNumber}", $html);
+        }
+
         // Add to parameters for return to event system
         if (!isset($parameters['features'])) {
             $parameters['features'] = [];
@@ -78,7 +83,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
     private function extractMetadataFromMarkdown(string $content): array
     {
-        // Extract YAML frontmatter
+        // Extract YAML/INI frontmatter
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
             return [];
         }
@@ -86,13 +91,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $frontmatter = $matches[1];
         $metadata = [];
 
-        // Look for menu: entry
-        if (preg_match('/^menu:\s*(.+)$/m', $frontmatter, $menuMatches)) {
+        // Look for menu: or menu = entry (support both YAML and INI format)
+        if (preg_match('/^menu\s*[=:]\s*(.+)$/m', $frontmatter, $menuMatches)) {
             $metadata['menu'] = trim($menuMatches[1]);
         }
 
-        // Look for category: entry
-        if (preg_match('/^category:\s*(.+)$/m', $frontmatter, $categoryMatches)) {
+        // Look for category: or category = entry
+        if (preg_match('/^category\s*[=:]\s*(.+)$/m', $frontmatter, $categoryMatches)) {
             $metadata['category'] = trim($categoryMatches[1]);
         }
 
@@ -109,13 +114,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $iniContent = $matches[1];
         $metadata = [];
 
-        // Look for menu: entry
-        if (preg_match('/^menu:\s*(.+)$/m', $iniContent, $menuMatches)) {
+        // Look for menu = or menu: entry (support both INI and YAML format)
+        if (preg_match('/^menu\s*[=:]\s*(.+)$/m', $iniContent, $menuMatches)) {
             $metadata['menu'] = trim($menuMatches[1]);
         }
 
-        // Look for category: entry
-        if (preg_match('/^category:\s*(.+)$/m', $iniContent, $categoryMatches)) {
+        // Look for category = or category: entry
+        if (preg_match('/^category\s*[=:]\s*(.+)$/m', $iniContent, $categoryMatches)) {
             $metadata['category'] = trim($categoryMatches[1]);
         }
 

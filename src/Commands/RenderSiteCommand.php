@@ -31,6 +31,18 @@ class RenderSiteCommand extends Command
                  't',
                  InputOption::VALUE_REQUIRED,
                  'Override the template theme (e.g., sample, terminal)'
+             )
+             ->addOption(
+                 'input',
+                 'i',
+                 InputOption::VALUE_REQUIRED,
+                 'Override input/content directory path'
+             )
+             ->addOption(
+                 'output',
+                 'o',
+                 InputOption::VALUE_REQUIRED,
+                 'Override output directory path'
              );
     }
 
@@ -49,12 +61,36 @@ class RenderSiteCommand extends Command
                 $output->writeln("<comment>Using template override: {$templateOverride}</comment>");
             }
 
+            // Get input/output directory overrides
+            $inputOverride = $input->getOption('input');
+            $outputOverride = $input->getOption('output');
+
+            if ($inputOverride) {
+                $output->writeln("<comment>Using input directory override: {$inputOverride}</comment>");
+            }
+
+            if ($outputOverride) {
+                $output->writeln("<comment>Using output directory override: {$outputOverride}</comment>");
+            }
+
             // Get env path from environment variable (for testing) or use default
             $envPath = getenv('STATICFORGE_ENV_PATH') ?: '.env';
 
             // Initialize application with template override
             $application = new Application($envPath, $templateOverride);
             $container = $application->getContainer();
+
+            // Apply directory overrides after initialization
+            if ($inputOverride) {
+                if (!is_dir($inputOverride)) {
+                    throw new Exception("Input directory does not exist: {$inputOverride}");
+                }
+                $container->updateVariable('SOURCE_DIR', $inputOverride);
+            }
+
+            if ($outputOverride) {
+                $container->updateVariable('OUTPUT_DIR', $outputOverride);
+            }
 
             if ($output->isVerbose()) {
                 $output->writeln('<comment>Verbose mode enabled</comment>');

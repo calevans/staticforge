@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Features\MarkdownRenderer;
 
-use EICC\StaticForge\Core\BaseFeature;
+use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
@@ -19,7 +19,7 @@ use Twig\Loader\FilesystemLoader;
  * Markdown Renderer Feature - processes .md files during RENDER event
  * Extracts YAML frontmatter, converts Markdown to HTML, and applies templates
  */
-class Feature extends BaseFeature implements FeatureInterface
+class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'MarkdownRenderer';
     protected $logger;
@@ -139,16 +139,18 @@ class Feature extends BaseFeature implements FeatureInterface
         $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
 
         // Extract title from metadata or first heading
-        $title = $metadata['title'] ?? $this->extractTitleFromContent($htmlContent);
+        if (!isset($metadata['title'])) {
+            $metadata['title'] = $this->extractTitleFromContent($htmlContent);
+        }
 
-        // Extract template from metadata, default to 'base'
-        $template = $metadata['template'] ?? 'base';
+        // Apply default metadata
+        $metadata = $this->applyDefaultMetadata($metadata);
 
         return [
             'metadata' => $metadata,
             'content' => $htmlContent,
-            'title' => $title,
-            'template' => $template,
+            'title' => $metadata['title'],
+            'template' => $metadata['template'],
             'tags' => $metadata['tags'] ?? []
         ];
     }
@@ -229,6 +231,7 @@ class Feature extends BaseFeature implements FeatureInterface
                 'content' => $parsedContent['content'],
                 'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
+                'site_tagline' => $container->getVariable('SITE_TAGLINE') ?? '',
                 'features' => $container->getVariable('features') ?? [],
             ]);
 
