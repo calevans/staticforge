@@ -64,7 +64,11 @@ class Feature extends BaseFeature implements FeatureInterface
         $metadata = $this->extractMetadataFromFile($content, $filePath);
 
         if (isset($metadata['menu'])) {
-            $this->addMenuEntry($metadata['menu'], $filePath, $metadata['category'] ?? null, $menuData);
+            $menuPositions = $this->parseMenuValue($metadata['menu']);
+
+            foreach ($menuPositions as $position) {
+                $this->addMenuEntry($position, $filePath, $metadata['category'] ?? null, $menuData);
+            }
         }
     }
 
@@ -125,6 +129,32 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         return $metadata;
+    }
+
+    /**
+     * Parse menu value into array of positions
+     * Supports: "1.2", "1.2, 2.3", "[1.2, 2.3]", etc.
+     */
+    private function parseMenuValue(string $rawValue): array
+    {
+        // Strip brackets and trim
+        $rawValue = trim(trim($rawValue), '[]');
+
+        // Empty value? Return empty array
+        if (empty($rawValue)) {
+            return [];
+        }
+
+        // Split on commas
+        $items = explode(',', $rawValue);
+
+        // Clean and filter each item (trim whitespace and quotes)
+        $items = array_filter(array_map(function ($item) {
+            return trim(trim($item), '"\'');
+        }, $items));
+
+        // Re-index array (in case filtering removed items)
+        return array_values($items);
     }
 
     private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void

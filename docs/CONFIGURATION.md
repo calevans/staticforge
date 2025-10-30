@@ -1,282 +1,388 @@
 ---
 title = "Configuration Guide"
 template = "docs"
-menu = 1.2
+menu = 1.2, 2.2
 ---
 
 # Configuration Guide
 
-This guide covers all configuration options for StaticForge.
-
-## Table of Contents
-- [Environment Variables](#environment-variables)
-- [Directory Configuration](#directory-configuration)
-- [Default Features](#default-features)
+Learn how to configure StaticForge to work exactly the way you want. This guide covers environment settings, directory structure, and built-in features.
 
 ---
 
-## <a id="environment-variables">Environment Variables</a>
+## Environment Configuration
 
-StaticForge uses a `.env` file for configuration. Copy `.env.example` to `.env` and customize.
+StaticForge uses a `.env` file for all configuration. This keeps your settings separate from your code and makes it easy to use different settings for development and production.
 
-`.env.example`:
+### Setting Up Your Configuration
+
+1. Copy the example file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Open `.env` in your text editor
+
+3. Adjust the settings to match your needs
+
+Here's what a typical `.env` file looks like:
 
 ```bash
-# StaticForge Configuration
+# StaticForge Environment Configuration
 
-# Content and Output
-CONTENT_PATH=content/
-OUTPUT_PATH=public/
-TEMPLATE_NAME=sample
+# Site Information
+SITE_NAME="My Static Site"
+SITE_TAGLINE="Built with ❤️ and PHP"
+SITE_BASE_URL="https://example.com"
+TEMPLATE="sample"
 
-# Logging
-LOG_PATH=logs/app.log
-LOG_LEVEL=INFO
+# Directory Paths (relative to project root)
+SOURCE_DIR="content"
+OUTPUT_DIR="output"
+TEMPLATE_DIR="templates"
+FEATURES_DIR="src/Features"
 
-```
-
-### Core Settings
-
-#### `CONTENT_PATH`
-- **Type**: String (directory path)
-- **Default**: `content/`
-- **Description**: Directory containing source content files (Markdown, HTML, PDF)
-- **Example**:
-  ```
-  CONTENT_PATH=content/
-  ```
-
-#### `OUTPUT_PATH`
-- **Type**: String (directory path)
-- **Default**: `public/`
-- **Description**: Directory where generated static site files are written
-- **Example**:
-  ```
-  OUTPUT_PATH=public/
-  ```
-
-#### `TEMPLATE_NAME`
-- **Type**: String
-- **Default**: `sample`
-- **Description**: Name of the template theme to use (must exist in `templates/` directory)
-- **Options**: `sample`, `terminal`, `vaulttech`, or custom theme names
-- **Example**:
-  ```
-  TEMPLATE_NAME=terminal
-  ```
-
----
-
-### Logging Settings
-
-#### `LOG_PATH`
-- **Type**: String (file path)
-- **Default**: `logs/staticforge.log`
-- **Description**: Path to application log file
-- **Example**:
-  ```
-  LOG_PATH=logs/staticforge.log
-  ```
-
-#### `LOG_LEVEL`
-- **Type**: String
-- **Default**: `INFO`
-- **Options**: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
-- **Description**: Minimum log level to record
-- **Example**:
-  ```
-  LOG_LEVEL=DEBUG
-  ```
-
----
-
-### Feature-Specific Settings
-All of these are optional. If you set a feature specific setting and the feature is not installed then it will be ignored.s
-
-#### Categories
-
-Categories are configured in content frontmatter:
-
-**Frontmatter**:
-```
----
-category = web-development
----
-```
-
-
-#### Tags
-
-Tags are extracted from content frontmatter:
-
-**Frontmatter**:
-```
----
-tags = [php, static-site, tutorial]
----
+# Optional Configuration
+LOG_LEVEL="info"
+LOG_FILE="staticforge.log"
 ```
 
 ---
 
-## <a id="directory-configuration">Directory Configuration</a>
+## Required Settings
 
-### Content Directory Structure
+These settings **must** be present in your `.env` file or StaticForge won't run.
+
+### SITE_NAME
+
+**What it does:** The name of your website
+
+**Where it appears:**
+- Browser tab titles
+- Template header areas
+- Footer copyright notices
+
+**Example:**
+```bash
+SITE_NAME="My Awesome Blog"
+```
+
+**Template usage:**
+```twig
+<title>{{ title }} - {{ site_name }}</title>
+<h1>{{ site_name }}</h1>
+```
+
+---
+
+### SITE_BASE_URL
+
+**What it does:** The full URL where your site will be hosted
+
+**Why it matters:**
+- Sets the `<base>` tag in HTML for relative links
+- Used for generating absolute URLs
+- Critical for production deployments
+
+**Examples:**
+```bash
+# For local development
+SITE_BASE_URL="http://localhost:8000/"
+
+# For production
+SITE_BASE_URL="https://www.mysite.com/"
+```
+
+**Important:** Always include the trailing slash!
+
+**Template usage:**
+```twig
+<base href="{{ site_base_url }}">
+```
+
+---
+
+### SOURCE_DIR
+
+**What it does:** Where StaticForge looks for your content files
+
+**Default:** `content`
+
+**Examples:**
+```bash
+SOURCE_DIR="content"      # Standard
+SOURCE_DIR="src/pages"    # Custom location
+SOURCE_DIR="docs"         # For documentation sites
+```
+
+**What goes here:** Your `.md` and `.html` files with frontmatter
+
+---
+
+### OUTPUT_DIR
+
+**What it does:** Where StaticForge writes the generated HTML files
+
+**Default:** `output` (common alternatives: `public`, `dist`, `build`)
+
+**Examples:**
+```bash
+OUTPUT_DIR="output"   # Clean, simple
+OUTPUT_DIR="public"   # Traditional web server convention
+OUTPUT_DIR="dist"     # Common for build systems
+```
+
+**Important:** This is the directory you'll:
+- Point your web server at
+- Upload to your hosting provider
+- Serve with `php -S localhost:8000 -t output/`
+
+---
+
+### TEMPLATE_DIR
+
+**What it does:** Where your Twig templates live
+
+**Default:** `templates`
+
+**Example:**
+```bash
+TEMPLATE_DIR="templates"
+```
+
+**Directory structure:**
+```
+templates/
+├── sample/          # Each subdirectory is a theme
+├── terminal/
+├── vaulttech/
+└── staticforce/
+```
+
+You typically won't change this unless you have a custom project structure.
+
+---
+
+### TEMPLATE
+
+**What it does:** Which theme to use from your TEMPLATE_DIR
+
+**Default:** `sample`
+
+**Built-in options:**
+- `sample` - Clean, modern design
+- `terminal` - Retro terminal aesthetic
+- `vaulttech` - Vintage tech theme
+- `staticforce` - Documentation-focused
+
+**Example:**
+```bash
+TEMPLATE="terminal"
+```
+
+**How it works:** StaticForge looks for `templates/{TEMPLATE}/base.html.twig`
+
+---
+
+### FEATURES_DIR
+
+**What it does:** Where StaticForge finds feature plugins
+
+**Default:** `src/Features`
+
+**Example:**
+```bash
+FEATURES_DIR="src/Features"
+```
+
+**What's in here:** Each subdirectory contains a feature like:
+- `MenuBuilder/` - Builds navigation menus
+- `Categories/` - Organizes content by category
+- `MarkdownRenderer/` - Converts Markdown to HTML
+- `HtmlRenderer/` - Processes HTML files
+
+You won't typically change this setting.
+
+---
+
+## Optional Settings
+
+These settings enhance StaticForge but aren't required to run.
+
+### SITE_TAGLINE
+
+**What it does:** A short phrase that describes your site
+
+**Example:**
+```bash
+SITE_TAGLINE="Built with ❤️ and PHP"
+```
+
+**Template usage:**
+```twig
+<p>{{ site_tagline }}</p>
+```
+
+---
+
+### LOG_LEVEL
+
+**What it does:** Controls how much detail goes in the log file
+
+**Options:**
+- `DEBUG` - Everything (very verbose)
+- `INFO` - Normal operations (recommended for development)
+- `WARNING` - Only warnings and errors
+- `ERROR` - Only errors
+- `CRITICAL` - Only critical failures
+
+**Example:**
+```bash
+LOG_LEVEL="INFO"
+```
+
+**Tip:** Use `DEBUG` when troubleshooting, `INFO` for development, and `WARNING` or `ERROR` for production.
+
+---
+
+### LOG_FILE
+
+**What it does:** Where to save the log file
+
+**Default:** `staticforge.log` (in the project root)
+
+**Example:**
+```bash
+LOG_FILE="logs/staticforge.log"
+```
+
+**Note:** The directory must exist or StaticForge will create it.
+
+---
+
+## Directory Structure
+
+Understanding how StaticForge organizes files helps you structure your content effectively.
+
+### Input Structure (SOURCE_DIR)
 
 ```
 content/
-├── index.md                 # Homepage
-├── about.md                 # About page
-├── blog/                    # Blog posts
-│   ├── post-1.md
-│   ├── post-2.md
-│   └── draft-post.md
-├── docs/                    # Documentation
-│   ├── getting-started.md
-│   └── advanced.md
-└── static/                  # Static assets
-    ├── images/
-    └── downloads/
+├── index.md              # Homepage (→ output/index.html)
+├── about.md              # About page (→ output/about.html)
+├── contact.html          # HTML page (→ output/contact.html)
+├── blog/                 # Subdirectory
+│   ├── post-1.md        # (→ output/blog/post-1.html)
+│   └── post-2.md        # (→ output/blog/post-2.html)
+└── docs/
+    └── guide.md         # (→ output/docs/guide.html)
 ```
 
-**Rules**:
-- Directories are recursed when looking for files to process.
-- Directory structure is not preserved in output
+**Key points:**
+- StaticForge recursively searches all subdirectories
+- Directory structure IS preserved in output (unless using categories)
+- Both `.md` and `.html` files are processed
+- Files with `.md` extension become `.html` in output
 
 ---
 
-## <a id="default-features">Default Features</a>
+### Output Structure (OUTPUT_DIR)
 
-Any of these features can be disabled by simply deleting the directory from `src/Features/`. It is not recommended that you edit these features but it is acceptable to create your own versions or add additional featueres as needed. See [Feature Development](FEATURE_DEVELOPMENT.html) for more information.
+**Without categories:**
+```
+output/
+├── index.html           # From content/index.md
+├── about.html           # From content/about.md
+├── blog/
+│   ├── post-1.html
+│   └── post-2.html
+└── docs/
+    └── guide.html
+```
 
-These features are included by default:
+**With categories:**
+```
+output/
+├── index.html
+├── web-dev/             # Category subdirectory
+│   ├── index.html      # Category index page
+│   ├── article-1.html  # Has category = "web-dev"
+│   └── article-2.html
+└── tutorials/           # Another category
+    ├── index.html
+    └── beginner.html
+```
 
-### Markdown Renderer
-
-**Priority**: 100<br />
-**Events Listend For**: `PRE_RENDER`, `RENDER`<br />
-
-Processes `.md` files with:
-- INI frontmatter parsing
-- CommonMark Markdown to HTML conversion
-- Twig template rendering
-
-**Configuration**: None required<br />
-
-### HTML Renderer
-
-**Priority**: 100<br />
-**Events Listend For**: `PRE_RENDER`, `RENDER`<br />
-
-Processes `.html` and `.htm` files with:
-- INI frontmatter parsing (HTML comments)
-- Twig template rendering
-
-**Configuration**: None required<br />
-
-### Menu Builder
-If the Menu builder is installed then it will read the frontmatter `menu` key to determine which menu to add the page to.
-- `1` Means that it will be placed on Menu 1 but in no particular order.
-- `1.2` Means that it will be placed in the second position on Menu 1. If there are duplicates for a given position the last one specified gets the slot.
-- `1.2.3` This indicates that position 2 in menu 1 is a drop-down and that this itema will be item number 3 in that drop-down.
-- `1.2.0` This is a special case as no menu item can be assigned position 0. In this case, the value specified will be the name of the dropdown in position 2 of menu 1.
-
-**Example:**
-```mark
 ---
-menu=1.2
----
-```
 
-```
-Home (position=1)
-About (position=2)
-Services (position=3)
-  ├─ Web Development (position=1)
-  ├─ Mobile Apps (position=2)
-  └─ Consulting (position=3)
-Contact (position=4)
-```
+## Built-in Features
 
-**Priority**: 100<br />
-**Events Listend For**: `CREATE`, `PRE_LOOP`<br />
+StaticForge comes with several powerful features out of the box:
 
+- **Markdown Renderer** - Converts `.md` files to HTML
+- **HTML Renderer** - Processes `.html` files with templates
+- **Menu Builder** - Automatically creates navigation menus
+- **Categories** - Organizes content into subdirectories
+- **Category Index** - Creates index pages for categories
+- **Tags** - Extracts and manages content tags
 
-**Template Usage**:
-```twig
-{{ menu1|raw }}  {# Menu ID 1 #}
-{{ menu2|raw }}  {# Menu ID 2 #}
-```
+For detailed information about each feature, including examples and template usage, see the **[Built-in Features Guide](FEATURES.html)**.
 
-### Categories
-Categories allows you to group content into subdirectory based on a category name defined in the frontmatter. This is the only way to have the system generate content anywhere except for the webroot.
+### Quick Feature Reference
 
-**Priority**: 100<br />
-**Events Listend For**: `POST_RENDER`<br />
-
-**Example:**
-```markdown
----
-category = web-development
----
-```
-
-### Category Index Pages**
-If you have categories, you can create a MD file names the same as the category with details about how you want index.html created. If you DO NOT do this then index.html will not be created for that category. If it exists though then it will be used to generate the index page for that category and place it in the appropriate subdirectory.
-
-Generated at `public/{slug}/index.html`
-
-**Example:**
+**Using features in your content:**
 
 ```markdown
 ---
-type = category
-title = Business Services
-description = Comprehensive business solutions and services for your company
-template = index
-menu = 1.4
-per_page = 10
----
-
-This content will be replaced with the category file listing during site generation.
-```
-
-### Tags
-
-**Priority**: 100<br />
-**Events**: `POST_RENDER`<br />
-
-Sets the specified tags as meta tags in your page.
-
-
-**Example:**
-```
----
-tags = [php, tutorial, beginner]
+title = "My Page"
+menu = 1.1              # Add to navigation menu
+category = "blog"       # Organize into category
+tags = ["php", "web"]   # Add tags
 ---
 ```
 
-### Category Index
+**Disabling features:**
 
-**Priority**: 800<br />
-**Events**: `POST_LOOP`<br />
+Delete or rename the feature's directory:
 
-Generates category index pages with pagination.
+```bash
+# Disable a feature
+rm -rf src/Features/Categories
 
-**Configuration**: Pagination
-- Posts per page: 10 (hardcoded, can be made configurable)
+# Or disable temporarily
+mv src/Features/Categories src/Features/Categories.disabled
+```
 
-**Output**:
-- `public/category/{slug}/index.html`
-- `public/category/{slug}/page-2.html`
-- etc.
+**Creating custom features:**
+
+See the [Feature Development Guide](FEATURE_DEVELOPMENT.html) for step-by-step instructions.
 
 ---
 
+## Production vs Development Settings
 
-## Next Steps
-- [QuickStart Guide](QUICK_START_GUIDE.html)
-- Configuration Guide
-- [Template Development](TEMPLATE_DEVELOPMENT.html)
-- [Feature Development](FEATURE_DEVELOPMENT.html)
-- [Core Events](EVENTS.html)
-- [Additional Commands](ADDITIONAL_COMMANDS.html)
+Here are recommended settings for different environments:
+
+### Development `.env`
+
+```bash
+SITE_NAME="My Site (DEV)"
+SITE_BASE_URL="http://localhost:8000/"
+TEMPLATE="terminal"
+OUTPUT_DIR="output"
+LOG_LEVEL="DEBUG"
+LOG_FILE="logs/dev.log"
+```
+
+### Production `.env`
+
+```bash
+SITE_NAME="My Awesome Site"
+SITE_BASE_URL="https://www.mysite.com/"
+TEMPLATE="sample"
+OUTPUT_DIR="public"
+LOG_LEVEL="ERROR"
+LOG_FILE="logs/production.log"
+```
+
+**Tip:** Use version control to track your `.env.example` but add `.env` to `.gitignore` to keep environment-specific settings out of your repository.

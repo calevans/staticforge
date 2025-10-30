@@ -1,5 +1,6 @@
 ---
-menu 1.6
+template = "docs"
+menu = 1.7, 2.7
 ---
 
 # Additional Commands
@@ -14,12 +15,3 @@ php bin/console.php render:site --template=staticforce --clean
 # List all commands
 php bin/console.php list
 ```
-
----
-## Next Steps
-- [QuickStart Guide](QUICK_START_GUIDE.html)
-- [Configuration Guide](CONFIGURATION.html)
-- [Template Development](TEMPLATE_DEVELOPMENT.html)
-- [Feature Development](FEATURE_DEVELOPMENT.html)
-- [Core Events](EVENTS.html)
-- Additional Commands

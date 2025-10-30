@@ -11,6 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\MarkdownConverter;
 use Twig\Environment as TwigEnvironment;
 use Twig\Loader\FilesystemLoader;
@@ -36,12 +37,11 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         // Get logger from container
         $this->logger = $container->getVariable('logger');
 
-        // Initialize Markdown converter
-        $environment = new Environment();
-        $environment->addExtension(new CommonMarkCoreExtension());
-        $this->markdownConverter = new MarkdownConverter($environment);
-
-        // Register .md extension for processing
+    // Create the CommonMark environment and converter with table support
+    $environment = new Environment();
+    $environment->addExtension(new CommonMarkCoreExtension());
+    $environment->addExtension(new TableExtension());
+    $this->markdownConverter = new MarkdownConverter($environment);        // Register .md extension for processing
         $extensionRegistry = $container->get('extension_registry');
         $extensionRegistry->registerExtension('.md');
 
@@ -80,8 +80,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Use existing output_path if already set (e.g., by CategoryIndex)
             $outputPath = $parameters['output_path'] ?? $this->generateOutputPath($filePath, $container);
 
-            // Apply template
-            $renderedContent = $this->applyTemplate($parsedContent, $container);
+            // Apply template (pass source file path)
+            $renderedContent = $this->applyTemplate($parsedContent, $container, $filePath);
 
             $this->logger->log('INFO', "Markdown file rendered: {$filePath}");
 
@@ -201,7 +201,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     /**
      * Apply Twig template to rendered content
      */
-    private function applyTemplate(array $parsedContent, Container $container): string
+    private function applyTemplate(array $parsedContent, Container $container, string $sourceFile = ''): string
     {
         try {
             // Get template configuration
@@ -229,6 +229,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             $templateVars = array_merge($parsedContent['metadata'], [
                 'title' => $parsedContent['title'],
                 'content' => $parsedContent['content'],
+                'source_file' => $sourceFile,
                 'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
                 'site_tagline' => $container->getVariable('SITE_TAGLINE') ?? '',

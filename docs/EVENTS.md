@@ -1,6 +1,6 @@
 ---
 template = "docs"
-menu = 1.5
+menu = 1.6, 2.6
 ---
 
 # Core Events Reference
@@ -517,13 +517,3 @@ public function onPostLoop(array $data): array
   return $data;
 }
 ```
-
----
-
-## Next Steps
-- [QuickStart Guide](QUICK_START_GUIDE.html)
-- [Configuration Guide](CONFIGURATION.html)
-- [Template Development](TEMPLATE_DEVELOPMENT.html)
-- [Feature Development](FEATURE_DEVELOPMENT.html)
-- Core Events
-- [Additional Commands](ADDITIONAL_COMMANDS.html)

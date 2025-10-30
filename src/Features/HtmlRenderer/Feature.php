@@ -68,8 +68,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Generate output file path
             $outputPath = $this->generateOutputPath($filePath, $container);
 
-            // Apply basic template
-            $renderedContent = $this->applyTemplate($parsedContent, $container);
+            // Apply basic template (pass source file path)
+            $renderedContent = $this->applyTemplate($parsedContent, $container, $filePath);
 
             $this->logger->log('INFO', "HTML file rendered: {$filePath}");
 
@@ -131,7 +131,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             'content' => $htmlContent,
             'title' => $metadata['title'],
             'template' => $metadata['template'],
-            'menu_position' => $metadata['menu_position'] ?? null,
             'category' => $metadata['category'] ?? null,
             'tags' => isset($metadata['tags']) ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags'])) : []
         ];
@@ -167,7 +166,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     /**
      * Apply Twig template to rendered content
      */
-    private function applyTemplate(array $parsedContent, Container $container): string
+    private function applyTemplate(array $parsedContent, Container $container, string $sourceFile = ''): string
     {
         try {
             // Get template configuration
@@ -195,6 +194,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             $templateVars = array_merge($parsedContent['metadata'], [
                 'title' => $parsedContent['title'],
                 'content' => $parsedContent['content'],
+                'source_file' => $sourceFile,
                 'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
                 'site_tagline' => $container->getVariable('SITE_TAGLINE') ?? '',

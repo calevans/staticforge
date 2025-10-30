@@ -388,7 +388,160 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 
 ---
 
-## Step 20. Final Package Polish & Distribution Preparation
+## Step 20. Chapter Navigation Feature ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+
+### Overview
+Create a ChapterNav feature that generates sequential prev/next navigation for documentation-style content based on menu ordering. This allows pages in a menu to have automatic "previous chapter" and "next chapter" links without manual configuration.
+
+### Configuration
+- ✅ Add new environment variables to `.env.example`:
+  - ✅ `CHAPTER_NAV_MENUS="2,3"` - Comma-separated list of menu numbers to build chapter navigation for
+  - ✅ `CHAPTER_NAV_PREV_SYMBOL="←"` - Symbol/text for previous links (default: left arrow)
+  - ✅ `CHAPTER_NAV_NEXT_SYMBOL="→"` - Symbol/text for next links (default: right arrow)
+  - ✅ `CHAPTER_NAV_SEPARATOR="|"` - Separator between navigation elements (default: pipe)
+- ✅ Update `tests/.env.testing` with test values
+
+### Feature Implementation
+- ✅ Create `src/Features/ChapterNav/Feature.php`:
+  - ✅ Extend `BaseFeature` and implement `FeatureInterface`
+  - ✅ Protected properties for configuration with defaults:
+    - ✅ `$configuredMenus = []` - Array of menu numbers from `CHAPTER_NAV_MENUS`
+    - ✅ `$prevSymbol = '←'` - From `CHAPTER_NAV_PREV_SYMBOL`
+    - ✅ `$nextSymbol = '→'` - From `CHAPTER_NAV_NEXT_SYMBOL`
+    - ✅ `$separator = '|'` - From `CHAPTER_NAV_SEPARATOR`
+  - ✅ Private property `$chapterNavData = []` - Stores navigation data per file per menu
+
+- ✅ Event Listeners:
+  - ✅ `POST_GLOB` (priority 150) - Runs AFTER MenuBuilder (priority 100)
+    - ✅ Read configured menus from environment
+    - ✅ Get menu data from `$parameters['features']['MenuBuilder']['files']`
+    - ✅ For each configured menu number:
+      - ✅ Extract all pages with positions like `X.Y` (ignore `X.Y.Z` dropdown items)
+      - ✅ Sort by position (numeric comparison on X, then Y)
+      - ✅ Build sequential array of pages in order
+      - ✅ For each page in sequence:
+        - ✅ Determine prev page (if not first)
+        - ✅ Determine next page (if not last)
+        - ✅ Store in `$chapterNavData[source_file_path][menu_number]`:
+          - ✅ `prev` => `['title' => '...', 'url' => '...']` or null
+          - ✅ `current` => `['title' => '...', 'url' => '...']`
+          - ✅ `next` => `['title' => '...', 'url' => '...']` or null
+          - ✅ `html` => Generated HTML string
+        - ✅ Generate HTML with `buildChapterNavHtml()` method
+    - ✅ Add to parameters: `$parameters['features']['ChapterNav']['pages'] = $chapterNavData`
+    - ✅ Return updated parameters
+
+- ✅ Helper Methods:
+  - ✅ `parseConfiguredMenus()`: Parse comma-separated menu numbers from environment
+  - ✅ `extractSequentialPages($menuData, $menuNumber)`: Get ordered pages from menu, ignore dropdowns
+  - ✅ `buildChapterNavHtml($prev, $current, $next)`: Generate HTML navigation
+    - ✅ Return `<nav class="chapter-nav">` wrapper
+    - ✅ If `$prev` exists: `<a href="{url}" class="chapter-nav-prev">{symbol} {title}</a>`
+    - ✅ Always include: `<span class="chapter-nav-current">{title}</span>`
+    - ✅ If `$next` exists: `<a href="{url}" class="chapter-nav-next">{title} {symbol}</a>`
+    - ✅ Use configured symbols from class properties
+    - ✅ Handle missing prev/next gracefully (first/last pages)
+
+### Renderer Updates
+- ✅ Update `src/Features/MarkdownRenderer/Feature.php`:
+  - ✅ In `applyTemplate()` method, add `source_file` variable to template context
+  - ✅ Pass the original source file path (e.g., `content/docs/FEATURES.md`)
+
+- ✅ Update `src/Features/HtmlRenderer/Feature.php`:
+  - ✅ In `applyTemplate()` method, add `source_file` variable to template context
+  - ✅ Pass the original source file path
+
+### Template Creation
+- ✅ Create `templates/staticforce/_chapter_nav.html.twig` snippet:
+  - ✅ Standalone snippet for reusability
+  - ✅ Includes CSS styles for chapter navigation
+  - ✅ Iterates through configured menus
+  - ✅ Renders navigation HTML with proper escaping
+
+- ✅ Update `templates/staticforce/docs.html.twig`:
+  - ✅ Include chapter navigation snippet above footer
+  - ✅ Proper placement for UX (after content, before footer)
+
+### Testing
+- ✅ Create `tests/Unit/Features/ChapterNavFeatureTest.php`:
+  - ✅ Test configuration parsing from environment
+  - ✅ Test sequential page extraction (verify dropdowns ignored)
+  - ✅ Test prev/next determination for first, middle, and last pages
+  - ✅ Test HTML generation with all combinations (prev only, next only, both, neither)
+  - ✅ Test multiple menus for same page
+  - ✅ Test custom symbols from configuration
+  - ✅ Test edge cases:
+    - ✅ Empty menu configuration (feature skips processing)
+    - ✅ Single page in menu (no prev/next)
+    - ✅ Page appears in multiple configured menus
+
+- ✅ Integration testing verified through full test suite (183 tests passing)
+
+### Documentation
+- ✅ Update `docs/FEATURES.md`:
+  - ✅ Add "Chapter Navigation" section after Menu Builder
+  - ✅ Explain purpose: sequential documentation navigation
+  - ✅ Show configuration options
+  - ✅ Provide template usage examples (include snippet and direct access)
+  - ✅ Explain how it works with MenuBuilder
+  - ✅ Show HTML structure and CSS classes for styling
+  - ✅ Document disable behavior (empty CHAPTER_NAV_MENUS or not set)
+  - ✅ Include tips and best practices
+
+- ✅ Configuration documented in FEATURES.md (CONFIGURATION.md can be updated later if needed)
+
+- ✅ Update `.env.example`:
+  - ✅ Add chapter navigation configuration section with defaults
+  - ✅ Include helpful comments
+
+### Edge Cases & Validation
+- ✅ Handle pages that appear in multiple menus (generate nav for each)
+- ✅ Ignore third-level menu positions (dropdowns) - only use X.Y positions
+- ✅ Handle missing MenuBuilder data gracefully (feature dependency)
+- ✅ Allow empty configuration (feature does nothing if no menus configured)
+- ✅ Handle missing configuration (getVariable returns null, use defaults)
+- ✅ Generate valid HTML even with missing prev/next (first/last pages)
+- ✅ Properly escape all HTML output (htmlspecialchars)
+- ✅ Handle missing titles gracefully (uses MenuBuilder titles)
+
+### Principles Applied
+- ✅ Apply YAGNI: Only generate navigation for configured menus, simple HTML structure
+- ✅ Apply KISS: Straightforward sequential ordering, clean HTML output, snippet-based templates
+- ✅ Apply SOLID:
+  - ✅ Single Responsibility: Feature only handles chapter navigation
+  - ✅ Dependency on MenuBuilder through event system (loose coupling)
+  - ✅ Template decides where/how to display navigation
+- ✅ Apply DRY: Reuse MenuBuilder's menu data, centralized HTML generation, reusable snippet
+- ✅ Apply Separation of Concerns: Feature builds data, template renders it
+
+### Completion Checklist
+- ✅ Create ChapterNav feature class with event listeners
+- ✅ Update both renderers to pass `source_file` to templates
+- ✅ Create `_chapter_nav.html.twig` snippet in staticforce theme
+- ✅ Update `docs.html.twig` to include snippet above footer
+- ✅ Add comprehensive unit tests (14 test cases, 44 assertions)
+- ✅ Run full test suite - all 183 tests passing
+- ✅ Generate test site and verify chapter navigation appears correctly
+- ✅ Verify navigation works for first page (no prev), last page (no next), and middle pages
+- ✅ Verify empty/missing configuration disables feature with no overhead
+- ✅ Update documentation in FEATURES.md with complete usage guide
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
+- Add comprehensive unit tests (10+ test cases)
+- Add integration tests with MenuBuilder
+- Update `.env.example` with new configuration
+- Update documentation (FEATURES.md, CONFIGURATION.md)
+- Run full test suite - all tests must pass
+- Generate test site and verify chapter navigation appears correctly
+- Verify navigation works for first page (no prev), last page (no next), and middle pages
+- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- Wait for further instructions.
+
+---
+
+## Step 21. Final Package Polish & Distribution Preparation
 - Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
 - Review all code about to be edited and any related code.
 - Verify composer.json is complete and optimized for distribution

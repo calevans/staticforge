@@ -1,6 +1,6 @@
 ---
 template = "docs"
-menu = 1.4
+menu = 1.5, 2.5
 ---
 
 # Feature Development Guide
@@ -810,12 +810,3 @@ Used by: Reading Time, Last Modified
 
 Used by: Markdown Renderer, Shortcodes
 
----
-
-## Next Steps
-- [QuickStart Guide](QUICK_START_GUIDE.html)
-- [Configuration Guide](CONFIGURATION.html)
-- [Template Development](TEMPLATE_DEVELOPMENT.html)
-- Feature Development
-- [Core Events](EVENTS.html)
-- [Additional Commands](ADDITIONAL_COMMANDS.html)
