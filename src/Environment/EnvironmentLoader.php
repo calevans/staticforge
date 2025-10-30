@@ -45,6 +45,10 @@ class EnvironmentLoader
         if (strpos($envPath, 'vfs://') === 0) {
             // Manual parsing for virtual filesystem to avoid Dotenv issues
             $content = file_get_contents($envPath);
+            if ($content === false) {
+                throw new InvalidArgumentException("Failed to read environment file: {$envPath}");
+            }
+
             $lines = explode("\n", $content);
             foreach ($lines as $line) {
                 $line = trim($line);
