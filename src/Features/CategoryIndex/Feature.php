@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -16,7 +17,7 @@ use Twig\Loader\FilesystemLoader;
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'CategoryIndex';
-    protected $logger;
+    protected Log $logger;
     private array $categoryFiles = [];
     private array $deferredCategoryFiles = [];  // Track category files to process later
 

@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 
 /**
  * Categories Feature - organizes content into category subdirectories
@@ -14,7 +15,7 @@ use EICC\Utils\Container;
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'Categories';
-    protected $logger;
+    protected Log $logger;
 
     protected array $eventListeners = [
     'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]

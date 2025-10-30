@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 
 class Feature extends BaseFeature implements FeatureInterface
 {
@@ -15,7 +16,7 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $nextSymbol = '→';
     protected string $separator = '|';
     private array $chapterNavData = [];
-    private $logger;
+    private Log $logger;
 
     protected array $eventListeners = [
     'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150]

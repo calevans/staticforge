@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 use Exception;
 use Symfony\Component\Yaml\Yaml;
 use League\CommonMark\CommonMarkConverter;
@@ -23,7 +24,7 @@ use Twig\Loader\FilesystemLoader;
 class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'MarkdownRenderer';
-    protected $logger;
+    protected Log $logger;
     private MarkdownConverter $markdownConverter;
 
     protected array $eventListeners = [

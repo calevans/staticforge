@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 
 /**
  * Tags Feature - extracts and organizes tag metadata from content files
@@ -22,7 +23,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
     private array $allTags = [];
     private array $tagIndex = []; // tag => [file paths]
-    private $logger;
+    private Log $logger;
 
     public function register(EventManager $eventManager, Container $container): void
     {

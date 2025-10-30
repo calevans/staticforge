@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 use Exception;
 use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
@@ -18,7 +19,7 @@ use Twig\Loader\FilesystemLoader;
 class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'HtmlRenderer';
-    protected $logger;
+    protected Log $logger;
 
     protected array $eventListeners = [
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
