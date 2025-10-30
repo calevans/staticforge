@@ -11,7 +11,17 @@ use EICC\Utils\Container;
 class EventManager
 {
     private Container $container;
+
+    /**
+     * Registered event listeners
+     * @var array<string, array<int, array{callback: array{object, string}, priority: int}>>
+     */
     private array $listeners = [];
+
+    /**
+     * List of registered event names
+     * @var array<string>
+     */
     private array $registeredEvents = [];
 
     public function __construct(Container $container)
@@ -31,6 +41,8 @@ class EventManager
 
     /**
      * Register a listener for an event with priority
+     *
+     * @param array{object, string} $callback
      */
     public function registerListener(string $eventName, array $callback, int $priority = 100): void
     {
@@ -51,6 +63,8 @@ class EventManager
 
     /**
      * Unregister a listener for an event
+     *
+     * @param array{object, string} $callback
      */
     public function unregisterListener(string $eventName, array $callback): void
     {
@@ -68,6 +82,9 @@ class EventManager
 
     /**
      * Fire an event and pass parameters through listener chain
+     *
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
      */
     public function fire(string $eventName, array $parameters = []): array
     {
@@ -98,6 +115,8 @@ class EventManager
 
     /**
      * Update features data in container
+     *
+     * @param array<string, mixed> $newFeaturesData
      */
     private function updateFeaturesInContainer(array $newFeaturesData): void
     {
@@ -119,6 +138,8 @@ class EventManager
 
     /**
      * List all registered events
+     *
+     * @return array<string>
      */
     public function list(): array
     {
@@ -127,6 +148,8 @@ class EventManager
 
     /**
      * Get listeners for an event (for testing/debugging)
+     *
+     * @return array<int, array{callback: array{object, string}, priority: int}>
      */
     public function getListeners(string $eventName): array
     {

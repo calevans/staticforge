@@ -11,6 +11,11 @@ use EICC\Utils\Log;
 class ExtensionRegistry
 {
     private Log $logger;
+
+    /**
+     * Registered file extensions
+     * @var array<string>
+     */
     private array $extensions = [];
 
     public function __construct(Container $container)
@@ -49,6 +54,8 @@ class ExtensionRegistry
 
     /**
      * Get all registered extensions
+     *
+     * @return array<string, bool>
      */
     public function getRegisteredExtensions(): array
     {

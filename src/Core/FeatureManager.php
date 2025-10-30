@@ -13,6 +13,11 @@ class FeatureManager
     private Container $container;
     private EventManager $eventManager;
     private Log $logger;
+
+    /**
+     * Loaded feature instances
+     * @var array<string, FeatureInterface>
+     */
     private array $features = [];
 
     public function __construct(Container $container, EventManager $eventManager)
@@ -48,6 +53,8 @@ class FeatureManager
 
     /**
      * Get all loaded features
+     *
+     * @return array<string, FeatureInterface>
      */
     public function getFeatures(): array
     {
@@ -64,6 +71,8 @@ class FeatureManager
 
     /**
      * Discover feature directories
+     *
+     * @return array<string>
      */
     protected function discoverFeatureDirectories(string $featuresDir): array
     {

@@ -17,6 +17,18 @@ use Throwable;
 class ErrorHandler
 {
     private Log $logger;
+
+    /**
+     * Error statistics
+     * @var array{
+     *   core_errors: int,
+     *   feature_errors: int,
+     *   file_errors: int,
+     *   files_processed: int,
+     *   files_failed: array<string>,
+     *   features_failed: array<string>
+     * }
+     */
     private array $errorStats = [
         'core_errors' => 0,
         'feature_errors' => 0,
@@ -143,6 +155,15 @@ class ErrorHandler
 
     /**
      * Get error statistics
+     *
+     * @return array{
+     *   core_errors: int,
+     *   feature_errors: int,
+     *   file_errors: int,
+     *   files_processed: int,
+     *   files_failed: array<string>,
+     *   features_failed: array<string>
+     * }
      */
     public function getErrorStats(): array
     {

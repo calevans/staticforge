@@ -22,6 +22,13 @@ abstract class BaseRendererFeature extends BaseFeature
    * @param array $metadata Metadata extracted from frontmatter
    * @return array Metadata with defaults applied
    */
+    /**
+     * Apply default metadata to file metadata
+     * Merges default values with file-specific metadata
+     *
+     * @param array<string, mixed> $metadata
+     * @return array<string, mixed>
+     */
     protected function applyDefaultMetadata(array $metadata): array
     {
         return array_merge([

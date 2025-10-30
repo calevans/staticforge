@@ -13,6 +13,11 @@ use InvalidArgumentException;
 class EnvironmentLoader
 {
     private Container $container;
+
+    /**
+     * Required environment variables
+     * @var array<string>
+     */
     private array $requiredVariables = [
         'SITE_NAME',
         'SITE_BASE_URL',

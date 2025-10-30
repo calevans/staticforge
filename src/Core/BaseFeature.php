@@ -11,6 +11,11 @@ abstract class BaseFeature implements FeatureInterface
 {
     protected Container $container;
     protected EventManager $eventManager;
+
+    /**
+     * Event listener registrations
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array $eventListeners = [];
 
     /**
@@ -48,6 +53,8 @@ abstract class BaseFeature implements FeatureInterface
 
     /**
      * Get list of events this feature listens to
+     *
+     * @return array<string, array{method: string, priority: int}>
      */
     public function getEventListeners(): array
     {
@@ -70,6 +77,8 @@ abstract class BaseFeature implements FeatureInterface
 
     /**
      * Get the features array from container
+     *
+     * @return array<string, mixed>
      */
     protected function getFeatures(): array
     {
@@ -99,6 +108,8 @@ abstract class BaseFeature implements FeatureInterface
 
     /**
      * Get data for a specific feature
+     *
+     * @return array<string, mixed>
      */
     protected function getFeatureData(string $featureName): array
     {

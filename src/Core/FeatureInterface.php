@@ -17,7 +17,8 @@ interface FeatureInterface
 
     /**
      * Get list of events this feature listens to
-     * Returns array of event names for documentation/debugging
+     *
+     * @return array<string, array{method: string, priority: int}>
      */
     public function getEventListeners(): array;
 }

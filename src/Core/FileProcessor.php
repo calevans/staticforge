@@ -16,6 +16,11 @@ class FileProcessor
     private Log $logger;
     private EventManager $eventManager;
     private ErrorHandler $errorHandler;
+
+    /**
+     * Track processed output paths to detect duplicates
+     * @var array<string, bool>
+     */
     private array $processedOutputPaths = [];
 
     public function __construct(Container $container, EventManager $eventManager)

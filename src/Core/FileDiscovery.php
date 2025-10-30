@@ -47,6 +47,8 @@ class FileDiscovery
 
     /**
      * Get list of directories to scan from container
+     *
+     * @return array<string>
      */
     protected function getDirectoriesToScan(): array
     {
@@ -63,6 +65,8 @@ class FileDiscovery
 
     /**
      * Recursively scan directory for processable files
+     *
+     * @param array<string> &$files
      */
     protected function scanDirectory(string $directory, array &$files): void
     {
