@@ -25,11 +25,13 @@ class Feature extends BaseFeature implements FeatureInterface
     ];
 
     /**
-     * @var array<string, array<string, mixed>>
+     * Collection of all unique tags found across files
+     * @var array<int, string>
      */
     private array $allTags = [];
 
     /**
+     * Index mapping tags to files that contain them
      * @var array<string, array<int, string>>
      */
     private array $tagIndex = []; // tag => [file paths]

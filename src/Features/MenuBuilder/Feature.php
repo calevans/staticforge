@@ -69,7 +69,11 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     * Process a single file to extract menu entries
+     *
+     * @param string $filePath Path to the file to process
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData Menu data structure passed by reference
+     * @param-out array<int, mixed> $menuData Modified menu structure with nested arrays
      */
     private function processFileForMenu(string $filePath, array &$menuData): void
     {
@@ -190,7 +194,13 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     * Add a menu entry to the menu data structure
+     *
+     * @param string $menuPosition Position string (e.g., "1", "1.2", "1.2.3")
+     * @param string $filePath Path to the content file
+     * @param string|null $category Optional category for URL generation
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData Menu data array passed by reference
+     * @param-out array<int, mixed> $menuData Modified menu structure with complex nested arrays
      */
     private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void
     {
@@ -383,7 +393,8 @@ class Feature extends BaseFeature implements FeatureInterface
             }
 
             // Sort all items by position
-            usort($allItems, function ($a, $b) {
+            /** @phpstan-ignore-next-line argument.unresolvableType (usort callback types are resolvable) */
+            usort($allItems, function (array $a, array $b): int {
                 return $a['position'] <=> $b['position'];
             });
 
@@ -400,18 +411,19 @@ class Feature extends BaseFeature implements FeatureInterface
             return $html;
         }
 
-        // This is a dropdown structure
-        if ($hasDropdownTitle && $hasSubmenuItems) {
-            // This is a menu with submenus
-            $dropdownTitle = 'Menu';
-            $submenuItems = [];
-            $submenuPosition = 0;
+        // At this point, both $hasDropdownTitle and $hasSubmenuItems must be true
+        // (otherwise we would have returned above)
 
-            foreach ($menuItems as $key => $item) {
-                if ($key === 0 && isset($item['title'])) {
-                    // This is the dropdown title (position x.0)
-                    $dropdownTitle = $item['title'];
-                    $submenuPosition = $key;
+        // This is a dropdown structure - a menu with submenus
+        $dropdownTitle = 'Menu';
+        $submenuItems = [];
+        $submenuPosition = 0;
+
+        foreach ($menuItems as $key => $item) {
+            if ($key === 0 && isset($item['title'])) {
+                // This is the dropdown title (position x.0)
+                $dropdownTitle = $item['title'];
+                $submenuPosition = $key;
                 } elseif ($key > 0 && isset($item['title'])) {
                     // These are submenu items (position x.1, x.2, etc.)
                     $submenuItems[$key] = $item;
@@ -434,17 +446,6 @@ class Feature extends BaseFeature implements FeatureInterface
 
             $html .= '    </ul>' . "\n";
             $html .= '  </li>' . "\n";
-        } else {
-            // This is a simple menu with direct items
-            foreach ($menuItems as $key => $item) {
-                if (isset($item['title'])) {
-                    $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
-                    $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-                    $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
-                             htmlspecialchars($item['title']) . '</a></li>' . "\n";
-                }
-            }
-        }
 
         $html .= '</ul>' . "\n";
 

@@ -21,7 +21,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
     /**
      * Files organized by category
-     * @var array<string, array<string>>
+     * @var array<string, array{display_name?: string, files: array<int, array<string, mixed>>}>
      */
     private array $categoryFiles = [];
 
@@ -41,6 +41,10 @@ class Feature extends BaseFeature implements FeatureInterface
     'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 100]
     ];
 
+    /**
+     * Stores metadata from category definition files
+     * @var array<string, array<string, mixed>>
+     */
     private array $categoryMetadata = []; // Stores metadata from category files
 
     public function register(EventManager $eventManager, Container $container): void
@@ -223,9 +227,12 @@ class Feature extends BaseFeature implements FeatureInterface
         return $this->processDeferredCategoryFiles($container, $parameters);
     }
 
-  /**
-   * Process a single category file through the rendering pipeline
-   */
+    /**
+     * Process a single category file through the rendering pipeline
+     *
+     * @param array<string, mixed> $categoryFile Category file data with metadata
+     * @param Container $container Dependency injection container
+     */
     private function processCategoryFile(array $categoryFile, Container $container): void
     {
         $filePath = $categoryFile['file_path'];
@@ -302,6 +309,9 @@ class Feature extends BaseFeature implements FeatureInterface
             }
 
             $content = file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
 
           // Check for INI frontmatter with type = category
             if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
@@ -319,9 +329,12 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'Found ' . count($this->categoryMetadata) . ' category files');
     }
 
-  /**
-   * Parse INI frontmatter into metadata array
-   */
+    /**
+     * Parse INI frontmatter into metadata array
+     *
+     * @param string $ini INI-formatted string
+     * @return array<string, mixed> Parsed metadata
+     */
     private function parseIniFrontmatter(string $ini): array
     {
         $metadata = [];
@@ -344,9 +357,14 @@ class Feature extends BaseFeature implements FeatureInterface
         return $metadata;
     }
 
-  /**
-   * Add a category to the menu data structure
-   */
+    /**
+     * Add a category to the menu data structure
+     *
+     * @param string $menuPosition Menu position (e.g., "1.2")
+     * @param string $categorySlug Category URL slug
+     * @param string $title Display title
+     * @param array<int, mixed> $menuData Menu structure passed by reference
+     */
     private function addCategoryToMenu(
         string $menuPosition,
         string $categorySlug,
@@ -399,9 +417,12 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', "Added category '{$title}' to menu at position {$menuPosition}");
     }
 
-  /**
-   * Rebuild menu HTML from menu data (borrowed from MenuBuilder logic)
-   */
+    /**
+     * Rebuild menu HTML from menu data (borrowed from MenuBuilder logic)
+     *
+     * @param array<int, mixed> $menuData Menu data structure
+     * @return array<int, string> Generated HTML for each menu
+     */
     private function rebuildMenuHtml(array $menuData): array
     {
         $menuHtml = [];
@@ -418,9 +439,13 @@ class Feature extends BaseFeature implements FeatureInterface
         return $menuHtml;
     }
 
-  /**
-   * Generate HTML for a single menu (simplified version of MenuBuilder logic)
-   */
+    /**
+     * Generate HTML for a single menu (simplified version of MenuBuilder logic)
+     *
+     * @param int $menuNumber Menu number identifier
+     * @param array<int|string, mixed> $menuItems Menu items data structure
+     * @return string Generated HTML
+     */
     private function generateMenuHtml(int $menuNumber, array $menuItems): string
     {
         $menuClass = $menuNumber > 0 ? "menu menu-{$menuNumber}" : "menu";
@@ -654,9 +679,13 @@ class Feature extends BaseFeature implements FeatureInterface
         }
     }
 
-  /**
-   * Get file date from metadata or filesystem
-   */
+    /**
+     * Get file date from metadata or filesystem
+     *
+     * @param array<string, mixed> $metadata File metadata
+     * @param string $filePath Path to the file
+     * @return string Formatted date string
+     */
     private function getFileDate(array $metadata, string $filePath): string
     {
       // Check for published_date in metadata
@@ -666,7 +695,11 @@ class Feature extends BaseFeature implements FeatureInterface
 
       // Fall back to source file modification time
         if (file_exists($filePath)) {
-            return date('Y-m-d', filemtime($filePath));
+            $mtime = filemtime($filePath);
+            if ($mtime === false) {
+                return date('Y-m-d');
+            }
+            return date('Y-m-d', $mtime);
         }
 
         return date('Y-m-d'); // Current date as last resort
