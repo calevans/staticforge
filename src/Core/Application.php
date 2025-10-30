@@ -46,10 +46,11 @@ class Application
         $this->container = $bootstrap->initialize($envPath);
 
         // Get logger from container (should be set by EnvironmentLoader)
-        $this->logger = $this->container->getVariable('logger');
-        if (!$this->logger) {
+        $logger = $this->container->getVariable('logger');
+        if (!$logger instanceof Log) {
             throw new \RuntimeException('Logger not initialized by EnvironmentLoader');
         }
+        $this->logger = $logger;
     }
 
     /**

@@ -141,7 +141,7 @@ class FileProcessor
         // Convert known extensions to .html
         $extension = pathinfo($inputPath, PATHINFO_EXTENSION);
         if (in_array($extension, ['md', 'html'])) {
-            $relativePath = preg_replace('/\.' . preg_quote($extension) . '$/', '.html', $relativePath);
+            $relativePath = preg_replace('/\.' . preg_quote($extension, '/') . '$/', '.html', $relativePath);
         }
 
         return $outputDir . '/' . $relativePath;
