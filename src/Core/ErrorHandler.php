@@ -45,7 +45,7 @@ class ErrorHandler
 
     /**
      * Handle a core system error (critical - should stop generation)
-     * 
+     *
      * @param Throwable $error The error/exception to handle
      * @param array<string, mixed> $context Additional context for logging
      */
