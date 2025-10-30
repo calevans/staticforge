@@ -10,13 +10,11 @@ use EICC\Utils\Log;
  */
 class ExtensionRegistry
 {
-    private Container $container;
     private Log $logger;
     private array $extensions = [];
 
     public function __construct(Container $container)
     {
-        $this->container = $container;
         $this->logger = $container->getVariable('logger');
     }
 

@@ -27,6 +27,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger = $container->getVariable('logger');
     }
 
+    /**
+     * Handle POST_GLOB event - build chapter navigation from menu configuration
+     *
+     * Called dynamically by EventManager when POST_GLOB event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePostGlob(Container $container, array $parameters): array
     {
       // Read configuration from environment

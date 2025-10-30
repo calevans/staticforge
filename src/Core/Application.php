@@ -347,7 +347,9 @@ class Application
             $this->featureManager->loadFeatures();
             $this->featuresLoaded = true;
         }
-    }    /**
+    }
+
+    /**
      * Write output file to disk
      *
      * @param string $outputPath Path to write the file

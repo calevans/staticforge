@@ -29,26 +29,4 @@ abstract class BaseRendererFeature extends BaseFeature
         'title' => 'Untitled Page',
         ], $metadata);
     }
-
-  /**
-   * Get the default template name
-   * Can be overridden by child classes if a different default is needed
-   *
-   * @return string Default template name
-   */
-    protected function getDefaultTemplate(): string
-    {
-        return $this->defaultTemplate;
-    }
-
-  /**
-   * Set a custom default template (optional, for specialized renderers)
-   *
-   * @param string $template Template name to use as default
-   * @return void
-   */
-    protected function setDefaultTemplate(string $template): void
-    {
-        $this->defaultTemplate = $template;
-    }
 }

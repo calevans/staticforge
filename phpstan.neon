@@ -1,0 +1,21 @@
+includes:
+  - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+  - vendor/shipmonk/dead-code-detector/rules.neon
+
+parameters:
+  level: 7
+  paths:
+    - src
+    - tests
+  treatPhpDocTypesAsCertain: false
+
+  ignoreErrors:
+    # Event handlers are called dynamically via EventManager
+    # Methods registered in $eventListeners arrays are dispatched at runtime
+    - message: '#Unused.*::(handlePostGlob|handlePreRender|handlePostRender|handleRender|collectCategoryFiles|processDeferredCategoryFiles)#'
+      identifier: shipmonk.deadMethod
+
+    # @phpstan-used is documentation for event handlers, not a standard PHPStan tag
+    - message: '#Unknown PHPDoc tag: @phpstan-used#'
+      identifier: phpDoc.phpstanTag
+

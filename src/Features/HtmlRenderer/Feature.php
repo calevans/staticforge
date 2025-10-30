@@ -40,6 +40,10 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
     /**
      * Handle RENDER event for HTML files
+     *
+     * Called dynamically by EventManager when RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
      */
     public function handleRender(Container $container, array $parameters): array
     {
@@ -131,7 +135,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             'title' => $metadata['title'],
             'template' => $metadata['template'],
             'category' => $metadata['category'] ?? null,
-            'tags' => isset($metadata['tags']) ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags'])) : []
+            'tags' => isset($metadata['tags'])
+                ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags']))
+                : []
         ];
     }
 
@@ -229,7 +235,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             '{{PAGE_TITLE}}' => $parsedContent['title'],
             '{{CONTENT}}' => $parsedContent['content'],
             '{{META_DESCRIPTION}}' => $parsedContent['metadata']['description'] ?? '',
-            '{{META_KEYWORDS}}' => isset($parsedContent['tags']) && is_array($parsedContent['tags']) ? implode(', ', $parsedContent['tags']) : ''
+            '{{META_KEYWORDS}}' => isset($parsedContent['tags']) && is_array($parsedContent['tags'])
+                ? implode(', ', $parsedContent['tags'])
+                : ''
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);

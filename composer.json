@@ -20,7 +20,9 @@
     },
     "require-dev": {
         "mikey179/vfsstream": "^1.6",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.5",
+        "shipmonk/dead-code-detector": "^0.13.5",
         "squizlabs/php_codesniffer": "*"
     },
     "autoload": {

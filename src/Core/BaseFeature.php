@@ -44,7 +44,9 @@ abstract class BaseFeature implements FeatureInterface
 
         // Register event listeners defined by the feature
         $this->registerEventListeners();
-    }    /**
+    }
+
+    /**
      * Get list of events this feature listens to
      */
     public function getEventListeners(): array
@@ -72,19 +74,6 @@ abstract class BaseFeature implements FeatureInterface
     protected function getFeatures(): array
     {
         return $this->container->getVariable('features') ?? [];
-    }
-
-    /**
-     * Update a specific feature's data in the features array
-     * Note: Due to Container constraints, features should be managed by FeatureManager
-     */
-    protected function updateFeatureData(string $featureName, array $data): void
-    {
-        // For now, this is a placeholder - actual implementation will depend on
-        // FeatureManager providing a mutable features reference
-        $features = $this->getFeatures();
-        $features[$featureName] = $data;
-        // Note: Cannot update container directly due to setVariable constraints
     }
 
     /**

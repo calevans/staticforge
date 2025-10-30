@@ -40,9 +40,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'CategoryIndex Feature registered');
     }
 
-  /**
-   * Handle POST_GLOB event - scan for category files and inject category menu entries
-   */
+    /**
+     * Handle POST_GLOB event - scan for category files and inject category menu entries
+     *
+     * Called dynamically by EventManager when POST_GLOB event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePostGlob(Container $container, array $parameters): array
     {
         $this->logger->log('INFO', 'CategoryIndex: Scanning for category files');
@@ -76,9 +80,13 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
-  /**
-   * PRE_RENDER: Detect category files and defer their rendering
-   */
+    /**
+     * PRE_RENDER: Detect category files and defer their rendering
+     *
+     * Called dynamically by EventManager when PRE_RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePreRender(Container $container, array $parameters): array
     {
       // If bypass_category_defer flag is set, don't defer (used during POST_LOOP processing)
@@ -114,9 +122,15 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         return $parameters;
-    }  /**
-   * Collect files that have categories during POST_RENDER
-   */
+    }
+
+    /**
+     * Collect files that have categories during POST_RENDER
+     *
+     * Called dynamically by EventManager when POST_RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function collectCategoryFiles(Container $container, array $parameters): array
     {
         $metadata = $parameters['metadata'] ?? [];
@@ -156,9 +170,13 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
-  /**
-   * POST_LOOP: Process deferred category files through the rendering pipeline
-   */
+    /**
+     * POST_LOOP: Process deferred category files through the rendering pipeline
+     *
+     * Called dynamically by EventManager when POST_LOOP event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function processDeferredCategoryFiles(Container $container, array $parameters): array
     {
         if (empty($this->deferredCategoryFiles)) {
@@ -198,7 +216,10 @@ class Feature extends BaseFeature implements FeatureInterface
       // Get collected files for this category
         $categoryData = $this->categoryFiles[$categorySlug] ?? ['files' => []];
 
-        $this->logger->log('INFO', "Processing category file: {$filePath} with " . count($categoryData['files']) . " files");
+        $this->logger->log(
+            'INFO',
+            "Processing category file: {$filePath} with " . count($categoryData['files']) . " files"
+        );
 
       // Build complete markdown content with frontmatter
       // Include the files array in metadata so Twig can access it
@@ -470,8 +491,12 @@ JAVASCRIPT;
   /**
    * Add a category to the menu data structure
    */
-    private function addCategoryToMenu(string $menuPosition, string $categorySlug, string $title, array &$menuData): void
-    {
+    private function addCategoryToMenu(
+        string $menuPosition,
+        string $categorySlug,
+        string $title,
+        array &$menuData
+    ): void {
       // Parse menu position
         $parts = explode('.', $menuPosition);
 
@@ -637,9 +662,11 @@ JAVASCRIPT;
         }
 
         return $this->getPlaceholderImage($container);
-    }  /**
-   * Generate thumbnail from source image
-   */
+    }
+
+    /**
+     * Generate thumbnail from source image
+     */
     private function generateThumbnail(string $sourcePath, string $contentPath, Container $container): string
     {
         $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';

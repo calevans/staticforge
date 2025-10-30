@@ -30,9 +30,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'Categories Feature registered');
     }
 
-  /**
-   * Handle POST_RENDER event to modify output path based on category
-   */
+    /**
+     * Handle POST_RENDER event to modify output path based on category
+     *
+     * Called dynamically by EventManager when POST_RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePostRender(Container $container, array $parameters): array
     {
       // Only process if there's metadata with a category

@@ -10,12 +10,18 @@ use EICC\Utils\Container;
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'MenuBuilder';
-    private array $menuData = [];
 
     protected array $eventListeners = [
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 100]
     ];
 
+    /**
+     * Handle POST_GLOB event - build menu structure from discovered files
+     *
+     * Called dynamically by EventManager when POST_GLOB event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePostGlob(Container $container, array $parameters): array
     {
         // Scan files and build menu structure

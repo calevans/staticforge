@@ -34,9 +34,13 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'Tags Feature registered');
     }
 
-  /**
-   * Handle POST_GLOB event - scan all discovered files for tags
-   */
+    /**
+     * Handle POST_GLOB event - scan all discovered files for tags
+     *
+     * Called dynamically by EventManager when POST_GLOB event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePostGlob(Container $container, array $parameters): array
     {
         $discoveredFiles = $container->getVariable('discovered_files') ?? [];
@@ -56,14 +60,21 @@ class Feature extends BaseFeature implements FeatureInterface
         'tag_counts' => $this->getTagCounts()
         ];
 
-        $this->logger->log('INFO', 'Collected ' . count($this->allTags) . ' unique tags from ' . count($discoveredFiles) . ' files');
+        $this->logger->log(
+            'INFO',
+            'Collected ' . count($this->allTags) . ' unique tags from ' . count($discoveredFiles) . ' files'
+        );
 
         return $parameters;
     }
 
-  /**
-   * Handle PRE_RENDER event - add tag data to template parameters
-   */
+    /**
+     * Handle PRE_RENDER event - add tag data to template parameters
+     *
+     * Called dynamically by EventManager when PRE_RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     */
     public function handlePreRender(Container $container, array $parameters): array
     {
         $filePath = $parameters['file_path'] ?? '';

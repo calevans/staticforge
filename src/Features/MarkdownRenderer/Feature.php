@@ -50,6 +50,10 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
     /**
      * Handle RENDER event for Markdown files
+     *
+     * Called dynamically by EventManager when RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
      */
     public function handleRender(Container $container, array $parameters): array
     {

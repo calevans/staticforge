@@ -17,7 +17,6 @@ use Throwable;
 class ErrorHandler
 {
     private Log $logger;
-    private Container $container;
     private array $errorStats = [
         'core_errors' => 0,
         'feature_errors' => 0,
@@ -29,7 +28,6 @@ class ErrorHandler
 
     public function __construct(Container $container)
     {
-        $this->container = $container;
         $this->logger = $container->getVariable('logger');
     }
 
@@ -175,7 +173,10 @@ class ErrorHandler
         $stats = $this->errorStats;
 
         if ($stats['core_errors'] === 0 && $stats['feature_errors'] === 0 && $stats['file_errors'] === 0) {
-            $this->logger->log('INFO', "Generation completed with no errors. Files processed: {$stats['files_processed']}");
+            $this->logger->log(
+                'INFO',
+                "Generation completed with no errors. Files processed: {$stats['files_processed']}"
+            );
             return;
         }
 
