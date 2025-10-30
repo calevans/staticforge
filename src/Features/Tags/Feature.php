@@ -126,6 +126,10 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         $content = file_get_contents($filePath);
+        if ($content === false) {
+            return;
+        }
+        
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         $tags = [];
