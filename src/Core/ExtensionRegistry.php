@@ -55,7 +55,7 @@ class ExtensionRegistry
     /**
      * Get all registered extensions
      *
-     * @return array<string, bool>
+     * @return array<string>
      */
     public function getRegisteredExtensions(): array
     {
