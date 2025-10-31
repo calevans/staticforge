@@ -206,7 +206,7 @@ class UploadSiteCommand extends Command
           // Try key-based authentication first if configured
             if (!empty($config['key_path'])) {
                 if ($this->authenticateWithKey($config['key_path'], $config['key_passphrase'])) {
-                    $this->logger->info('Connected via SSH key authentication');
+                    $this->logger->log('INFO', 'Connected via SSH key authentication');
                     return true;
                 }
             }
@@ -214,7 +214,7 @@ class UploadSiteCommand extends Command
           // Fall back to password authentication
             if (!empty($config['password'])) {
                 if ($this->authenticateWithPassword($config['username'], $config['password'])) {
-                    $this->logger->info('Connected via password authentication');
+                    $this->logger->log('INFO', 'Connected via password authentication');
                     return true;
                 }
             }
