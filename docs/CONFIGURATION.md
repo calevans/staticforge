@@ -43,8 +43,8 @@ TEMPLATE_DIR="templates"
 FEATURES_DIR="src/Features"
 
 # Optional Configuration
-LOG_LEVEL="info"
-LOG_FILE="staticforge.log"
+LOG_LEVEL="INFO"
+LOG_FILE="logs/staticforge.log"
 ```
 
 ---

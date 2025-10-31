@@ -1,7 +1,6 @@
 # Directories
 vendor/
 node_modules/
-templates/
 public/
 .vscode/
 .idea/

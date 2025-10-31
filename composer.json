@@ -47,6 +47,7 @@
         "post-create-project-cmd": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php -r \"if (!file_exists('output')) mkdir('output', 0755, true);\"",
+            "@php -r \"if (!file_exists('logs')) mkdir('logs', 0755, true);\"",
             "@php bin/console.php --version",
             "@php -r \"echo PHP_EOL . '✓ StaticForge installed successfully!' . PHP_EOL;\"",
             "@php -r \"echo '  Next steps:' . PHP_EOL;\"",
