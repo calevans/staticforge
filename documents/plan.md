@@ -574,43 +574,30 @@ Each step must result in:
 ### Overview
 Refactor the bootstrap architecture to eliminate the redundant Core/Bootstrap class and create a proper procedural bootstrap file that handles autoloading, environment loading, and container initialization in one place.
 
-### Step 23.1. Create New Bootstrap File
-- Review current `src/Core/Bootstrap.php` to understand what needs to be preserved
-- Create `src/bootstrap.php` as a procedural script (not a class)
-- Structure:
-  - Require Composer autoloader (`vendor/autoload.php`)
-  - Accept optional `$envPath` parameter (defaults to `.env`)
-  - Load environment variables using Dotenv
-  - Create Container instance
-  - Load all environment variables into container using `setVariable()`
-  - Register logger using `stuff()` as singleton
-  - Return fully configured Container instance
-- Follow the pattern from zillowScraper example
-- Apply KISS: Simple procedural bootstrap, no class wrapper
-- Apply DRY: Single source of truth for container initialization
+### Step 23.1. Create New Bootstrap File ✅
+- ✅ Review current `src/Core/Bootstrap.php` to understand what needs to be preserved
+- ✅ Create `src/bootstrap.php` as a procedural script (not a class)
+- ✅ Structure:
+  - ✅ Require Composer autoloader (`vendor/autoload.php`)
+  - ✅ Accept optional `$envPath` parameter (defaults to `.env`)
+  - ✅ Load environment variables using Dotenv into `$_ENV` superglobal
+  - ✅ Validate required environment variables exist in `$_ENV`
+  - ✅ Create Container instance
+  - ✅ Set only `app_root` in container (computed value)
+  - ✅ Register logger using `stuff()` as singleton (reads from `$_ENV` directly)
+  - ✅ Return fully configured Container instance
+- ✅ Follow the pattern from zillowScraper example
+- ✅ Apply KISS: Simple procedural bootstrap, no class wrapper, no variable duplication
+- ✅ Apply DRY: Environment variables stay in `$_ENV`, accessed directly when needed
 
-### Step 23.2. Update Environment Loading
-- Read all environment variables from `.env`:
-  - `SITE_NAME`, `SITE_TAGLINE`, `SITE_BASE_URL`
-  - `TEMPLATE`, `SOURCE_DIR`, `OUTPUT_DIR`, `TEMPLATE_DIR`, `FEATURES_DIR`
-  - `LOG_LEVEL`, `LOG_FILE`
-  - Chapter navigation variables
-  - SFTP configuration variables
-- Store each in container using `$container->setVariable('key', $_ENV['KEY'])`
-- Apply YAGNI: Only load variables that exist in .env
-- Apply SOLID: Single responsibility - bootstrap only initializes
+### Step 23.2. Update Environment Loading (REMOVED - handled in 23.1)
+This step is no longer needed as environment loading is part of bootstrap.php creation.
 
-### Step 23.3. Register Logger Service
-- Use `$container->stuff('logger', function() use ($container) {...})`
-- Logger should:
-  - Read log directory from container (default: `logs/`)
-  - Read log filename from container (default from `LOG_FILE` variable or `staticforge.log`)
-  - Read log level from container (default from `LOG_LEVEL` or `info`)
-  - Return `new Log('staticforge', $logPath . $logFileName, $logLevel)`
-- Logger is created once and reused (that's what `stuff()` does)
+### Step 23.3. Register Logger Service (REMOVED - handled in 23.1)
+This step is no longer needed as logger registration is part of bootstrap.php creation.
 - Apply SOLID: Logger factory encapsulated in closure
 
-### Step 23.4. Update Console Entry Point
+### Step 23.2. Update Console Entry Point ✅
 - Modify `bin/console.php`:
   - Remove `require vendor/autoload.php`
   - Add `$container = require __DIR__ . '/../src/bootstrap.php';` at the top
@@ -619,7 +606,7 @@ Refactor the bootstrap architecture to eliminate the redundant Core/Bootstrap cl
 - Apply DRY: Single bootstrap path for all entry points
 - Apply SOLID: Console delegates to bootstrap
 
-### Step 23.5. Update Command Constructors
+### Step 23.3. Update Command Constructors
 - Modify `RenderSiteCommand`:
   - Add `public function __construct(Container $container)`
   - Store container as protected property
@@ -635,20 +622,20 @@ Refactor the bootstrap architecture to eliminate the redundant Core/Bootstrap cl
 - Apply SOLID: Dependency injection, no self-initialization
 - Apply KISS: Commands receive what they need, don't create it
 
-### Step 23.6. Update Application Class
+### Step 23.4. Update Application Class
 - Review `src/Core/Application.php` to see if it needs container passed in
 - If Application creates its own container/bootstrap, refactor to accept container
 - Ensure Application uses container's logger via `getVariable('logger')`
 - Apply SOLID: Application receives configured dependencies
 
-### Step 23.7. Remove Old Bootstrap Class
+### Step 23.5. Remove Old Bootstrap Class
 - Delete `src/Core/Bootstrap.php`
 - Delete `src/Environment/EnvironmentLoader.php` (functionality moved to bootstrap.php)
 - Clean up any imports referencing these classes
 - Apply YAGNI: Remove unused code
 - Apply KISS: Fewer classes to maintain
 
-### Step 23.8. Update Tests
+### Step 23.6. Update Tests
 - Modify test files that currently use Bootstrap class
 - Tests should either:
   - Require bootstrap.php with test .env path: `$container = require __DIR__ . '/../../src/bootstrap.php';`
@@ -657,14 +644,14 @@ Refactor the bootstrap architecture to eliminate the redundant Core/Bootstrap cl
 - Ensure all command tests pass container correctly
 - Apply SOLID: Tests use same bootstrap as production
 
-### Step 23.9. Update Documentation
+### Step 23.7. Update Documentation
 - Update `README.md` if it references Bootstrap class
 - Update `docs/CONFIGURATION.md` if needed
 - Document new bootstrap.php location and usage
 - Show example of how entry points should use it
 - Apply KISS: Clear, simple documentation
 
-### Step 23.10. Verification & Testing
+### Step 23.8. Verification & Testing
 - Run full test suite - all 196 tests must pass
 - Verify `bin/console.php list` works
 - Verify `bin/console.php site:render` works

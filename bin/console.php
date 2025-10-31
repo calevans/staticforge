@@ -6,21 +6,16 @@ use EICC\StaticForge\Commands\RenderPageCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use Symfony\Component\Console\Application;
 
-// Include Composer autoloader
-$autoload = __DIR__ . '/../vendor/autoload.php';
-if (!file_exists($autoload)) {
-    echo "Composer autoloader not found. Please run 'composer install' first.\n";
-    exit(1);
-}
-require $autoload;
+// Bootstrap application
+$container = require __DIR__ . '/../src/bootstrap.php';
 
 // Create console application
 $app = new Application('StaticForge', '1.0.0');
 
 // Add commands
-$app->add(new RenderSiteCommand());
-$app->add(new RenderPageCommand());
-$app->add(new UploadSiteCommand());
+$app->add(new RenderSiteCommand($container));
+$app->add(new RenderPageCommand($container));
+$app->add(new UploadSiteCommand($container));
 
 // Run the application
 $app->run();
