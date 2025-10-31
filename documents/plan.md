@@ -566,3 +566,325 @@ Each step must result in:
 - ✅ New functionality demonstrated with example
 - ✅ Error handling tested and documented
 - ✅ Code follows SOLID principles and project conventions
+
+---
+
+## Step 23. Bootstrap Architecture Refactoring
+
+### Overview
+Refactor the bootstrap architecture to eliminate the redundant Core/Bootstrap class and create a proper procedural bootstrap file that handles autoloading, environment loading, and container initialization in one place.
+
+### Step 23.1. Create New Bootstrap File
+- Review current `src/Core/Bootstrap.php` to understand what needs to be preserved
+- Create `src/bootstrap.php` as a procedural script (not a class)
+- Structure:
+  - Require Composer autoloader (`vendor/autoload.php`)
+  - Accept optional `$envPath` parameter (defaults to `.env`)
+  - Load environment variables using Dotenv
+  - Create Container instance
+  - Load all environment variables into container using `setVariable()`
+  - Register logger using `stuff()` as singleton
+  - Return fully configured Container instance
+- Follow the pattern from zillowScraper example
+- Apply KISS: Simple procedural bootstrap, no class wrapper
+- Apply DRY: Single source of truth for container initialization
+
+### Step 23.2. Update Environment Loading
+- Read all environment variables from `.env`:
+  - `SITE_NAME`, `SITE_TAGLINE`, `SITE_BASE_URL`
+  - `TEMPLATE`, `SOURCE_DIR`, `OUTPUT_DIR`, `TEMPLATE_DIR`, `FEATURES_DIR`
+  - `LOG_LEVEL`, `LOG_FILE`
+  - Chapter navigation variables
+  - SFTP configuration variables
+- Store each in container using `$container->setVariable('key', $_ENV['KEY'])`
+- Apply YAGNI: Only load variables that exist in .env
+- Apply SOLID: Single responsibility - bootstrap only initializes
+
+### Step 23.3. Register Logger Service
+- Use `$container->stuff('logger', function() use ($container) {...})`
+- Logger should:
+  - Read log directory from container (default: `logs/`)
+  - Read log filename from container (default from `LOG_FILE` variable or `staticforge.log`)
+  - Read log level from container (default from `LOG_LEVEL` or `info`)
+  - Return `new Log('staticforge', $logPath . $logFileName, $logLevel)`
+- Logger is created once and reused (that's what `stuff()` does)
+- Apply SOLID: Logger factory encapsulated in closure
+
+### Step 23.4. Update Console Entry Point
+- Modify `bin/console.php`:
+  - Remove `require vendor/autoload.php`
+  - Add `$container = require __DIR__ . '/../src/bootstrap.php';` at the top
+  - Pass container to all command constructors
+  - Commands that currently create their own container should accept it as parameter
+- Apply DRY: Single bootstrap path for all entry points
+- Apply SOLID: Console delegates to bootstrap
+
+### Step 23.5. Update Command Constructors
+- Modify `RenderSiteCommand`:
+  - Add `public function __construct(Container $container)`
+  - Store container as protected property
+  - Remove internal Application bootstrap (Application should receive configured container)
+- Modify `RenderPageCommand`:
+  - Add `public function __construct(Container $container)`
+  - Store container as protected property
+  - Remove internal Application bootstrap
+- Modify `UploadSiteCommand`:
+  - Change constructor from `?Container $container = null` to `Container $container`
+  - Remove conditional container initialization
+  - Always use provided container
+- Apply SOLID: Dependency injection, no self-initialization
+- Apply KISS: Commands receive what they need, don't create it
+
+### Step 23.6. Update Application Class
+- Review `src/Core/Application.php` to see if it needs container passed in
+- If Application creates its own container/bootstrap, refactor to accept container
+- Ensure Application uses container's logger via `getVariable('logger')`
+- Apply SOLID: Application receives configured dependencies
+
+### Step 23.7. Remove Old Bootstrap Class
+- Delete `src/Core/Bootstrap.php`
+- Delete `src/Environment/EnvironmentLoader.php` (functionality moved to bootstrap.php)
+- Clean up any imports referencing these classes
+- Apply YAGNI: Remove unused code
+- Apply KISS: Fewer classes to maintain
+
+### Step 23.8. Update Tests
+- Modify test files that currently use Bootstrap class
+- Tests should either:
+  - Require bootstrap.php with test .env path: `$container = require __DIR__ . '/../../src/bootstrap.php';`
+  - Or create minimal test container manually for unit tests
+- Update `tests/.env.testing` path handling
+- Ensure all command tests pass container correctly
+- Apply SOLID: Tests use same bootstrap as production
+
+### Step 23.9. Update Documentation
+- Update `README.md` if it references Bootstrap class
+- Update `docs/CONFIGURATION.md` if needed
+- Document new bootstrap.php location and usage
+- Show example of how entry points should use it
+- Apply KISS: Clear, simple documentation
+
+### Step 23.10. Verification & Testing
+- Run full test suite - all 196 tests must pass
+- Verify `bin/console.php list` works
+- Verify `bin/console.php site:render` works
+- Verify `bin/console.php site:upload` works
+- Test with different .env configurations
+- Apply Quality Gates: All tests passing, system working
+
+### Principles Applied
+- Apply YAGNI: Single bootstrap file, no class wrapper
+- Apply KISS: Procedural bootstrap is simpler than class-based
+- Apply SOLID: Single responsibility, dependency injection throughout
+- Apply DRY: One bootstrap used by all entry points
+- Apply Separation of Concerns: Bootstrap initializes, commands execute
+
+### Completion Checklist
+- Create `src/bootstrap.php` with full implementation
+- Update `bin/console.php` to use new bootstrap
+- Update all command constructors to require Container
+- Update Application class if needed
+- Remove `src/Core/Bootstrap.php`
+- Remove `src/Environment/EnvironmentLoader.php`
+- Update all affected tests
+- Update documentation
+- Run full test suite - all tests passing
+- Manual verification of all commands
+- Update `documents/plan.md` with ✅ after verification
+- Wait for further instructions
+
+---
+
+## Quality Gates
+Each step must result in:
+- ✅ All unit tests passing
+- ✅ System remains in working state
+- ✅ New functionality demonstrated with example
+- ✅ Error handling tested and documented
+- ✅ Code follows SOLID principles and project conventions
+
+---
+
+## Step 22. SFTP Upload Command ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+
+### Overview
+Create a `site:upload` command that uploads the generated static site to a remote server via SFTP. This enables one-command deployment from local development to production hosting.
+
+### Dependencies
+- Add `phpseclib/phpseclib` to `composer.json` (pure PHP SFTP implementation, no system dependencies)
+  - Latest version 3.x provides SSH2/SFTP support
+  - No need for PHP ssh2 extension or external tools
+
+### Environment Configuration
+- Update `.env.example` with SFTP configuration section:
+  - `SFTP_HOST` - Remote server hostname or IP address (required)
+  - `SFTP_PORT` - SFTP port number (default: 22)
+  - `SFTP_USERNAME` - Username for authentication (required)
+  - `SFTP_PASSWORD` - Password for authentication (optional, use OR key-based auth)
+  - `SFTP_PRIVATE_KEY_PATH` - Path to SSH private key file (optional, use OR password auth)
+  - `SFTP_PRIVATE_KEY_PASSPHRASE` - Passphrase for encrypted private key (optional)
+  - `SFTP_REMOTE_PATH` - Remote directory path to upload site to (required, e.g., `/var/www/html`)
+- Update `tests/.env.testing` with test SFTP configuration (can use dummy values)
+- Add documentation comments explaining key-based vs password authentication
+
+### Command Implementation
+- Create `src/Commands/UploadSiteCommand.php`:
+  - Extend `Symfony\Component\Console\Command\Command`
+  - Command name: `site:upload`
+  - Command description: "Upload generated static site to remote server via SFTP"
+
+- Command Options:
+  - `--input` - Optional input directory override (default: `OUTPUT_DIR` from .env)
+    - Type: `InputOption::VALUE_REQUIRED`
+    - Description: "Override output directory to upload (default from OUTPUT_DIR in .env)"
+
+- Protected Properties:
+  - `$container` - EICC\Utils\Container instance
+  - `$logger` - Logger instance from container
+  - `$sftp` - phpseclib3\Net\SFTP instance
+  - `$uploadedCount` - Track successful uploads
+  - `$errorCount` - Track failed uploads
+  - `$errors` - Array to store error messages
+
+- Execute Method Workflow:
+  1. **Load Configuration**:
+     - Get input directory from `--input` option or `OUTPUT_DIR` from container
+     - Validate input directory exists and is readable
+     - Get SFTP configuration from container variables
+     - Validate required SFTP settings (host, username, remote_path)
+     - Validate authentication method (must have password OR private key)
+
+  2. **Establish SFTP Connection**:
+     - Create `phpseclib3\Net\SFTP` instance with host and port
+     - Attempt authentication (try key-based first if configured, fall back to password)
+     - If connection fails, log error and exit with error code
+     - Log successful connection
+
+  3. **Prepare for Upload**:
+     - Verify/create remote base directory (`SFTP_REMOTE_PATH`)
+     - Initialize counters (`$uploadedCount = 0`, `$errorCount = 0`)
+     - Get list of all files in input directory (recursive)
+
+  4. **Upload Files**:
+     - For each file in input directory:
+       - Calculate relative path from input directory
+       - Determine remote file path (remote_path + relative path)
+       - Create remote directory structure if needed (recursive mkdir)
+       - Upload file via SFTP put method
+       - On success: increment `$uploadedCount`, log if verbose
+       - On failure: increment `$errorCount`, log error, add to `$errors` array, continue
+     - Show progress output for user feedback
+
+  5. **Report Results**:
+     - Log summary: "Uploaded X files, Y errors"
+     - If errors occurred, list all error messages
+     - Return exit code: 0 if no errors, 1 if any errors occurred
+
+- Helper Methods:
+  - `loadConfiguration(InputInterface $input): array` - Load and validate all configuration
+  - `connectSftp(array $config): bool` - Establish SFTP connection with authentication
+  - `authenticateWithKey(string $keyPath, ?string $passphrase): bool` - Key-based auth
+  - `authenticateWithPassword(string $password): bool` - Password-based auth
+  - `ensureRemoteDirectory(string $path): bool` - Create remote directory recursively
+  - `getFilesToUpload(string $directory): array` - Get recursive file list
+  - `uploadFile(string $localPath, string $remotePath): bool` - Upload single file
+  - `disconnect(): void` - Close SFTP connection cleanly
+
+### Error Handling
+- Connection failures: Log error, exit immediately with code 1
+- Missing configuration: Log error, exit immediately with code 1
+- Authentication failures: Log error, exit immediately with code 1
+- File upload failures: Log error, continue with remaining files
+- Directory creation failures: Log error, continue with remaining files
+- All errors use EiccUtils logger with appropriate severity levels
+
+### Testing
+- Create `tests/Unit/Commands/UploadSiteCommandTest.php`:
+  - Test configuration loading and validation
+  - Test missing required configuration (host, username, remote_path)
+  - Test authentication method validation (password OR key required)
+  - Test input directory validation
+  - Mock SFTP connection for testing without real server
+  - Test file list generation from directory
+  - Test remote path calculation
+  - Test error counting and reporting
+  - Test exit codes (0 on success, 1 on errors)
+
+- Integration testing considerations:
+  - Manual testing with real SFTP server recommended
+  - Document test server setup in test file comments
+  - Can use Docker SFTP container for local integration testing
+
+### Documentation
+- Update `docs/ADDITIONAL_COMMANDS.md`:
+  - Add "site:upload" section after "site:render"
+  - Explain SFTP upload functionality
+  - Show configuration examples for both authentication methods
+  - Provide usage examples: `php bin/console.php site:upload`
+  - Document `--input` option usage
+  - Explain error handling behavior (continues on errors)
+  - Include security best practices (use key-based auth, secure .env file)
+
+- Update `README.md`:
+  - Add upload command to deployment workflow section
+  - Show typical workflow: `site:render` then `site:upload`
+  - Link to detailed documentation in ADDITIONAL_COMMANDS.md
+
+### Security Considerations
+- `.env` file must be secured (not committed to git, proper file permissions)
+- Private key files should have restrictive permissions (0600)
+- Document recommendation for key-based auth over password auth
+- Sensitive configuration loaded from environment only
+- No credentials logged or displayed in output
+- SFTP connection uses standard SSH security (encryption, authentication)
+
+### Edge Cases & Validation
+- Empty output directory: Log warning, exit gracefully (nothing to upload)
+- Missing remote directory: Create it recursively
+- Existing remote files: Overwrite (upload always replaces)
+- Special characters in filenames: Handle properly via SFTP protocol
+- Large files: Stream upload (phpseclib handles this)
+- Network interruption: Log error, report failed files
+- Permission issues on remote server: Log error, continue with accessible files
+- Symbolic links in local directory: Follow links, upload target files
+
+### Principles Applied
+- Apply YAGNI: Essential SFTP upload only, no sync/diff logic, no delete operations
+- Apply KISS: Direct full upload every time, clear error reporting, straightforward authentication
+- Apply SOLID:
+  - Single Responsibility: Command handles SFTP upload only
+  - Dependency Injection: Uses container for configuration and logger
+  - Interface Segregation: Uses Symfony Command interface
+- Apply DRY: Reusable helper methods, centralized error handling
+- Apply Separation of Concerns: Command handles CLI, phpseclib handles SFTP protocol
+
+### Completion Checklist
+- ✅ Add `phpseclib/phpseclib` to composer.json dependencies
+- ✅ Run `composer update` to install phpseclib
+- ✅ Create `UploadSiteCommand` class with full implementation
+- ✅ Add SFTP configuration variables to `.env.example`
+- ✅ Update `tests/.env.testing` with test SFTP config
+- ✅ Create comprehensive unit tests (13 test cases, 29 assertions)
+- ✅ Update `docs/ADDITIONAL_COMMANDS.md` with upload command documentation
+- ✅ Update `README.md` with deployment workflow
+- Manual integration testing with real SFTP server (requires server setup)
+- Manual verification: key-based authentication works
+- Manual verification: password-based authentication works
+- Manual verification: directory structure creation on remote server
+- Manual verification: all file types upload correctly (html, css, js, images, pdf)
+- Manual verification: error handling and reporting works correctly
+- ✅ Run full test suite - all 196 tests passing
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification
+- ✅ Wait for further instructions
+
+---
+
+## Quality Gates
+Each step must result in:
+- ✅ All unit tests passing
+- ✅ System remains in working state
+- ✅ New functionality demonstrated with example
+- ✅ Error handling tested and documented
+- ✅ Code follows SOLID principles and project conventions

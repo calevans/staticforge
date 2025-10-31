@@ -11,12 +11,13 @@
     ],
     "require": {
         "php": "^8.4",
-        "vlucas/phpdotenv": "^5.5",
-        "twig/twig": "^3.0",
+        "eicc/utils": "^1.0",
+        "league/commonmark": "^2.4",
+        "phpseclib/phpseclib": "^3.0",
         "symfony/console": "^6.0",
         "symfony/yaml": "^6.0",
-        "league/commonmark": "^2.4",
-        "eicc/utils": "^1.0"
+        "twig/twig": "^3.0",
+        "vlucas/phpdotenv": "^5.5"
     },
     "require-dev": {
         "mikey179/vfsstream": "^1.6",

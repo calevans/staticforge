@@ -496,8 +496,30 @@ php bin/console.php render:page "content/index.md" --template=experimental
 
 Full site generation with clean output:
 ```bash
-php bin/console.php render:site --clean -v
+php bin/console.php site:render --clean -v
 ```
+
+### Deployment to Production
+
+StaticForge includes built-in SFTP upload for easy deployment:
+
+```bash
+# 1. Generate your site
+php bin/console.php site:render --clean
+
+# 2. Upload to production server
+php bin/console.php site:upload
+```
+
+Configure SFTP in your `.env` file:
+```bash
+SFTP_HOST="example.com"
+SFTP_USERNAME="your-username"
+SFTP_PASSWORD="your-password"  # OR use SSH key
+SFTP_REMOTE_PATH="/var/www/html"
+```
+
+For detailed SFTP configuration and usage, see [docs/ADDITIONAL_COMMANDS.md](docs/ADDITIONAL_COMMANDS.md).
 
 ### Debugging
 
@@ -568,7 +590,15 @@ preview:
 ```bash
 #!/bin/bash
 # deploy.sh
-php bin/console.php render:site --clean --template=production
+php bin/console.php site:render --clean
+php bin/console.php site:upload
+```
+
+**Alternative with rsync:**
+```bash
+#!/bin/bash
+# deploy-rsync.sh
+php bin/console.php site:render --clean
 if [ $? -eq 0 ]; then
     rsync -avz public/ user@server:/var/www/html/
 fi
