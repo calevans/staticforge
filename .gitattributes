@@ -8,6 +8,7 @@
 /.lando.local.yml export-ignore
 /.lando.yml export-ignore
 /documents export-ignore
+/docs export-ignore
 /phpstan.neon export-ignore
 /phpunit.xml export-ignore
 /scripts export-ignore
