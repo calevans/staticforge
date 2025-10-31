@@ -2,7 +2,6 @@
 vendor/
 node_modules/
 templates/
-content/
 public/
 .vscode/
 .idea/
