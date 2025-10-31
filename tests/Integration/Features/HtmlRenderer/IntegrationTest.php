@@ -20,46 +20,22 @@ class IntegrationTest extends IntegrationTestCase
     private vfsStreamDirectory $root;
     private string $sourceDir;
     private string $outputDir;
-    private string $envFile;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Clear environment variables to prevent test contamination
-        $envVars = ['SOURCE_DIR', 'OUTPUT_DIR', 'SITE_NAME', 'SITE_BASE_URL', 'TEMPLATE_DIR', 'FEATURES_DIR', 'TEMPLATE', 'LOG_LEVEL', 'LOG_FILE'];
-        foreach ($envVars as $var) {
-            if (isset($_ENV[$var])) unset($_ENV[$var]);
-            if (isset($_SERVER[$var])) unset($_SERVER[$var]);
-            putenv($var);
-        }
 
         // Set up virtual filesystem with unique name per test
         self::$testCounter++;
         $this->root = vfsStream::setup("integration_" . self::$testCounter);
         $this->sourceDir = $this->root->url() . '/source';
         $this->outputDir = $this->root->url() . '/output';
-        $this->envFile = $this->root->url() . '/.env';
 
         mkdir($this->sourceDir);
         mkdir($this->outputDir);
         mkdir($this->root->url() . '/templates');
         mkdir($this->root->url() . '/templates/sample');
         mkdir($this->root->url() . '/features');
-
-        // Create test environment file
-        $envContent = <<<ENV
-SOURCE_DIR="{$this->sourceDir}"
-OUTPUT_DIR="{$this->outputDir}"
-SITE_NAME="Integration Test Site"
-SITE_BASE_URL="https://integration.test/"
-TEMPLATE_DIR="{$this->root->url()}/templates"
-TEMPLATE="sample"
-FEATURES_DIR="/app/src/Features"
-LOG_LEVEL="DEBUG"
-LOG_FILE="php://stderr"
-ENV;
-        file_put_contents($this->envFile, $envContent);
 
         // Create a minimal base template
         $baseTemplate = <<<TWIG
@@ -91,20 +67,6 @@ TWIG;
 
     protected function tearDown(): void
     {
-        // Clean up environment variables to prevent test contamination
-        $envVars = [
-            'SOURCE_DIR',
-            'OUTPUT_DIR',
-            'SITE_NAME',
-            'SITE_BASE_URL',
-            'TEMPLATE_DIR',
-            'FEATURES_DIR'
-        ];
-
-        foreach ($envVars as $var) {
-            unset($_ENV[$var]);
-        }
-
         parent::tearDown();
     }
 
@@ -118,8 +80,14 @@ TWIG;
         $this->assertFileExists($this->sourceDir . '/about.html');
         $this->assertFileExists($this->sourceDir . '/blog/first-post.html');
 
-        // Run application
-        $container = $this->createContainer($this->envFile);
+        // Override environment variables for virtual filesystem (BEFORE loading bootstrap)
+        $_ENV['SITE_NAME'] = 'Integration Test Site';
+        $_ENV['SOURCE_DIR'] = $this->sourceDir;
+        $_ENV['OUTPUT_DIR'] = $this->outputDir;
+        $_ENV['TEMPLATE_DIR'] = $this->root->url() . '/templates';
+
+        // Load integration test environment
+        $container = $this->createContainer(__DIR__ . '/../../../.env.integration');
         $application = new Application($container);
         $result = $application->generate();
 
@@ -160,8 +128,14 @@ HTML;
         file_put_contents($this->sourceDir . '/data.txt', 'This is text data');
         file_put_contents($this->sourceDir . '/style.css', 'body { color: blue; }');
 
-        // Run application
-        $container = $this->createContainer($this->envFile);
+        // Override environment variables for virtual filesystem (BEFORE loading bootstrap)
+        $_ENV['SITE_NAME'] = 'Integration Test Site';
+        $_ENV['SOURCE_DIR'] = $this->sourceDir;
+        $_ENV['OUTPUT_DIR'] = $this->outputDir;
+        $_ENV['TEMPLATE_DIR'] = $this->root->url() . '/templates';
+
+        // Load integration test environment
+        $container = $this->createContainer(__DIR__ . '/../../../.env.integration');
         $application = new Application($container);
         $application->generate();
 
@@ -180,8 +154,13 @@ HTML;
 
     public function testEmptySourceDirectory(): void
     {
-        // Empty source directory
-        $container = $this->createContainer($this->envFile);
+        // Override environment variables for virtual filesystem
+        $_ENV['SOURCE_DIR'] = $this->sourceDir;
+        $_ENV['OUTPUT_DIR'] = $this->outputDir;
+        $_ENV['TEMPLATE_DIR'] = $this->root->url() . '/templates';
+
+        // Load integration test environment
+        $container = $this->createContainer(__DIR__ . '/../../../.env.integration');
         $application = new Application($container);
         $application->generate();
 

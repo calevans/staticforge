@@ -1,0 +1,24 @@
+# Git attributes for composer create-project distribution
+# Files and directories marked with export-ignore will be excluded when
+# users install via composer create-project
+
+# Development files - exclude from distribution
+/.gitattributes export-ignore
+/.github export-ignore
+/.lando.local.yml export-ignore
+/.lando.yml export-ignore
+/documents export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml export-ignore
+/scripts export-ignore
+/tests export-ignore
+/node_modules export-ignore
+/CODE_OF_CONDUCT.md export-ignore
+/package-lock.json export-ignore
+/package.json export-ignore
+# Keep .gitignore in distribution (users need it)
+# Keep /docs in distribution (user documentation)
+# Keep /content in distribution (starter content)
+# Keep /templates in distribution (all templates)
+# Keep /src in distribution (source code)
+# Keep /bin in distribution (console entry point)
