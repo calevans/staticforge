@@ -1,3 +1,16 @@
-public
-node_modules
-vendor
+# Directories
+vendor/
+node_modules/
+templates/
+content/
+public/
+.vscode/
+.idea/
+logs/
+example_code/
+
+# Files
+composer.lock
+.phpunit.result.cache
+.env
+*.log
