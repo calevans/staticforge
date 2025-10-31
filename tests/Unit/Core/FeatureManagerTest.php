@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureInterface;
@@ -10,30 +10,29 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class FeatureManagerTest extends TestCase
+class FeatureManagerTest extends UnitTestCase
 {
     private FeatureManager $featureManager;
-    private Container $container;
+
     private EventManager $eventManager;
     private Log $logger;
     private string $tempDir;
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
+
         $this->eventManager = new EventManager($this->container);
 
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/test.log';
-        $this->logger = new Log('test', $logFile, 'INFO');
-
-        $this->container->setVariable('logger', $this->logger);
+        $this->logger = $this->container->get('logger');
 
         // Create temporary directory for test features
         $this->tempDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
         mkdir($this->tempDir, 0777, true);
 
-        $this->container->setVariable('FEATURES_DIR', $this->tempDir);
+        $this->setContainerVariable('FEATURES_DIR', $this->tempDir);
 
         $this->featureManager = new FeatureManager($this->container, $this->eventManager);
     }
@@ -57,12 +56,10 @@ class FeatureManagerTest extends TestCase
 
     public function testLoadFeaturesWithNonexistentDirectory(): void
     {
-        // Create fresh container to avoid variable collision
-        $freshContainer = new Container();
-        $freshContainer->setVariable('logger', $this->logger);
-        $freshContainer->setVariable('FEATURES_DIR', '/nonexistent/path');
+        // Test with nonexistent directory
+        $this->setContainerVariable('FEATURES_DIR', '/nonexistent/path');
 
-        $freshFeatureManager = new FeatureManager($freshContainer, $this->eventManager);
+        $freshFeatureManager = new FeatureManager($this->container, $this->eventManager);
         $freshFeatureManager->loadFeatures();
 
         $features = $freshFeatureManager->getFeatures();

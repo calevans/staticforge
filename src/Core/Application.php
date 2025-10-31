@@ -42,8 +42,8 @@ class Application
      */
     private function initializeLogger(): void
     {
-        // Get logger from container (should be set by bootstrap)
-        $logger = $this->container->getVariable('logger');
+        // Get logger from container (should be registered by bootstrap)
+        $logger = $this->container->get('logger');
         if (!$logger instanceof Log) {
             throw new \RuntimeException('Logger not initialized in container');
         }

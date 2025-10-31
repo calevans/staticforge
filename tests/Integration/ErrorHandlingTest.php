@@ -96,7 +96,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -122,7 +123,8 @@ HTML;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     // Should handle missing template gracefully
     $result = $app->generate();
@@ -146,7 +148,8 @@ title = "Valid"
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -172,7 +175,8 @@ Plain markdown content without frontmatter.';
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -202,7 +206,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -234,7 +239,8 @@ title = "Problematic"
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -265,7 +271,8 @@ MD;
     // Generate site - should recreate output dir
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -290,7 +297,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -325,7 +333,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 

@@ -39,6 +39,11 @@ $container = new Container();
 $appRoot = rtrim(dirname(__DIR__), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 $container->setVariable('app_root', $appRoot);
 
+// Copy environment variables to container for backward compatibility
+// Components read configuration from container variables
+foreach ($_ENV as $key => $value) {
+    $container->setVariable($key, $value);
+}
 
 // Register logger as singleton service (reads from $_ENV directly)
 $container->stuff('logger', function() {

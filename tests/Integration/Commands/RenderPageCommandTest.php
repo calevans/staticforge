@@ -95,7 +95,8 @@ This is **markdown** content.';
   public function testRenderSingleFileByPath(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -117,7 +118,8 @@ This is **markdown** content.';
   public function testRenderFilesWithGlobPattern(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -139,7 +141,8 @@ This is **markdown** content.';
   public function testRenderAllFilesWithWildcard(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -160,7 +163,8 @@ This is **markdown** content.';
   public function testVerboseModeShowsFileList(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -186,7 +190,8 @@ This is **markdown** content.';
   public function testPatternWithNoMatchesReturnFailure(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -211,7 +216,8 @@ This is **markdown** content.';
     $this->assertTrue(file_exists($this->testOutputDir . '/existing.html'));
 
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -242,7 +248,8 @@ This is **markdown** content.';
     file_put_contents($this->testTemplateDir . '/terminal/base.html.twig', $terminalTemplate);
 
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -264,7 +271,8 @@ This is **markdown** content.';
   public function testRenderMarkdownFiles(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);
@@ -285,7 +293,8 @@ This is **markdown** content.';
   public function testShortFilenameResolution(): void
   {
     $application = new Application();
-    $application->add(new RenderPageCommand());
+    $container = $this->createContainer($this->envPath);
+        $application->add(new RenderPageCommand($container));
 
     $command = $application->find('render:page');
     $commandTester = new CommandTester($command);

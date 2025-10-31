@@ -2,18 +2,19 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\MenuBuilder\Feature;
 use EICC\Utils\Container;
 
-class MenuBuilderFeatureTest extends TestCase
+class MenuBuilderFeatureTest extends UnitTestCase
 {
   private Feature $feature;
-  private Container $container;
+
 
   protected function setUp(): void
   {
-    $this->container = new Container();
+    parent::setUp();
+    // Use bootstrapped container from parent::setUp()
     $this->feature = new Feature($this->container);
   }
 

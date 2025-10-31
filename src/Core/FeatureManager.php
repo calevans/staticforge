@@ -24,7 +24,7 @@ class FeatureManager
     {
         $this->container = $container;
         $this->eventManager = $eventManager;
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
     }
 
     /**

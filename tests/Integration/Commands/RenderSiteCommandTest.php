@@ -79,7 +79,8 @@ title = "Test Page"
     public function testRenderSiteCommandSuccess(): void
     {
         $application = new Application();
-        $application->add(new RenderSiteCommand());
+        $container = $this->createContainer($this->envPath);
+        $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
         $commandTester = new CommandTester($command);
@@ -99,7 +100,8 @@ title = "Test Page"
     public function testRenderSiteCommandWithVerbose(): void
     {
         $application = new Application();
-        $application->add(new RenderSiteCommand());
+        $container = $this->createContainer($this->envPath);
+        $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
         $commandTester = new CommandTester($command);
@@ -125,7 +127,8 @@ title = "Test Page"
         $this->assertTrue(file_exists($this->testOutputDir . '/existing.html'));
 
         $application = new Application();
-        $application->add(new RenderSiteCommand());
+        $container = $this->createContainer($this->envPath);
+        $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
         $commandTester = new CommandTester($command);
@@ -159,7 +162,8 @@ title = "Test Page"
         file_put_contents($this->testTemplateDir . '/terminal/base.html.twig', $terminalTemplate);
 
         $application = new Application();
-        $application->add(new RenderSiteCommand());
+        $container = $this->createContainer($this->envPath);
+        $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
         $commandTester = new CommandTester($command);
@@ -181,7 +185,8 @@ title = "Test Page"
     public function testRenderSiteCommandWithInvalidTemplate(): void
     {
         $application = new Application();
-        $application->add(new RenderSiteCommand());
+        $container = $this->createContainer($this->envPath);
+        $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
         $commandTester = new CommandTester($command);
@@ -203,7 +208,8 @@ title = "Test Page"
      */
     public function testRenderSiteCommandConfiguration(): void
     {
-        $command = new RenderSiteCommand();
+        $container = $this->createContainer($this->envPath);
+        $command = new RenderSiteCommand($container);
 
         // Test command basic configuration
         $this->assertEquals('render:site', $command->getName());
@@ -245,7 +251,8 @@ title = "Alt Page"
     file_put_contents($altInputDir . '/alt.html', $altContent);
 
     $application = new Application();
-    $application->add(new RenderSiteCommand());
+    $container = $this->createContainer($this->envPath);
+    $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
     $commandTester = new CommandTester($command);
@@ -277,7 +284,8 @@ title = "Alt Page"
     mkdir($altOutputDir, 0755, true);
 
     $application = new Application();
-    $application->add(new RenderSiteCommand());
+    $container = $this->createContainer($this->envPath);
+    $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
     $commandTester = new CommandTester($command);
@@ -318,7 +326,8 @@ title = "Both Override"
     file_put_contents($altInputDir . '/both.html', $altContent);
 
     $application = new Application();
-    $application->add(new RenderSiteCommand());
+    $container = $this->createContainer($this->envPath);
+    $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
     $commandTester = new CommandTester($command);
@@ -352,7 +361,8 @@ title = "Both Override"
   public function testRenderSiteCommandWithInvalidInput(): void
   {
     $application = new Application();
-    $application->add(new RenderSiteCommand());
+    $container = $this->createContainer($this->envPath);
+    $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
     $commandTester = new CommandTester($command);

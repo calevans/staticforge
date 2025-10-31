@@ -20,7 +20,7 @@ class ExtensionRegistry
 
     public function __construct(Container $container)
     {
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
     }
 
     /**

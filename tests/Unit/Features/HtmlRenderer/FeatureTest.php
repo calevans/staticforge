@@ -5,21 +5,22 @@ namespace EICC\StaticForge\Tests\Unit\Features\HtmlRenderer;
 use EICC\StaticForge\Features\HtmlRenderer\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 
 /**
  * @covers \EICC\StaticForge\Features\HtmlRenderer\Feature
  */
-class FeatureTest extends TestCase
+class FeatureTest extends UnitTestCase
 {
     private Feature $feature;
-    private Container $container;
+
     private EventManager $eventManager;
     private vfsStreamDirectory $root;
     private string $sourceDir;
     private string $outputDir;
+    private string $templateDir;
 
     protected function setUp(): void
     {
@@ -30,24 +31,27 @@ class FeatureTest extends TestCase
         $this->sourceDir = $this->root->url() . '/source';
         $this->outputDir = $this->root->url() . '/output';
 
+        // Create real temp directory for templates (Twig can't use vfsStream)
+        $this->templateDir = sys_get_temp_dir() . '/staticforge_templates_' . uniqid();
+        mkdir($this->templateDir . '/test', 0755, true);
+
         mkdir($this->sourceDir);
         mkdir($this->outputDir);
 
         // Set up container
-        $this->container = new Container();
-        $this->container->setVariable('SOURCE_DIR', $this->sourceDir);
-        $this->container->setVariable('OUTPUT_DIR', $this->outputDir);
-        $this->container->setVariable('SITE_NAME', 'Test Site');
-        $this->container->setVariable('SITE_BASE_URL', 'https://example.com/');
+        // Use bootstrapped container from parent::setUp()
+        $this->setContainerVariable('SOURCE_DIR', $this->sourceDir);
+        $this->setContainerVariable('OUTPUT_DIR', $this->outputDir);
+        $this->setContainerVariable('TEMPLATE_DIR', $this->templateDir);
+        $this->setContainerVariable('TEMPLATE', 'test');
+        $this->setContainerVariable('SITE_NAME', 'Test Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
 
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/html_renderer_test.log';
-        $logger = new \EICC\Utils\Log('test', $logFile, 'INFO');
-        $this->container->setVariable('logger', $logger);
+        // Logger already registered by bootstrap
 
         // Set up extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->container->add('extension_registry', $extensionRegistry);
+        $this->addToContainer('extension_registry', $extensionRegistry);
 
         // Set up event manager
         $this->eventManager = new EventManager($this->container);
@@ -55,6 +59,9 @@ class FeatureTest extends TestCase
         // Create feature
         $this->feature = new Feature();
         $this->feature->register($this->eventManager, $this->container);
+
+        // Create test templates
+        $this->createTestTemplates();
     }
 
     public function testRegisterAddsHtmlExtension(): void
@@ -215,26 +222,22 @@ HTML;
 
     public function testTemplateReplacementWithAllVariables(): void
     {
-        // Test all template variables - use different container or clear existing
-        $testContainer = new Container();
-        $testContainer->setVariable('SOURCE_DIR', $this->sourceDir);
-        $testContainer->setVariable('OUTPUT_DIR', $this->outputDir);
-        $testContainer->setVariable('SITE_NAME', 'My Amazing Site');
-        $testContainer->setVariable('SITE_BASE_URL', 'https://mysite.com/');
+        // Test all template variables using the bootstrapped container
+        $this->setContainerVariable('SOURCE_DIR', $this->sourceDir);
+        $this->setContainerVariable('OUTPUT_DIR', $this->outputDir);
+        $this->setContainerVariable('SITE_NAME', 'My Amazing Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://mysite.com/');
 
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/html_renderer_template_test.log';
-        $logger = new \EICC\Utils\Log('test', $logFile, 'INFO');
-        $testContainer->setVariable('logger', $logger);
+        // Logger already registered by bootstrap
 
         // Set up extension registry
-        $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($testContainer);
-        $testContainer->add('extension_registry', $extensionRegistry);
+        $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
+        $this->addToContainer('extension_registry', $extensionRegistry);
 
         // Set up event manager and register feature
-        $eventManager = new EventManager($testContainer);
+        $eventManager = new EventManager($this->container);
         $feature = new Feature();
-        $feature->register($eventManager, $testContainer);
+        $feature->register($eventManager, $this->container);
 
         $htmlContent = <<<HTML
 <!-- INI
@@ -254,7 +257,7 @@ HTML;
             'file_info' => []
         ];
 
-        $result = $feature->handleRender($testContainer, $parameters);
+        $result = $feature->handleRender($this->container, $parameters);
 
         $outputContent = $result['rendered_content'];
 
@@ -264,5 +267,57 @@ HTML;
         $this->assertStringContainsString('<base href="https://mysite.com/">', $outputContent);
         $this->assertStringContainsString('<h1>My Amazing Site</h1>', $outputContent);
         $this->assertStringContainsString('&copy; 2025 My Amazing Site', $outputContent);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // Clean up template directory
+        if (isset($this->templateDir) && is_dir($this->templateDir)) {
+            $this->removeDirectory($this->templateDir);
+        }
+    }
+
+    private function createTestTemplates(): void
+    {
+        // Base template with meta tags support matching HtmlRenderer template vars
+        $baseTemplate = '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Untitled Page") }} | {{ site_name }}</title>
+    {% if description %}<meta name="description" content="{{ description }}">{% endif %}
+    {% if tags %}<meta name="keywords" content="{{ tags }}">{% endif %}
+    {% if site_base_url %}<base href="{{ site_base_url }}">{% endif %}
+</head>
+<body>
+    <header>
+        <h1>{{ site_name }}</h1>
+    </header>
+    <main>
+        {{ content | raw }}
+    </main>
+    <footer>
+        <p>&copy; 2025 {{ site_name }}. Generated by StaticForge.</p>
+    </footer>
+</body>
+</html>';
+        file_put_contents($this->templateDir . '/test/base.html.twig', $baseTemplate);
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 }

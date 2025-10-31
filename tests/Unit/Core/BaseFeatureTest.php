@@ -2,20 +2,21 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 
-class BaseFeatureTest extends TestCase
+class BaseFeatureTest extends UnitTestCase
 {
     private TestFeature $feature;
-    private Container $container;
+
     private EventManager $eventManager;
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
+        // Use bootstrapped container from parent::setUp()
         $this->eventManager = new EventManager($this->container);
         $this->feature = new TestFeature();
     }
@@ -50,7 +51,7 @@ class BaseFeatureTest extends TestCase
         $this->feature->register($this->eventManager, $this->container);
 
         // Initialize features array in container
-        $this->container->setVariable('features', [
+        $this->setContainerVariable('features', [
             'TestFeature' => ['setting' => 'enabled'],
             'OtherFeature' => ['config' => 'value']
         ]);

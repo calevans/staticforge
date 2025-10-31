@@ -27,7 +27,7 @@ class FileProcessor
     public function __construct(Container $container, EventManager $eventManager)
     {
         $this->container = $container;
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
         $this->eventManager = $eventManager;
         $this->errorHandler = $container->get('error_handler');
     }

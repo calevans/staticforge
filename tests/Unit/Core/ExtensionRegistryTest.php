@@ -2,26 +2,21 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class ExtensionRegistryTest extends TestCase
+class ExtensionRegistryTest extends UnitTestCase
 {
     private ExtensionRegistry $registry;
-    private Container $container;
     private Log $logger;
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
 
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/extension_registry_test.log';
-        $this->logger = new Log('test', $logFile, 'INFO');
-        $this->container->setVariable('logger', $this->logger);
-
+        $this->logger = $this->container->get('logger');
         $this->registry = new ExtensionRegistry($this->container);
     }
 

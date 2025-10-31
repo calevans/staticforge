@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features\HtmlRenderer;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\HtmlRenderer\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
@@ -12,10 +12,10 @@ use Twig\Environment;
 /**
  * Unit tests for template rendering functionality
  */
-class TemplateRenderingTest extends TestCase
+class TemplateRenderingTest extends UnitTestCase
 {
     private Feature $feature;
-    private Container $container;
+
     private string $testTemplateDir;
 
     protected function setUp(): void
@@ -27,16 +27,15 @@ class TemplateRenderingTest extends TestCase
         mkdir($this->testTemplateDir . '/test', 0755, true);
 
         // Create container with test configuration
-        $this->container = new Container();
-        $this->container->setVariable('TEMPLATE_DIR', $this->testTemplateDir);
-        $this->container->setVariable('TEMPLATE', 'test');
-        $this->container->setVariable('SITE_NAME', 'Test Site');
-        $this->container->setVariable('SITE_BASE_URL', 'https://test.example.com');
-        $this->container->setVariable('logger', new Log('test', sys_get_temp_dir() . '/test.log', 'DEBUG'));
+        // Use bootstrapped container from parent::setUp()
+        $this->setContainerVariable('TEMPLATE_DIR', $this->testTemplateDir);
+        $this->setContainerVariable('TEMPLATE', 'test');
+        $this->setContainerVariable('SITE_NAME', 'Test Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://test.example.com');
 
         // Create mock extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->container->add('extension_registry', $extensionRegistry);
+        $this->addToContainer('extension_registry', $extensionRegistry);
 
         // Create EventManager and test feature
         $eventManager = new EventManager($this->container);

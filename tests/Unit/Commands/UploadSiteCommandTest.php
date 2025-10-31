@@ -7,23 +7,20 @@ namespace EICC\StaticForge\Tests\Unit\Commands;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class UploadSiteCommandTest extends TestCase
+class UploadSiteCommandTest extends UnitTestCase
 {
-  protected Container $container;
+
   protected Log $logger;
 
   protected function setUp(): void
   {
     parent::setUp();
 
-    // Create container with test configuration
-    $this->container = new Container();
-    $this->logger = new Log('tests/fixtures/output', 'test.log');
-    $this->container->setVariable('logger', $this->logger);
+    $this->logger = $this->container->get('logger');
   }
 
   public function testCommandConfiguration(): void
@@ -37,6 +34,9 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithMissingOutputDir(): void
   {
+    // Clear OUTPUT_DIR to test validation
+    $this->setContainerVariable('OUTPUT_DIR', '');
+
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
     $input->bind($command->getDefinition());
@@ -51,7 +51,7 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithNonExistentDirectory(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', '/nonexistent/directory');
+    $this->setContainerVariable('OUTPUT_DIR', '/nonexistent/directory');
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -67,7 +67,8 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithMissingHost(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', ''); // Clear to test validation
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -83,8 +84,9 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithMissingUsername(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
-    $this->container->setVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_USERNAME', ''); // Clear to test validation
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -100,9 +102,10 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithMissingRemotePath(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
-    $this->container->setVariable('SFTP_HOST', 'example.com');
-    $this->container->setVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('SFTP_REMOTE_PATH', ''); // Clear to test validation
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -118,10 +121,12 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithMissingAuthentication(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
-    $this->container->setVariable('SFTP_HOST', 'example.com');
-    $this->container->setVariable('SFTP_USERNAME', 'testuser');
-    $this->container->setVariable('SFTP_REMOTE_PATH', '/var/www/html');
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www/html');
+    $this->setContainerVariable('SFTP_PASSWORD', ''); // Clear both auth methods
+    $this->setContainerVariable('SFTP_PRIVATE_KEY_PATH', '');
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -137,12 +142,12 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithValidPasswordAuth(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
-    $this->container->setVariable('SFTP_HOST', 'example.com');
-    $this->container->setVariable('SFTP_PORT', '2222');
-    $this->container->setVariable('SFTP_USERNAME', 'testuser');
-    $this->container->setVariable('SFTP_PASSWORD', 'testpass');
-    $this->container->setVariable('SFTP_REMOTE_PATH', '/var/www/html/');
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_PORT', '2222');
+    $this->setContainerVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('SFTP_PASSWORD', 'testpass');
+    $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www/html/');
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -162,12 +167,12 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithValidKeyAuth(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', __DIR__);
-    $this->container->setVariable('SFTP_HOST', 'example.com');
-    $this->container->setVariable('SFTP_USERNAME', 'testuser');
-    $this->container->setVariable('SFTP_PRIVATE_KEY_PATH', '/home/user/.ssh/id_rsa');
-    $this->container->setVariable('SFTP_PRIVATE_KEY_PASSPHRASE', 'keypass');
-    $this->container->setVariable('SFTP_REMOTE_PATH', '/var/www/html');
+    $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('SFTP_PRIVATE_KEY_PATH', '/home/user/.ssh/id_rsa');
+    $this->setContainerVariable('SFTP_PRIVATE_KEY_PASSPHRASE', 'keypass');
+    $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www/html');
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput([]);
@@ -183,11 +188,11 @@ class UploadSiteCommandTest extends TestCase
 
   public function testLoadConfigurationWithInputOverride(): void
   {
-    $this->container->setVariable('OUTPUT_DIR', '/default/path');
-    $this->container->setVariable('SFTP_HOST', 'example.com');
-    $this->container->setVariable('SFTP_USERNAME', 'testuser');
-    $this->container->setVariable('SFTP_PASSWORD', 'testpass');
-    $this->container->setVariable('SFTP_REMOTE_PATH', '/var/www/html');
+    $this->setContainerVariable('OUTPUT_DIR', '/default/path');
+    $this->setContainerVariable('SFTP_HOST', 'example.com');
+    $this->setContainerVariable('SFTP_USERNAME', 'testuser');
+    $this->setContainerVariable('SFTP_PASSWORD', 'testpass');
+    $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www/html');
 
     $command = new UploadSiteCommand($this->container);
     $input = new ArrayInput(['--input' => __DIR__]);

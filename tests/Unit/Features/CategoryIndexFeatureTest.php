@@ -7,35 +7,31 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
-class CategoryIndexFeatureTest extends TestCase
+class CategoryIndexFeatureTest extends UnitTestCase
 {
   private Feature $feature;
-  private Container $container;
+
   private EventManager $eventManager;
   private string $tempDir;
 
   protected function setUp(): void
   {
-    $this->container = new Container();
+    parent::setUp();
 
     // Create temp directory for tests
     $this->tempDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
     mkdir($this->tempDir, 0755, true);
 
     // Setup container
-    $this->container->setVariable('OUTPUT_DIR', $this->tempDir);
-    $this->container->setVariable('SITE_NAME', 'Test Site');
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com/');
-    $this->container->setVariable('CATEGORY_PAGINATION', 5);
-    $this->container->setVariable('TEMPLATE_DIR', 'templates');
-    $this->container->setVariable('TEMPLATE', 'terminal');
-    $this->container->setVariable('features', []); // Initialize features array
-
-    // Setup logger
-    $logger = new Log('test', $this->tempDir . '/test.log', 'INFO');
-    $this->container->setVariable('logger', $logger);
+    $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
+    $this->setContainerVariable('SITE_NAME', 'Test Site');
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
+    $this->setContainerVariable('CATEGORY_PAGINATION', 5);
+    $this->setContainerVariable('TEMPLATE_DIR', 'templates');
+    $this->setContainerVariable('TEMPLATE', 'terminal');
+    $this->setContainerVariable('features', []); // Initialize features array
 
     $this->eventManager = new EventManager($this->container);
 

@@ -18,7 +18,7 @@ class FileDiscovery
     public function __construct(Container $container, ExtensionRegistry $extensionRegistry)
     {
         $this->container = $container;
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
         $this->extensionRegistry = $extensionRegistry;
     }
 

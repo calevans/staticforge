@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features\MarkdownRenderer;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\MarkdownRenderer\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
@@ -11,10 +11,10 @@ use EICC\Utils\Log;
 /**
  * Unit tests for Markdown rendering functionality
  */
-class FeatureTest extends TestCase
+class FeatureTest extends UnitTestCase
 {
     private Feature $feature;
-    private Container $container;
+
     private string $testSourceDir;
     private string $testOutputDir;
     private string $testTemplateDir;
@@ -32,19 +32,17 @@ class FeatureTest extends TestCase
         mkdir($this->testOutputDir, 0755, true);
         mkdir($this->testTemplateDir . '/test', 0755, true);
 
-        // Create container with test configuration
-        $this->container = new Container();
-        $this->container->setVariable('SOURCE_DIR', $this->testSourceDir);
-        $this->container->setVariable('OUTPUT_DIR', $this->testOutputDir);
-        $this->container->setVariable('TEMPLATE_DIR', $this->testTemplateDir);
-        $this->container->setVariable('TEMPLATE', 'test');
-        $this->container->setVariable('SITE_NAME', 'Test Site');
-        $this->container->setVariable('SITE_BASE_URL', 'https://test.example.com');
-        $this->container->setVariable('logger', new Log('test', sys_get_temp_dir() . '/test.log', 'DEBUG'));
+        // Configure container with test paths
+        $this->setContainerVariable('SOURCE_DIR', $this->testSourceDir);
+        $this->setContainerVariable('OUTPUT_DIR', $this->testOutputDir);
+        $this->setContainerVariable('TEMPLATE_DIR', $this->testTemplateDir);
+        $this->setContainerVariable('TEMPLATE', 'test');
+        $this->setContainerVariable('SITE_NAME', 'Test Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://test.example.com');
 
         // Create extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->container->add('extension_registry', $extensionRegistry);
+        $this->addToContainer('extension_registry', $extensionRegistry);
 
         // Create EventManager and test feature
         $eventManager = new EventManager($this->container);

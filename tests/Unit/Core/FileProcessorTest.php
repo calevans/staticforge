@@ -2,33 +2,28 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ErrorHandler;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class FileProcessorTest extends TestCase
+class FileProcessorTest extends UnitTestCase
 {
     private FileProcessor $fileProcessor;
     private EventManager $eventManager;
     private ErrorHandler $errorHandler;
-    private Container $container;
     private Log $logger;
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
 
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/file_processor_test.log';
-        $this->logger = new Log('test', $logFile, 'INFO');
-        $this->container->setVariable('logger', $this->logger);
-
+        $this->logger = $this->container->get('logger');
         $this->eventManager = new EventManager($this->container);
         $this->errorHandler = new ErrorHandler($this->container);
-        $this->container->add('error_handler', $this->errorHandler);
+        $this->addToContainer('error_handler', $this->errorHandler);
 
         $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
     }
@@ -44,7 +39,7 @@ class FileProcessorTest extends TestCase
 
     public function testProcessFilesWithEmptyArray(): void
     {
-        $this->container->setVariable('discovered_files', []);
+        $this->setContainerVariable('discovered_files', []);
 
         $this->fileProcessor->processFiles();
 
@@ -59,7 +54,7 @@ class FileProcessorTest extends TestCase
             '/tmp/test2.html'
         ];
 
-        $this->container->setVariable('discovered_files', $testFiles);
+        $this->setContainerVariable('discovered_files', $testFiles);
 
         // Track events fired
         $eventsTracked = [];
@@ -83,7 +78,7 @@ class FileProcessorTest extends TestCase
     public function testProcessFileWithSkipFlag(): void
     {
         $testFiles = ['/tmp/test.html'];
-        $this->container->setVariable('discovered_files', $testFiles);
+        $this->setContainerVariable('discovered_files', $testFiles);
 
         $eventsTracked = [];
 
@@ -102,7 +97,7 @@ class FileProcessorTest extends TestCase
     public function testRenderContextStructure(): void
     {
         $testFiles = ['/tmp/test.html'];
-        $this->container->setVariable('discovered_files', $testFiles);
+        $this->setContainerVariable('discovered_files', $testFiles);
 
         $contextData = [];
 

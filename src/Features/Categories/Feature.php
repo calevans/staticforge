@@ -29,7 +29,7 @@ class Feature extends BaseFeature implements FeatureInterface
         parent::register($eventManager, $container);
 
       // Get logger from container
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
 
         $this->logger->log('INFO', 'Categories Feature registered');
     }

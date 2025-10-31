@@ -116,9 +116,8 @@ MD;
     file_put_contents($this->testContentDir . '/about.md', $markdownContent);
 
     // Generate site
-    // Generate site
-
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -172,7 +171,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -208,7 +208,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -247,7 +248,8 @@ More *Markdown*');
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -275,7 +277,8 @@ More *Markdown*');
     // No content files
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -310,7 +313,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 

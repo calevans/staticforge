@@ -2,18 +2,19 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 
-class EventManagerTest extends TestCase
+class EventManagerTest extends UnitTestCase
 {
     private EventManager $eventManager;
-    private Container $container;
+
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
+        // Use bootstrapped container from parent::setUp()
         $this->eventManager = new EventManager($this->container);
     }
 
@@ -105,7 +106,7 @@ class EventManagerTest extends TestCase
 
     public function testFireEventWithContainerParameter(): void
     {
-        $this->container->setVariable('test_value', 'container_data');
+        $this->setContainerVariable('test_value', 'container_data');
         $listener = new ContainerAwareListener();
 
         $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);

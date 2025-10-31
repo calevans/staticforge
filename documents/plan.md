@@ -628,20 +628,24 @@ This step is no longer needed as logger registration is part of bootstrap.php cr
 - Ensure Application uses container's logger via `getVariable('logger')`
 - Apply SOLID: Application receives configured dependencies
 
-### Step 23.5. Remove Old Bootstrap Class
+### Step 23.5. Remove Old Bootstrap Class ✅
 - Delete `src/Core/Bootstrap.php`
 - Delete `src/Environment/EnvironmentLoader.php` (functionality moved to bootstrap.php)
+- Delete `tests/Unit/Core/BootstrapTest.php`
+- Delete `tests/Unit/Environment/EnvironmentLoaderTest.php`
+- Remove empty `src/Environment/` directory
+- Remove empty `tests/Unit/Environment/` directory
 - Clean up any imports referencing these classes
 - Apply YAGNI: Remove unused code
 - Apply KISS: Fewer classes to maintain
 
-### Step 23.6. Update Tests
-- Modify test files that currently use Bootstrap class
-- Tests should either:
-  - Require bootstrap.php with test .env path: `$container = require __DIR__ . '/../../src/bootstrap.php';`
-  - Or create minimal test container manually for unit tests
-- Update `tests/.env.testing` path handling
-- Ensure all command tests pass container correctly
+### Step 23.6. Update Tests ✅
+- Modified `tests/Unit/Core/ApplicationTest.php` to use bootstrap.php
+- Modified `tests/Integration/IntegrationTestCase.php` to add createContainer() helper method
+- Updated all integration tests (ErrorHandlingTest, FeatureInteractionTest, FullSiteGenerationTest)
+  to use `$container = $this->createContainer($envPath)` pattern
+- Tests now use same bootstrap.php as production code
+- Command tests already create containers manually (no changes needed)
 - Apply SOLID: Tests use same bootstrap as production
 
 ### Step 23.7. Update Documentation

@@ -10,30 +10,35 @@ use EICC\StaticForge\Exceptions\FeatureException;
 use EICC\StaticForge\Exceptions\FileProcessingException;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
-class ErrorHandlerTest extends TestCase
+class ErrorHandlerTest extends UnitTestCase
 {
-    private Container $container;
     private ErrorHandler $errorHandler;
     private string $logFile;
 
     protected function setUp(): void
     {
-        $this->logFile = sys_get_temp_dir() . '/test_error_handler_' . uniqid() . '.log';
+        parent::setUp();
 
-        $this->container = new Container();
-        $logger = new Log('test', $this->logFile, 'DEBUG');
-        $this->container->setVariable('logger', $logger);
+        // Use the log file from bootstrap configuration
+        $this->logFile = $this->container->getVariable('LOG_FILE');
+
+        // Clear the log file before each test
+        if (file_exists($this->logFile)) {
+            file_put_contents($this->logFile, '');
+        }
 
         $this->errorHandler = new ErrorHandler($this->container);
     }
 
     protected function tearDown(): void
     {
+        // Clean up log file after tests
         if (file_exists($this->logFile)) {
-            unlink($this->logFile);
+            file_put_contents($this->logFile, '');
         }
+        parent::tearDown();
     }
 
     public function testHandleCoreError(): void

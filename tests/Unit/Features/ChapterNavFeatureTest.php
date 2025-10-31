@@ -2,38 +2,35 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\ChapterNav\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
 
-class ChapterNavFeatureTest extends TestCase
+class ChapterNavFeatureTest extends UnitTestCase
 {
   private $root;
   private Feature $feature;
-  private Container $container;
+
   private EventManager $eventManager;
   private Log $logger;
 
   protected function setUp(): void
   {
+    parent::setUp();
+
     // Create virtual filesystem
     $this->root = vfsStream::setup('test');
 
-    // Create container
-    $this->container = new Container();
-    $this->container->setVariable('CHAPTER_NAV_MENUS', '2');
-    $this->container->setVariable('CHAPTER_NAV_PREV_SYMBOL', '←');
-    $this->container->setVariable('CHAPTER_NAV_NEXT_SYMBOL', '→');
-    $this->container->setVariable('CHAPTER_NAV_SEPARATOR', '|');
+    // Create container config
+    $this->setContainerVariable('CHAPTER_NAV_MENUS', '2');
+    $this->setContainerVariable('CHAPTER_NAV_PREV_SYMBOL', '←');
+    $this->setContainerVariable('CHAPTER_NAV_NEXT_SYMBOL', '→');
+    $this->setContainerVariable('CHAPTER_NAV_SEPARATOR', '|');
 
-    // Initialize logger and add to container
-    $logFile = vfsStream::url('test/test.log');
-    $this->logger = new Log('chapternav_test', $logFile, 'INFO');
-    $this->container->setVariable('logger', $this->logger);
-
+    $this->logger = $this->container->get('logger');
     $this->eventManager = new EventManager($this->container);
 
     // Create and register feature
@@ -60,7 +57,7 @@ class ChapterNavFeatureTest extends TestCase
   public function testMultipleMenuConfiguration(): void
   {
     // Update configuration for this test
-    $this->container->updateVariable('CHAPTER_NAV_MENUS', '1,2,3');
+    $this->setContainerVariable('CHAPTER_NAV_MENUS', '1,2,3');
 
     $parameters = [
       'features' => [
@@ -301,8 +298,8 @@ class ChapterNavFeatureTest extends TestCase
 
   public function testCustomSymbols(): void
   {
-    $this->container->updateVariable('CHAPTER_NAV_PREV_SYMBOL', '<<');
-    $this->container->updateVariable('CHAPTER_NAV_NEXT_SYMBOL', '>>');
+    $this->setContainerVariable('CHAPTER_NAV_PREV_SYMBOL', '<<');
+    $this->setContainerVariable('CHAPTER_NAV_NEXT_SYMBOL', '>>');
 
     $menuData = [
       2 => [
@@ -331,7 +328,7 @@ class ChapterNavFeatureTest extends TestCase
 
   public function testEmptyMenuConfiguration(): void
   {
-    $this->container->updateVariable('CHAPTER_NAV_MENUS', '');
+    $this->setContainerVariable('CHAPTER_NAV_MENUS', '');
 
     $parameters = [
       'features' => [
@@ -375,7 +372,7 @@ class ChapterNavFeatureTest extends TestCase
 
   public function testMultipleMenusForSamePage(): void
   {
-    $this->container->updateVariable('CHAPTER_NAV_MENUS', '2,3');
+    $this->setContainerVariable('CHAPTER_NAV_MENUS', '2,3');
 
     $menuData = [
       2 => [

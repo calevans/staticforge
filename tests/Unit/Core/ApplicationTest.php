@@ -2,7 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureManager;
@@ -12,7 +12,7 @@ use EICC\Utils\Log;
 /**
  * @backupGlobals enabled
  */
-class ApplicationTest extends TestCase
+class ApplicationTest extends UnitTestCase
 {
     private Application $application;
     private string $testEnvFile;
@@ -23,7 +23,9 @@ class ApplicationTest extends TestCase
 
     protected function setUp(): void
     {
-        // Create temporary directories and files
+        parent::setUp(); // Bootstrap with default env
+
+        // Create temporary directories and files for Application-specific tests
         $this->tempSourceDir = sys_get_temp_dir() . '/staticforge_app_source_' . uniqid();
         $this->tempOutputDir = sys_get_temp_dir() . '/staticforge_app_output_' . uniqid();
         $this->tempFeaturesDir = sys_get_temp_dir() . '/staticforge_app_features_' . uniqid();
@@ -32,28 +34,24 @@ class ApplicationTest extends TestCase
         mkdir($this->tempSourceDir, 0777, true);
         mkdir($this->tempOutputDir, 0777, true);
         mkdir($this->tempFeaturesDir, 0777, true);
+        mkdir($this->tempFeaturesDir . '/templates', 0777, true);
 
-        // Create test environment file
-        $this->testEnvFile = sys_get_temp_dir() . '/app_test.env';
-        $envContent = <<<ENV
-SITE_NAME="Test Application Site"
-SITE_BASE_URL="https://testapp.com"
-SOURCE_DIR="{$this->tempSourceDir}"
-OUTPUT_DIR="{$this->tempOutputDir}"
-TEMPLATE_DIR="templates"
-FEATURES_DIR="{$this->tempFeaturesDir}"
-ENV;
-        file_put_contents($this->testEnvFile, $envContent);
+        // Override container variables for this test
+        $this->setContainerVariable('SITE_NAME', 'Test Application Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://testapp.com');
+        $this->setContainerVariable('SOURCE_DIR', $this->tempSourceDir);
+        $this->setContainerVariable('OUTPUT_DIR', $this->tempOutputDir);
+        $this->setContainerVariable('TEMPLATE_DIR', $this->tempFeaturesDir . '/templates');
+        $this->setContainerVariable('FEATURES_DIR', $this->tempFeaturesDir);
+        $this->setContainerVariable('LOG_FILE', $this->logFile);
+        $this->setContainerVariable('LOG_LEVEL', 'ERROR');
 
-        $this->application = new Application($this->testEnvFile);
+        $this->application = new Application($this->container);
     }
 
     protected function tearDown(): void
     {
         // Clean up temporary files and directories
-        if (file_exists($this->testEnvFile)) {
-            unlink($this->testEnvFile);
-        }
         if (file_exists($this->logFile)) {
             unlink($this->logFile);
         }
@@ -61,15 +59,7 @@ ENV;
         $this->removeDirectory($this->tempOutputDir);
         $this->removeDirectory($this->tempFeaturesDir);
 
-        // Clean up environment variables to prevent cross-test pollution
-        foreach (['SITE_NAME', 'SITE_BASE_URL', 'SOURCE_DIR', 'OUTPUT_DIR', 'TEMPLATE_DIR', 'FEATURES_DIR'] as $var) {
-            if (isset($_ENV[$var])) {
-                unset($_ENV[$var]);
-            }
-            if (getenv($var) !== false) {
-                putenv($var);
-            }
-        }
+        parent::tearDown();
     }
 
     public function testApplicationInitialization(): void

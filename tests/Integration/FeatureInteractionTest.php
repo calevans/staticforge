@@ -168,7 +168,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -218,7 +219,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -268,7 +270,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -323,7 +326,8 @@ MD;
     // Generate site
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 
@@ -368,7 +372,8 @@ MD;
     // Generate and verify no errors
     // Generate site
 
-    $app = new Application($this->envPath);
+    $container = $this->createContainer($this->envPath);
+    $app = new Application($container);
 
     $result = $app->generate();
 

@@ -2,26 +2,25 @@
 
 namespace Tests\Unit\Features;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Categories\Feature as CategoriesFeature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class CategoriesFeatureTest extends TestCase
+class CategoriesFeatureTest extends UnitTestCase
 {
   private CategoriesFeature $feature;
-  private Container $container;
+
   private EventManager $eventManager;
 
   protected function setUp(): void
   {
-    $this->container = new Container();
+    parent::setUp();
+    // Use bootstrapped container from parent::setUp()
     $this->eventManager = new EventManager($this->container);
 
-    // Set up mock logger
-    $logger = $this->createMock(Log::class);
-    $this->container->setVariable('logger', $logger);
+    // Logger already registered by bootstrap
 
     $this->feature = new CategoriesFeature();
     $this->feature->register($this->eventManager, $this->container);

@@ -2,33 +2,28 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Tags\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
 
-class TagsFeatureTest extends TestCase
+class TagsFeatureTest extends UnitTestCase
 {
   private $root;
-  private Container $container;
+
   private EventManager $eventManager;
   private Log $logger;
 
   protected function setUp(): void
   {
+    parent::setUp();
+
     // Create virtual filesystem
     $this->root = vfsStream::setup('test');
 
-    // Create container
-    $this->container = new Container();
-
-    // Initialize logger and add to container (like EnvironmentLoader does)
-    $logFile = vfsStream::url('test/test.log');
-    $this->logger = new Log('tags_test', $logFile, 'INFO');
-    $this->container->setVariable('logger', $this->logger);
-
+    $this->logger = $this->container->get('logger');
     $this->eventManager = new EventManager($this->container);
   }
 
@@ -64,7 +59,7 @@ MD;
     $mdFile = vfsStream::newFile('test.md')->at($this->root)->setContent($mdContent);
 
     // Set up discovered files
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $mdFile->url()
     ]);
 
@@ -107,7 +102,7 @@ HTML;
 
     $htmlFile = vfsStream::newFile('test.html')->at($this->root)->setContent($htmlContent);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $htmlFile->url()
     ]);
 
@@ -149,7 +144,7 @@ MD;
     $file1 = vfsStream::newFile('post1.md')->at($this->root)->setContent($md1);
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $file1->url(),
       $file2->url()
     ]);
@@ -190,7 +185,7 @@ MD;
     $file1 = vfsStream::newFile('post1.md')->at($this->root)->setContent($md1);
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $file1->url(),
       $file2->url()
     ]);
@@ -241,7 +236,7 @@ MD;
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
     $file3 = vfsStream::newFile('post3.md')->at($this->root)->setContent($md3);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $file1->url(),
       $file2->url(),
       $file3->url()
@@ -282,7 +277,7 @@ MD;
     $file1 = vfsStream::newFile('post1.md')->at($this->root)->setContent($md1);
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $file1->url(),
       $file2->url()
     ]);
@@ -342,7 +337,7 @@ MD;
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
     $file3 = vfsStream::newFile('post3.md')->at($this->root)->setContent($md3);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $file1->url(),
       $file2->url(),
       $file3->url()
@@ -389,7 +384,7 @@ MD;
 
     $mdFile = vfsStream::newFile('test.md')->at($this->root)->setContent($mdContent);
 
-    $this->container->setVariable('discovered_files', [
+    $this->setContainerVariable('discovered_files', [
       $mdFile->url()
     ]);
 
@@ -410,7 +405,7 @@ MD;
     $feature->register($this->eventManager, $this->container);
 
     // Mock POST_GLOB to set up tags
-    $this->container->setVariable('discovered_files', []);
+    $this->setContainerVariable('discovered_files', []);
     $feature->handlePostGlob($this->container, ['features' => []]);
 
     // Test with string tag instead of array

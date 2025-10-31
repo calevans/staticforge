@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Integration;
 
+use EICC\Utils\Container;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -39,7 +40,7 @@ abstract class IntegrationTestCase extends TestCase
 
     /**
      * Create test .env file with custom configuration
-     * Returns the path to the test env file for use in Application constructor
+     * Returns the path to the test env file for use with createContainer()
      */
     protected function createTestEnv(array $vars): string
     {
@@ -67,6 +68,17 @@ abstract class IntegrationTestCase extends TestCase
         $_ENV['STATICFORGE_ENV_PATH'] = $this->testEnvFile;
 
         return $this->testEnvFile;
+    }
+
+    /**
+     * Create a container using bootstrap.php with a custom env file
+     *
+     * @param string $envPath Path to the .env file to use
+     * @return Container Configured container instance
+     */
+    protected function createContainer(string $envPath): Container
+    {
+        return require __DIR__ . '/../../src/bootstrap.php';
     }
 
     /**

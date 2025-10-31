@@ -33,7 +33,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         parent::register($eventManager, $container);
 
         // Get logger from container
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
 
         // Register .html extension for processing
         $extensionRegistry = $container->get('extension_registry');

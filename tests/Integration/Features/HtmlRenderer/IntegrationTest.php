@@ -3,7 +3,7 @@
 namespace EICC\StaticForge\Tests\Integration\Features\HtmlRenderer;
 
 use EICC\StaticForge\Core\Application;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Integration\IntegrationTestCase;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 
@@ -14,7 +14,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  * @covers \EICC\StaticForge\Features\HtmlRenderer\Feature
  * @backupGlobals enabled
  */
-class IntegrationTest extends TestCase
+class IntegrationTest extends IntegrationTestCase
 {
     private static int $testCounter = 0;
     private vfsStreamDirectory $root;
@@ -119,7 +119,8 @@ TWIG;
         $this->assertFileExists($this->sourceDir . '/blog/first-post.html');
 
         // Run application
-        $application = new Application($this->envFile);
+        $container = $this->createContainer($this->envFile);
+        $application = new Application($container);
         $result = $application->generate();
 
         // Verify generation succeeded
@@ -160,7 +161,8 @@ HTML;
         file_put_contents($this->sourceDir . '/style.css', 'body { color: blue; }');
 
         // Run application
-        $application = new Application($this->envFile);
+        $container = $this->createContainer($this->envFile);
+        $application = new Application($container);
         $application->generate();
 
         // Only HTML files should be processed by HTML renderer
@@ -179,7 +181,8 @@ HTML;
     public function testEmptySourceDirectory(): void
     {
         // Empty source directory
-        $application = new Application($this->envFile);
+        $container = $this->createContainer($this->envFile);
+        $application = new Application($container);
         $application->generate();
 
         // Output directory should exist but be empty (except for any dot files)

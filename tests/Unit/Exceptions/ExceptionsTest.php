@@ -7,9 +7,9 @@ namespace EICC\StaticForge\Tests\Unit\Exceptions;
 use EICC\StaticForge\Exceptions\CoreException;
 use EICC\StaticForge\Exceptions\FeatureException;
 use EICC\StaticForge\Exceptions\FileProcessingException;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
-class ExceptionsTest extends TestCase
+class ExceptionsTest extends UnitTestCase
 {
     public function testCoreExceptionStoresComponent(): void
     {

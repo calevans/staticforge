@@ -2,28 +2,25 @@
 
 namespace EICC\StaticForge\Tests\Unit\Core;
 
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class FileDiscoveryTest extends TestCase
+class FileDiscoveryTest extends UnitTestCase
 {
     private FileDiscovery $fileDiscovery;
     private ExtensionRegistry $extensionRegistry;
-    private Container $container;
+
     private Log $logger;
     private string $tempDir;
 
     protected function setUp(): void
     {
-        $this->container = new Container();
+        parent::setUp();
 
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/file_discovery_test.log';
-        $this->logger = new Log('test', $logFile, 'INFO');
-        $this->container->setVariable('logger', $this->logger);
+        $this->logger = $this->container->get('logger');
 
         $this->extensionRegistry = new ExtensionRegistry($this->container);
 
@@ -44,7 +41,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesWithSourceDir(): void
     {
-        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
         $this->extensionRegistry->registerExtension('.html');
 
         $this->createTestFile('test1.html', '<h1>Test 1</h1>');
@@ -60,7 +57,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesWithScanDirectories(): void
     {
-        $this->container->setVariable('SCAN_DIRECTORIES', [$this->tempDir]);
+        $this->setContainerVariable('SCAN_DIRECTORIES', [$this->tempDir]);
         $this->extensionRegistry->registerExtension('.md');
 
         $this->createTestFile('test.md', '# Test');
@@ -80,7 +77,7 @@ class FileDiscoveryTest extends TestCase
         mkdir($dir1, 0777, true);
         mkdir($dir2, 0777, true);
 
-        $this->container->setVariable('SCAN_DIRECTORIES', [$dir1, $dir2]);
+        $this->setContainerVariable('SCAN_DIRECTORIES', [$dir1, $dir2]);
         $this->extensionRegistry->registerExtension('.html');
 
         file_put_contents($dir1 . '/test1.html', '<h1>Test 1</h1>');
@@ -94,7 +91,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesWithNonexistentDirectory(): void
     {
-        $this->container->setVariable('SOURCE_DIR', '/nonexistent/path');
+        $this->setContainerVariable('SOURCE_DIR', '/nonexistent/path');
         $this->extensionRegistry->registerExtension('.html');
 
         $this->fileDiscovery->discoverFiles();
@@ -106,7 +103,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesWithNoRegisteredExtensions(): void
     {
-        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
         // No extensions registered
 
         $this->createTestFile('test.html', '<h1>Test</h1>');
@@ -119,7 +116,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesInNestedDirectories(): void
     {
-        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
         $this->extensionRegistry->registerExtension('.html');
 
         mkdir($this->tempDir . '/subdir', 0777, true);
@@ -137,7 +134,7 @@ class FileDiscoveryTest extends TestCase
 
     public function testDiscoverFilesWithMultipleExtensions(): void
     {
-        $this->container->setVariable('SOURCE_DIR', $this->tempDir);
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
         $this->extensionRegistry->registerExtension('.html');
         $this->extensionRegistry->registerExtension('.md');
         $this->extensionRegistry->registerExtension('.txt');

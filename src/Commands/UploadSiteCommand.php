@@ -31,7 +31,7 @@ class UploadSiteCommand extends Command
   {
     parent::__construct();
     $this->container = $container;
-    $this->logger = $container->getVariable('logger');
+    $this->logger = $container->get('logger');
   }
 
   protected function configure(): void

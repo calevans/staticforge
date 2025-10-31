@@ -148,3 +148,14 @@ DO NOT INCLUDE THIS SECTION IN ANY PLANS. It just exists for me to hold ideas.
 - RSS feed creator for categories
 - Podcast feed creator for categories.
 - robots.txt generator feature
+
+Fix:
+console.php should create the application. Application should create the Container.
+Everythign should ahve access to the container.
+
+I  see - RenderSiteCommand doesn't use constructor DI, it creates the Application which handles initialization. Let me check RenderPageCommand:
+
+Read RenderPageCommand.php, lines 1 to 50
+
+I see - the other commands don't require a container in the constructor. Let me update UploadSiteCommand to initialize its own container:
+You're right - I apologize. The logger is stored as a variable in the container with setVariable(), not as a service with add(). Let me fix it:

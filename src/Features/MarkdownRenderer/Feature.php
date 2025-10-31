@@ -39,7 +39,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         parent::register($eventManager, $container);
 
         // Get logger from container
-        $this->logger = $container->getVariable('logger');
+        $this->logger = $container->get('logger');
 
     // Create the CommonMark environment and converter with table support
         $environment = new Environment();
