@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Bootstrap file for StaticForge
  *
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * @param string|null $envPath Optional path to .env file (defaults to '.env')
  * @return \EICC\Utils\Container Fully configured container instance
  */
+
+declare(strict_types=1);
 
 // Require Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -46,7 +46,7 @@ foreach ($_ENV as $key => $value) {
 }
 
 // Register logger as singleton service (reads from $_ENV directly)
-$container->stuff('logger', function() {
+$container->stuff('logger', function () {
     $logFile = $_ENV['LOG_FILE'] ?? 'logs/staticforge.log';
     $logLevel = $_ENV['LOG_LEVEL'] ?? 'INFO';
 
