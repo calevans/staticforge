@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Tests\Integration;
 
 use EICC\StaticForge\Core\Application;
+use EICC\Utils\Container;
 
 /**
  * Full site generation integration tests
@@ -13,7 +14,7 @@ class FullSiteGenerationTest extends IntegrationTestCase
   private string $testOutputDir;
   private string $testContentDir;
   private string $testTemplateDir;
-  private string $envPath;
+  private Container $container;
 
   protected function setUp(): void
   {
@@ -29,18 +30,13 @@ class FullSiteGenerationTest extends IntegrationTestCase
     mkdir($this->testContentDir . '/blog', 0755, true);
     mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-    // Create test environment
-    $this->envPath = $this->createTestEnv([
-      'SITE_NAME' => 'Integration Test Site',
-      'SITE_BASE_URL' => 'https://test.example.com',
-      'TEMPLATE' => 'sample',
-      'SOURCE_DIR' => $this->testContentDir,
-      'OUTPUT_DIR' => $this->testOutputDir,
-      'TEMPLATE_DIR' => $this->testTemplateDir,
-      'FEATURES_DIR' => 'src/Features',
-      'LOG_LEVEL' => 'ERROR',
-      'LOG_FILE' => sys_get_temp_dir() . '/staticforge_test_' . uniqid() . '.log',
-    ]);
+    // Override environment variables BEFORE loading bootstrap
+    $_ENV['SOURCE_DIR'] = $this->testContentDir;
+    $_ENV['OUTPUT_DIR'] = $this->testOutputDir;
+    $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
+
+    // Create container from integration env
+    $this->container = $this->createContainer(__DIR__ . '/../.env.integration');
 
     // Create base template
     $this->createBaseTemplate();
@@ -52,9 +48,6 @@ class FullSiteGenerationTest extends IntegrationTestCase
     $this->removeDirectory($this->testOutputDir);
     $this->removeDirectory($this->testContentDir);
     $this->removeDirectory($this->testTemplateDir);
-    if (file_exists($this->envPath)) {
-      unlink($this->envPath);
-    }
   }
 
   private function createBaseTemplate(): void
@@ -116,7 +109,7 @@ MD;
     file_put_contents($this->testContentDir . '/about.md', $markdownContent);
 
     // Generate site
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -171,7 +164,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -208,7 +201,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -248,7 +241,7 @@ More *Markdown*');
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -277,7 +270,7 @@ More *Markdown*');
     // No content files
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -313,7 +306,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();

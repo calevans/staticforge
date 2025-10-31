@@ -72,7 +72,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * Process a single file to extract menu entries
      *
      * @param string $filePath Path to the file to process
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData Menu data structure passed by reference
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
+     *        $menuData Menu data structure passed by reference
      * @param-out array<int, mixed> $menuData Modified menu structure with nested arrays
      */
     private function processFileForMenu(string $filePath, array &$menuData): void
@@ -199,7 +200,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * @param string $menuPosition Position string (e.g., "1", "1.2", "1.2.3")
      * @param string $filePath Path to the content file
      * @param string|null $category Optional category for URL generation
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData Menu data array passed by reference
+     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
+     *        $menuData Menu data array passed by reference
      * @param-out array<int, mixed> $menuData Modified menu structure with complex nested arrays
      */
     private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void
@@ -424,11 +426,11 @@ class Feature extends BaseFeature implements FeatureInterface
                 // This is the dropdown title (position x.0)
                 $dropdownTitle = $item['title'];
                 $submenuPosition = $key;
-                } elseif ($key > 0 && isset($item['title'])) {
-                    // These are submenu items (position x.1, x.2, etc.)
-                    $submenuItems[$key] = $item;
-                }
+            } elseif ($key > 0 && isset($item['title'])) {
+                // These are submenu items (position x.1, x.2, etc.)
+                $submenuItems[$key] = $item;
             }
+        }
 
             $dropdownClass = $menuNumber > 0 ? "dropdown menu-{$menuNumber}-{$submenuPosition}" : "dropdown";
             $html .= '  <li class="' . $dropdownClass . '">' . "\n";
@@ -437,12 +439,12 @@ class Feature extends BaseFeature implements FeatureInterface
             $submenuClass = $menuNumber > 0 ? "dropdown-menu menu-{$menuNumber}-submenu" : "dropdown-menu";
             $html .= '    <ul class="' . $submenuClass . '">' . "\n";
 
-            foreach ($submenuItems as $position => $submenuItem) {
-                $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$position}" : "";
-                $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-                $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($submenuItem['url']) . '">' .
-                         htmlspecialchars($submenuItem['title']) . '</a></li>' . "\n";
-            }
+        foreach ($submenuItems as $position => $submenuItem) {
+            $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$position}" : "";
+            $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
+            $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($submenuItem['url']) . '">' .
+                     htmlspecialchars($submenuItem['title']) . '</a></li>' . "\n";
+        }
 
             $html .= '    </ul>' . "\n";
             $html .= '  </li>' . "\n";

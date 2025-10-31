@@ -18,7 +18,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
     /**
      * Map of file paths to their sequential navigation context
-     * @var array<string, array{prev: array{title: string, url: string}|null, next: array{title: string, url: string}|null}>
+     * @var array<string, array{
+     *     prev: array{title: string, url: string}|null,
+     *     next: array{title: string, url: string}|null
+     * }>
      */
     private array $chapterNavData = [];
 

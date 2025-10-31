@@ -884,6 +884,162 @@ Create a `site:upload` command that uploads the generated static site to a remot
 
 ---
 
+## Step 24. Composer Create-Project Support ✅
+
+### Overview
+Enable users to install StaticForge via `composer create-project eicc/staticforge my-site` for easy project initialization. This provides a one-command setup that creates a ready-to-use static site generator instance with starter content and all templates.
+
+### Composer Configuration
+- ✅ Update `composer.json`:
+  - ✅ Add `scripts` section with `post-create-project-cmd` hook
+  - ✅ Scripts to run after `composer create-project`:
+    - ✅ Copy `.env.example` to `.env` if `.env` doesn't exist
+    - ✅ Create `output/` directory with proper permissions (0755)
+    - ✅ Display welcome message with next steps
+  - ✅ Verify `"type": "project"` is set (already correct)
+  - ✅ Verify package name is `eicc/staticforge` (already correct)
+
+### Post-Install Scripts Implementation
+- ✅ Add to `composer.json` under `scripts`:
+  ```json
+  "post-create-project-cmd": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+      "@php -r \"if (!file_exists('output')) mkdir('output', 0755, true);\"",
+      "@php bin/console.php --version",
+      "@php -r \"echo PHP_EOL . '✓ StaticForge installed successfully!' . PHP_EOL;\"",
+      "@php -r \"echo '  Next steps:' . PHP_EOL;\"",
+      "@php -r \"echo '  1. Edit .env to configure your site' . PHP_EOL;\"",
+      "@php -r \"echo '  2. Add content to content/ directory' . PHP_EOL;\"",
+      "@php -r \"echo '  3. Run: php bin/console.php render:site' . PHP_EOL . PHP_EOL;\""
+  ]
+  ```
+- ✅ Apply KISS: Simple PHP one-liners, standard Composer script hooks
+- ✅ Apply YAGNI: Only essential setup automation, no complex installation logic
+
+### Starter Content Creation
+- ✅ Create minimal starter content that demonstrates StaticForge:
+  - ✅ `content/index.md` - Simple homepage with frontmatter example
+    - ✅ Include: title, template, menu position
+    - ✅ Content: Welcome message, brief explanation, link to documentation
+    - ✅ Demonstrate: Markdown rendering, menu integration, template usage
+  - ✅ Keep it minimal: Just one file to prove everything works
+  - ✅ Apply YAGNI: Single example page, users add more as needed
+
+### Template Distribution
+- ✅ Include all 4 existing templates in distribution:
+  - ✅ `templates/sample/` - Keep as-is
+  - ✅ `templates/staticforce/` - Keep as-is
+  - ✅ `templates/terminal/` - Keep as-is
+  - ✅ `templates/vaulttech/` - Keep as-is
+- ✅ Update `.env.example`:
+  - ✅ Set `TEMPLATE="sample"` as default (simplest template)
+  - ✅ Add comment explaining other available templates
+  - ✅ Document that users can delete unused templates
+- ✅ Apply DRY: Reuse existing templates, no duplication
+
+### Git Distribution Optimization
+- ✅ Create `.gitattributes` file to exclude development files from `composer create-project`:
+  - ✅ `/tests export-ignore` - Exclude unit/integration tests
+  - ✅ `/.github export-ignore` - Exclude GitHub workflows and instructions
+  - ✅ `/documents export-ignore` - Exclude planning/design documents
+  - ✅ `/.lando.yml export-ignore` - Exclude Lando development config
+  - ✅ `/.lando.local.yml export-ignore` - Exclude local Lando overrides
+  - ✅ `/phpunit.xml export-ignore` - Exclude test configuration
+  - ✅ `/phpstan.neon export-ignore` - Exclude static analysis config
+  - ✅ `/.gitattributes export-ignore` - Exclude itself from distribution
+  - ✅ `/.gitignore export-ignore` - Include in distribution (users need it)
+- ✅ Keep in distribution:
+  - ✅ `/docs` - User documentation (needed)
+  - ✅ `/content` - Starter content (needed)
+  - ✅ `/templates` - All templates (needed)
+  - ✅ `/src` - Source code (needed)
+  - ✅ `/bin` - Console entry point (needed)
+  - ✅ `README.md`, `LICENSE`, `composer.json` - Essential files
+- ✅ Apply YAGNI: Only exclude development-specific files, keep user-facing content
+
+### Documentation Updates
+- ✅ Update `README.md`:
+  - ✅ Change "Installation" section to feature `composer create-project` as primary method
+  - ✅ Show: `composer create-project eicc/staticforge my-site`
+  - ✅ Move git clone method to "Development Installation" section
+  - ✅ Update Quick Start to reflect post-install state (`.env` already exists)
+  - ✅ Add section explaining the 4 included templates
+  - ✅ Document how to switch templates (edit TEMPLATE in .env)
+  - ✅ Note that unused templates can be safely deleted
+
+- ✅ Update `docs/QUICK_START_GUIDE.md`:
+  - ✅ Update "Installation" section with `composer create-project` method
+  - ✅ Remove "Step 2: Install Dependencies" (already done by composer)
+  - ✅ Update "Step 3: Configure Your Site" (`.env` already exists, just edit it)
+  - ✅ Add note about starter content already being present
+  - ✅ Update first render example to show expected output from starter content
+
+### Packagist Publication Preparation
+- ✅ Document Packagist submission process in comments (not yet executing):
+  - ✅ Create account on packagist.org
+  - ✅ Submit repository URL: `https://github.com/calevans/staticforge`
+  - ✅ Set up GitHub service hook for auto-updates
+  - ✅ Tag first release: `v1.0.0`
+- ✅ Add checklist to `documents/plan.md` for future Packagist publication
+- ✅ Note: Actual Packagist submission happens after Step 24 completion
+- ✅ Apply YAGNI: Document process, don't execute until ready
+
+### Testing
+- ✅ Test `composer create-project` workflow locally:
+  - ✅ Create test installation in temporary directory
+  - ✅ Verify `.env` file created from `.env.example`
+  - ✅ Verify `output/` directory created with correct permissions
+  - ✅ Verify all templates present and accessible
+  - ✅ Verify starter content exists and is valid
+  - ✅ Run `php bin/console.php render:site`
+  - ✅ Verify successful site generation with starter content
+  - ✅ Verify all console commands work (`render:site`, `site:upload --help`)
+  - ✅ Verify `composer install` works in created project
+  - ✅ Apply SOLID: Test validates complete user workflow
+
+- ✅ Test distribution package size:
+  - ✅ Verify development files excluded via `.gitattributes`
+  - ✅ Check package size is reasonable (not bloated with tests/docs)
+  - ✅ Apply YAGNI: Verify only essential files included
+
+### Edge Cases & Validation
+- ✅ Handle existing `.env` file: Don't overwrite (post-install script already handles)
+- ✅ Handle existing `output/` directory: Don't fail, skip creation gracefully
+- ✅ Handle permission issues: Log error if directory creation fails
+- ✅ Validate starter content has valid frontmatter
+- ✅ Validate `.env.example` has all required variables with sensible defaults
+- ✅ Test on fresh system without existing StaticForge installation
+- ✅ Apply KISS: Simple error handling, clear user messaging
+
+### Principles Applied
+- ✅ Apply YAGNI: Essential setup automation only, no complex installers
+- ✅ Apply KISS: Standard Composer patterns, simple post-install scripts, minimal starter content
+- ✅ Apply SOLID:
+  - ✅ Single Responsibility: Composer handles installation, scripts handle setup
+  - ✅ Separation: Installation separated from configuration
+- ✅ Apply DRY: Reuse existing templates, leverage Composer standards
+- ✅ Apply Separation of Concerns: Composer installs, user configures, commands execute
+
+### Completion Checklist
+- ✅ Update `composer.json` with post-create-project-cmd scripts
+- ✅ Create `content/index.md` starter content file
+- ✅ Update `.env.example` with template documentation and sensible defaults
+- ✅ Create `.gitattributes` file with export-ignore rules
+- ✅ Update `README.md` installation section for composer create-project
+- ✅ Update `docs/QUICK_START_GUIDE.md` for new installation method
+- ✅ Test complete workflow: `composer create-project` → edit → `render:site`
+- ✅ Verify `.env` created automatically
+- ✅ Verify `output/` created automatically
+- ✅ Verify all 4 templates included and functional
+- ✅ Verify starter content renders successfully with all templates
+- ✅ Verify development files excluded from distribution
+- ✅ Document Packagist publication process (for future step)
+- ✅ Run existing test suite - all tests must pass
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification
+- ✅ Wait for further instructions
+
+---
+
 ## Quality Gates
 Each step must result in:
 - ✅ All unit tests passing

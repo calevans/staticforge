@@ -159,3 +159,9 @@ Read RenderPageCommand.php, lines 1 to 50
 
 I see - the other commands don't require a container in the constructor. Let me update UploadSiteCommand to initialize its own container:
 You're right - I apologize. The logger is stored as a variable in the container with setVariable(), not as a service with add(). Let me fix it:
+
+tests/Integration/Features/HtmlRenderer/IntegrationTest.php:60:LOG_FILE="php://stderr"
+tests/Integration/Commands/RenderSiteCommandTest.php:43:      'LOG_FILE' => 'staticforge.log',
+These are wrong. it shoud use the logger from the container. Let me update the test to use the logger instead of writing directly to stderr:
+
+```php

@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Tests\Integration;
 
 use EICC\StaticForge\Core\Application;
+use EICC\Utils\Container;
 
 /**
  * Error handling and graceful failure integration tests
@@ -13,7 +14,7 @@ class ErrorHandlingTest extends IntegrationTestCase
   private string $testOutputDir;
   private string $testContentDir;
   private string $testTemplateDir;
-  private string $envPath;
+  private Container $container;
 
   protected function setUp(): void
   {
@@ -27,17 +28,12 @@ class ErrorHandlingTest extends IntegrationTestCase
     mkdir($this->testContentDir, 0755, true);
     mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-    $this->envPath = $this->createTestEnv([
-      'SITE_NAME' => 'Error Test Site',
-      'SITE_BASE_URL' => 'https://error.test',
-      'TEMPLATE' => 'sample',
-      'SOURCE_DIR' => $this->testContentDir,
-      'OUTPUT_DIR' => $this->testOutputDir,
-      'TEMPLATE_DIR' => $this->testTemplateDir,
-      'FEATURES_DIR' => 'src/Features',
-      'LOG_LEVEL' => 'ERROR',
-      'LOG_FILE' => sys_get_temp_dir() . '/staticforge_test_' . uniqid() . '.log',
-    ]);
+    // Override environment variables BEFORE loading bootstrap
+    $_ENV['SOURCE_DIR'] = $this->testContentDir;
+    $_ENV['OUTPUT_DIR'] = $this->testOutputDir;
+    $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
+
+    $this->container = $this->createContainer(__DIR__ . '/../.env.integration');
 
     $this->createBaseTemplate();
   }
@@ -48,9 +44,6 @@ class ErrorHandlingTest extends IntegrationTestCase
     $this->removeDirectory($this->testOutputDir);
     $this->removeDirectory($this->testContentDir);
     $this->removeDirectory($this->testTemplateDir);
-    if (file_exists($this->envPath)) {
-      unlink($this->envPath);
-    }
   }
 
   private function createBaseTemplate(): void
@@ -96,7 +89,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -123,7 +116,7 @@ HTML;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     // Should handle missing template gracefully
@@ -148,7 +141,7 @@ title = "Valid"
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -175,7 +168,7 @@ Plain markdown content without frontmatter.';
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -206,7 +199,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -239,7 +232,7 @@ title = "Problematic"
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -271,7 +264,7 @@ MD;
     // Generate site - should recreate output dir
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -297,7 +290,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();
@@ -333,7 +326,7 @@ MD;
     // Generate site
     // Generate site
 
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $app = new Application($container);
 
     $result = $app->generate();

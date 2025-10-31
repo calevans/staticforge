@@ -4,7 +4,7 @@ A PHP-based static site generator that processes content files through an event-
 
 ## Documentation
 
-- **[Quick Start Guide](docs/QUICKSTART.md)** - Get running in 5 minutes
+- **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get running in 5 minutes
 - **[Configuration Guide](docs/CONFIGURATION.md)** - All configuration options
 - **[Feature Development](docs/FEATURE_DEVELOPMENT.md)** - Create custom features
 - **[Bootstrap & Initialization](docs/BOOTSTRAP.md)** - How bootstrap works
@@ -13,57 +13,111 @@ A PHP-based static site generator that processes content files through an event-
 
 ## Installation
 
+### Quick Install (Recommended)
+
+Install StaticForge with a single command using Composer:
+
 ```bash
-git clone <repository-url> my-site
+composer create-project eicc/staticforge my-site
 cd my-site
-lando composer install
+```
+
+That's it! Your site is ready to use. StaticForge automatically:
+- Creates a `.env` configuration file
+- Sets up the `output/` directory
+- Includes starter content and 4 pre-built templates
+
+### Development Installation
+
+If you want to contribute to StaticForge development:
+
+```bash
+git clone https://github.com/calevans/staticforge.git my-site
+cd my-site
+composer install
+cp .env.example .env
 ```
 
 ## Quick Start
 
-1. **Copy environment configuration:**
+Your StaticForge installation comes ready to use! Here's how to get started:
+
+1. **Edit your site configuration:**
+   Open `.env` and customize your site name, tagline, and other settings.
+
+2. **Generate your site:**
    ```bash
-   cp .env.example .env
+   php bin/console.php render:site
    ```
 
-2. **Create your content directory structure:**
-   ```bash
-   mkdir -p content templates output
-   ```
+3. **View your site:**
+   Open `output/index.html` in your browser.
 
-3. **Create a basic template:**
-   Create `templates/base.html.twig`:
-   ```html
-   <!DOCTYPE html>
-   <html>
-   <head>
-       <title>{{ title | default('My Site') }}</title>
-   </head>
-   <body>
-       <main>
-           {{ content | raw }}
-       </main>
-   </body>
-   </html>
-   ```
+4. **Add more content:**
+   Create `.md` or `.html` files in the `content/` directory and regenerate.
 
-4. **Create your first content file:**
-   Create `content/index.html`:
-   ```html
-   <!-- INI
-   title: Welcome to My Site
-   template: index
-   -->
-   <h1>Hello World!</h1>
-   <p>This is my first StaticForge page.</p>
-   ```
+### Available Templates
 
-5. **Generate your site:**
-   ```bash
-   lando php bin/console.php render:site
-   ```
+StaticForge includes 4 pre-built templates. Switch between them by editing the `TEMPLATE` variable in `.env`:
 
-Your static site will be generated in the `output/` directory.
+- **sample** - Clean, minimal design (default)
+- **staticforce** - Professional documentation theme
+- **terminal** - Retro terminal-inspired design
+- **vaulttech** - Fallout-inspired post-apocalyptic theme
+
+You can delete unused templates from the `templates/` directory to reduce clutter.
+
+### Example: Creating a New Page
+
+Create `content/about.md`:
+```markdown
+---
+title: About Us
+menu: 2
+---
+
+# About Us
+
+This is our about page!
+```
+
+Then regenerate your site:
+```bash
+php bin/console.php render:site
+```
+
+## Deployment
+
+Generate and upload your site in two commands:
+
+```bash
+# Generate static files
+php bin/console.php render:site
+
+# Upload to your server via SFTP
+php bin/console.php site:upload
+```
+
+See [Additional Commands](docs/ADDITIONAL_COMMANDS.md) for SFTP configuration details.
+
+## Command Reference
+
+### Generate Your Site
+
+```bash
+php bin/console.php render:site
+```
+
+Options:
+- `--clean` - Remove output directory before generation
+
+### Upload to Server
+
+```bash
+php bin/console.php site:upload
+```
+
+See [Additional Commands](docs/ADDITIONAL_COMMANDS.md) for SFTP configuration.
 
 ## Directory Structure
 

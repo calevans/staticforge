@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Tests\Integration\Commands;
 
 use EICC\StaticForge\Tests\Integration\IntegrationTestCase;
+use EICC\Utils\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use EICC\StaticForge\Commands\RenderSiteCommand;
@@ -15,7 +16,7 @@ class RenderSiteCommandTest extends IntegrationTestCase
   private string $testOutputDir;
   private string $testContentDir;
   private string $testTemplateDir;
-  private string $envPath;
+  private Container $container;
 
   protected function setUp(): void
   {
@@ -30,18 +31,13 @@ class RenderSiteCommandTest extends IntegrationTestCase
     mkdir($this->testContentDir, 0755, true);
     mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-    // Create test .env (returns path to use in commands)
-    $this->envPath = $this->createTestEnv([
-      'SITE_NAME' => 'Test Site',
-      'SITE_BASE_URL' => 'https://test.example.com',
-      'TEMPLATE' => 'sample',
-      'SOURCE_DIR' => $this->testContentDir,
-      'OUTPUT_DIR' => $this->testOutputDir,
-      'TEMPLATE_DIR' => $this->testTemplateDir,
-      'FEATURES_DIR' => 'src/Features',
-      'LOG_LEVEL' => 'DEBUG',
-      'LOG_FILE' => 'staticforge.log',
-    ]);
+    // Override environment variables BEFORE loading bootstrap
+    $_ENV['SOURCE_DIR'] = $this->testContentDir;
+    $_ENV['OUTPUT_DIR'] = $this->testOutputDir;
+    $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
+
+    // Load testing environment
+    $this->container = $this->createContainer(__DIR__ . '/../../.env.testing');
 
     // Create test template
     $baseTemplate = '<!DOCTYPE html>
@@ -79,7 +75,7 @@ title = "Test Page"
     public function testRenderSiteCommandSuccess(): void
     {
         $application = new Application();
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
@@ -100,7 +96,7 @@ title = "Test Page"
     public function testRenderSiteCommandWithVerbose(): void
     {
         $application = new Application();
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
@@ -127,7 +123,7 @@ title = "Test Page"
         $this->assertTrue(file_exists($this->testOutputDir . '/existing.html'));
 
         $application = new Application();
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
@@ -162,7 +158,7 @@ title = "Test Page"
         file_put_contents($this->testTemplateDir . '/terminal/base.html.twig', $terminalTemplate);
 
         $application = new Application();
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
@@ -185,7 +181,7 @@ title = "Test Page"
     public function testRenderSiteCommandWithInvalidTemplate(): void
     {
         $application = new Application();
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
         $command = $application->find('render:site');
@@ -208,7 +204,7 @@ title = "Test Page"
      */
     public function testRenderSiteCommandConfiguration(): void
     {
-        $container = $this->createContainer($this->envPath);
+        $container = $this->container;
         $command = new RenderSiteCommand($container);
 
         // Test command basic configuration
@@ -251,7 +247,7 @@ title = "Alt Page"
     file_put_contents($altInputDir . '/alt.html', $altContent);
 
     $application = new Application();
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
@@ -284,7 +280,7 @@ title = "Alt Page"
     mkdir($altOutputDir, 0755, true);
 
     $application = new Application();
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
@@ -326,7 +322,7 @@ title = "Both Override"
     file_put_contents($altInputDir . '/both.html', $altContent);
 
     $application = new Application();
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');
@@ -361,7 +357,7 @@ title = "Both Override"
   public function testRenderSiteCommandWithInvalidInput(): void
   {
     $application = new Application();
-    $container = $this->createContainer($this->envPath);
+    $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
     $command = $application->find('render:site');

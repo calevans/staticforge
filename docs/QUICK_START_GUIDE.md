@@ -21,36 +21,26 @@ Before you start, make sure you have:
 
 ## Installation
 
-### Step 1: Get StaticForge
+### Step 1: Install StaticForge
 
-Clone the repository into your project directory:
+Install StaticForge with a single Composer command:
 
 ```bash
-git clone https://github.com/calevans/staticforge.git my-awesome-site
+composer create-project eicc/staticforge my-awesome-site
 cd my-awesome-site
 ```
 
 Replace `my-awesome-site` with whatever you want to name your project!
 
-### Step 2: Install Dependencies
+That's it! StaticForge automatically:
+- Installs all dependencies
+- Creates a `.env` configuration file
+- Sets up the `output/` directory
+- Includes starter content and 4 templates
 
-StaticForge needs a few PHP libraries to work. Install them with Composer:
+### Step 2: Configure Your Site
 
-```bash
-composer install
-```
-
-This will download everything StaticForge needs to generate your site.
-
-### Step 3: Configure Your Site
-
-Create your configuration file by copying the example:
-
-```bash
-cp .env.example .env
-```
-
-Now open `.env` in your text editor. You'll see settings like:
+Open `.env` in your text editor. You'll see settings like:
 
 ```bash
 SITE_NAME="My Static Site"
@@ -70,9 +60,26 @@ OUTPUT_DIR="output"
 
 The defaults work great for testing, so you can leave them as-is for now!
 
-### Step 4: Start a Local Server (Optional)
+### Step 3: Generate Your Site
 
-Want to preview your site while you work? Start PHP's built-in web server:
+StaticForge includes a starter page to get you going. Generate it now:
+
+```bash
+php bin/console.php render:site
+```
+
+You'll see output like:
+
+```
+✓ Site generation complete!
+  Generated 1 pages
+```
+
+Your static site is now in the `output/` directory!
+
+### Step 4: View Your Site
+
+Start PHP's built-in web server to preview your site:
 
 ```bash
 php -S localhost:8000 -t output/
@@ -82,11 +89,13 @@ php -S localhost:8000 -t output/
 
 Leave this running in your terminal, and your site will be available at `http://localhost:8000`.
 
+Open your browser to `http://localhost:8000` - you'll see the StaticForge welcome page!
+
 ---
 
 ## Creating Your First Page
 
-Let's create a simple page to see how StaticForge works.
+StaticForge includes a starter homepage (`content/index.md`), but let's create a new page to see how it works.
 
 ### Step 1: Create a Content File
 
@@ -94,8 +103,9 @@ StaticForge looks for content in the `content/` directory. Create a new file cal
 
 ```markdown
 ---
-title = "My First Page"
-description = "Learning how to use StaticForge"
+title: "My First Page"
+description: "Learning how to use StaticForge"
+menu: 2
 ---
 
 # Hello, World!
@@ -113,12 +123,12 @@ Pretty cool, right?
 
 **Understanding the Structure:**
 
-- **Lines 1-4** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key = "value"` format.
+- **Lines 1-4** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` format.
 - **Everything after** - This is your content, written in Markdown.
 
-### Step 2: Generate Your Site
+### Step 2: Regenerate Your Site
 
-Now tell StaticForge to turn your content into HTML:
+Now tell StaticForge to regenerate your site with the new page:
 
 ```bash
 php bin/console.php render:site
@@ -127,29 +137,25 @@ php bin/console.php render:site
 You'll see:
 
 ```
-StaticForge Site Generator
-
-Starting site generation...
-
-✅ Site generation completed successfully!
-Time: 0.08s
+✓ Site generation complete!
+  Generated 2 pages
 ```
 
 StaticForge just:
-1. Read your content file
+1. Read your content files
 2. Converted the Markdown to HTML
 3. Applied your chosen template
-4. Saved it as `output/hello.html` (or `public/hello.html` depending on your OUTPUT_DIR)
+4. Saved them in the `output/` directory
 
 ### Step 3: View Your Page
 
-If you started the local server in Step 4 of Installation:
+If you started the local server in Step 4:
 
 1. Open your browser
 2. Go to `http://localhost:8000/hello.html`
 3. See your beautiful new page! 🎉
 
-**Not using the local server?** Just open `output/hello.html` (or `public/hello.html`) directly in your browser.
+**Not using the local server?** Just open `output/hello.html` directly in your browser.
 
 ---
 

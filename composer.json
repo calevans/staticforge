@@ -42,5 +42,17 @@
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php -r \"if (!file_exists('output')) mkdir('output', 0755, true);\"",
+            "@php bin/console.php --version",
+            "@php -r \"echo PHP_EOL . '✓ StaticForge installed successfully!' . PHP_EOL;\"",
+            "@php -r \"echo '  Next steps:' . PHP_EOL;\"",
+            "@php -r \"echo '  1. Edit .env to configure your site' . PHP_EOL;\"",
+            "@php -r \"echo '  2. Add content to content/ directory' . PHP_EOL;\"",
+            "@php -r \"echo '  3. Run: php bin/console.php render:site' . PHP_EOL . PHP_EOL;\""
+        ]
     }
 }
