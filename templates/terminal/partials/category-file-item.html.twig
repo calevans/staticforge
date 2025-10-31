@@ -1,0 +1,28 @@
+{# Category file item partial - displays a single file in category index #}
+<div class="category-file-item file-item">
+    {% if file.image %}
+    <div class="file-thumbnail">
+        <a href="{{ file.url }}">
+            <img src="{{ file.image }}" alt="{{ file.title }}" loading="lazy">
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="file-info">
+        <h3 class="file-title">
+            <a href="{{ file.url }}">{{ file.title }}</a>
+        </h3>
+
+        {% if file.date %}
+        <div class="file-date">
+            <span class="terminal-prompt">$</span> Published: {{ file.date }}
+        </div>
+        {% endif %}
+
+        {% if file.metadata.description %}
+        <div class="file-description">
+            {{ file.metadata.description }}
+        </div>
+        {% endif %}
+    </div>
+</div>

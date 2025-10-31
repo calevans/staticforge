@@ -1,0 +1,284 @@
+{% extends "terminal/base.html.twig" %}
+
+{% block title %}{{ title | default('Welcome to StaticForge Terminal') }}{% endblock %}
+
+{% block prompt %}ls -la /home/staticforge/{% endblock %}
+
+{% block content %}
+<div class="terminal-output">
+    <div class="terminal-line">Initializing StaticForge Terminal...</div>
+    <div class="terminal-line">Loading configuration...</div>
+    <div class="terminal-line">Scanning content directory...</div>
+    <div class="terminal-line">Ready for input.</div>
+    <div class="terminal-line">&nbsp;</div>
+
+    <div class="command-output">
+        <div class="terminal-line">{{ title | default('Welcome to StaticForge Terminal') }}</div>
+        <div class="terminal-line">&nbsp;</div>
+
+        <div class="file-listing">
+            {% if features.CategoryIndex.category_files is defined and features.CategoryIndex.category_files|length > 0 %}
+                <div class="category-files-grid" id="category-files" data-per-page="{{ per_page | default(10) }}">
+                    {% for file in features.CategoryIndex.category_files %}
+                        {% include 'terminal/partials/category-file-item.html.twig' with {'file': file} %}
+                    {% endfor %}
+                </div>
+                <div id="pagination" class="pagination-controls"></div>
+            {% else %}
+                {{ content | raw }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="system-info">
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">System Information:</div>
+        <div class="terminal-line">┌─────────────────────────────────────────────────┐</div>
+        <div class="terminal-line">│ 🚀 StaticForge Terminal Interface              │</div>
+        <div class="terminal-line">│ ⚡ Lightning-fast PHP static site generation   │</div>
+        <div class="terminal-line">│ 🎨 Twig templating with terminal aesthetics    │</div>
+        <div class="terminal-line">│ 📱 Responsive retro design                     │</div>
+        <div class="terminal-line">└─────────────────────────────────────────────────┘</div>
+    </div>
+
+    <div class="features-grid">
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">Available Commands:</div>
+        <div class="terminal-line">&nbsp;</div>
+
+        <div class="command-list">
+            <div class="command-item">
+                <span class="command-name">./generate-site</span>
+                <span class="command-desc">Build your complete static website</span>
+            </div>
+            <div class="command-item">
+                <span class="command-name">./edit-content</span>
+                <span class="command-desc">Modify your content files with ease</span>
+            </div>
+            <div class="command-item">
+                <span class="command-name">./customize-theme</span>
+                <span class="command-desc">Personalize your site's appearance</span>
+            </div>
+            <div class="command-item">
+                <span class="command-name">./deploy-site</span>
+                <span class="command-desc">Push your site to production</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="getting-started">
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">Quick Start Guide:</div>
+        <div class="terminal-line">─────────────────</div>
+        <div class="terminal-line">1. Edit files in /content/ directory</div>
+        <div class="terminal-line">2. Customize templates in /templates/</div>
+        <div class="terminal-line">3. Run: php bin/console.php render:site</div>
+        <div class="terminal-line">4. Deploy from /public/ directory</div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">Type 'help' for more commands or visit documentation.</div>
+    </div>
+
+    <div class="terminal-line">&nbsp;</div>
+    <div class="terminal-line typing-effect">user@staticforge:~$ █</div>
+</div>
+
+<style>
+    .terminal-output {
+        font-family: inherit;
+        line-height: 1.4;
+    }
+
+    .command-output {
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid #333333;
+        border-radius: 4px;
+    }
+
+    .file-listing {
+        color: #cccccc;
+        padding: 10px 0;
+    }
+
+    .system-info {
+        margin: 25px 0;
+        color: #00ffff;
+    }
+
+    .system-info .terminal-line {
+        color: #00ffff;
+    }
+
+    .features-grid {
+        margin: 25px 0;
+    }
+
+    .command-list {
+        margin-left: 20px;
+    }
+
+    .command-item {
+        display: flex;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+
+    .command-name {
+        color: #00ff00;
+        font-weight: bold;
+        min-width: 150px;
+        margin-right: 20px;
+    }
+
+    .command-desc {
+        color: #888;
+        flex: 1;
+    }
+
+    .getting-started {
+        margin: 25px 0;
+        padding: 15px;
+        background: rgba(0, 255, 0, 0.05);
+        border: 1px solid #00ff00;
+        border-radius: 4px;
+    }
+
+    .getting-started .terminal-line {
+        color: #cccccc;
+    }
+
+    .getting-started .terminal-line:nth-child(2) {
+        color: #00ffff;
+        font-weight: bold;
+    }
+
+    .getting-started .terminal-line:nth-child(3) {
+        color: #00ffff;
+    }
+
+    .terminal-line.typing-effect {
+        animation: blink 1s infinite;
+        margin-top: 20px;
+    }
+
+    /* ASCII Art Effects */
+    .system-info .terminal-line:nth-child(3),
+    .system-info .terminal-line:nth-child(7) {
+        color: #00ff00;
+    }
+
+    .system-info .terminal-line:nth-child(4),
+    .system-info .terminal-line:nth-child(5),
+    .system-info .terminal-line:nth-child(6) {
+        color: #00ffff;
+    }
+
+    .pagination-controls {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .pagination-controls button {
+        background: #1a1a1a;
+        color: #00ff00;
+        border: 1px solid #333;
+        padding: 8px 16px;
+        margin: 0 5px;
+        cursor: pointer;
+        font-family: 'JetBrains Mono', monospace;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-controls button:hover {
+        background: #2a2a2a;
+        border-color: #00ff00;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+
+    .pagination-controls button.active {
+        background: #00ff00;
+        color: #000;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .command-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .command-name {
+            min-width: auto;
+            margin-bottom: 5px;
+        }
+
+        .command-desc {
+            margin-left: 10px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+{% if features.CategoryIndex.category_files is defined and features.CategoryIndex.category_files|length > 0 %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.getElementById('category-files');
+  if (!container) return;
+
+  const items = container.querySelectorAll('.file-item');
+  const perPage = parseInt(container.dataset.perPage) || 10;
+  const totalPages = Math.ceil(items.length / perPage);
+  let currentPage = 1;
+
+  function showPage(page) {
+    items.forEach(item => item.style.display = 'none');
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    for (let i = start; i < end && i < items.length; i++) {
+      items[i].style.display = 'block';
+    }
+    currentPage = page;
+    updatePagination();
+  }
+
+  function updatePagination() {
+    const pagination = document.getElementById('pagination');
+    if (!pagination) return;
+
+    pagination.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    // Previous button
+    if (currentPage > 1) {
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = 'Previous';
+      prevBtn.onclick = () => showPage(currentPage - 1);
+      pagination.appendChild(prevBtn);
+    }
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      if (i === currentPage) btn.classList.add('active');
+      btn.onclick = () => showPage(i);
+      pagination.appendChild(btn);
+    }
+
+    // Next button
+    if (currentPage < totalPages) {
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Next';
+      nextBtn.onclick = () => showPage(currentPage + 1);
+      pagination.appendChild(nextBtn);
+    }
+  }
+
+  // Initialize
+  showPage(1);
+});
+</script>
+{% endif %}
+{% endblock %}

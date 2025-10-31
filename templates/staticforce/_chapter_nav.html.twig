@@ -1,0 +1,43 @@
+{#
+  Chapter Navigation Snippet
+
+  Renders sequential prev/next navigation for documentation pages.
+  Uses ChapterNav feature data to display navigation based on menu ordering.
+
+  Variables expected:
+  - source_file: The current file path
+  - features.ChapterNav.pages: Chapter navigation data
+#}
+
+{% if features.ChapterNav.pages[source_file] is defined %}
+    <style>
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            margin: 3rem 0 2rem 0;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .chapter-nav-prev, .chapter-nav-next {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .chapter-nav-prev:hover, .chapter-nav-next:hover {
+            background: var(--bg-hover);
+        }
+        .chapter-nav-current {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
+    {% for menu_num, nav_data in features.ChapterNav.pages[source_file] %}
+        {{ nav_data.html|raw }}
+    {% endfor %}
+{% endif %}

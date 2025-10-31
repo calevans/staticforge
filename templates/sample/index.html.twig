@@ -1,0 +1,134 @@
+{% extends "sample/base.html.twig" %}
+
+{% block title %}{{ title | default('Welcome to StaticForge') }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>{{ title | default('Welcome to StaticForge') }}</h1>
+
+    <div class="intro">
+        {% if features.CategoryIndex.category_files is defined and features.CategoryIndex.category_files|length > 0 %}
+            <div class="category-files-grid">
+                {% for file in features.CategoryIndex.category_files %}
+                    {% include 'sample/partials/category-file-item.html.twig' with {'file': file} %}
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ content | raw }}
+        {% endif %}
+    </div>
+
+    <div class="features">
+        <h2>Why Choose StaticForge?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🚀 Fast & Efficient</h3>
+                <p>Built with PHP for performance and reliability. Generates lightning-fast static sites.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎨 Beautiful Templates</h3>
+                <p>Twig templating engine provides powerful and flexible template inheritance.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📱 Responsive Design</h3>
+                <p>Mobile-first approach ensures your site looks great on all devices.</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ Event-Driven</h3>
+                <p>Extensible architecture with event-driven features and plugins.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <h2>Ready to Get Started?</h2>
+        <p>Create beautiful static websites with the power of PHP and Twig templating.</p>
+        <a href="#" class="btn">Get Started Now</a>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        text-align: center;
+    }
+
+    .intro {
+        margin: 30px 0;
+        font-size: 1.2rem;
+        color: #555;
+    }
+
+    .features {
+        margin: 50px 0;
+    }
+
+    .features h2 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2rem;
+        color: #2c3e50;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .feature-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .feature-card p {
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .cta-section {
+        margin: 60px 0 40px 0;
+        padding: 40px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 15px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .cta-section p {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cta-section {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
