@@ -19,6 +19,14 @@ class RenderPageCommand extends Command
     protected static $defaultName = 'render:page';
     protected static $defaultDescription = 'Render a single file or files matching a pattern';
 
+    protected Container $container;
+
+    public function __construct(Container $container)
+    {
+        parent::__construct();
+        $this->container = $container;
+    }
+
     protected function configure(): void
     {
         $this->setDescription('Render a single file or files matching a pattern')
@@ -58,21 +66,16 @@ class RenderPageCommand extends Command
                 $output->writeln("<comment>Using template override: {$templateOverride}</comment>");
             }
 
-          // Get env path from environment variable (for testing) or use default
-            $envPath = getenv('STATICFORGE_ENV_PATH') ?: '.env';
-
-          // Initialize application with template override
-            $application = new Application($envPath, $templateOverride);
-            $container = $application->getContainer();
-            $eventManager = $container->getVariable('event_manager');
+            // Initialize application with configured container and template override
+            $application = new Application($this->container, $templateOverride);
 
             if ($input->getOption('clean')) {
                 $output->writeln('<comment>Cleaning output directory...</comment>');
-                $this->cleanOutputDirectory($container);
+                $this->cleanOutputDirectory($this->container);
             }
 
           // Resolve the pattern to actual files
-            $files = $this->resolvePattern($pattern, $container, $output);
+            $files = $this->resolvePattern($pattern, $this->container, $output);
 
             if (empty($files)) {
                 $output->writeln('<error>No files matched the pattern: ' . $pattern . '</error>');

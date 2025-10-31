@@ -6,7 +6,6 @@ namespace EICC\StaticForge\Commands;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use EICC\StaticForge\Core\Bootstrap;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SFTP;
 use RecursiveDirectoryIterator;
@@ -28,16 +27,9 @@ class UploadSiteCommand extends Command
    */
   protected array $errors = [];
 
-  public function __construct(?Container $container = null)
+  public function __construct(Container $container)
   {
     parent::__construct();
-
-    // If no container provided, initialize one
-    if ($container === null) {
-      $bootstrap = new Bootstrap();
-      $container = $bootstrap->initialize();
-    }
-
     $this->container = $container;
     $this->logger = $container->getVariable('logger');
   }

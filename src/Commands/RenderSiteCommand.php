@@ -18,6 +18,14 @@ class RenderSiteCommand extends Command
     protected static $defaultName = 'render:site';
     protected static $defaultDescription = 'Generate the complete static site from content files';
 
+    protected Container $container;
+
+    public function __construct(Container $container)
+    {
+        parent::__construct();
+        $this->container = $container;
+    }
+
     protected function configure(): void
     {
         $this->setDescription('Generate the complete static site from content files')
@@ -74,35 +82,34 @@ class RenderSiteCommand extends Command
                 $output->writeln("<comment>Using output directory override: {$outputOverride}</comment>");
             }
 
-            // Get env path from environment variable (for testing) or use default
-            $envPath = getenv('STATICFORGE_ENV_PATH') ?: '.env';
+            // Get template override if provided
+            $templateOverride = $input->getOption('template');
 
-            // Initialize application with template override
-            $application = new Application($envPath, $templateOverride);
-            $container = $application->getContainer();
+            // Initialize application with configured container and template override
+            $application = new Application($this->container, $templateOverride);
 
             // Apply directory overrides after initialization
             if ($inputOverride) {
                 if (!is_dir($inputOverride)) {
                     throw new Exception("Input directory does not exist: {$inputOverride}");
                 }
-                $container->updateVariable('SOURCE_DIR', $inputOverride);
+                $this->container->updateVariable('SOURCE_DIR', $inputOverride);
             }
 
             if ($outputOverride) {
-                $container->updateVariable('OUTPUT_DIR', $outputOverride);
+                $this->container->updateVariable('OUTPUT_DIR', $outputOverride);
             }
 
             if ($output->isVerbose()) {
                 $output->writeln('<comment>Verbose mode enabled</comment>');
-                $this->displayConfiguration($container, $output);
+                $this->displayConfiguration($this->container, $output);
             }
 
             if ($input->getOption('clean')) {
                 $output->writeln('<comment>Cleaning output directory...</comment>');
-                $this->cleanOutputDirectory($container);
+                $this->cleanOutputDirectory($this->container);
                 if ($output->isVerbose()) {
-                    $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
+                    $outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';
                     $output->writeln("  ✓ Cleaned: {$outputDir}");
                 }
             }

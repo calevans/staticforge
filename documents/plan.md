@@ -606,7 +606,7 @@ This step is no longer needed as logger registration is part of bootstrap.php cr
 - Apply DRY: Single bootstrap path for all entry points
 - Apply SOLID: Console delegates to bootstrap
 
-### Step 23.3. Update Command Constructors
+### Step 23.3. Update Command Constructors ✅
 - Modify `RenderSiteCommand`:
   - Add `public function __construct(Container $container)`
   - Store container as protected property
