@@ -7,6 +7,7 @@ A PHP-based static site generator that processes content files through an event-
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Get running in 5 minutes
 - **[Configuration Guide](docs/CONFIGURATION.md)** - All configuration options
 - **[Feature Development](docs/FEATURE_DEVELOPMENT.md)** - Create custom features
+- **[Bootstrap & Initialization](docs/BOOTSTRAP.md)** - How bootstrap works
 - **[Technical Documentation](documents/technical.md)** - Architecture details
 - **[Design Documentation](documents/design.md)** - Design decisions
 
@@ -402,58 +403,6 @@ php bin/console.php render:site --template=vaulttech
 
 ---
 
-### render:page
-
-Render a single file or files matching a pattern. Useful for quick testing or partial site updates.
-
-**Usage:**
-```bash
-php bin/console.php render:page [options] [--] <pattern>
-```
-
-**Arguments:**
-- `pattern` - File path or glob pattern to render (e.g., `content/about.md` or `content/*.md`)
-
-**Options:**
-- `-c, --clean` - Clean output directory before generation
-- `-t, --template=TEMPLATE` - Override the template theme
-- `-v, --verbose` - Enable verbose output with file list
-
-**Examples:**
-
-Render a single file:
-```bash
-php bin/console.php render:page content/about.md
-```
-
-Render all markdown files:
-```bash
-php bin/console.php render:page "content/*.md"
-```
-
-Render all HTML files with verbose output:
-```bash
-php bin/console.php render:page "content/*.html" -v
-```
-
-Render specific category with custom template:
-```bash
-php bin/console.php render:page "content/business/*" --template=terminal
-```
-
-**Pattern Resolution:**
-- Absolute paths work directly
-- Relative paths are resolved from content directory
-- Glob patterns (`*`, `?`) are supported
-- File extension can be omitted (will try `.md` and `.html`)
-
-**Verbose Output Includes:**
-- Pattern resolution details
-- List of matched files
-- File processing count
-
----
-
 ## Global Options
 
 All commands support these Symfony Console options:
@@ -469,34 +418,11 @@ All commands support these Symfony Console options:
 
 ## Use Cases
 
-### Development Workflow
-
-Quick iteration on a single page:
-```bash
-# Edit content/about.md
-php bin/console.php render:page content/about.md
-# Check public/about.html
-```
-
-### Content Preview
-
-Preview all pages in a category before full build:
-```bash
-php bin/console.php render:page "content/blog/*.md" -v
-```
-
-### Template Testing
-
-Test a new template on a subset of pages:
-```bash
-php bin/console.php render:page "content/index.md" --template=experimental
-```
-
 ### Production Build
 
 Full site generation with clean output:
 ```bash
-php bin/console.php site:render --clean -v
+php bin/console.php render:site --clean -v
 ```
 
 ### Deployment to Production
@@ -532,9 +458,7 @@ php bin/console.php render:site -vvv  # Debug level verbosity
 
 ## Performance Notes
 
-- `render:page` only processes matched files, making it faster for testing
 - `render:site` processes all files and runs all features (menus, tags, categories)
-- Both commands support the same template and clean options
 - Verbose mode adds minimal overhead
 - Average processing time shown in verbose output helps identify bottlenecks
 
@@ -549,11 +473,9 @@ php bin/console.php render:site -vvv  # Debug level verbosity
 
 ## Tips
 
-1. **Use patterns for batch operations**: `content/blog/*.md` renders all blog posts
-2. **Test before full build**: Use `render:page` to verify changes quickly
-3. **Enable verbose for debugging**: `-v` shows what's happening
-4. **Clean builds**: Use `--clean` when changing templates or structure
-5. **Template switching**: Test different themes without modifying `.env`
+1. **Enable verbose for debugging**: `-v` shows what's happening
+2. **Clean builds**: Use `--clean` when changing templates or structure
+3. **Template switching**: Test different themes without modifying `.env`
 
 ---
 
@@ -567,14 +489,14 @@ You can integrate these commands into your build pipeline:
   "scripts": {
     "build": "php bin/console.php render:site --clean",
     "dev": "php bin/console.php render:site -v",
-    "preview": "php bin/console.php render:page 'content/*.md'"
+    "deploy": "php bin/console.php site:upload"
   }
 }
 ```
 
 **Makefile:**
 ```makefile
-.PHONY: build dev preview
+.PHONY: build dev deploy
 
 build:
 	php bin/console.php render:site --clean
@@ -582,8 +504,8 @@ build:
 dev:
 	php bin/console.php render:site -v
 
-preview:
-	php bin/console.php render:page "content/*.md"
+deploy:
+	php bin/console.php render:site --clean && php bin/console.php site:upload
 ```
 
 **Shell script:**
