@@ -2,7 +2,6 @@
 
 namespace EICC\StaticForge\Core;
 
-use EICC\StaticForge\Core\Bootstrap;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
@@ -30,25 +29,23 @@ class Application
     private Log $logger;
     private bool $featuresLoaded = false;
 
-    public function __construct(string $envPath = '.env', ?string $templateOverride = null)
+    public function __construct(Container $container, ?string $templateOverride = null)
     {
-        $this->bootstrap($envPath);
+        $this->container = $container;
+        $this->initializeLogger();
         $this->applyTemplateOverride($templateOverride);
         $this->initializeComponents();
     }
 
     /**
-     * Bootstrap the application with environment and core services
+     * Initialize logger from container
      */
-    private function bootstrap(string $envPath): void
+    private function initializeLogger(): void
     {
-        $bootstrap = new Bootstrap();
-        $this->container = $bootstrap->initialize($envPath);
-
-        // Get logger from container (should be set by EnvironmentLoader)
+        // Get logger from container (should be set by bootstrap)
         $logger = $this->container->getVariable('logger');
         if (!$logger instanceof Log) {
-            throw new \RuntimeException('Logger not initialized by EnvironmentLoader');
+            throw new \RuntimeException('Logger not initialized in container');
         }
         $this->logger = $logger;
     }
