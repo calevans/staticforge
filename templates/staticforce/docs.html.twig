@@ -709,11 +709,11 @@
             {% block content %}
                 {{ content|raw }}
             {% endblock %}
+
+            {# Chapter Navigation #}
+            {% include '_chapter_nav.html.twig' %}
         </main>
     </div>
-
-    {# Chapter Navigation #}
-    {% include '_chapter_nav.html.twig' %}
 
     <!-- Footer -->
     <footer class="footer">
