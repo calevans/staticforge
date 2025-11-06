@@ -8,7 +8,6 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
-use Symfony\Component\Yaml\Yaml;
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
@@ -19,7 +18,7 @@ use Twig\Loader\FilesystemLoader;
 
 /**
  * Markdown Renderer Feature - processes .md files during RENDER event
- * Extracts YAML frontmatter, converts Markdown to HTML, and applies templates
+ * Extracts INI frontmatter, converts Markdown to HTML, and applies templates
  */
 class Feature extends BaseRendererFeature implements FeatureInterface
 {

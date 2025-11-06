@@ -34,6 +34,11 @@ class ErrorHandlingTest extends IntegrationTestCase
     $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
 
     $this->container = $this->createContainer(__DIR__ . '/../.env.integration');
+    
+    // Update container variables after bootstrap to override .env values
+    $this->container->updateVariable('SOURCE_DIR', $this->testContentDir);
+    $this->container->updateVariable('OUTPUT_DIR', $this->testOutputDir);
+    $this->container->updateVariable('TEMPLATE_DIR', $this->testTemplateDir);
 
     $this->createBaseTemplate();
   }
@@ -159,15 +164,13 @@ title = "Valid"
     $plainHtml = '<h1>No Frontmatter</h1><p>Just content</p>';
     file_put_contents($this->testContentDir . '/plain.html', $plainHtml);
 
-    // Create Markdown without frontmatter
+    // Create Markdown without frontmatter (different name to avoid conflict)
     $plainMd = '# Markdown Title
 
 Plain markdown content without frontmatter.';
-    file_put_contents($this->testContentDir . '/plain.md', $plainMd);
+    file_put_contents($this->testContentDir . '/markdown.md', $plainMd);
 
     // Generate site
-    // Generate site
-
     $container = $this->container;
     $app = new Application($container);
 
@@ -177,11 +180,15 @@ Plain markdown content without frontmatter.';
 
     // Both files should be processed
     $this->assertFileExists($this->testOutputDir . '/plain.html');
-    $this->assertFileExists($this->testOutputDir . '/plain.html');
+    $this->assertFileExists($this->testOutputDir . '/markdown.html');
 
-    // Check content preserved
+    // Check content preserved for HTML file
     $htmlOutput = file_get_contents($this->testOutputDir . '/plain.html');
     $this->assertStringContainsString('No Frontmatter', $htmlOutput);
+
+    // Check content processed for Markdown file
+    $markdownOutput = file_get_contents($this->testOutputDir . '/markdown.html');
+    $this->assertStringContainsString('Markdown Title', $markdownOutput);
   }
 
   public function testHandlesSpecialCharactersInFilenames(): void

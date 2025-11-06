@@ -72,8 +72,8 @@ You can delete unused templates from the `templates/` directory to reduce clutte
 Create `content/about.md`:
 ```markdown
 ---
-title: About Us
-menu: 2
+title = "About Us"
+menu = 2
 ---
 
 # About Us
@@ -132,11 +132,11 @@ Content files support front matter in INI format within HTML comments:
 
 ```html
 <!-- INI
-title: Page Title
-template: index
-date: 2025-10-27
-category: blog
-tags: php, static-site, generator
+title = "Page Title"
+template = "index"
+date = "2025-10-27"
+category = "blog"
+tags = "php, static-site, generator"
 -->
 <h1>Your content here</h1>
 <p>This content will be processed and rendered using the specified template.</p>
@@ -144,8 +144,8 @@ tags: php, static-site, generator
 
 ### Template Selection
 
-- **`template: index`** → Uses `templates/sample/index.html.twig`
-- **`template: landing`** → Uses `templates/sample/landing.html.twig`
+- **`template = "index"`** → Uses `templates/sample/index.html.twig`
+- **`template = "landing"`** → Uses `templates/sample/landing.html.twig`
 - **No template specified** → Defaults to `templates/sample/base.html.twig`
 
 The template directory (`sample`) is configured via the `TEMPLATE` setting in `.env`.
@@ -212,39 +212,39 @@ Add a `menu:` entry to your content's frontmatter:
 **Markdown files:**
 ```markdown
 ---
-title: Home
-menu: 1
+title = "Home"
+menu = 1
 ---
 ```
 
 **HTML files:**
 ```html
 <!-- INI
-title: Home
-menu: 1
+title = "Home"
+menu = 1
 -->
 ```
 
 ### Menu Positioning
 
 **Simple menu items:**
-```yaml
-menu: 1        # First item in menu 1
-menu: 2        # First item in menu 2
+```ini
+menu = 1        # First item in menu 1
+menu = 2        # First item in menu 2
 ```
 
 **Dropdown menus:**
-```yaml
-menu: 2.0      # Dropdown title (not clickable)
-menu: 2.1      # First item in dropdown
-menu: 2.2      # Second item in dropdown
+```ini
+menu = 2.0      # Dropdown title (not clickable)
+menu = 2.1      # First item in dropdown
+menu = 2.2      # Second item in dropdown
 ```
 
 **Three-level menus:**
-```yaml
-menu: 1.2.0    # Nested dropdown title
-menu: 1.2.1    # First item in nested dropdown
-menu: 1.2.2    # Second item in nested dropdown
+```ini
+menu = 1.2.0    # Nested dropdown title
+menu = 1.2.1    # First item in nested dropdown
+menu = 1.2.2    # Second item in nested dropdown
 ```
 
 *Note: Only 3 levels are supported.*

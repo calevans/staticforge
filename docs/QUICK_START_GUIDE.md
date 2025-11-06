@@ -103,9 +103,9 @@ StaticForge looks for content in the `content/` directory. Create a new file cal
 
 ```markdown
 ---
-title: "My First Page"
-description: "Learning how to use StaticForge"
-menu: 2
+title = "My First Page"
+description = "Learning how to use StaticForge"
+menu = 2
 ---
 
 # Hello, World!

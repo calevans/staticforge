@@ -119,7 +119,7 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     private function extractMetadataFromMarkdown(string $content): array
     {
-        // Extract YAML/INI frontmatter
+        // Extract INI frontmatter
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
             return [];
         }
@@ -127,7 +127,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $frontmatter = $matches[1];
         $metadata = [];
 
-        // Look for menu: or menu = entry (support both YAML and INI format)
+        // Look for menu: or menu = entry (support both : and = syntax)
         if (preg_match('/^menu\s*[=:]\s*(.+)$/m', $frontmatter, $menuMatches)) {
             $metadata['menu'] = trim($menuMatches[1]);
         }
@@ -153,7 +153,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $iniContent = $matches[1];
         $metadata = [];
 
-        // Look for menu = or menu: entry (support both INI and YAML format)
+        // Look for menu = or menu: entry (support both = and : syntax)
         if (preg_match('/^menu\s*[=:]\s*(.+)$/m', $iniContent, $menuMatches)) {
             $metadata['menu'] = trim($menuMatches[1]);
         }
@@ -274,7 +274,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         if ($extension === 'md') {
-            // Try to get title from YAML frontmatter
+            // Try to get title from frontmatter
             if (preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
                 $frontmatter = $matches[1];
                 if (preg_match('/^title:\s*(.+)$/m', $frontmatter, $titleMatches)) {

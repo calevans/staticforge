@@ -8,13 +8,12 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
-use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 /**
  * HTML Renderer Feature - processes .html files during RENDER event
- * Extracts YAML metadata, processes content, and writes output files
+ * Extracts INI metadata, processes content, and writes output files
  */
 class Feature extends BaseRendererFeature implements FeatureInterface
 {

@@ -472,10 +472,13 @@ class Feature extends BaseFeature implements FeatureInterface
                     continue; // Skip title
                 }
 
-                $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$position}" : "";
-                $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-                $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
-                 htmlspecialchars($item['title']) . '</a></li>' . "\n";
+                // Only render items that have both title and url
+                if (isset($item['title'], $item['url'])) {
+                    $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$position}" : "";
+                    $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
+                    $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
+                     htmlspecialchars($item['title']) . '</a></li>' . "\n";
+                }
             }
 
             $html .= '    </ul>' . "\n";
@@ -503,7 +506,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
           // Render items
             foreach ($allItems as $item) {
-                if (isset($item['title'])) {
+                if (isset($item['title'], $item['url'])) {
                     $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
                     $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
                     $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
