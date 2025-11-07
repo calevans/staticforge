@@ -20,8 +20,8 @@ class RssFeedFeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        // Create temp directory for tests
-        $this->tempDir = sys_get_temp_dir() . '/staticforge_rss_test_' . uniqid();
+        // Create temp directory for tests with more entropy for parallel execution
+        $this->tempDir = sys_get_temp_dir() . '/staticforge_rss_test_' . uniqid('', true) . '_' . getmypid();
         mkdir($this->tempDir, 0755, true);
 
         // Setup container

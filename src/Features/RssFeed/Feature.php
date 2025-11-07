@@ -266,11 +266,24 @@ class Feature extends BaseFeature implements FeatureInterface
         // Strip HTML tags and get first 200 characters
         $text = strip_tags($html);
         $text = preg_replace('/\s+/', ' ', $text); // Normalize whitespace
+        
+        // Handle null return from preg_replace
+        if ($text === null) {
+            $text = '';
+        }
+        
         $text = trim($text);
 
         if (strlen($text) > 200) {
             $text = substr($text, 0, 200);
-            $text = substr($text, 0, strrpos($text, ' ')) . '...';
+            $lastSpace = strrpos($text, ' ');
+            
+            // Only truncate at space if one was found
+            if ($lastSpace !== false) {
+                $text = substr($text, 0, $lastSpace);
+            }
+            
+            $text .= '...';
         }
 
         return $text;
@@ -344,6 +357,11 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Replace spaces and special characters with hyphens
         $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
+        
+        // Handle null return from preg_replace (regex failure)
+        if ($sanitized === null) {
+            $sanitized = 'category';
+        }
 
         // Remove leading/trailing hyphens
         $sanitized = trim($sanitized, '-');

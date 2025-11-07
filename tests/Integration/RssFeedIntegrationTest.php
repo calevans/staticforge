@@ -20,9 +20,10 @@ class RssFeedIntegrationTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->testOutputDir = sys_get_temp_dir() . '/staticforge_rss_output_' . uniqid();
-        $this->testContentDir = sys_get_temp_dir() . '/staticforge_rss_content_' . uniqid();
-        $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_rss_templates_' . uniqid();
+        // Use more entropy for parallel test execution
+        $this->testOutputDir = sys_get_temp_dir() . '/staticforge_rss_output_' . uniqid('', true) . '_' . getmypid();
+        $this->testContentDir = sys_get_temp_dir() . '/staticforge_rss_content_' . uniqid('', true) . '_' . getmypid();
+        $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_rss_templates_' . uniqid('', true) . '_' . getmypid();
 
         mkdir($this->testOutputDir, 0755, true);
         mkdir($this->testContentDir, 0755, true);
