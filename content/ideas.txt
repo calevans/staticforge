@@ -1,0 +1,73 @@
+Promt:
+We are writing the encyclopedia of home bar-tending. The target audience is home bartenders that want to be able to mix drinks with flare, understand a bit about the chemistry of bar-tending, and be able to impress their friends at parties with this skill, knowledge, and technique. We are not teaching professional bartenders. They are not looking to be professionals, and they are not Tom Cruise and Brian Brown in Cocktail. Along the way it's ok to include a drink recipie when needed to demonstrate but this is not a recipie book.
+
+You are writing the article described below. It should be complete and thorough. It should be least 1,500 words long, but with a Quick Start section near the beginning for the impatient.
+
+Use https://heartsntales.com/about-us for tone and style. Do not copy text from there. 
+
+All copy should be written so that it is not simply copied from other texts. 
+
+After generating the article, generate a midjourney prompt to generate an image to go with it. Be as detailed with the midjourney prompt as needed to generate the image. 
+
+The very tip of the article should be the forecontent. It is in key=value format. It is deliniated by a pair of lines --- above and below it. It should contain 2 things.
+---
+title=
+category="The Home Bar Encyclopedia"
+menu=1.x
+---
+In the menu section, replace x with the number of the chapter. that is found below at the beginning of the topic.
+
+The output should be markdown.
+
+Topic:
+
+---
+
+The Home Bartender's Encyclopedia
+
+X 1. The Essential Bar: Building Your Foundation - What equipment you actually need versus what looks impressive but gathers dust.
+X 2. Glassware Decoded - Why the shape of your glass matters for both chemistry and presentation.
+3. Ice: The Most Important Ingredient - Understanding dilution, temperature control, and why your freezer ice is probably terrible.
+4. The Science of Shaking - What actually happens when you shake a cocktail and when to do it.
+5. The Art of Stirring - Why some drinks demand gentle integration and how to stir with purpose.
+Citrus Fundamentals - Selecting, storing, and extracting maximum flavor from lemons, limes, and beyond.
+The Chemistry of Balance - How sweet, sour, bitter, and strong interact to create harmony in a glass.
+Spirits 101: What You're Actually Pouring - The fundamental differences between base spirits that affect your mixing decisions.
+Muddling Without Murdering - When and how to extract oils and flavors without creating bitter, pulpy disasters.
+Simple Syrup and Beyond - Making your own sweeteners and understanding sugar's role in texture and preservation.
+Bitters: Drops of Complexity - How these concentrated flavor bombs work and when to deploy them.
+The Dirty Secret of Egg Whites - Why adding protein creates texture and how to do it safely.
+Carbonation and Effervescence - Preserving bubbles and understanding when fizz enhances or destroys a drink.
+The Double Strain - Why fine-straining matters and when it's worth the extra step.
+Measuring vs. Free Pouring - The truth about accuracy and when you can bend the rules.
+Building in the Glass - The simplest mixing method and when it's the right choice.
+Expressing Citrus Oils - The dramatic twist that actually changes flavor chemistry.
+Rim Jobs: Salt, Sugar, and Spice - When glass rims enhance drinks versus when they're just Instagram bait.
+Fresh Herbs: Slap, Don't Crush - Releasing aromatics without extracting bitter chlorophyll.
+Temperature Management - Why some drinks must be ice-cold while others open up when warmer.
+The Float: Layering Liquids - Using density differences to create visual and flavor separation.
+Flaming: When Fire Isn't Just Showmanship - The chemical changes heat brings and how to do it without burning your house down.
+Batch Cocktails That Don't Suck - Pre-mixing for parties while maintaining quality and proper dilution.
+The Home Bar Stock - Strategic bottle selection that maximizes your mixing options without breaking the bank.
+Vermouth Isn't Dead - Why fortified wines matter and how to keep them from going bad in your fridge.
+Liqueurs: Shortcuts to Complexity - Understanding what these sweetened spirits bring to your arsenal.
+Fresh Juice vs. Bottled: The Compromise - When fresh matters desperately and when you can cheat.
+Garnish with Purpose - Every addition should enhance aroma, flavor, or drinking experience—not just look pretty.
+Reading Classic Recipes - Decoding old cocktail books and adapting historical proportions to modern palates.
+The Martini Matrix - Why this simple drink reveals everything about technique and personal preference.
+Cream and Dairy Science - How fat interacts with alcohol and acid without curdling in your glass.
+Tiki Without the Trash - The surprisingly sophisticated techniques behind drinks with tiny umbrellas.
+Clear Ice at Home - Methods for making professional-looking ice without professional equipment.
+Ice Shapes and Their Functions - Cubes, spheres, spears, and crushed—matching form to purpose.
+Syrups, Shrubs, and Cordials - Preserving seasonal flavors and adding depth beyond simple sugar.
+The Infinity Bottle - Creating evolving house blends from your half-empty spirit bottles.
+Cleanup and Mise en Place - Setting up for efficient service and why bartending is 30% prep, 70% cleanup.
+Troubleshooting Common Failures - What went wrong and how to fix drinks that taste off-balance.
+Scaling Your Service - Moving from making one drink to making eight without sacrificing quality.
+Non-Alcoholic Mixology - Applying real technique to drinks without spirits so they're not just juice.
+Seasonal Adaptation - Using what's fresh and adjusting drinks to the weather and occasion.
+The Tasting Process - How to evaluate your own drinks and adjust like a professional.
+Bar Spoon Techniques - That long twisted spoon isn't just for stirring—it's a multi-tool.
+Coffee and Tea in Cocktails - Managing tannins, caffeine, and temperature in mixed drinks.
+Infusions and Tinctures - Flavoring spirits at home without weird science experiments.
+The Speed Rail Mentality - Organizing your workspace for efficiency during actual parties.
