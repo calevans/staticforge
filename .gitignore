@@ -12,3 +12,6 @@ composer.lock
 .phpunit.result.cache
 .env
 *.log
+
+# Development router (created by site:devserver command)
+public/.ht.route.php
