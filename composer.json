@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": "^8.3",
         "eicc/utils": "^1.0",
         "league/commonmark": "^2.4",
         "phpseclib/phpseclib": "^3.0",
