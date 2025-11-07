@@ -29,7 +29,7 @@ class Feature extends BaseFeature implements FeatureInterface
      * @var array<string, array{method: string, priority: int}>
      */
     protected array $eventListeners = [
-        'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 40],
+        'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 110],
         'POST_LOOP' => ['method' => 'generateRssFeeds', 'priority' => 90]
     ];
 
