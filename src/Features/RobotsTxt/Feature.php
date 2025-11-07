@@ -229,11 +229,11 @@ class Feature extends BaseFeature implements FeatureInterface
         foreach ($lines as $line) {
           $line = trim($line);
           // INI format uses = not :
-          if (empty($line) || strpos($line, '=') === false) {
+          if (empty($line) || !str_contains($line, '=')) {
             continue;
           }
 
-          list($key, $value) = array_map('trim', explode('=', $line, 2));
+          [$key, $value] = array_map('trim', explode('=', $line, 2));
           // Remove quotes if present
           $value = trim($value, '"\'');
 
@@ -263,11 +263,11 @@ class Feature extends BaseFeature implements FeatureInterface
         foreach ($lines as $line) {
           $line = trim($line);
           // INI format uses = not :
-          if (empty($line) || strpos($line, '=') === false) {
+          if (empty($line) || !str_contains($line, '=')) {
             continue;
           }
 
-          list($key, $value) = array_map('trim', explode('=', $line, 2));
+          [$key, $value] = array_map('trim', explode('=', $line, 2));
           // Remove quotes if present
           $value = trim($value, '"\'');
 
@@ -289,7 +289,7 @@ class Feature extends BaseFeature implements FeatureInterface
     $normalizedFilePath = $filePath;
 
     // Check if file path starts with source directory
-    if (strpos($normalizedFilePath, $normalizedSourceDir) !== 0) {
+    if (!str_starts_with($normalizedFilePath, $normalizedSourceDir)) {
       // Fallback to just the filename
       $relativePath = basename($filePath);
     } else {
@@ -298,7 +298,7 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     // Convert file extension to .html
-    $relativePath = preg_replace('/\.(md|html)$/', '.html', $relativePath);
+    $relativePath = preg_replace('/\.(md|html)$/', '.html', $relativePath) ?? $relativePath;
 
     // Convert to web path with forward slashes
     $webPath = '/' . str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
@@ -324,7 +324,7 @@ class Feature extends BaseFeature implements FeatureInterface
     $sanitized = strtolower($category);
 
     // Replace spaces and special characters with hyphens
-    $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
+    $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized) ?? $sanitized;
 
     // Remove leading/trailing hyphens
     $sanitized = trim($sanitized, '-');
