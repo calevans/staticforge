@@ -1,7 +1,7 @@
 ---
 title = "Categories"
 template = "docs"
-menu = 1.3.5, 2.3.5
+menu = 1.3.5, 2.8
 ---
 
 # Categories

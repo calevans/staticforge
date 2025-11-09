@@ -1,7 +1,7 @@
 ---
 title = "Core Events Reference"
 template = "docs"
-menu = 1.8, 2.8
+menu = 1.8, 2.16
 ---
 
 # Core Events Reference

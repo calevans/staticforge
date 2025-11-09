@@ -1,7 +1,7 @@
 ---
 title = "RSS Feed"
 template = "docs"
-menu = 1.3.9, 2.3.9
+menu = 1.3.9, 2.12
 ---
 
 # RSS Feed

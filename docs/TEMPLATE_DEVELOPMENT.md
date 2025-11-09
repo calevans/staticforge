@@ -1,5 +1,5 @@
 ---
-menu = 1.4, 2.4
+menu = 1.4, 2.13
 name="Template Development"
 template = "docs"
 ---

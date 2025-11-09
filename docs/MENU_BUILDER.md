@@ -1,7 +1,7 @@
 ---
 title = "Menu Builder"
 template = "docs"
-menu = 1.3.3, 2.3.3
+menu = 1.3.3, 2.6
 ---
 
 # Menu Builder
