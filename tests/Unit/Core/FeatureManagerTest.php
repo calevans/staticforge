@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Core;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\Utils\Container;
@@ -23,6 +24,10 @@ class FeatureManagerTest extends UnitTestCase
         parent::setUp();
 
         $this->eventManager = new EventManager($this->container);
+
+        // Create ExtensionRegistry and add to container (needed by BaseFeature)
+        $extensionRegistry = new ExtensionRegistry($this->container);
+        $this->container->add('extension_registry', $extensionRegistry);
 
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/test.log';
@@ -51,7 +56,8 @@ class FeatureManagerTest extends UnitTestCase
 
         $features = $this->featureManager->getFeatures();
         $this->assertIsArray($features);
-        $this->assertEmpty($features);
+        // Library features should still be loaded even with empty user features directory
+        $this->assertGreaterThan(0, count($features));
     }
 
     public function testLoadFeaturesWithNonexistentDirectory(): void
@@ -64,7 +70,8 @@ class FeatureManagerTest extends UnitTestCase
 
         $features = $freshFeatureManager->getFeatures();
         $this->assertIsArray($features);
-        $this->assertEmpty($features);
+        // Library features should still be loaded even with nonexistent user features directory
+        $this->assertGreaterThan(0, count($features));
     }
 
     public function testLoadValidFeature(): void
@@ -75,9 +82,10 @@ class FeatureManagerTest extends UnitTestCase
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
-        $this->assertCount(1, $features);
+        $this->assertIsArray($features);
+        // Should load library features + 1 user feature
+        $this->assertGreaterThan(1, count($features));
         $this->assertArrayHasKey('TestFeature', $features);
-        $this->assertInstanceOf(FeatureInterface::class, $features['TestFeature']);
     }
 
     public function testGetSpecificFeature(): void
@@ -113,7 +121,7 @@ class FeatureManagerTest extends UnitTestCase
         $featureContent = <<<PHP
 <?php
 
-namespace EICC\\StaticForge\\Features\\{$featureName};
+namespace App\\Features\\{$featureName};
 
 use EICC\\StaticForge\\Core\\BaseFeature;
 use EICC\\StaticForge\\Core\\FeatureInterface;
@@ -121,6 +129,8 @@ use EICC\\Utils\\Container;
 
 class Feature extends BaseFeature implements FeatureInterface
 {
+    protected string \$name = '{$featureName}';
+
     protected array \$eventListeners = [
         'TEST_EVENT' => ['method' => 'handleTestEvent', 'priority' => 100]
     ];

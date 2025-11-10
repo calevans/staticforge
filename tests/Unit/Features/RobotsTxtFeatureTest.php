@@ -20,13 +20,13 @@ class RobotsTxtFeatureTest extends UnitTestCase
   protected function setUp(): void
   {
     parent::setUp();
-    
+
     // Set up virtual filesystem
     $this->root = vfsStream::setup('test');
-    
+
     // Use bootstrapped container from parent::setUp()
     $this->eventManager = new EventManager($this->container);
-    
+
     $this->feature = new RobotsTxtFeature();
     $this->feature->register($this->eventManager, $this->container);
   }
@@ -35,19 +35,19 @@ class RobotsTxtFeatureTest extends UnitTestCase
   {
     $listeners = $this->eventManager->getListeners('POST_GLOB');
     $this->assertNotEmpty($listeners);
-    
+
     $listeners = $this->eventManager->getListeners('POST_LOOP');
     $this->assertNotEmpty($listeners);
   }
 
   public function testHandlePostGlobWithNoFiles(): void
   {
-    $this->container->setVariable('discovered_files', []);
-    $this->container->setVariable('SOURCE_DIR', 'content');
-    
+    $this->setContainerVariable('discovered_files', []);
+    $this->setContainerVariable('SOURCE_DIR', 'content');
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -56,17 +56,17 @@ class RobotsTxtFeatureTest extends UnitTestCase
     // Create a markdown file with robots=no
     $content = "---\ntitle=\"Test Page\"\nrobots=\"no\"\n---\n\n# Test Content";
     $filePath = vfsStream::url('test/content/test.md');
-    
+
     // Create directory
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
-    
-    $this->container->setVariable('discovered_files', [$filePath]);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -75,17 +75,17 @@ class RobotsTxtFeatureTest extends UnitTestCase
     // Create a markdown file with robots=yes
     $content = "---\ntitle=\"Test Page\"\nrobots=\"yes\"\n---\n\n# Test Content";
     $filePath = vfsStream::url('test/content/allowed.md');
-    
+
     // Create directory
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
-    
-    $this->container->setVariable('discovered_files', [$filePath]);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -94,17 +94,17 @@ class RobotsTxtFeatureTest extends UnitTestCase
     // Create a markdown file without robots field (should default to yes)
     $content = "---\ntitle=\"Test Page\"\n---\n\n# Test Content";
     $filePath = vfsStream::url('test/content/default.md');
-    
+
     // Create directory
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
-    
-    $this->container->setVariable('discovered_files', [$filePath]);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -113,17 +113,17 @@ class RobotsTxtFeatureTest extends UnitTestCase
     // Create an HTML file with robots=no
     $content = "<!-- INI\ntitle=\"Test Page\"\nrobots=\"no\"\n-->\n<h1>Test Content</h1>";
     $filePath = vfsStream::url('test/content/test.html');
-    
+
     // Create directory
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
-    
-    $this->container->setVariable('discovered_files', [$filePath]);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -132,17 +132,17 @@ class RobotsTxtFeatureTest extends UnitTestCase
     // Create a category file with robots=no
     $content = "---\ntitle=\"Private Category\"\ntype=\"category\"\ncategory=\"private\"\nrobots=\"no\"\n---\n\n# Private Category";
     $filePath = vfsStream::url('test/content/private.md');
-    
+
     // Create directory
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
-    
-    $this->container->setVariable('discovered_files', [$filePath]);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     $parameters = [];
     $result = $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     $this->assertIsArray($result);
   }
 
@@ -150,22 +150,22 @@ class RobotsTxtFeatureTest extends UnitTestCase
   {
     $outputDir = vfsStream::url('test/output');
     vfsStream::create(['output' => []], $this->root);
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', []);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', []);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     // Run POST_GLOB to scan files (none in this case)
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $this->assertTrue(file_exists($robotsTxtPath));
-    
+
     $content = file_get_contents($robotsTxtPath);
     $this->assertStringContainsString('User-agent: *', $content);
     $this->assertStringContainsString('Disallow:', $content);
@@ -177,28 +177,28 @@ class RobotsTxtFeatureTest extends UnitTestCase
     $outputDir = vfsStream::url('test/output');
     $contentDir = vfsStream::url('test/content');
     vfsStream::create(['output' => [], 'content' => []], $this->root);
-    
+
     // Create multiple files with robots=no
     $file1 = $contentDir . '/private.md';
     $file2 = $contentDir . '/secret.md';
     file_put_contents($file1, "---\nrobots=\"no\"\n---\n# Private");
     file_put_contents($file2, "---\nrobots=\"no\"\n---\n# Secret");
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$file1, $file2]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$file1, $file2]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB to scan files
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $this->assertTrue(file_exists($robotsTxtPath));
-    
+
     $content = file_get_contents($robotsTxtPath);
     $this->assertStringContainsString('User-agent: *', $content);
     $this->assertStringContainsString('Disallow: /private.html', $content);
@@ -210,29 +210,29 @@ class RobotsTxtFeatureTest extends UnitTestCase
     $outputDir = vfsStream::url('test/output');
     $contentDir = vfsStream::url('test/content');
     vfsStream::create(['output' => [], 'content' => []], $this->root);
-    
+
     // Create a category file with robots=no
     $categoryFile = $contentDir . '/private-cat.md';
     file_put_contents(
       $categoryFile,
       "---\ntype=\"category\"\ncategory=\"private-stuff\"\nrobots=\"no\"\n---\n# Private Category"
     );
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$categoryFile]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$categoryFile]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB to scan files
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $this->assertTrue(file_exists($robotsTxtPath));
-    
+
     $content = file_get_contents($robotsTxtPath);
     $this->assertStringContainsString('Disallow: /private-stuff/', $content);
   }
@@ -242,31 +242,31 @@ class RobotsTxtFeatureTest extends UnitTestCase
     $outputDir = vfsStream::url('test/output');
     $contentDir = vfsStream::url('test/content');
     vfsStream::create(['output' => [], 'content' => []], $this->root);
-    
+
     // Create files that would create duplicate paths (shouldn't happen, but test it)
     $file1 = $contentDir . '/test.md';
     $file2 = $contentDir . '/another.md';
     $file3 = $contentDir . '/zebra.md';
-    
+
     file_put_contents($file1, "---\nrobots=\"no\"\n---\n# Test");
     file_put_contents($file2, "---\nrobots=\"no\"\n---\n# Another");
     file_put_contents($file3, "---\nrobots=\"no\"\n---\n# Zebra");
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$file1, $file2, $file3]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$file1, $file2, $file3]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB to scan files
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $content = file_get_contents($robotsTxtPath);
-    
+
     // Verify paths are in sorted order
     $this->assertMatchesRegularExpression('/Disallow: \/another\.html.*Disallow: \/test\.html.*Disallow: \/zebra\.html/s', $content);
   }
@@ -275,22 +275,22 @@ class RobotsTxtFeatureTest extends UnitTestCase
   {
     $outputDir = vfsStream::url('test/output');
     vfsStream::create(['output' => []], $this->root);
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', ''); // Empty base URL
-    $this->container->setVariable('discovered_files', []);
-    $this->container->setVariable('SOURCE_DIR', vfsStream::url('test/content'));
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', ''); // Empty base URL
+    $this->setContainerVariable('discovered_files', []);
+    $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
     // Run POST_GLOB
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $content = file_get_contents($robotsTxtPath);
-    
+
     // Should not contain Sitemap line when base URL is empty
     $this->assertStringNotContainsString('Sitemap:', $content);
   }
@@ -300,35 +300,35 @@ class RobotsTxtFeatureTest extends UnitTestCase
     $outputDir = vfsStream::url('test/output');
     $contentDir = vfsStream::url('test/content');
     vfsStream::create(['output' => [], 'content' => []], $this->root);
-    
+
     // Create files with different robots values
     $file1 = $contentDir . '/allowed.md';
     $file2 = $contentDir . '/disallowed.md';
     $file3 = $contentDir . '/default.md';
-    
+
     file_put_contents($file1, "---\nrobots=\"yes\"\n---\n# Allowed");
     file_put_contents($file2, "---\nrobots=\"no\"\n---\n# Disallowed");
     file_put_contents($file3, "---\ntitle=\"Default\"\n---\n# Default (no robots field)");
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$file1, $file2, $file3]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$file1, $file2, $file3]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $content = file_get_contents($robotsTxtPath);
-    
+
     // Only disallowed.html should be in robots.txt
     $this->assertStringContainsString('Disallow: /disallowed.html', $content);
-    $this->assertStringNotContainsString('allowed.html', $content);
-    $this->assertStringNotContainsString('default.html', $content);
+    $this->assertStringNotContainsString('/allowed.html', $content);
+    $this->assertStringNotContainsString('/default.html', $content);
   }
 
   public function testCaseInsensitiveRobotsValue(): void
@@ -336,29 +336,29 @@ class RobotsTxtFeatureTest extends UnitTestCase
     $outputDir = vfsStream::url('test/output');
     $contentDir = vfsStream::url('test/content');
     vfsStream::create(['output' => [], 'content' => []], $this->root);
-    
+
     // Test various case combinations
     $file1 = $contentDir . '/uppercase.md';
     $file2 = $contentDir . '/mixedcase.md';
-    
+
     file_put_contents($file1, "---\nrobots=\"NO\"\n---\n# Upper");
     file_put_contents($file2, "---\nrobots=\"No\"\n---\n# Mixed");
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$file1, $file2]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$file1, $file2]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $content = file_get_contents($robotsTxtPath);
-    
+
     // Both should be disallowed
     $this->assertStringContainsString('Disallow: /uppercase.html', $content);
     $this->assertStringContainsString('Disallow: /mixedcase.html', $content);
@@ -374,26 +374,26 @@ class RobotsTxtFeatureTest extends UnitTestCase
         'subdir' => []
       ]
     ], $this->root);
-    
+
     // Create a file in a subdirectory
     $file = $contentDir . '/subdir/nested.md';
     file_put_contents($file, "---\nrobots=\"no\"\n---\n# Nested");
-    
-    $this->container->setVariable('OUTPUT_DIR', $outputDir);
-    $this->container->setVariable('SITE_BASE_URL', 'https://example.com');
-    $this->container->setVariable('discovered_files', [$file]);
-    $this->container->setVariable('SOURCE_DIR', $contentDir);
-    
+
+    $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+    $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+    $this->setContainerVariable('discovered_files', [$file]);
+    $this->setContainerVariable('SOURCE_DIR', $contentDir);
+
     // Run POST_GLOB
     $parameters = [];
     $this->feature->handlePostGlob($this->container, $parameters);
-    
+
     // Generate robots.txt
     $this->feature->handlePostLoop($this->container, $parameters);
-    
+
     $robotsTxtPath = $outputDir . '/robots.txt';
     $content = file_get_contents($robotsTxtPath);
-    
+
     // Should preserve subdirectory in path
     $this->assertStringContainsString('Disallow: /subdir/nested.html', $content);
   }

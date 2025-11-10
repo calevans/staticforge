@@ -54,7 +54,7 @@ class FeatureManager
         }
 
         if (empty($featureDirectoriesToScan)) {
-            $this->logger->log('warning', 'No feature directories found to scan');
+            $this->logger->log('WARNING', 'No feature directories found to scan');
             return;
         }
 
@@ -66,7 +66,7 @@ class FeatureManager
         // Initialize features array in container
         $this->container->setVariable('features', []);
 
-        $this->logger->log('info', "Loaded " . count($this->features) . " features");
+        $this->logger->log('INFO', "Loaded " . count($this->features) . " features");
     }    /**
      * Get all loaded features
      *
@@ -97,9 +97,9 @@ class FeatureManager
         // Remove from loaded features if already loaded
         if (isset($this->features[$featureName])) {
             unset($this->features[$featureName]);
-            $this->logger->log('info', "Disabled and removed feature: {$featureName}");
+            $this->logger->log('INFO', "Disabled and removed feature: {$featureName}");
         } else {
-            $this->logger->log('info', "Marked feature as disabled: {$featureName}");
+            $this->logger->log('INFO', "Marked feature as disabled: {$featureName}");
         }
     }
 
@@ -116,7 +116,7 @@ class FeatureManager
      */
     private function loadFeaturesFromDirectory(string $baseDir): void
     {
-        $this->logger->log('info', "Scanning features directory: {$baseDir}");
+        $this->logger->log('INFO', "Scanning features directory: {$baseDir}");
         $featureDirectories = $this->discoverFeatureDirectories($baseDir);
 
         foreach ($featureDirectories as $featureDir) {
@@ -159,7 +159,7 @@ class FeatureManager
         $featureFile = $featureDir . '/Feature.php';
 
         if (!file_exists($featureFile)) {
-            $this->logger->log('warning', "Feature file not found: {$featureFile}");
+            $this->logger->log('WARNING', "Feature file not found: {$featureFile}");
             return;
         }
 
@@ -171,23 +171,23 @@ class FeatureManager
             $feature = $this->findFeatureClassInFile($featureFile, $directoryName);
 
             if (!$feature) {
-                $this->logger->log('warning', "Could not instantiate feature class in {$featureFile}");
+                $this->logger->log('WARNING', "Could not instantiate feature class in {$featureFile}");
                 return;
             }
 
             // Check if this feature is disabled before registering
             if ($this->isFeatureDisabled($feature->getName())) {
-                $this->logger->log('info', "Skipping disabled feature: {$feature->getName()}");
+                $this->logger->log('INFO', "Skipping disabled feature: {$feature->getName()}");
                 return;
             }
 
             // Register and store the feature
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;
-            $this->logger->log('info', "Loaded feature: {$feature->getName()}");
+            $this->logger->log('INFO', "Loaded feature: {$feature->getName()}");
 
         } catch (\Exception $e) {
-            $this->logger->log('error', "Failed to load feature from {$directoryName}: " . $e->getMessage());
+            $this->logger->log('ERROR', "Failed to load feature from {$directoryName}: " . $e->getMessage());
         }
     }
 
@@ -211,12 +211,12 @@ class FeatureManager
                         return $feature;
                     }
                 } catch (\Exception $e) {
-                    $this->logger->log('warning', "Failed to instantiate feature {$className}: " . $e->getMessage());
+                    $this->logger->log('WARNING', "Failed to instantiate feature {$className}: " . $e->getMessage());
                 }
             }
         }
 
-        $this->logger->log('warning', "No valid Feature class found in {$featureFile}");
+        $this->logger->log('WARNING', "No valid Feature class found in {$featureFile}");
         return null;
     }    /**
      * Get possible class names for user features only
