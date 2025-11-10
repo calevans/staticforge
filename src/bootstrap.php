@@ -21,6 +21,12 @@ declare(strict_types=1);
 // Require Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Also include user project's autoloader if we're running from a user project
+$userAutoloader = getcwd() . '/vendor/autoload.php';
+if (file_exists($userAutoloader) && realpath($userAutoloader) !== realpath(__DIR__ . '/../vendor/autoload.php')) {
+    require_once $userAutoloader;
+}
+
 use Dotenv\Dotenv;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -28,9 +34,31 @@ use EICC\Utils\Log;
 // Accept optional environment path parameter
 $envPath = $envPath ?? '.env';
 
-// Load environment variables
-$dotenv = Dotenv::createUnsafeImmutable(dirname($envPath), basename($envPath));
-$dotenv->load();
+// Look for .env in current working directory first, then fallback to package directory
+$possibleEnvPaths = [
+    getcwd() . '/.env',           // Current working directory
+    dirname($envPath) . '/' . basename($envPath)  // Fallback to provided path
+];
+
+$envLoaded = false;
+foreach ($possibleEnvPaths as $path) {
+    if (file_exists($path)) {
+        $dotenv = Dotenv::createUnsafeImmutable(dirname($path), basename($path));
+        $dotenv->load();
+        $envLoaded = true;
+        break;
+    }
+}
+
+// If no .env found, set some sensible defaults
+if (!$envLoaded) {
+    $_ENV['SITE_NAME'] = $_ENV['SITE_NAME'] ?? 'StaticForge Site';
+    $_ENV['SOURCE_DIR'] = $_ENV['SOURCE_DIR'] ?? 'content';
+    $_ENV['TEMPLATE_DIR'] = $_ENV['TEMPLATE_DIR'] ?? 'templates';
+    $_ENV['OUTPUT_DIR'] = $_ENV['OUTPUT_DIR'] ?? 'public';
+    $_ENV['LOG_DIR'] = $_ENV['LOG_DIR'] ?? 'logs';
+    $_ENV['DEFAULT_TEMPLATE'] = $_ENV['DEFAULT_TEMPLATE'] ?? 'staticforce';
+}
 
 // Create and configure the dependency injection container
 $container = new Container();

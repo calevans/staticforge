@@ -15,3 +15,4 @@ composer.lock
 
 # Development router (created by site:devserver command)
 public/.ht.route.php
+test-project/myFeatures/

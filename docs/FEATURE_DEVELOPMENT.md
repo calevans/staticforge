@@ -11,8 +11,10 @@ This guide explains how to create custom features for StaticForge's event-driven
 
 ## Table of Contents
 - [Understanding Features](#understanding-features)
+- [Library vs User Features](#library-vs-user-features)
+- [Creating Custom Features](#creating-custom-features)
+- [Feature Override System](#feature-override-system)
 - [Event System Overview](#event-system-overview)
-- [Creating a Feature](#creating-a-feature)
 - [Event Hooks Reference](#event-hooks-reference)
 - [Best Practices](#best-practices)
 - [Examples](#examples)
@@ -26,8 +28,8 @@ Features in StaticForge are self-contained modules that extend the static site g
 ### Core Concepts
 
 1. **Features implement `FeatureInterface`**: All features must implement the `FeatureInterface` which defines:
-   - `register(EventManager $eventManager)`: Register event listeners
-   - `getName()`: Return unique feature identifier
+   - `register(EventManager $eventManager, Container $container)`: Register event listeners
+   - Feature identification via `$name` property
 
 2. **Features extend `BaseFeature`**: The `BaseFeature` abstract class provides:
    - Event manager access
@@ -39,6 +41,120 @@ Features in StaticForge are self-contained modules that extend the static site g
    - Processing events
    - Rendering events
    - Completion events
+
+---
+
+## Library vs User Features
+
+StaticForge supports two types of features with a priority-based loading system:
+
+### Library Features (Built-in)
+- **Location**: `vendor/eicc/staticforge/src/Features/`
+- **Namespace**: `EICC\StaticForge\Features\{FeatureName}\Feature`
+- **Examples**: MarkdownRenderer, HtmlRenderer, MenuBuilder, Categories, Tags, ChapterNav
+- **Always available** when StaticForge is installed
+- **Lower priority** - can be overridden by user features
+
+### User Features (Custom)
+- **Location**: `src/Features/` (or custom path via `FEATURES_DIR`)
+- **Namespace**: **Must use your own namespace** (e.g., `App\Features\{FeatureName}\Feature`)
+- **Higher priority** - override library features with the same name
+- **Custom functionality** specific to your project
+
+### Feature Loading Order
+1. **Library features** are loaded first (from vendor directory)
+2. **User features** are loaded second (can override library features)
+3. **Conflict resolution** by feature `$name` property, not class name
+4. **Override logging** when user features replace library features
+
+---
+
+## Creating Custom Features
+
+### Project Setup
+
+1. **Create features directory**:
+   ```bash
+   mkdir -p src/Features/MyCustomFeature
+   ```
+
+2. **Setup autoloading** in your `composer.json`:
+   ```json
+   {
+     "autoload": {
+       "psr-4": {
+         "App\\": "src/"
+       }
+     }
+   }
+   ```
+
+3. **Update autoloader**:
+   ```bash
+   composer dump-autoload
+   ```
+
+### Basic Feature Structure
+
+Create `src/Features/MyCustomFeature/Feature.php`:
+
+```php
+<?php
+
+namespace App\Features\MyCustomFeature;
+
+use EICC\StaticForge\Core\BaseFeature;
+use EICC\StaticForge\Core\FeatureInterface;
+use EICC\StaticForge\Core\EventManager;
+use EICC\Utils\Container;
+
+class Feature extends BaseFeature implements FeatureInterface
+{
+    protected string $name = 'MyCustomFeature'; // Unique identifier
+
+    protected array $eventMethods = [
+        'RENDER' => ['method' => 'handleRender', 'priority' => 10],
+    ];
+
+    public function register(EventManager $eventManager, Container $container): void
+    {
+        parent::register($eventManager, $container);
+
+        // Custom initialization logic here
+        $this->logger->log('INFO', 'MyCustomFeature registered');
+    }
+
+    public function handleRender(array $parameters): void
+    {
+        // Custom render logic here
+        $this->logger->log('INFO', 'MyCustomFeature handling RENDER event');
+    }
+}
+```
+
+### Feature Override System
+
+To override a library feature, create a user feature with the **same `$name` property**:
+
+```php
+<?php
+
+namespace App\Features\MarkdownRenderer;
+
+use EICC\StaticForge\Core\BaseRendererFeature;
+use EICC\StaticForge\Core\FeatureInterface;
+
+class Feature extends BaseRendererFeature implements FeatureInterface
+{
+    protected string $name = 'MarkdownRenderer'; // Same name = override
+
+    // Your custom implementation
+    public function handleRender(array $parameters): void
+    {
+        // Custom markdown rendering logic
+        // This will replace the library's MarkdownRenderer
+    }
+}
 
 ---
 
