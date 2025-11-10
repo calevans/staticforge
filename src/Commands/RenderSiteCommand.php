@@ -15,15 +15,12 @@ use Exception;
  */
 class RenderSiteCommand extends Command
 {
-    protected static $defaultName = 'render:site';
+    protected static $defaultName = 'site:render';
     protected static $defaultDescription = 'Generate the complete static site from content files';
 
-    protected Container $container;
-
-    public function __construct(Container $container)
+    public function __construct(protected Container $container)
     {
         parent::__construct();
-        $this->container = $container;
     }
 
     protected function configure(): void
@@ -143,7 +140,7 @@ class RenderSiteCommand extends Command
             $output->writeln('<info>✅ Site generation completed successfully!</info>');
 
             if ($output->isVerbose()) {
-                $this->displayStats($container, $output, $duration);
+                $this->displayStats($this->container, $output, $duration);
             } else {
                 $output->writeln("<comment>Time: {$duration}s</comment>");
             }

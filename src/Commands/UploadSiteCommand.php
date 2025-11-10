@@ -17,7 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UploadSiteCommand extends Command
 {
-    protected Container $container;
+    protected static $defaultName = 'site:upload';
+
     protected Log $logger;
     protected ?SFTP $sftp = null;
     protected int $uploadedCount = 0;
@@ -27,17 +28,16 @@ class UploadSiteCommand extends Command
    */
     protected array $errors = [];
 
-    public function __construct(Container $container)
+    public function __construct(protected Container $container)
     {
         parent::__construct();
-        $this->container = $container;
         $this->logger = $container->get('logger');
     }
 
     protected function configure(): void
     {
         $this
-        ->setName('site:upload')
+        ->setName($this->defaultName)
         ->setDescription('Upload generated static site to remote server via SFTP')
         ->addOption(
             'input',
@@ -124,7 +124,7 @@ class UploadSiteCommand extends Command
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
-            $this->logger->error('Upload failed', ['error' => $e->getMessage()]);
+            $this->logger->log('ERROR', 'Upload failed', ['error' => $e->getMessage()]);
             $this->disconnect();
             return Command::FAILURE;
         }
@@ -219,10 +219,10 @@ class UploadSiteCommand extends Command
                 }
             }
 
-            $this->logger->error('Authentication failed');
+            $this->logger->log('ERROR', 'Authentication failed');
             return false;
         } catch (\Exception $e) {
-            $this->logger->error('SFTP connection failed', ['error' => $e->getMessage()]);
+            $this->logger->log('ERROR', 'SFTP connection failed', ['error' => $e->getMessage()]);
             return false;
         }
     }
@@ -238,13 +238,13 @@ class UploadSiteCommand extends Command
     {
         try {
             if (!file_exists($keyPath)) {
-                $this->logger->error('Private key file not found', ['path' => $keyPath]);
+                $this->logger->log('ERROR', 'Private key file not found', ['path' => $keyPath]);
                 return false;
             }
 
             $keyContent = file_get_contents($keyPath);
             if ($keyContent === false) {
-                $this->logger->error('Failed to read private key file', ['path' => $keyPath]);
+                $this->logger->log('ERROR', 'Failed to read private key file', ['path' => $keyPath]);
                 return false;
             }
 
@@ -252,7 +252,7 @@ class UploadSiteCommand extends Command
 
             return $this->sftp->login($this->container->getVariable('SFTP_USERNAME'), $key);
         } catch (\Exception $e) {
-            $this->logger->error('Key authentication failed', ['error' => $e->getMessage()]);
+            $this->logger->log('ERROR', 'Key authentication failed', ['error' => $e->getMessage()]);
             return false;
         }
     }
@@ -269,7 +269,7 @@ class UploadSiteCommand extends Command
         try {
             return $this->sftp->login($username, $password);
         } catch (\Exception $e) {
-            $this->logger->error('Password authentication failed', ['error' => $e->getMessage()]);
+            $this->logger->log('ERROR', 'Password authentication failed', ['error' => $e->getMessage()]);
             return false;
         }
     }
@@ -290,7 +290,7 @@ class UploadSiteCommand extends Command
           // Create directory recursively
             return $this->sftp->mkdir($path, -1, true);
         } catch (\Exception $e) {
-            $this->logger->error('Failed to create remote directory', [
+            $this->logger->log('ERROR', 'Failed to create remote directory', [
             'path' => $path,
             'error' => $e->getMessage()
             ]);
@@ -320,7 +320,7 @@ class UploadSiteCommand extends Command
                 }
             }
         } catch (\Exception $e) {
-            $this->logger->error('Failed to scan directory', [
+            $this->logger->log('ERROR', 'Failed to scan directory', [
             'directory' => $directory,
             'error' => $e->getMessage()
             ]);
@@ -343,7 +343,7 @@ class UploadSiteCommand extends Command
             $remoteDir = dirname($remotePath);
             if (!$this->sftp->is_dir($remoteDir)) {
                 if (!$this->sftp->mkdir($remoteDir, -1, true)) {
-                    $this->logger->error('Failed to create remote directory', ['path' => $remoteDir]);
+                    $this->logger->log('ERROR', 'Failed to create remote directory', ['path' => $remoteDir]);
                     return false;
                 }
             }
@@ -352,7 +352,7 @@ class UploadSiteCommand extends Command
             $result = $this->sftp->put($remotePath, $localPath, SFTP::SOURCE_LOCAL_FILE);
 
             if (!$result) {
-                $this->logger->error('Failed to upload file', [
+                $this->logger->log('ERROR', 'Failed to upload file', [
                 'local' => $localPath,
                 'remote' => $remotePath
                 ]);
@@ -361,7 +361,7 @@ class UploadSiteCommand extends Command
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->error('Upload error', [
+            $this->logger->log('ERROR', 'Upload error', [
             'local' => $localPath,
             'remote' => $remotePath,
             'error' => $e->getMessage()

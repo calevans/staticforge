@@ -1,0 +1,156 @@
+{# Enhanced hierarchical sidebar for staticforce template #}
+{% if features.MenuBuilder.html.1 is defined %}
+    {% set menu_html = features.MenuBuilder.html.1 %}
+    
+    {# Extract menu items from the generated HTML #}
+    {% set menu_items = [] %}
+    {% for line in menu_html|split('<li class="menu-1">') %}
+        {% if '<a href="' in line %}
+            {% set href_match = line|split('<a href="')[1]|split('"')[0] %}
+            {% set title_match = line|split('>')[1]|split('</a>')[0] %}
+            {% set menu_items = menu_items|merge([{
+                'url': href_match,
+                'title': title_match|striptags|trim
+            }]) %}
+        {% endif %}
+    {% endfor %}
+
+    <nav class="sidebar-nav">
+        <ul class="menu hierarchical-menu">
+        {% for item in menu_items %}
+            {% if item.title == 'Built-in Features' %}
+                <li class="menu-item has-submenu">
+                    <a href="{{ item.url }}" class="menu-link">
+                        <span class="menu-title">{{ item.title }}</span>
+                        <span class="menu-toggle" onclick="toggleSubmenu(this)">▶</span>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="/MARKDOWN_RENDERER.html" class="submenu-link">Markdown Renderer</a></li>
+                        <li><a href="/HTML_RENDERER.html" class="submenu-link">HTML Renderer</a></li>
+                        <li><a href="/MENU_BUILDER.html" class="submenu-link">Menu Builder</a></li>
+                        <li><a href="/CHAPTER_NAV.html" class="submenu-link">Chapter Navigation</a></li>
+                        <li><a href="/CATEGORIES.html" class="submenu-link">Categories</a></li>
+                        <li><a href="/CATEGORY_INDEX.html" class="submenu-link">Category Index</a></li>
+                        <li><a href="/TAGS.html" class="submenu-link">Tags</a></li>
+                        <li><a href="/ROBOTS_TXT.html" class="submenu-link">Robots.txt</a></li>
+                        <li><a href="/RSS_FEED.html" class="submenu-link">RSS Feed</a></li>
+                    </ul>
+                </li>
+            {% else %}
+                <li class="menu-item">
+                    <a href="{{ item.url }}" class="menu-link">
+                        <span class="menu-title">{{ item.title }}</span>
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </nav>
+
+    <script>
+    function toggleSubmenu(toggle) {
+        const submenu = toggle.closest('.has-submenu').querySelector('.submenu');
+        const isOpen = submenu.style.display !== 'none';
+        
+        if (isOpen) {
+            submenu.style.display = 'none';
+            toggle.textContent = '▶';
+            toggle.classList.remove('open');
+        } else {
+            submenu.style.display = 'block';
+            toggle.textContent = '▼';
+            toggle.classList.add('open');
+        }
+    }
+
+    // Auto-expand if we're on a feature page
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const featurePages = [
+            '/MARKDOWN_RENDERER.html', '/HTML_RENDERER.html', '/MENU_BUILDER.html',
+            '/CHAPTER_NAV.html', '/CATEGORIES.html', '/CATEGORY_INDEX.html',
+            '/TAGS.html', '/ROBOTS_TXT.html', '/RSS_FEED.html'
+        ];
+        
+        if (featurePages.includes(currentPath)) {
+            const featuresToggle = document.querySelector('.has-submenu .menu-toggle');
+            if (featuresToggle) {
+                toggleSubmenu(featuresToggle);
+            }
+        }
+    });
+    </script>
+
+    <style>
+    .hierarchical-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .menu-item {
+        margin-bottom: 4px;
+    }
+
+    .menu-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .menu-link:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        transform: translateX(3px);
+    }
+
+    .menu-toggle {
+        font-size: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        user-select: none;
+    }
+
+    .menu-toggle.open {
+        transform: rotate(90deg);
+    }
+
+    .submenu {
+        display: none;
+        list-style: none;
+        margin: 4px 0 8px 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 6px;
+        border-left: 3px solid var(--primary);
+    }
+
+    .submenu-link {
+        display: block;
+        padding: 6px 16px 6px 24px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9em;
+        transition: all 0.2s ease;
+    }
+
+    .submenu-link:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+    }
+
+    /* Highlight active page */
+    .menu-link[href="{{ page.url }}"],
+    .submenu-link[href="{{ page.url }}"] {
+        color: var(--primary);
+        background: rgba(99, 102, 241, 0.1);
+        font-weight: 600;
+    }
+    </style>
+
+{% endif %}
