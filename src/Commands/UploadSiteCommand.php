@@ -37,7 +37,6 @@ class UploadSiteCommand extends Command
     protected function configure(): void
     {
         $this
-        ->setName($this->defaultName)
         ->setDescription('Upload generated static site to remote server via SFTP')
         ->addOption(
             'input',
