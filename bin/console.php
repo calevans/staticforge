@@ -7,8 +7,13 @@ use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
 use Symfony\Component\Console\Application;
 
-// Bootstrap application
-$container = require __DIR__ . '/../src/bootstrap.php';
+// Bootstrap application - handle both dev and vendor/bin locations
+$bootstrapPath = __DIR__ . '/../src/bootstrap.php';
+if (!file_exists($bootstrapPath)) {
+    // When installed via Composer, we're in vendor/bin/
+    $bootstrapPath = __DIR__ . '/../eicc/staticforge/src/bootstrap.php';
+}
+$container = require $bootstrapPath;
 
 // Create console application
 $app = new Application('StaticForge', '1.0.0');
