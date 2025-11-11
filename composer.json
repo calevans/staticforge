@@ -27,8 +27,7 @@
     },
     "autoload": {
         "psr-4": {
-            "EICC\\StaticForge\\": "src/",
-            "EICC\\Utils\\": "vendor/eicc/utils/src/Utils/"
+            "EICC\\StaticForge\\": "src/"
         }
     },
     "autoload-dev": {
