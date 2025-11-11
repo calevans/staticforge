@@ -18,13 +18,24 @@
 
 declare(strict_types=1);
 
-// Require Composer autoloader
-require_once __DIR__ . '/../vendor/autoload.php';
+// Require Composer autoloader - handle both dev and library installation
+$autoloaderPaths = [
+    __DIR__ . '/../vendor/autoload.php',           // Development mode
+    __DIR__ . '/../../../autoload.php',            // Installed as library (vendor/eicc/staticforge/src -> vendor/autoload.php)
+    getcwd() . '/vendor/autoload.php'              // Fallback to current working directory
+];
 
-// Also include user project's autoloader if we're running from a user project
-$userAutoloader = getcwd() . '/vendor/autoload.php';
-if (file_exists($userAutoloader) && realpath($userAutoloader) !== realpath(__DIR__ . '/../vendor/autoload.php')) {
-    require_once $userAutoloader;
+$autoloaderLoaded = false;
+foreach ($autoloaderPaths as $autoloaderPath) {
+    if (file_exists($autoloaderPath)) {
+        require_once $autoloaderPath;
+        $autoloaderLoaded = true;
+        break;
+    }
+}
+
+if (!$autoloaderLoaded) {
+    throw new \RuntimeException('Could not find Composer autoloader. Please run "composer install".');
 }
 
 use Dotenv\Dotenv;

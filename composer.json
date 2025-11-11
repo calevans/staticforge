@@ -43,6 +43,17 @@
         "sort-packages": true
     },
     "bin": [
-        "bin/console.php"
-    ]
+        "bin/staticforge.php"
+    ],
+    "scripts": {
+        "post-install-cmd": [
+            "@ensure-staticforge-bin"
+        ],
+        "post-update-cmd": [
+            "@ensure-staticforge-bin"
+        ],
+        "ensure-staticforge-bin": [
+            "php -r \"if (!file_exists('vendor/bin/staticforge.php') && file_exists('vendor/bin/staticforge')) { copy('vendor/bin/staticforge', 'vendor/bin/staticforge.php'); }\""
+        ]
+    }
 }

@@ -8,6 +8,7 @@ use EICC\StaticForge\Commands\DevServerCommand;
 use Symfony\Component\Console\Application;
 
 // Bootstrap application - handle both dev and vendor/bin locations
+// Bootstrap application - handle both dev and vendor/bin locations
 $bootstrapPath = __DIR__ . '/../src/bootstrap.php';
 if (!file_exists($bootstrapPath)) {
     // When installed via Composer, we're in vendor/bin/
