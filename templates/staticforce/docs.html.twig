@@ -746,7 +746,7 @@
                                 {% set childItems = childItems|merge([{key: subKey, item: subItem}]) %}
                             {% endif %}
                         {% endfor %}
-                        
+
                         {% if childItems|length > 0 %}
                             {# Parent item with children - show as expandable #}
                             <li class="menu-1-{{ key }} menu-parent">

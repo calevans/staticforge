@@ -46,13 +46,18 @@
     ],
     "scripts": {
         "post-install-cmd": [
-            "@ensure-staticforge-bin"
+            "@ensure-staticforge-bin",
+            "@install-templates"
         ],
         "post-update-cmd": [
-            "@ensure-staticforge-bin"
+            "@ensure-staticforge-bin",
+            "@install-templates"
         ],
         "ensure-staticforge-bin": [
             "php -r \"if (!file_exists('vendor/bin/staticforge.php') && file_exists('vendor/bin/staticforge')) { copy('vendor/bin/staticforge', 'vendor/bin/staticforge.php'); }\""
+        ],
+        "install-templates": [
+            "php scripts/install-templates.php"
         ]
     }
 }
