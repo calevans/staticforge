@@ -1,6 +1,7 @@
 ---
 template = "docs"
 menu = 1.5, 2.5
+category = "docs"
 ---
 
 # Feature Development Guide

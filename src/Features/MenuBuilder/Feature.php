@@ -37,7 +37,12 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Store each menu in the container for template access
         foreach ($menuHtml as $menuNumber => $html) {
-            $container->setVariable("menu{$menuNumber}", $html);
+            $varName = "menu{$menuNumber}";
+            if ($container->hasVariable($varName)) {
+                $container->updateVariable($varName, $html);
+            } else {
+                $container->setVariable($varName, $html);
+            }
         }
 
         // Add to parameters for return to event system
@@ -134,7 +139,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Look for category: or category = entry
         if (preg_match('/^category\s*[=:]\s*(.+)$/m', $frontmatter, $categoryMatches)) {
-            $metadata['category'] = trim($categoryMatches[1]);
+            $metadata['category'] = trim(trim($categoryMatches[1]), '"\'');
         }
 
         return $metadata;
@@ -160,7 +165,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Look for category = or category: entry
         if (preg_match('/^category\s*[=:]\s*(.+)$/m', $iniContent, $categoryMatches)) {
-            $metadata['category'] = trim($categoryMatches[1]);
+            $metadata['category'] = trim(trim($categoryMatches[1]), '"\'');
         }
 
         return $metadata;
@@ -248,9 +253,24 @@ class Feature extends BaseFeature implements FeatureInterface
                 $menuData[$menu][$position] = [];
             }
 
-            // Store as single item (not array of items) since positions are explicit
-            // This avoids using [] which could create index 0
+            // Preserve any existing child items (3-level menu items like X.Y.Z)
+            // If there are already numeric keys (children), keep them
+            $existingChildren = [];
+            if (is_array($menuData[$menu][$position])) {
+                foreach ($menuData[$menu][$position] as $key => $value) {
+                    if (is_numeric($key)) {
+                        $existingChildren[$key] = $value;
+                    }
+                }
+            }
+
+            // Store this item with its metadata
             $menuData[$menu][$position] = $menuEntry;
+
+            // Restore any children
+            foreach ($existingChildren as $key => $value) {
+                $menuData[$menu][$position][$key] = $value;
+            }
         } elseif (count($parts) === 3) {
             // Third level menu item
             $subMenu = (int)$parts[1];
@@ -260,7 +280,17 @@ class Feature extends BaseFeature implements FeatureInterface
                 $menuData[$menu][$subMenu] = [];
             }
 
-            $menuData[$menu][$subMenu][$position] = $menuEntry;
+            // If parent item doesn't have title/url/file/position keys, it's a container
+            // Otherwise we need to preserve the parent item data
+            if (is_array($menuData[$menu][$subMenu]) && !isset($menuData[$menu][$subMenu]['title'])) {
+                // Already a container, just add child
+                $menuData[$menu][$subMenu][$position] = $menuEntry;
+            } else {
+                // Parent item exists as a single entry, keep it and add child
+                $parentData = $menuData[$menu][$subMenu];
+                $menuData[$menu][$subMenu] = $parentData;
+                $menuData[$menu][$subMenu][$position] = $menuEntry;
+            }
         }
     }
 

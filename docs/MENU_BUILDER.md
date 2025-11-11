@@ -2,6 +2,7 @@
 title = "Menu Builder"
 template = "docs"
 menu = 1.3.3, 2.3.3
+category = "docs"
 ---
 
 # Menu Builder

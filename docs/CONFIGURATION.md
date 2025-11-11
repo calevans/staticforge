@@ -2,6 +2,7 @@
 title = "Configuration Guide"
 template = "docs"
 menu = 1.2, 2.2
+category = "docs"
 ---
 
 # Configuration Guide

@@ -2,6 +2,7 @@
 title = "Robots.txt Generator"
 template = "docs"
 menu = 1.3.8, 2.3.8
+category = "docs"
 ---
 
 # Robots.txt Generator
@@ -10,7 +11,7 @@ menu = 1.3.8, 2.3.8
 
 **File types:** Works with all content files (`.md`, `.html`) and category definition files
 
-**Events:** 
+**Events:**
 - `POST_GLOB` (priority 150) - Scans files for robots metadata
 - `POST_LOOP` (priority 100) - Generates robots.txt file
 

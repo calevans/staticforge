@@ -2,6 +2,7 @@
 title = "Additional Commands"
 template = "docs"
 menu = 1.9, 2.9
+category = "docs"
 ---
 
 # Additional Commands

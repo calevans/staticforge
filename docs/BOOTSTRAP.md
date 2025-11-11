@@ -2,6 +2,7 @@
 title = "Bootstrap & Initialization"
 template = "docs"
 menu = 1.6, 2.6
+category = "docs"
 ---
 
 # Bootstrap & Initialization

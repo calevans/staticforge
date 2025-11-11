@@ -174,7 +174,7 @@ class RenderSiteCommand extends Command
     {
         $output->writeln('');
         $output->writeln('<comment>Configuration:</comment>');
-        $output->writeln('  Content Dir: ' . ($container->getVariable('CONTENT_DIR') ?? 'content'));
+        $output->writeln('  Source Dir: ' . ($container->getVariable('SOURCE_DIR') ?? 'content'));
         $output->writeln('  Output Dir: ' . ($container->getVariable('OUTPUT_DIR') ?? 'public'));
         $output->writeln('  Template: ' . ($container->getVariable('TEMPLATE') ?? 'default'));
         $output->writeln('  Template Dir: ' . ($container->getVariable('TEMPLATE_DIR') ?? 'templates'));

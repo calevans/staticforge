@@ -2,6 +2,7 @@
 title = "Categories"
 template = "docs"
 menu = 1.3.5, 2.3.5
+category = "docs"
 ---
 
 # Categories
@@ -43,6 +44,15 @@ Welcome to our PHP tutorial series!
 - Replaces spaces and special characters with hyphens
 - Removes leading/trailing hyphens
 - Keeps only letters, numbers, and hyphens
+
+## Double-Nesting Prevention
+
+StaticForge automatically prevents double-nesting when your source directory structure matches your category name:
+
+- Source file: `docs/configuration.md` with `category = "docs"`
+- Output: `public/docs/configuration.html` (not `public/docs/docs/configuration.html`)
+
+This smart detection ensures clean URL structures when you organize both your source files and categories logically.
 
 ## Why Use Categories
 

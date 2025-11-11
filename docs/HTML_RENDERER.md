@@ -2,6 +2,7 @@
 title = "HTML Renderer"
 template = "docs"
 menu = 1.3.2, 2.3.2
+category = "docs"
 ---
 
 # HTML Renderer

@@ -2,6 +2,7 @@
 title = "Built-in Features"
 template = "docs"
 menu = 1.3, 2.3
+category = "docs"
 ---
 
 # Built-in Features

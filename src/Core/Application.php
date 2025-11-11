@@ -217,8 +217,8 @@ class Application
     private function discoverFiles(): void
     {
         try {
-            $contentDir = $this->container->getVariable('CONTENT_DIR') ?? 'content';
-            $this->logger->log('INFO', 'Discovering content files', ['content_dir' => $contentDir]);
+            $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
+            $this->logger->log('INFO', 'Discovering content files', ['source_dir' => $sourceDir]);
 
             $this->fileDiscovery->discoverFiles();
 
@@ -227,7 +227,7 @@ class Application
             $fileCount = is_array($discoveredFiles) ? count($discoveredFiles) : 0;
             $this->logger->log('INFO', 'Discovered ' . $fileCount . ' content files', [
                 'file_count' => $fileCount,
-                'content_dir' => $contentDir,
+                'source_dir' => $sourceDir,
             ]);
         } catch (Exception $e) {
             $this->errorHandler->handleCoreError(

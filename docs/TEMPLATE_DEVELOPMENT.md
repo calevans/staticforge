@@ -2,6 +2,7 @@
 menu = 1.4, 2.4
 name="Template Development"
 template = "docs"
+category = "docs"
 ---
 # Template Development
 

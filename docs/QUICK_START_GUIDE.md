@@ -1,6 +1,7 @@
 ---
 template = "docs"
 menu = 1.1, 2.1
+category = "docs"
 ---
 # Quick Start Guide
 

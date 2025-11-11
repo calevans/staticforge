@@ -73,6 +73,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Add category subdirectory to the output path
+   * Avoids double-nesting when category matches existing directory
    */
     private function addCategoryToPath(string $outputPath, string $category): string
     {
@@ -82,6 +83,14 @@ class Feature extends BaseFeature implements FeatureInterface
 
       // Sanitize category name (remove special characters, lowercase)
         $sanitizedCategory = $this->sanitizeCategoryName($category);
+
+        // Check if the output path already ends with the category directory
+        // This prevents double-nesting like public/docs/docs/
+        $currentDirName = basename($dirName);
+        if ($currentDirName === $sanitizedCategory) {
+            // Category directory already exists in path, don't add it again
+            return $outputPath;
+        }
 
       // Build new path: output_dir/category/filename
         $newPath = $dirName . DIRECTORY_SEPARATOR . $sanitizedCategory . DIRECTORY_SEPARATOR . $fileName;

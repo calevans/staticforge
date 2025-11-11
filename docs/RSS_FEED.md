@@ -2,6 +2,7 @@
 title = "RSS Feed"
 template = "docs"
 menu = 1.3.9, 2.3.9
+category = "docs"
 ---
 
 # RSS Feed
@@ -101,7 +102,7 @@ Content here...
     <language>en-us</language>
     <lastBuildDate>Thu, 07 Nov 2024 12:00:00 +0000</lastBuildDate>
     <atom:link href="https://yoursite.com/tutorials/rss.xml" rel="self" type="application/rss+xml" />
-    
+
     <item>
       <title>Advanced PHP Techniques</title>
       <link>https://yoursite.com/tutorials/advanced-php-techniques.html</link>
@@ -121,8 +122,8 @@ In your category index or base template:
 ```twig
 <!-- Link to RSS feed in <head> -->
 {% if category %}
-<link rel="alternate" type="application/rss+xml" 
-      title="{{ site_name }} - {{ category }}" 
+<link rel="alternate" type="application/rss+xml"
+      title="{{ site_name }} - {{ category }}"
       href="/{{ category|lower|replace({' ': '-'}) }}/rss.xml" />
 {% endif %}
 
