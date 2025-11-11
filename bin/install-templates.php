@@ -1,27 +1,32 @@
 #!/usr/bin/env php
 <?php
 /**
- * Install default templates if they don't exist
+ * Install StaticForge default templates
  *
- * This script runs after composer install/update and copies the default
- * templates from the library to the project's templates directory.
- * It will NOT overwrite existing templates.
+ * Usage: vendor/bin/install-templates.php
  */
 
-// Determine if we're in vendor (library install) or project root
-$vendorDir = dirname(__DIR__, 2);
-$isLibraryInstall = basename(dirname(__DIR__)) === 'staticforge' &&
-                    basename($vendorDir) === 'vendor';
+// Find the templates source directory
+$possiblePaths = [
+    __DIR__ . '/../templates',                           // Running from vendor/eicc/staticforge/bin
+    __DIR__ . '/../../../../eicc/staticforge/templates', // Alternative vendor structure
+];
 
-if ($isLibraryInstall) {
-    // We're installed as a library in vendor/eicc/staticforge
-    $sourceTemplatesDir = __DIR__ . '/../templates';
-    $targetTemplatesDir = dirname($vendorDir) . '/templates';
-} else {
-    // We're in the project root (development)
-    echo "Running in project root - templates already in place\n";
-    exit(0);
+$sourceTemplatesDir = null;
+foreach ($possiblePaths as $path) {
+    if (is_dir($path)) {
+        $sourceTemplatesDir = realpath($path);
+        break;
+    }
 }
+
+if (!$sourceTemplatesDir) {
+    echo "Error: Could not find StaticForge templates directory\n";
+    exit(1);
+}
+
+// Target is always the project root's templates directory
+$targetTemplatesDir = getcwd() . '/templates';
 
 // Check if target templates directory exists
 if (!is_dir($targetTemplatesDir)) {
@@ -75,7 +80,7 @@ function copyTemplates(string $source, string $target, int &$copied, int &$skipp
     }
 }
 
-echo "StaticForge: Checking templates...\n";
+echo "StaticForge: Installing templates...\n";
 
 // Copy all template directories
 copyTemplates($sourceTemplatesDir, $targetTemplatesDir, $copied, $skipped, $templateStatus);
@@ -89,19 +94,8 @@ foreach ($templateStatus as $template => $status) {
     }
 }
 
-// Show per-template status
-foreach ($templateStatus as $template => $status) {
-    if ($status['copied'] > 0) {
-        echo "  {$template}/: Installed {$status['copied']} file(s)\n";
-    } else {
-        echo "  {$template}/: Skipped (already exists)\n";
-    }
+echo "StaticForge: Template installation complete\n";
+
+if ($copied > 0) {
+    echo "\nInstalled {$copied} template file(s) to {$targetTemplatesDir}\n";
 }
-
-echo "StaticForge: Template check complete\n";
-
-if ($copied === 0 && $skipped === 0) {
-    echo "StaticForge: No templates found to install\n";
-}
-
-exit(0);

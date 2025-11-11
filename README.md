@@ -27,6 +27,17 @@ That's it! Your site is ready to use. StaticForge automatically:
 - Sets up the `output/` directory
 - Includes starter content and 4 pre-built templates
 
+### Library Installation
+
+To add StaticForge to an existing project:
+
+```bash
+composer require eicc/staticforge
+vendor/bin/install-templates.php
+```
+
+This will install the default templates without overwriting any existing templates.
+
 ### Development Installation
 
 If you want to contribute to StaticForge development:

@@ -42,22 +42,21 @@
         "sort-packages": true
     },
     "bin": [
-        "bin/staticforge.php"
+        "bin/staticforge.php",
+        "bin/install-templates.php"
     ],
     "scripts": {
         "post-install-cmd": [
-            "@ensure-staticforge-bin",
             "@install-templates"
         ],
         "post-update-cmd": [
-            "@ensure-staticforge-bin",
             "@install-templates"
-        ],
-        "ensure-staticforge-bin": [
-            "php -r \"if (!file_exists('vendor/bin/staticforge.php') && file_exists('vendor/bin/staticforge')) { copy('vendor/bin/staticforge', 'vendor/bin/staticforge.php'); }\""
         ],
         "install-templates": [
             "php scripts/install-templates.php"
         ]
+    },
+    "scripts-descriptions": {
+        "install-templates": "Install default templates (run: composer exec staticforge-install-templates)"
     }
 }
