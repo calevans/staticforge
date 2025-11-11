@@ -43,20 +43,6 @@
     },
     "bin": [
         "bin/staticforge.php",
-        "bin/install-templates.php"
-    ],
-    "scripts": {
-        "post-install-cmd": [
-            "@install-templates"
-        ],
-        "post-update-cmd": [
-            "@install-templates"
-        ],
-        "install-templates": [
-            "php scripts/install-templates.php"
-        ]
-    },
-    "scripts-descriptions": {
-        "install-templates": "Install default templates (run: composer exec staticforge-install-templates)"
-    }
+        "bin/staticforge-install-templates.php"
+    ]
 }
