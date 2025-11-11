@@ -15,7 +15,7 @@ use Exception;
  */
 class RenderSiteCommand extends Command
 {
-    protected static $defaultName = 'render:site';
+    protected static $defaultName = 'site:render';
     protected static $defaultDescription = 'Generate the complete static site from content files';
 
     protected Container $container;
