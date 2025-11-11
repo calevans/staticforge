@@ -24,20 +24,19 @@ Before you start, make sure you have:
 
 ### Step 1: Install StaticForge
 
-Install StaticForge with a single Composer command:
+Install StaticForge using Composer:
 
 ```bash
-composer create-project eicc/staticforge my-awesome-site
-cd my-awesome-site
+composer require eicc/staticforge
+vendor/bin/staticforge-install-templates.php
 ```
 
-Replace `my-awesome-site` with whatever you want to name your project!
+The second command installs the default templates. It won't overwrite any existing templates if you've already customized them.
 
-That's it! StaticForge automatically:
-- Installs all dependencies
-- Creates a `.env` configuration file
-- Sets up the `output/` directory
-- Includes starter content and 4 templates
+This gives you:
+- All StaticForge dependencies
+- 4 pre-built templates (sample, staticforce, terminal, vaulttech)
+- Command-line tools in `vendor/bin/`
 
 ### Step 2: Configure Your Site
 

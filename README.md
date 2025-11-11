@@ -13,30 +13,14 @@ A PHP-based static site generator that processes content files through an event-
 
 ## Installation
 
-### Quick Install (Recommended)
-
-Install StaticForge with a single command using Composer:
-
-```bash
-composer create-project eicc/staticforge my-site
-cd my-site
-```
-
-That's it! Your site is ready to use. StaticForge automatically:
-- Creates a `.env` configuration file
-- Sets up the `output/` directory
-- Includes starter content and 4 pre-built templates
-
-### Library Installation
-
-To add StaticForge to an existing project:
+Install StaticForge using Composer:
 
 ```bash
 composer require eicc/staticforge
-vendor/bin/install-templates.php
+vendor/bin/staticforge-install-templates.php
 ```
 
-This will install the default templates without overwriting any existing templates.
+The second command installs the default templates without overwriting any existing templates.
 
 ### Development Installation
 
