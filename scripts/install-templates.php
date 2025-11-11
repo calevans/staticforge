@@ -32,8 +32,9 @@ if (!is_dir($targetTemplatesDir)) {
 // Copy template directories recursively
 $copied = 0;
 $skipped = 0;
+$templateStatus = [];
 
-function copyTemplates(string $source, string $target, int &$copied, int &$skipped): void
+function copyTemplates(string $source, string $target, int &$copied, int &$skipped, array &$templateStatus): void
 {
     if (!is_dir($source)) {
         return;
@@ -53,30 +54,54 @@ function copyTemplates(string $source, string $target, int &$copied, int &$skipp
                 mkdir($targetPath, 0755, true);
             }
         } else {
+            // Extract template directory (first path component)
+            $parts = explode(DIRECTORY_SEPARATOR, $relativePath);
+            $templateDir = $parts[0];
+            
+            if (!isset($templateStatus[$templateDir])) {
+                $templateStatus[$templateDir] = ['copied' => 0, 'skipped' => 0];
+            }
+            
             // Only copy if target doesn't exist
             if (!file_exists($targetPath)) {
                 copy($item->getPathname(), $targetPath);
                 $copied++;
+                $templateStatus[$templateDir]['copied']++;
             } else {
                 $skipped++;
+                $templateStatus[$templateDir]['skipped']++;
             }
         }
     }
 }
 
+echo "StaticForge: Checking templates...\n";
+
 // Copy all template directories
-copyTemplates($sourceTemplatesDir, $targetTemplatesDir, $copied, $skipped);
+copyTemplates($sourceTemplatesDir, $targetTemplatesDir, $copied, $skipped, $templateStatus);
 
-if ($copied > 0) {
-    echo "Installed {$copied} template file(s) to: {$targetTemplatesDir}\n";
+// Show per-template status
+foreach ($templateStatus as $template => $status) {
+    if ($status['copied'] > 0) {
+        echo "  {$template}/: Installed {$status['copied']} file(s)\n";
+    } else {
+        echo "  {$template}/: Skipped (already exists)\n";
+    }
 }
 
-if ($skipped > 0) {
-    echo "Skipped {$skipped} existing template file(s) (not overwritten)\n";
+// Show per-template status
+foreach ($templateStatus as $template => $status) {
+    if ($status['copied'] > 0) {
+        echo "  {$template}/: Installed {$status['copied']} file(s)\n";
+    } else {
+        echo "  {$template}/: Skipped (already exists)\n";
+    }
 }
+
+echo "StaticForge: Template check complete\n";
 
 if ($copied === 0 && $skipped === 0) {
-    echo "No templates to install\n";
+    echo "StaticForge: No templates found to install\n";
 }
 
 exit(0);
