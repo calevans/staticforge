@@ -1,13 +1,33 @@
 #!/usr/bin/env php
 <?php
 
+// Load Composer autoloader first - handle both dev and library installation
+$autoloaderPaths = [
+    __DIR__ . '/../vendor/autoload.php',           // Development mode
+    __DIR__ . '/../autoload.php',                  // When in vendor/bin/ (points to vendor/autoload.php)
+    getcwd() . '/vendor/autoload.php'              // Fallback to current working directory
+];
+
+$autoloaderLoaded = false;
+foreach ($autoloaderPaths as $autoloaderPath) {
+    if (file_exists($autoloaderPath)) {
+        require_once $autoloaderPath;
+        $autoloaderLoaded = true;
+        break;
+    }
+}
+
+if (!$autoloaderLoaded) {
+    echo "Error: Could not find Composer autoloader. Please run 'composer install'.\n";
+    exit(1);
+}
+
 use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\RenderSiteCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
 use Symfony\Component\Console\Application;
 
-// Bootstrap application - handle both dev and vendor/bin locations
 // Bootstrap application - handle both dev and vendor/bin locations
 $bootstrapPath = __DIR__ . '/../src/bootstrap.php';
 if (!file_exists($bootstrapPath)) {
