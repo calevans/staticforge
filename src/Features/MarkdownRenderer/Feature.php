@@ -251,8 +251,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
                 'features' => $container->getVariable('features') ?? [],
             ]);
 
-            $this->logger->log('DEBUG', "Template variables: " . json_encode(array_keys($templateVars)));
-
             // Render template
             return $twig->render($templatePath, $templateVars);
         } catch (Exception $e) {
