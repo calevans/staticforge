@@ -21,6 +21,7 @@ class Feature extends BaseFeature implements FeatureInterface
      * @var array<string, array{method: string, priority: int}>
      */
     protected array $eventListeners = [
+    'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 250],
     'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
     ];
 
@@ -32,6 +33,94 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger = $container->get('logger');
 
         $this->logger->log('INFO', 'Categories Feature registered');
+    }
+
+    /**
+     * Handle POST_GLOB event to scan category files and store their templates
+     *
+     * Called dynamically by EventManager when POST_GLOB event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
+    public function handlePostGlob(Container $container, array $parameters): array
+    {
+        $this->logger->log('INFO', 'Categories: Scanning for category templates');
+
+        $categoryTemplates = [];
+        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+
+        foreach ($discoveredFiles as $filePath) {
+            if (!file_exists($filePath)) {
+                continue;
+            }
+
+            $content = file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
+
+            // Check for INI frontmatter with type = category
+            if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
+                $metadata = $this->parseIniFrontmatter($matches[1]);
+
+                if (isset($metadata['type']) && $metadata['type'] === 'category') {
+                    $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
+
+                    // If this category file has a template, store it
+                    if (isset($metadata['template'])) {
+                        $categoryTemplates[$categorySlug] = $metadata['template'];
+                        $this->logger->log(
+                            'INFO',
+                            "Category '{$categorySlug}' uses template: {$metadata['template']}"
+                        );
+                    }
+                }
+            }
+        }
+
+        // Store category templates in container for renderers to use
+        // Use updateVariable if it already exists (POST_GLOB can fire multiple times)
+        try {
+            $container->setVariable('category_templates', $categoryTemplates);
+        } catch (\Exception $e) {
+            // Variable already exists - update it instead
+            $container->updateVariable('category_templates', $categoryTemplates);
+            $this->logger->log('DEBUG', 'Updated existing category templates in container');
+        }
+
+        $this->logger->log('INFO', 'Found ' . count($categoryTemplates) . ' category templates');
+
+        return $parameters;
+    }
+
+    /**
+     * Parse INI frontmatter into metadata array
+     *
+     * @param string $ini INI-formatted string
+     * @return array<string, mixed> Parsed metadata
+     */
+    private function parseIniFrontmatter(string $ini): array
+    {
+        $metadata = [];
+        $lines = explode("\n", $ini);
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line) || strpos($line, '=') === false) {
+                continue;
+            }
+
+            list($key, $value) = array_map('trim', explode('=', $line, 2));
+
+            // Strip quotes from value
+            $value = trim($value, '"\'');
+
+            $metadata[$key] = $value;
+        }
+
+        return $metadata;
     }
 
     /**

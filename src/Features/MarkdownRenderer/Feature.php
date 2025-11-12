@@ -153,6 +153,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             $metadata['title'] = $this->extractTitleFromContent($htmlContent);
         }
 
+        // Apply category template if file has category but no explicit template
+        $metadata = $this->applyCategoryTemplate($metadata);
+
         // Apply default metadata
         $metadata = $this->applyDefaultMetadata($metadata);
 
@@ -314,5 +317,46 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Apply category template if file has category but no explicit template
+     *
+     * @param array<string, mixed> $metadata
+     * @return array<string, mixed>
+     */
+    private function applyCategoryTemplate(array $metadata): array
+    {
+        $this->logger->log('DEBUG', 'applyCategoryTemplate called for file', [
+            'has_template' => isset($metadata['template']),
+            'has_category' => isset($metadata['category']),
+            'category' => $metadata['category'] ?? 'none'
+        ]);
+
+        // If file already has a template, don't override it
+        if (isset($metadata['template'])) {
+            return $metadata;
+        }
+
+        // If file has a category, check for category template
+        if (isset($metadata['category'])) {
+            $categoryTemplates = $this->container->getVariable('category_templates') ?? [];
+            $category = $metadata['category'];
+
+            $this->logger->log('DEBUG', 'Checking category templates', [
+                'category' => $category,
+                'available_templates' => array_keys($categoryTemplates)
+            ]);
+
+            if (isset($categoryTemplates[$category])) {
+                $metadata['template'] = $categoryTemplates[$category];
+                $this->logger->log(
+                    'INFO',
+                    "Applying category template '{$categoryTemplates[$category]}' for category '{$category}'"
+                );
+            }
+        }
+
+        return $metadata;
     }
 }
