@@ -6,10 +6,12 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use EICC\Utils\Log;
 
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'MenuBuilder';
+    private Log $logger;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -17,6 +19,16 @@ class Feature extends BaseFeature implements FeatureInterface
     protected array $eventListeners = [
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 100]
     ];
+
+    public function register(EventManager $eventManager, Container $container): void
+    {
+        parent::register($eventManager, $container);
+
+        // Get logger from container
+        $this->logger = $container->get('logger');
+
+        $this->logger->log('INFO', 'MenuBuilder Feature registered');
+    }
 
     /**
      * Handle POST_GLOB event - build menu structure from discovered files
@@ -31,6 +43,8 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         // Scan files and build menu structure
         $menuData = $this->scanFilesForMenus();
+
+        $this->logger->log('INFO', 'MenuBuilder: Found ' . count($menuData) . ' menus with data: ' . json_encode(array_keys($menuData)));
 
         // Generate HTML from menu data
         $menuHtml = $this->buildMenuHtml($menuData);
@@ -66,8 +80,8 @@ class Feature extends BaseFeature implements FeatureInterface
         $menuData = [];
         $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
 
-        foreach ($discoveredFiles as $file) {
-            $this->processFileForMenu($file, $menuData);
+        foreach ($discoveredFiles as $fileData) {
+            $this->processFileForMenu($fileData, $menuData);
         }
 
         return $menuData;
@@ -76,34 +90,28 @@ class Feature extends BaseFeature implements FeatureInterface
     /**
      * Process a single file to extract menu entries
      *
-     * @param string $filePath Path to the file to process
+     * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
      * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
      *        $menuData Menu data structure passed by reference
-     * @param-out array<int, mixed> $menuData Modified menu structure with nested arrays
      */
-    private function processFileForMenu(string $filePath, array &$menuData): void
+    private function processFileForMenu(array $fileData, array &$menuData): void
     {
-        if (!file_exists($filePath)) {
-            return;
-        }
-
-        $content = file_get_contents($filePath);
-        if ($content === false) {
-            return;
-        }
-
-        $metadata = $this->extractMetadataFromFile($content, $filePath);
+        $metadata = $fileData['metadata'];
 
         if (isset($metadata['menu'])) {
             $menuPositions = $this->parseMenuValue($metadata['menu']);
 
             foreach ($menuPositions as $position) {
-                $this->addMenuEntry($position, $filePath, $metadata['category'] ?? null, $menuData);
+                $this->addMenuEntry($position, $fileData, $metadata['category'] ?? null, $menuData);
             }
         }
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    /**
+     * @deprecated Metadata now extracted in FileDiscovery during discovery phase
      * @return array<string, mixed>
      */
     private function extractMetadataFromFile(string $content, string $filePath): array
@@ -120,6 +128,7 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
+     * @deprecated Metadata now extracted in FileDiscovery during discovery phase
      * @return array<string, mixed>
      */
     private function extractMetadataFromMarkdown(string $content): array
@@ -146,6 +155,7 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
+     * @deprecated Metadata now extracted in FileDiscovery during discovery phase
      * @return array<string, mixed>
      */
     private function extractMetadataFromHtml(string $content): array
@@ -203,13 +213,12 @@ class Feature extends BaseFeature implements FeatureInterface
      * Add a menu entry to the menu data structure
      *
      * @param string $menuPosition Position string (e.g., "1", "1.2", "1.2.3")
-     * @param string $filePath Path to the content file
+     * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
      * @param string|null $category Optional category for URL generation
      * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
      *        $menuData Menu data array passed by reference
-     * @param-out array<int, mixed> $menuData Modified menu structure with complex nested arrays
      */
-    private function addMenuEntry(string $menuPosition, string $filePath, ?string $category, array &$menuData): void
+    private function addMenuEntry(string $menuPosition, array $fileData, ?string $category, array &$menuData): void
     {
         // Parse menu position (e.g., "1", "1.2", "1.2.3")
         $parts = explode('.', $menuPosition);
@@ -219,14 +228,16 @@ class Feature extends BaseFeature implements FeatureInterface
             return;
         }
 
-        // Get file metadata
-        $title = $this->extractTitleFromFile($filePath);
-        $url = $this->generateUrlFromPath($filePath, $category);
+        // Get title from metadata or extract from file
+        $title = $fileData['metadata']['title'] ?? $this->extractTitleFromFile($fileData['path']);
+
+        // Use pre-generated URL from discovery
+        $url = $fileData['url'];
 
         $menuEntry = [
             'title' => $title,
             'url' => $url,
-            'file' => $filePath,
+            'file' => $fileData['path'],
             'position' => $menuPosition
         ];
 

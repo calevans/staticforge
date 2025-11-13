@@ -303,26 +303,14 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
-        foreach ($discoveredFiles as $filePath) {
-            if (!file_exists($filePath)) {
-                continue;
-            }
+        foreach ($discoveredFiles as $fileData) {
+            $metadata = $fileData['metadata'];
 
-            $content = file_get_contents($filePath);
-            if ($content === false) {
-                continue;
-            }
+            if (isset($metadata['type']) && $metadata['type'] === 'category') {
+                $categorySlug = pathinfo($fileData['path'], PATHINFO_FILENAME);
+                $this->categoryMetadata[$categorySlug] = $metadata;
 
-          // Check for INI frontmatter with type = category
-            if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
-                $metadata = $this->parseIniFrontmatter($matches[1]);
-
-                if (isset($metadata['type']) && $metadata['type'] === 'category') {
-                    $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
-                    $this->categoryMetadata[$categorySlug] = $metadata;
-
-                    $this->logger->log('INFO', "Found category file: {$filePath}");
-                }
+                $this->logger->log('INFO', "Found category file: {$fileData['path']}");
             }
         }
 

@@ -60,8 +60,8 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
-        foreach ($discoveredFiles as $filePath) {
-            $this->extractTagsFromFile($filePath);
+        foreach ($discoveredFiles as $fileData) {
+            $this->extractTagsFromFile($fileData);
         }
 
       // Store tag data in features array
@@ -120,26 +120,25 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract tags from a content file
+   *
+   * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
    */
-    private function extractTagsFromFile(string $filePath): void
+    private function extractTagsFromFile(array $fileData): void
     {
-        if (!file_exists($filePath)) {
+        $metadata = $fileData['metadata'];
+        $filePath = $fileData['path'];
+
+        $tags = $metadata['tags'] ?? [];
+
+        // Skip if no tags
+        if (empty($tags)) {
             return;
         }
 
-        $content = file_get_contents($filePath);
-        if ($content === false) {
-            return;
-        }
-
-        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-
-        $tags = [];
-
-        if ($extension === 'md') {
-            $tags = $this->extractTagsFromMarkdown($content);
-        } elseif ($extension === 'html') {
-            $tags = $this->extractTagsFromHtml($content);
+        // Ensure tags is an array
+        if (!is_array($tags)) {
+            // If it's a string, split by comma
+            $tags = array_map('trim', explode(',', $tags));
         }
 
       // Normalize tags (trim, lowercase)

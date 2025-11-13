@@ -46,39 +46,73 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
-        $this->logger->log('INFO', 'Categories: Scanning for category templates');
+        try {
+            $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+            $this->logger->log('INFO', 'Categories: Found ' . count($discoveredFiles) . ' discovered files');
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Categories: Failed to get discovered_files: ' . $e->getMessage());
+            return $parameters;
+        }
 
         $categoryTemplates = [];
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
-        foreach ($discoveredFiles as $filePath) {
-            if (!file_exists($filePath)) {
+        // First pass: collect category templates
+        foreach ($discoveredFiles as $fileData) {
+            $metadata = $fileData['metadata'];
+
+            if (isset($metadata['type']) && $metadata['type'] === 'category') {
+                $categorySlug = pathinfo($fileData['path'], PATHINFO_FILENAME);
+
+                // If this category file has a template, store it
+                if (isset($metadata['template'])) {
+                    $categoryTemplates[$categorySlug] = $metadata['template'];
+                    $this->logger->log(
+                        'INFO',
+                        "Category '{$categorySlug}' uses template: {$metadata['template']}"
+                    );
+                }
+            }
+        }
+
+        $this->logger->log('INFO', 'Found ' . count($categoryTemplates) . ' category templates');
+
+        // Second pass: apply category templates to files that belong to categories
+        $updatedFiles = [];
+        $filesUpdated = 0;
+        foreach ($discoveredFiles as $fileData) {
+            $metadata = $fileData['metadata'];
+            
+            // Skip category definition files themselves
+            if (isset($metadata['type']) && $metadata['type'] === 'category') {
+                $updatedFiles[] = $fileData;
                 continue;
             }
 
-            $content = file_get_contents($filePath);
-            if ($content === false) {
-                continue;
-            }
-
-            // Check for INI frontmatter with type = category
-            if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $matches)) {
-                $metadata = $this->parseIniFrontmatter($matches[1]);
-
-                if (isset($metadata['type']) && $metadata['type'] === 'category') {
-                    $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
-
-                    // If this category file has a template, store it
-                    if (isset($metadata['template'])) {
-                        $categoryTemplates[$categorySlug] = $metadata['template'];
+            // If file has a category and that category has a template, apply it
+            if (isset($metadata['category'])) {
+                $categorySlug = $this->slugifyCategory($metadata['category']);
+                
+                if (isset($categoryTemplates[$categorySlug])) {
+                    // Only apply if no template already set in frontmatter
+                    if (!isset($metadata['template']) || $metadata['template'] === 'base') {
+                        $metadata['template'] = $categoryTemplates[$categorySlug];
+                        $fileData['metadata'] = $metadata;
+                        $filesUpdated++;
                         $this->logger->log(
                             'INFO',
-                            "Category '{$categorySlug}' uses template: {$metadata['template']}"
+                            "Applied category template '{$categoryTemplates[$categorySlug]}' to {$fileData['path']}"
                         );
                     }
                 }
             }
+            
+            $updatedFiles[] = $fileData;
         }
+
+        $this->logger->log('INFO', "Applied category templates to $filesUpdated files");
+
+        // Update discovered_files with modified metadata
+        $container->updateVariable('discovered_files', $updatedFiles);
 
         // Store category templates in container for renderers to use
         // Use updateVariable if it already exists (POST_GLOB can fire multiple times)
@@ -96,7 +130,16 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
     /**
+     * Convert category name to URL-safe slug
+     */
+    private function slugifyCategory(string $category): string
+    {
+        return strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($category)));
+    }
+
+    /**
      * Parse INI frontmatter into metadata array
+     * @deprecated Metadata now extracted in FileDiscovery during discovery phase
      *
      * @param string $ini INI-formatted string
      * @return array<string, mixed> Parsed metadata

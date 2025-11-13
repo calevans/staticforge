@@ -12,17 +12,17 @@ use EICC\Utils\Log;
 
 /**
  * RobotsTxt Feature - generates robots.txt file based on content metadata
- * 
+ *
  * EVENTS FIRED: None
- * 
+ *
  * EVENTS OBSERVED:
  * - POST_GLOB (priority 150): Scans discovered files for robots metadata
  * - POST_LOOP (priority 100): Generates robots.txt file at the end of processing
- * 
+ *
  * Honors the "robots" field in content file frontmatter:
  * - robots=no: Disallow the page in robots.txt
  * - robots=yes or not specified: Allow the page (default)
- * 
+ *
  * Also honors robots field in category definition files to disallow entire categories
  */
 class Feature extends BaseFeature implements FeatureInterface
@@ -70,8 +70,8 @@ class Feature extends BaseFeature implements FeatureInterface
 
     $this->logger->log('INFO', 'RobotsTxt: Scanning files for robots metadata');
 
-    foreach ($discoveredFiles as $filePath) {
-      $this->scanFileForRobotsMetadata($filePath, $sourceDir);
+    foreach ($discoveredFiles as $fileData) {
+      $this->scanFileForRobotsMetadata($fileData, $sourceDir);
     }
 
     // Also scan for category definition files
@@ -124,26 +124,13 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Scan a content file for robots metadata
+   *
+   * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
    */
-  private function scanFileForRobotsMetadata(string $filePath, string $sourceDir): void
+  private function scanFileForRobotsMetadata(array $fileData, string $sourceDir): void
   {
-    if (!file_exists($filePath)) {
-      return;
-    }
-
-    $content = @file_get_contents($filePath);
-    if ($content === false) {
-      return;
-    }
-
-    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-    $metadata = [];
-
-    if ($extension === 'md') {
-      $metadata = $this->extractMetadataFromMarkdown($content);
-    } elseif ($extension === 'html') {
-      $metadata = $this->extractMetadataFromHtml($content);
-    }
+    $filePath = $fileData['path'];
+    $metadata = $fileData['metadata'];
 
     // Check robots field
     $robots = $metadata['robots'] ?? 'yes';
@@ -170,24 +157,8 @@ class Feature extends BaseFeature implements FeatureInterface
     // with type=category in frontmatter
     $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
-    foreach ($discoveredFiles as $filePath) {
-      if (!file_exists($filePath)) {
-        continue;
-      }
-
-      $content = @file_get_contents($filePath);
-      if ($content === false) {
-        continue;
-      }
-
-      $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-      $metadata = [];
-
-      if ($extension === 'md') {
-        $metadata = $this->extractMetadataFromMarkdown($content);
-      } elseif ($extension === 'html') {
-        $metadata = $this->extractMetadataFromHtml($content);
-      }
+    foreach ($discoveredFiles as $fileData) {
+      $metadata = $fileData['metadata'];
 
       // Check if this is a category definition file
       $type = $metadata['type'] ?? '';
@@ -197,7 +168,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         if ($robots === 'no') {
           // Get category slug/name
-          $category = $metadata['category'] ?? $this->getCategoryFromFilename($filePath);
+          $category = $metadata['category'] ?? $this->getCategoryFromFilename($fileData['path']);
 
           if ($category) {
             // Disallow entire category directory
@@ -213,7 +184,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract metadata from Markdown file frontmatter
-   * 
+   *
    * @return array<string, mixed>
    */
   private function extractMetadataFromMarkdown(string $content): array
@@ -247,7 +218,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
   /**
    * Extract metadata from HTML file frontmatter
-   * 
+   *
    * @return array<string, mixed>
    */
   private function extractMetadataFromHtml(string $content): array

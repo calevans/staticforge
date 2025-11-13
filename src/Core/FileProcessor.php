@@ -54,9 +54,10 @@ class FileProcessor
         $successCount = 0;
         $failCount = 0;
 
-        foreach ($files as $filePath) {
+        foreach ($files as $fileData) {
+            $filePath = $fileData['path'];
             try {
-                $this->processFile($filePath);
+                $this->processFile($fileData);
                 $this->errorHandler->recordFileSuccess($filePath);
                 $successCount++;
             } catch (\Exception $e) {
@@ -75,9 +76,13 @@ class FileProcessor
 
     /**
      * Process a single file through the render pipeline
+     *
+     * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
      */
-    protected function processFile(string $filePath): void
+    protected function processFile(array $fileData): void
     {
+        $filePath = $fileData['path'];
+
         $this->logger->log('DEBUG', "Processing file: {$filePath}", [
             'file' => $filePath,
             'size' => file_exists($filePath) ? filesize($filePath) : 0,
@@ -94,11 +99,13 @@ class FileProcessor
             );
         }
 
-        // Initialize render context
+        // Initialize render context with pre-parsed metadata
         $renderContext = [
             'file_path' => $filePath,
+            'file_url' => $fileData['url'],
+            'file_metadata' => $fileData['metadata'],
             'rendered_content' => null,
-            'metadata' => [],
+            'metadata' => $fileData['metadata'], // Legacy for backwards compatibility
             'output_path' => null,
             'skip_file' => false
         ];

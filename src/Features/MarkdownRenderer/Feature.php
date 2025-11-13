@@ -76,28 +76,47 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         try {
             $this->logger->log('INFO', "Processing Markdown file: {$filePath}");
 
-            // Read and parse the Markdown file
+            // Get pre-parsed metadata from file discovery
+            $metadata = $parameters['file_metadata'] ?? [];
+
+            // Read file content
             // Use provided content if available (e.g., from CategoryIndex)
             $content = $parameters['file_content'] ?? @file_get_contents($filePath);
             if ($content === false) {
                 throw new Exception("Failed to read file: {$filePath}");
             }
 
-            $parsedContent = $this->parseMarkdownFile($content);
+            // Extract content (skip frontmatter)
+            $markdownContent = $this->extractMarkdownContent($content);
+
+            // Convert Markdown to HTML
+            $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
+
+            // Extract title from metadata or first heading
+            if (!isset($metadata['title'])) {
+                $metadata['title'] = $this->extractTitleFromContent($htmlContent);
+            }
+
+            // Apply default metadata
+            $metadata = $this->applyDefaultMetadata($metadata);
 
             // Generate output file path (change .md to .html)
             // Use existing output_path if already set (e.g., by CategoryIndex)
             $outputPath = $parameters['output_path'] ?? $this->generateOutputPath($filePath, $container);
 
             // Apply template (pass source file path)
-            $renderedContent = $this->applyTemplate($parsedContent, $container, $filePath);
+            $renderedContent = $this->applyTemplate([
+                'metadata' => $metadata,
+                'content' => $htmlContent,
+                'title' => $metadata['title'],
+            ], $container, $filePath);
 
             $this->logger->log('INFO', "Markdown file rendered: {$filePath}");
 
             // Store rendered content and metadata for Core to write
             $parameters['rendered_content'] = $renderedContent;
             $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $parsedContent['metadata'];
+            $parameters['metadata'] = $metadata;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process Markdown file {$filePath}: " . $e->getMessage());
             $parameters['error'] = $e->getMessage();
@@ -107,7 +126,24 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     }
 
     /**
+     * Extract markdown content, skipping frontmatter
+     *
+     * @param string $content Full file content
+     * @return string Markdown content without frontmatter
+     */
+    private function extractMarkdownContent(string $content): string
+    {
+        // Check for INI frontmatter (--- ... ---)
+        if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
+            return trim($matches[2]);
+        }
+
+        return $content;
+    }
+
+    /**
      * Parse Markdown file content, extracting INI frontmatter if present
+     * @deprecated Use extractMarkdownContent() instead - metadata now parsed in FileDiscovery
      *
      * @return array{metadata: array<string, mixed>, content: string}
      */
@@ -152,9 +188,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         if (!isset($metadata['title'])) {
             $metadata['title'] = $this->extractTitleFromContent($htmlContent);
         }
-
-        // Apply category template if file has category but no explicit template
-        $metadata = $this->applyCategoryTemplate($metadata);
 
         // Apply default metadata
         $metadata = $this->applyDefaultMetadata($metadata);
@@ -222,7 +255,26 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Get template configuration
             $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
             $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
-            $templateName = $parsedContent['template'] . '.html.twig';
+
+            // Determine template: frontmatter > category > .env default
+            $templateName = 'base'; // Ultimate fallback
+            $this->logger->log('DEBUG', "Template metadata: " . json_encode($parsedContent['metadata']));
+            
+            if (isset($parsedContent['metadata']['template'])) {
+                $templateName = $parsedContent['metadata']['template'];
+                $this->logger->log('DEBUG', "Using frontmatter template: {$templateName}");
+            } elseif (isset($parsedContent['metadata']['category'])) {
+                // Check if category has a template
+                $categoryTemplates = $container->getVariable('category_templates') ?? [];
+                // Slugify category name to match how Categories stores them
+                $categorySlug = $this->slugifyCategory($parsedContent['metadata']['category']);
+                $this->logger->log('DEBUG', "Template lookup: category={$parsedContent['metadata']['category']}, slug={$categorySlug}, available=" . json_encode(array_keys($categoryTemplates)));
+                if (isset($categoryTemplates[$categorySlug])) {
+                    $templateName = $categoryTemplates[$categorySlug];
+                    $this->logger->log('INFO', "Applied category template '{$templateName}' for category '{$parsedContent['metadata']['category']}'");
+                }
+            }
+            $templateName .= '.html.twig';
 
             // Full template path
             $templatePath = $templateTheme . '/' . $templateName;
@@ -280,7 +332,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             '{{PAGE_TITLE}}' => $parsedContent['title'],
             '{{CONTENT}}' => $parsedContent['content'],
             '{{META_DESCRIPTION}}' => $parsedContent['metadata']['description'] ?? '',
-            '{{META_KEYWORDS}}' => is_array($parsedContent['tags']) ? implode(', ', $parsedContent['tags']) : ''
+            '{{META_KEYWORDS}}' => isset($parsedContent['metadata']['tags']) && is_array($parsedContent['metadata']['tags']) ? implode(', ', $parsedContent['metadata']['tags']) : ''
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);
@@ -356,5 +408,14 @@ HTML;
         }
 
         return $metadata;
+    }
+
+    /**
+     * Slugify category name to match filename format
+     */
+    private function slugifyCategory(string $category): string
+    {
+        // Convert to lowercase and replace spaces/underscores with hyphens
+        return strtolower(str_replace([' ', '_'], '-', $category));
     }
 }

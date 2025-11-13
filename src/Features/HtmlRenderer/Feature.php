@@ -66,26 +66,40 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         try {
             $this->logger->log('INFO', "Processing HTML file: {$filePath}");
 
-            // Read and parse the HTML file
+            // Get pre-parsed metadata from file discovery
+            $metadata = $parameters['file_metadata'] ?? [];
+
+            // Read file content
             $content = @file_get_contents($filePath);
             if ($content === false) {
                 throw new Exception("Failed to read file: {$filePath}");
             }
 
-            $parsedContent = $this->parseHtmlFile($content);
+            // Extract content (skip frontmatter)
+            $htmlContent = $this->extractHtmlContent($content);
+
+            // Apply category template if file has category but no explicit template
+            $metadata = $this->applyCategoryTemplate($metadata);
+
+            // Apply default metadata
+            $metadata = $this->applyDefaultMetadata($metadata);
 
             // Generate output file path
             $outputPath = $this->generateOutputPath($filePath, $container);
 
             // Apply basic template (pass source file path)
-            $renderedContent = $this->applyTemplate($parsedContent, $container, $filePath);
+            $renderedContent = $this->applyTemplate([
+                'metadata' => $metadata,
+                'content' => $htmlContent,
+                'title' => $metadata['title'] ?? 'Untitled',
+            ], $container, $filePath);
 
             $this->logger->log('INFO', "HTML file rendered: {$filePath}");
 
             // Store rendered content and metadata for Core to write
             $parameters['rendered_content'] = $renderedContent;
             $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $parsedContent['metadata'];
+            $parameters['metadata'] = $metadata;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process HTML file {$filePath}: " . $e->getMessage());
             $parameters['error'] = $e->getMessage();
@@ -95,7 +109,24 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     }
 
     /**
+     * Extract HTML content, skipping frontmatter
+     *
+     * @param string $content Full file content
+     * @return string HTML content without frontmatter
+     */
+    private function extractHtmlContent(string $content): string
+    {
+        // Check for INI frontmatter (<!-- INI ... -->)
+        if (preg_match('/^<!--\s*INI\s*(.*?)\s*-->\s*\n(.*)$/s', $content, $matches)) {
+            return $matches[2];
+        }
+
+        return $content;
+    }
+
+    /**
      * Parse HTML file content, extracting INI metadata if present
+     * @deprecated Use extractHtmlContent() instead - metadata now parsed in FileDiscovery
      *
      * @return array{metadata: array<string, mixed>, content: string}
      */
@@ -189,7 +220,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Get template configuration
             $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
             $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
-            $templateName = $parsedContent['template'] . '.html.twig';
+            $templateName = ($parsedContent['template'] ?? 'base') . '.html.twig';
 
             // Full template path
             $templatePath = $templateTheme . '/' . $templateName;
