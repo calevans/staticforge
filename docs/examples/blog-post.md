@@ -56,7 +56,7 @@ Edit `.env` to configure your site:
 ```bash
 CONTENT_PATH=content/
 OUTPUT_PATH=public/
-TEMPLATE_NAME=sample
+TEMPLATE_NAME=staticforce
 ```
 
 ## Creating Content

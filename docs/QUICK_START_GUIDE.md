@@ -35,7 +35,7 @@ The second command installs the default templates. It won't overwrite any existi
 
 This gives you:
 - All StaticForge dependencies
-- 4 pre-built templates (sample, staticforce, terminal, vaulttech)
+- 4 pre-built templates (staticforce, sample, terminal, vaulttech)
 - Command-line tools in `vendor/bin/`
 
 ### Step 2: Configure Your Site
@@ -46,7 +46,7 @@ Open `.env` in your text editor. You'll see settings like:
 SITE_NAME="My Static Site"
 SITE_TAGLINE="Built with ❤️ and PHP"
 SITE_BASE_URL="https://example.com"
-TEMPLATE="sample"
+TEMPLATE="staticforce"
 OUTPUT_DIR="output"
 ```
 
@@ -55,7 +55,7 @@ OUTPUT_DIR="output"
 - **SITE_NAME** - Your site's name (shows in browser tabs and templates)
 - **SITE_TAGLINE** - A catchy tagline for your site
 - **SITE_BASE_URL** - Your site's URL (use `http://localhost:8000/` for local development)
-- **TEMPLATE** - Which theme to use (`sample`, `terminal`, `vaulttech`, or `staticforce`)
+- **TEMPLATE** - Which theme to use (`staticforce`, `sample`, `terminal`, or `vaulttech`)
 - **OUTPUT_DIR** - Where to put generated files (default is `output`)
 
 The defaults work great for testing, so you can leave them as-is for now!
@@ -264,7 +264,7 @@ StaticForge automatically:
 
 **Regenerate after every change:** StaticForge doesn't watch for changes. Run `php bin/console.php render:site` after editing content or templates.
 
-**Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - sample, terminal, vaulttech, or staticforce.
+**Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default), sample, terminal, or vaulttech.
 
 **Keep frontmatter simple:** Only add metadata you actually need. At minimum, just set a `title`.
 

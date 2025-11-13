@@ -34,7 +34,7 @@ Here's what a typical `.env` file looks like:
 SITE_NAME="My Static Site"
 SITE_TAGLINE="Built with ❤️ and PHP"
 SITE_BASE_URL="https://example.com"
-TEMPLATE="sample"
+TEMPLATE="staticforce"
 
 # Directory Paths (relative to project root)
 SOURCE_DIR="content"
@@ -379,7 +379,7 @@ LOG_FILE="logs/dev.log"
 ```bash
 SITE_NAME="My Awesome Site"
 SITE_BASE_URL="https://www.mysite.com/"
-TEMPLATE="sample"
+TEMPLATE="staticforce"
 OUTPUT_DIR="public"
 LOG_LEVEL="ERROR"
 LOG_FILE="logs/production.log"
