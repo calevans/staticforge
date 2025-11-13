@@ -1,8 +1,7 @@
 ---
-title = "About Us"
-description = "Learn about our company and team"
+title: 'About Us'
+description: 'Learn about our company and team'
 ---
-
 # About Us
 
 We are a team of passionate developers building tools that make web development easier.

@@ -1,10 +1,9 @@
 ---
-title = "Menu Builder"
-template = "docs"
-menu = 1.3.3, 2.3.3
-category = "docs"
+title: 'Menu Builder'
+template: docs
+menu: '1.3.3, 2.3.3'
+category: docs
 ---
-
 # Menu Builder
 
 **What it does:** Automatically creates navigation menus from your content

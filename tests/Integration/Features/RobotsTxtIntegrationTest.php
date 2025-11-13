@@ -82,10 +82,9 @@ TWIG;
     // Create a simple allowed page
     $content = <<<'MD'
 ---
-title = "Public Page"
-robots = "yes"
+title: "Public Page"
+robots: "yes"
 ---
-
 # Public Page
 
 This is a public page.
@@ -114,30 +113,27 @@ MD;
     // Create allowed and disallowed pages
     $publicContent = <<<'MD'
 ---
-title = "Public Page"
-robots = "yes"
+title: "Public Page"
+robots: "yes"
 ---
-
 # Public Page
 MD;
     file_put_contents($this->testContentDir . '/public.md', $publicContent);
 
     $privateContent = <<<'MD'
 ---
-title = "Private Page"
-robots = "no"
+title: "Private Page"
+robots: "no"
 ---
-
 # Private Page
 MD;
     file_put_contents($this->testContentDir . '/private.md', $privateContent);
 
     $secretContent = <<<'MD'
 ---
-title = "Secret Page"
-robots = "no"
+title: "Secret Page"
+robots: "no"
 ---
-
 # Secret Page
 MD;
     file_put_contents($this->testContentDir . '/secret.md', $secretContent);
@@ -165,12 +161,11 @@ MD;
     // Create a category definition with robots=no
     $categoryContent = <<<'MD'
 ---
-type = "category"
-category = "private-stuff"
-title = "Private Category"
-robots = "no"
+type: "category"
+category: "private-stuff"
+title: "Private Category"
+robots: "no"
 ---
-
 # Private Category
 MD;
     file_put_contents($this->testContentDir . '/private-category.md', $categoryContent);
@@ -178,9 +173,8 @@ MD;
     // Create a regular page
     $pageContent = <<<'MD'
 ---
-title = "Regular Page"
+title: "Regular Page"
 ---
-
 # Regular Page
 MD;
     file_put_contents($this->testContentDir . '/page.md', $pageContent);
@@ -206,11 +200,12 @@ MD;
   {
     // Create HTML file with robots=no
     $htmlContent = <<<'HTML'
-<!-- INI
-title = "Private HTML Page"
-robots = "no"
+<!--
+---
+title: "Private HTML Page"
+robots: "no"
+---
 -->
-
 <h1>Private HTML</h1>
 <p>This should be disallowed.</p>
 HTML;
@@ -218,11 +213,12 @@ HTML;
 
     // Create HTML file with robots=yes
     $publicHtmlContent = <<<'HTML'
-<!-- INI
-title = "Public HTML Page"
-robots = "yes"
+<!--
+---
+title: "Public HTML Page"
+robots: "yes"
+---
 -->
-
 <h1>Public HTML</h1>
 <p>This should be allowed.</p>
 HTML;
@@ -250,12 +246,11 @@ HTML;
     // Create multiple disallowed pages in non-alphabetical order
     $files = ['zebra', 'alpha', 'beta', 'charlie'];
     foreach ($files as $filename) {
-      $content = <<<MD
+      $content = <<<'MD'
 ---
-title = "$filename"
-robots = "no"
+title: "$filename"
+robots: "no"
 ---
-
 # $filename
 MD;
       file_put_contents($this->testContentDir . "/{$filename}.md", $content);

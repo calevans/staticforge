@@ -1,10 +1,13 @@
 ---
-title = "API Documentation - Authentication"
-description = "Learn how to authenticate with our API"
-category = "documentation"
-tags = [api, authentication, security, developers]
+title: 'API Documentation - Authentication'
+description: 'Learn how to authenticate with our API'
+category: documentation
+tags:
+  - api
+  - authentication
+  - security
+  - developers
 ---
-
 # API Authentication
 
 This is a dummy guide

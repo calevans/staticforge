@@ -1,10 +1,9 @@
 ---
-title = "Site Configuration (siteconfig.yaml)"
-template = "docs"
-menu = 1.9, 2.9
-category = "docs"
+title: 'Site Configuration (siteconfig.yaml)'
+template: docs
+menu: '1.9, 2.9'
+category: docs
 ---
-
 # Site Configuration (siteconfig.yaml)
 
 StaticForge supports an optional `siteconfig.yaml` file for defining site-wide configuration that can be safely committed to version control. Unlike `.env` which contains sensitive credentials, `siteconfig.yaml` contains non-sensitive site settings like menu definitions, site metadata, and other configuration.

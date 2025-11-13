@@ -1,10 +1,9 @@
 ---
-title = "Robots.txt Generator"
-template = "docs"
-menu = 1.3.8, 2.3.8
-category = "docs"
+title: 'Robots.txt Generator'
+template: docs
+menu: '1.3.8, 2.3.8'
+category: docs
 ---
-
 # Robots.txt Generator
 
 **What it does:** Automatically generates a `robots.txt` file to control search engine crawling

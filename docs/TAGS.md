@@ -1,10 +1,9 @@
 ---
-title = "Tags"
-template = "docs"
-menu = 1.3.7, 2.3.7
-category = "docs"
+title: Tags
+template: docs
+menu: '1.3.7, 2.3.7'
+category: docs
 ---
-
 # Tags
 
 **What it does:** Extracts tags from frontmatter and makes them available site-wide

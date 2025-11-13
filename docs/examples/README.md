@@ -26,19 +26,24 @@ lando php bin/console.php render:site
 
 ## Format Notes
 
-All examples use INI frontmatter format:
+All examples use YAML frontmatter format:
 
 ```
 ---
-key = "value"
-array = [item1, item2, item3]
+key: "value"
+array:
+  - item1
+  - item2
+  - item3
 ---
 ```
 
-For HTML files, use HTML comments:
+For HTML files, use YAML within HTML comments:
 
 ```html
-<!-- INI
-key = "value"
+<!--
+---
+key: "value"
+---
 -->
 ```

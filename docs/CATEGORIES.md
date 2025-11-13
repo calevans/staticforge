@@ -1,10 +1,9 @@
 ---
-title = "Categories"
-template = "docs"
-menu = 1.3.5, 2.3.5
-category = "docs"
+title: Categories
+template: docs
+menu: '1.3.5, 2.3.5'
+category: docs
 ---
-
 # Categories
 
 **What it does:** Organizes content into subdirectories and applies category-specific templates

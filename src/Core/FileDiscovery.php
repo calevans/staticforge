@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Core;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Discovers content files in configured directories
@@ -119,7 +120,7 @@ class FileDiscovery
     }
 
     /**
-     * Parse INI frontmatter from Markdown file (--- ... ---)
+     * Parse YAML frontmatter from Markdown file (--- ... ---)
      *
      * @param string $content File content
      * @return array<string, mixed> Parsed metadata
@@ -128,17 +129,17 @@ class FileDiscovery
     {
         $metadata = [];
 
-        // Check for INI frontmatter (--- ... ---)
+        // Check for YAML frontmatter (--- ... ---)
         if (preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
-            $iniContent = trim($matches[1]);
-            $metadata = $this->parseIniContent($iniContent);
+            $yamlContent = trim($matches[1]);
+            $metadata = $this->parseYamlContent($yamlContent);
         }
 
         return $metadata;
     }
 
     /**
-     * Parse INI frontmatter from HTML file (<!-- INI ... -->)
+     * Parse YAML frontmatter from HTML file (<!-- --- ... --- -->)
      *
      * @param string $content File content
      * @return array<string, mixed> Parsed metadata
@@ -147,52 +148,41 @@ class FileDiscovery
     {
         $metadata = [];
 
-        // Check for INI frontmatter (<!-- INI ... -->)
-        if (preg_match('/^<!--\s*INI\s*(.*?)\s*-->\s*\n/s', $content, $matches)) {
-            $iniContent = trim($matches[1]);
-            $metadata = $this->parseIniContent($iniContent);
+        // Check for YAML frontmatter within HTML comment (<!-- --- ... --- -->)
+        if (preg_match('/^<!--\s*\n---\s*\n(.*?)\n---\s*\n-->\s*\n/s', $content, $matches)) {
+            $yamlContent = trim($matches[1]);
+            $metadata = $this->parseYamlContent($yamlContent);
         }
 
         return $metadata;
     }
 
     /**
-     * Parse INI-format content into metadata array
+     * Parse YAML-format content into metadata array
      *
-     * @param string $iniContent INI format content
+     * @param string $yamlContent YAML format content
      * @return array<string, mixed> Parsed metadata
      */
-    protected function parseIniContent(string $iniContent): array
+    protected function parseYamlContent(string $yamlContent): array
     {
-        $metadata = [];
+        if (empty($yamlContent)) {
+            return [];
+        }
 
-        if (empty($iniContent)) {
+        try {
+            $metadata = Yaml::parse($yamlContent);
+
+            // Ensure we return an array (YAML can parse to null or other types)
+            if (!is_array($metadata)) {
+                $this->logger->log('WARNING', 'YAML frontmatter did not parse to array');
+                return [];
+            }
+
             return $metadata;
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Failed to parse YAML frontmatter: ' . $e->getMessage());
+            return [];
         }
-
-        $lines = explode("\n", $iniContent);
-        foreach ($lines as $line) {
-            $line = trim($line);
-
-            // Skip empty lines and lines without =
-            if (empty($line) || strpos($line, '=') === false) {
-                continue;
-            }
-
-            list($key, $value) = array_map('trim', explode('=', $line, 2));
-
-            // Remove quotes if present
-            $value = trim($value, '"\'');
-
-            // Handle arrays in square brackets [item1, item2]
-            if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
-                $value = array_map('trim', explode(',', $arrayMatch[1]));
-            }
-
-            $metadata[$key] = $value;
-        }
-
-        return $metadata;
     }
 
     /**

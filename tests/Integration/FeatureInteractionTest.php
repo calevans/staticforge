@@ -126,22 +126,23 @@ TWIG;
     // Create category definition
     $categoryDef = <<<'MD'
 ---
-type = category
-title = "Articles"
-menu = 1
-per_page = 5
+type: category
+title: "Articles"
+menu: 1
+per_page: 5
 ---
-
 Article listing page
 MD;
     file_put_contents($this->testContentDir . '/articles.md', $categoryDef);
 
     // Create categorized content
     $article1 = <<<'HTML'
-<!-- INI
-title = "First Article"
-category = "articles"
-menu = 2
+<!--
+---
+title: "First Article"
+category: "articles"
+menu: 2
+---
 -->
 <p>Article content 1</p>
 HTML;
@@ -149,11 +150,10 @@ HTML;
 
     $article2 = <<<'MD'
 ---
-title = "Second Article"
-category = "articles"
-menu = 3
+title: "Second Article"
+category: "articles"
+menu: 3
 ---
-
 Article content 2
 MD;
     file_put_contents($this->testContentDir . '/article2.md', $article2);
@@ -181,30 +181,36 @@ MD;
     // Create content with shared tags
     $post1 = <<<'MD'
 ---
-title = "PHP Tutorial"
-tags = [php, programming, tutorial]
+title: "PHP Tutorial"
+tags:
+  - php
+  - programming
+  - tutorial
 ---
-
 Learn PHP basics
 MD;
     file_put_contents($this->testContentDir . '/php-tutorial.md', $post1);
 
     $post2 = <<<'MD'
 ---
-title = "Advanced PHP"
-tags = [php, programming, advanced]
+title: "Advanced PHP"
+tags:
+  - php
+  - programming
+  - advanced
 ---
-
 Advanced PHP concepts
 MD;
     file_put_contents($this->testContentDir . '/php-advanced.md', $post2);
 
     $post3 = <<<'MD'
 ---
-title = "JavaScript Guide"
-tags = [javascript, programming, tutorial]
+title: "JavaScript Guide"
+tags:
+  - javascript
+  - programming
+  - tutorial
 ---
-
 JavaScript fundamentals
 MD;
     file_put_contents($this->testContentDir . '/js-guide.md', $post3);
@@ -236,25 +242,23 @@ MD;
     // Create category definition with pagination
     $categoryDef = <<<'MD'
 ---
-type = category
-title = "Blog Posts"
-menu = 1
-per_page = 3
-template = index
+type: category
+title: "Blog Posts"
+menu: 1
+per_page: 3
+template: index
 ---
-
 Blog post listing
 MD;
     file_put_contents($this->testContentDir . '/blog.md', $categoryDef);
 
     // Create multiple blog posts
     for ($i = 1; $i <= 7; $i++) {
-      $post = <<<MD
+      $post = <<<'MD'
 ---
-title = "Blog Post {$i}"
-category = "blog"
+title: "Blog Post {$i}"
+category: "blog"
 ---
-
 Content for post {$i}
 MD;
       file_put_contents($this->testContentDir . "/post{$i}.md", $post);
@@ -281,14 +285,16 @@ MD;
     // Create content that exercises multiple features
     $complexContent = <<<'MD'
 ---
-title = "Complex Page"
-description = "Tests multiple features"
-category = "docs"
-tags = [feature, test, integration]
-menu = 5
-author = "Test Suite"
+title: "Complex Page"
+description: "Tests multiple features"
+category: "docs"
+tags:
+  - feature
+  - test
+  - integration
+menu: 5
+author: "Test Suite"
 ---
-
 # Complex Content
 
 This page tests:
@@ -306,12 +312,13 @@ MD;
     // Create related content
     $related = <<<'MD'
 ---
-title = "Related Page"
-category = "docs"
-tags = [feature, integration]
-menu = 6
+title: "Related Page"
+category: "docs"
+tags:
+  - feature
+  - integration
+menu: 6
 ---
-
 Related content
 MD;
     file_put_contents($this->testContentDir . '/related.md', $related);
@@ -354,10 +361,9 @@ MD;
     // Create simple content
     $content = <<<'MD'
 ---
-title = "Pipeline Test"
-menu = 1
+title: "Pipeline Test"
+menu: 1
 ---
-
 Testing event pipeline
 MD;
     file_put_contents($this->testContentDir . '/pipeline.md', $content);

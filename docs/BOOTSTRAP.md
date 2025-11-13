@@ -1,10 +1,9 @@
 ---
-title = "Bootstrap & Initialization"
-template = "docs"
-menu = 1.6, 2.6
-category = "docs"
+title: 'Bootstrap & Initialization'
+template: docs
+menu: '1.6, 2.6'
+category: docs
 ---
-
 # Bootstrap & Initialization
 
 StaticForge uses a procedural bootstrap file for application initialization. This document explains how the bootstrap process works and how to use it in different contexts.

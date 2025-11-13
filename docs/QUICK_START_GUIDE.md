@@ -1,7 +1,7 @@
 ---
-template = "docs"
-menu = 1.1, 2.1
-category = "docs"
+template: docs
+menu: '1.1, 2.1'
+category: docs
 ---
 # Quick Start Guide
 
@@ -103,9 +103,9 @@ StaticForge looks for content in the `content/` directory. Create a new file cal
 
 ```markdown
 ---
-title = "My First Page"
-description = "Learning how to use StaticForge"
-menu = 2
+title: "My First Page"
+description: "Learning how to use StaticForge"
+menu: 2
 ---
 
 # Hello, World!
@@ -123,7 +123,7 @@ Pretty cool, right?
 
 **Understanding the Structure:**
 
-- **Lines 1-4** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` format.
+- **Lines 1-4** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` YAML format.
 - **Everything after** - This is your content, written in Markdown.
 
 ### Step 2: Regenerate Your Site

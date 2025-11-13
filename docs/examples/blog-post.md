@@ -1,12 +1,15 @@
 ---
-title = "Getting Started with StaticForge"
-description = "Learn how to build static sites with StaticForge"
-author = "Your Name"
-date = "2024-01-15"
-category = "tutorials"
-tags = [staticforge, tutorial, beginner, php]
+title: 'Getting Started with StaticForge'
+description: 'Learn how to build static sites with StaticForge'
+author: 'Your Name'
+date: '2024-01-15'
+category: tutorials
+tags:
+  - staticforge
+  - tutorial
+  - beginner
+  - php
 ---
-
 # Getting Started with StaticForge
 
 Welcome to this comprehensive tutorial on building static sites with **StaticForge**, a powerful PHP-based static site generator.

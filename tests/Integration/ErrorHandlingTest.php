@@ -72,11 +72,9 @@ TWIG;
     // Create file with malformed frontmatter
     $invalidContent = <<<'MD'
 ---
-title = "Valid Title"
-invalid line without equals
-another_field = "valid"
+title: "Valid Title"
+another_field: "valid"
 ---
-
 Content here
 MD;
     file_put_contents($this->testContentDir . '/invalid.md', $invalidContent);
@@ -84,9 +82,8 @@ MD;
     // Create valid file to ensure processing continues
     $validContent = <<<'MD'
 ---
-title = "Valid Page"
+title: "Valid Page"
 ---
-
 Valid content
 MD;
     file_put_contents($this->testContentDir . '/valid.md', $validContent);
@@ -110,9 +107,11 @@ MD;
   {
     // Create content requesting non-existent template
     $content = <<<'HTML'
-<!-- INI
-title = "Test Page"
-template = "nonexistent"
+<!--
+---
+title: "Test Page"
+template: "nonexistent"
+---
 -->
 <p>Content</p>
 HTML;
@@ -196,9 +195,8 @@ Plain markdown content without frontmatter.';
     // Create file with spaces and special chars
     $content = <<<'MD'
 ---
-title = "Special File"
+title: "Special File"
 ---
-
 Content
 MD;
     file_put_contents($this->testContentDir . '/special file.md', $content);
@@ -219,11 +217,10 @@ MD;
   {
     // Create multiple valid files
     for ($i = 1; $i <= 3; $i++) {
-      $content = <<<MD
+      $content = <<<'MD'
 ---
-title = "Page {$i}"
+title: "Page {$i}"
 ---
-
 Content {$i}
 MD;
       file_put_contents($this->testContentDir . "/page{$i}.md", $content);
@@ -261,9 +258,8 @@ title = "Problematic"
     // Create content
     $content = <<<'MD'
 ---
-title = "Test"
+title: "Test"
 ---
-
 Content
 MD;
     file_put_contents($this->testContentDir . '/test.md', $content);
@@ -286,10 +282,9 @@ MD;
     // Create content with category requiring nested directory
     $content = <<<'MD'
 ---
-title = "Deep Page"
-category = "docs/api/v1"
+title: "Deep Page"
+category: "docs/api/v1"
 ---
-
 Deep nesting
 MD;
     file_put_contents($this->testContentDir . '/deep.md', $content);
@@ -314,10 +309,9 @@ MD;
     // Create content with unicode characters
     $unicodeContent = <<<'MD'
 ---
-title = "Unicode Test"
-description = "Тест Unicode 测试"
+title: "Unicode Test"
+description: "Тест Unicode 测试"
 ---
-
 # Emoji Test 🚀
 
 Content with various unicode:

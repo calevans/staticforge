@@ -1,10 +1,9 @@
 ---
-title = "Chapter Navigation"
-template = "docs"
-menu = 1.3.4, 2.3.4
-category = "docs"
+title: 'Chapter Navigation'
+template: docs
+menu: '1.3.4, 2.3.4'
+category: docs
 ---
-
 # Chapter Navigation
 
 **What it does:** Automatically generates sequential prev/next navigation links for documentation pages

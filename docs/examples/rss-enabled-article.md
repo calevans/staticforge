@@ -1,12 +1,15 @@
 ---
-title = "Building a REST API with PHP"
-category = "Tutorials"
-description = "Learn how to build a RESTful API using PHP without frameworks"
-author = "dev@example.com"
-published_date = "2024-01-15"
-tags = ["php", "api", "rest", "tutorial"]
+title: 'Building a REST API with PHP'
+category: Tutorials
+description: 'Learn how to build a RESTful API using PHP without frameworks'
+author: dev@example.com
+published_date: '2024-01-15'
+tags:
+  - '"php"'
+  - '"api"'
+  - '"rest"'
+  - '"tutorial"'
 ---
-
 # Building a REST API with PHP
 
 In this comprehensive tutorial, you'll learn how to build a RESTful API from scratch using pure PHP.

@@ -1,10 +1,9 @@
 ---
-title = "Built-in Features"
-template = "docs"
-menu = 1.3, 2.3
-category = "docs"
+title: 'Built-in Features'
+template: docs
+menu: '1.3, 2.3'
+category: docs
 ---
-
 # Built-in Features
 
 StaticForge comes with several powerful features that add functionality to your site. Each feature is documented in detail on its own page.

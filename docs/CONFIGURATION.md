@@ -1,10 +1,9 @@
 ---
-title = "Configuration Guide"
-template = "docs"
-menu = 1.2, 2.2
-category = "docs"
+title: 'Configuration Guide'
+template: docs
+menu: '1.2, 2.2'
+category: docs
 ---
-
 # Configuration Guide
 
 Learn how to configure StaticForge to work exactly the way you want. This guide covers environment settings, directory structure, and built-in features.

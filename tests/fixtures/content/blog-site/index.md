@@ -1,9 +1,8 @@
 ---
-title = "Home Page"
-description = "Welcome to our test blog"
-menu = 1
+title: 'Home Page'
+description: 'Welcome to our test blog'
+menu: '1'
 ---
-
 # Welcome to Test Blog
 
 This is a sample homepage for integration testing.

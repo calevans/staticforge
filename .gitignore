@@ -20,3 +20,4 @@ public/.ht.route.php
 test-project/myFeatures/
 oom/
 templates/oom
+*.backup

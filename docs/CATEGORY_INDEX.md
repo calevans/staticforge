@@ -1,10 +1,9 @@
 ---
-title = "Category Index Pages"
-template = "docs"
-menu = 1.3.6, 2.3.6
-category = "docs"
+title: 'Category Index Pages'
+template: docs
+menu: '1.3.6, 2.3.6'
+category: docs
 ---
-
 # Category Index Pages
 
 **What it does:** Creates index pages that list all files in each category

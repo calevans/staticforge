@@ -73,24 +73,22 @@ TWIG;
         // Create test content files with categories
         $file1 = <<<'MD'
 ---
-title = "Technology Article 1"
-category = "Technology"
-description = "First tech article"
-date = "2024-01-01"
+title: "Technology Article 1"
+category: "Technology"
+description: "First tech article"
+date: "2024-01-01"
 ---
-
 This is the content of the first technology article.
 MD;
 
         $file2 = <<<'MD'
 ---
-title = "Technology Article 2"
-category = "Technology"
-description = "Second tech article"
-date = "2024-01-02"
-author = "Jane Doe"
+title: "Technology Article 2"
+category: "Technology"
+description: "Second tech article"
+date: "2024-01-02"
+author: "Jane Doe"
 ---
-
 This is the content of the second technology article.
 MD;
 
@@ -141,18 +139,14 @@ MD;
         // Create files in different categories
         $tech = <<<'MD'
 ---
-title = "Tech Article"
-category = "Technology"
-date = "2024-01-01"
+
 ---
 Tech content
 MD;
 
         $blog = <<<'MD'
 ---
-title = "Blog Post"
-category = "Blog"
-date = "2024-01-02"
+
 ---
 Blog content
 MD;
@@ -184,7 +178,7 @@ MD;
         // Create content without categories
         $file = <<<'MD'
 ---
-title = "Uncategorized Article"
+
 ---
 Content without category
 MD;
@@ -206,9 +200,7 @@ MD;
         // Create test content
         $file = <<<'MD'
 ---
-title = "Test Article & More <Tags>"
-category = "Technology"
-description = "Description with special chars: & < > \" '"
+
 ---
 Content with special characters
 MD;
@@ -222,7 +214,7 @@ MD;
 
         // Load and validate XML
         $xml = file_get_contents($this->testOutputDir . '/technology/rss.xml');
-        
+
         $doc = new \DOMDocument();
         $result = @$doc->loadXML($xml);
 

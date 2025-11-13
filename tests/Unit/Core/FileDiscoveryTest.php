@@ -67,7 +67,7 @@ class FileDiscoveryTest extends UnitTestCase
 
         $discoveredFiles = $this->container->getVariable('discovered_files');
         $this->assertCount(1, $discoveredFiles);
-        $this->assertStringContainsString('test.md', $discoveredFiles[0]);
+        $this->assertStringContainsString('test.md', $discoveredFiles[0]['path']);
     }
 
     public function testDiscoverFilesWithMultipleDirectories(): void

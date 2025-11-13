@@ -1,10 +1,9 @@
 ---
-title = "HTML Renderer"
-template = "docs"
-menu = 1.3.2, 2.3.2
-category = "docs"
+title: 'HTML Renderer'
+template: docs
+menu: '1.3.2, 2.3.2'
+category: docs
 ---
-
 # HTML Renderer
 
 **What it does:** Processes `.html` files and wraps them in templates
@@ -25,12 +24,13 @@ category = "docs"
 **Example input file (`content/about.html`):**
 
 ```html
-<!-- INI
-title = "About Us"
-description = "Learn about our company"
-template = "about-page"
+<!--
+---
+title: "About Us"
+description: "Learn about our company"
+template: "about-page"
+---
 -->
-
 <div class="about-section">
   <h1>About Our Company</h1>
   <p>We build amazing websites with StaticForge!</p>
@@ -42,7 +42,7 @@ template = "about-page"
 
 ## Key Points
 
-- Use `<!-- INI ... -->` for frontmatter (not `---`)
+- Use `<!-- --- ... --- -->` for frontmatter (YAML within HTML comment)
 - Write regular HTML for content
 - Great for custom layouts or when you need precise HTML control
 - Still gets wrapped in your template like Markdown files

@@ -1,10 +1,9 @@
 ---
-title = "Markdown Renderer"
-template = "docs"
-menu = 1.3.1, 2.3.1
-category = "docs"
+title: 'Markdown Renderer'
+template: docs
+menu: '1.3.1, 2.3.1'
+category: docs
 ---
-
 # Markdown Renderer
 
 **What it does:** Converts `.md` files to HTML using Markdown syntax
@@ -26,8 +25,8 @@ category = "docs"
 
 ```markdown
 ---
-title = "My First Blog Post"
-description = "An introduction to my blog"
+title: "My First Blog Post"
+description: "An introduction to my blog"
 ---
 
 # Welcome to My Blog

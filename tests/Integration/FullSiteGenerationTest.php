@@ -80,10 +80,12 @@ TWIG;
   {
     // Create HTML content
     $htmlContent = <<<'HTML'
-<!-- INI
-title = "Home Page"
-description = "Welcome to our site"
-menu = 1
+<!--
+---
+title: "Home Page"
+description: "Welcome to our site"
+menu: 1
+---
 -->
 <h2>Welcome</h2>
 <p>This is the home page.</p>
@@ -93,11 +95,10 @@ HTML;
     // Create Markdown content
     $markdownContent = <<<'MD'
 ---
-title = "About Us"
-description = "Learn about our company"
-menu = 2
+title: "About Us"
+description: "Learn about our company"
+menu: 2
 ---
-
 # About Our Company
 
 We are a **great** company doing amazing things.
@@ -138,10 +139,12 @@ MD;
   {
     // Create categorized HTML
     $blogPost = <<<'HTML'
-<!-- INI
-title = "First Blog Post"
-category = "blog"
-tags = [php, testing]
+<!--
+---
+title: "First Blog Post"
+category: "blog"
+tags: [php, testing]
+---
 -->
 <p>This is a blog post.</p>
 HTML;
@@ -150,11 +153,12 @@ HTML;
     // Create categorized Markdown
     $article = <<<'MD'
 ---
-title = "Technical Article"
-category = "blog"
-tags = [development, guide]
+title: "Technical Article"
+category: "blog"
+tags:
+  - development
+  - guide
 ---
-
 # How to Build Things
 
 This is a technical guide.
@@ -189,9 +193,8 @@ MD;
 
     $apiDoc = <<<'MD'
 ---
-title = "API Documentation"
+title: "API Documentation"
 ---
-
 # API Reference
 
 Use our API to do things.
@@ -289,14 +292,16 @@ More *Markdown*');
     // Create content with various metadata
     $content = <<<'MD'
 ---
-title = "Metadata Test"
-description = "Testing metadata preservation"
-author = "Test Author"
-date = "2025-10-29"
-custom_field = "custom value"
-tags = [test, metadata, integration]
+title: "Metadata Test"
+description: "Testing metadata preservation"
+author: "Test Author"
+date: "2025-10-29"
+custom_field: "custom value"
+tags:
+  - test
+  - metadata
+  - integration
 ---
-
 # Content
 
 Test content here.

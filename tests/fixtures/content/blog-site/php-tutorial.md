@@ -1,13 +1,16 @@
 ---
-title = "Getting Started with PHP"
-description = "A beginner's guide to PHP programming"
-category = "tutorials"
-tags = [php, programming, beginners, tutorial]
-author = "Test Author"
-date = "2025-10-01"
-menu = 3.1
+title: 'Getting Started with PHP'
+description: "A beginner's guide to PHP programming"
+category: tutorials
+tags:
+  - php
+  - programming
+  - beginners
+  - tutorial
+author: 'Test Author'
+date: '2025-10-01'
+menu: '3.1'
 ---
-
 # Getting Started with PHP
 
 PHP is a powerful server-side scripting language. Let's learn the basics!

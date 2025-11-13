@@ -1,10 +1,9 @@
 ---
-title = "RSS Feed"
-template = "docs"
-menu = 1.3.9, 2.3.9
-category = "docs"
+title: 'RSS Feed'
+template: docs
+menu: '1.3.9, 2.3.9'
+category: docs
 ---
-
 # RSS Feed
 
 **What it does:** Automatically generates RSS feeds for each category

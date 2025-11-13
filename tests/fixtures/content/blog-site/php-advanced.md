@@ -1,13 +1,15 @@
 ---
-title = "Advanced PHP Techniques"
-description = "Take your PHP skills to the next level"
-category = "tutorials"
-tags = [php, programming, advanced]
-author = "Test Author"
-date = "2025-10-15"
-menu = 3.2
+title: 'Advanced PHP Techniques'
+description: 'Take your PHP skills to the next level'
+category: tutorials
+tags:
+  - php
+  - programming
+  - advanced
+author: 'Test Author'
+date: '2025-10-15'
+menu: '3.2'
 ---
-
 # Advanced PHP Techniques
 
 Ready to level up your PHP skills? Let's explore advanced concepts.

@@ -51,8 +51,10 @@ class RenderSiteCommandTest extends IntegrationTestCase
     file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
 
     // Create test content
-    $testContent = '<!-- INI
-title = "Test Page"
+    $testContent = '<!--
+---
+title: "Test Page"
+---
 -->
 <h2>Test Content</h2>
 <p>This is a test page.</p>';
@@ -240,8 +242,10 @@ title = "Test Page"
     $altInputDir = sys_get_temp_dir() . '/staticforge_alt_input_' . uniqid();
     mkdir($altInputDir, 0755, true);
 
-    $altContent = '<!-- INI
-title = "Alt Page"
+    $altContent = '<!--
+---
+title: "Alt Page"
+---
 -->
 <h2>Alt Content</h2>';
     file_put_contents($altInputDir . '/alt.html', $altContent);
@@ -315,8 +319,10 @@ title = "Alt Page"
     mkdir($altInputDir, 0755, true);
     mkdir($altOutputDir, 0755, true);
 
-    $altContent = '<!-- INI
-title = "Both Override"
+    $altContent = '<!--
+---
+title: "Both Override"
+---
 -->
 <h2>Both directories overridden</h2>';
     file_put_contents($altInputDir . '/both.html', $altContent);

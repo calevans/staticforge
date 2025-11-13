@@ -118,9 +118,11 @@ TWIG;
     public function testMixedFileTypesProcessing(): void
     {
         // Create HTML and non-HTML files
-        $htmlContent = <<<HTML
-<!-- INI
-title = "HTML File"
+        $htmlContent = <<<'HTML'
+<!--
+---
+title: "HTML File"
+---
 -->
 <h1>This is HTML</h1>
 HTML;
@@ -173,13 +175,15 @@ HTML;
     private function createTestHtmlFiles(): void
     {
         // Home page with metadata
-        $indexHtml = <<<HTML
-<!-- INI
-title = "Home Page"
-description = "Welcome to our amazing website"
-menu_position = "1"
-category = "main"
-tags = "home, welcome"
+        $indexHtml = <<<'HTML'
+<!--
+---
+title: "Home Page"
+description: "Welcome to our amazing website"
+menu_position: "1"
+category: "main"
+tags: "home, welcome"
+---
 -->
 <h1>Welcome to Our Site</h1>
 <p>This is the home page of our static site.</p>
@@ -202,14 +206,16 @@ HTML;
 
         // Blog post in subdirectory
         mkdir($this->sourceDir . '/blog');
-        $blogHtml = <<<HTML
-<!-- INI
-title = "My First Blog Post"
-description = "Welcome to our blog"
-category = "blog"
-tags = "blog, first-post, welcome"
-date = "2025-01-01"
-author = "Test Author"
+        $blogHtml = <<<'HTML'
+<!--
+---
+title: "My First Blog Post"
+description: "Welcome to our blog"
+category: "blog"
+tags: "blog, first-post, welcome"
+date: "2025-01-01"
+author: "Test Author"
+---
 -->
 <article>
   <h1>My First Blog Post</h1>

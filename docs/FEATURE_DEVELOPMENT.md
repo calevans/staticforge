@@ -1,9 +1,8 @@
 ---
-template = "docs"
-menu = 1.5, 2.5
-category = "docs"
+template: docs
+menu: '1.5, 2.5'
+category: docs
 ---
-
 # Feature Development Guide
 
 This guide explains how to create custom features for StaticForge's event-driven architecture.
@@ -600,36 +599,52 @@ public function onPostLoop(array $data): array
 }
 ```
 
-### 6. Use INI Format for Frontmatter
+### 6. Use YAML Frontmatter (Parsed in Core)
+
+**Note:** Frontmatter is now parsed automatically by `FileDiscovery` in Core. Features receive metadata via the `discovered_files` container variable. You don't need to parse frontmatter yourself.
+
+**Accessing metadata in your feature:**
 
 ```php
-private function parseIniFrontmatter(string $content): array
+public function handlePostGlob(Container $container, array $parameters): array
 {
-  if (!preg_match('/^---\n(.*?)\n---\n/s', $content, $matches)) {
+  $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+
+  foreach ($discoveredFiles as $fileData) {
+    $filePath = $fileData['path'];
+    $url = $fileData['url'];
+    $metadata = $fileData['metadata']; // Parsed YAML frontmatter
+
+    // Access specific metadata
+    $title = $metadata['title'] ?? 'Untitled';
+    $category = $metadata['category'] ?? null;
+    $tags = $metadata['tags'] ?? [];
+
+    // Process as needed
+  }
+
+  return $parameters;
+}
+```
+
+**If you must parse frontmatter manually:**
+
+```php
+use Symfony\Component\Yaml\Yaml;
+
+private function parseYamlFrontmatter(string $content): array
+{
+  if (!preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
     return [];
   }
 
-  $frontmatter = $matches[1];
-  $metadata = [];
-
-  foreach (explode("\n", $frontmatter) as $line) {
-    if (strpos($line, '=') !== false) {
-      list($key, $value) = explode('=', $line, 2);
-      $key = trim($key);
-      $value = trim($value);
-
-      // Handle arrays: key = [item1, item2]
-      if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
-        $items = array_map('trim', explode(',', $arrayMatch[1]));
-        $metadata[$key] = $items;
-      } else {
-        // Remove quotes
-        $metadata[$key] = trim($value, '"\'');
-      }
-    }
+  try {
+    $metadata = Yaml::parse($matches[1]);
+    return is_array($metadata) ? $metadata : [];
+  } catch (\Exception $e) {
+    // Handle parse error
+    return [];
   }
-
-  return $metadata;
 }
 ```
 

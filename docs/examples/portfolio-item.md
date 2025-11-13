@@ -1,13 +1,17 @@
 ---
-title = "E-Commerce Platform Redesign"
-description = "Complete overhaul of a legacy e-commerce system"
-category = "portfolio"
-tags = [web-development, php, mysql, ecommerce, case-study]
-client = "RetailCo Inc."
-year = "2024"
-role = "Lead Developer"
+title: 'E-Commerce Platform Redesign'
+description: 'Complete overhaul of a legacy e-commerce system'
+category: portfolio
+tags:
+  - web-development
+  - php
+  - mysql
+  - ecommerce
+  - case-study
+client: 'RetailCo Inc.'
+year: '2024'
+role: 'Lead Developer'
 ---
-
 # E-Commerce Platform Redesign
 
 A complete modernization of a legacy e-commerce platform, resulting in 40% faster page loads and 25% increase in conversions.

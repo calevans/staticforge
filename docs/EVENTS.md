@@ -1,10 +1,9 @@
 ---
-title = "Core Events Reference"
-template = "docs"
-menu = 1.8, 2.8
-category = "docs"
+title: 'Core Events Reference'
+template: docs
+menu: '1.8, 2.8'
+category: docs
 ---
-
 # Core Events Reference
 
 This document provides a complete reference of all events fired by the StaticForge core system. Features can hook into these events to extend functionality.
