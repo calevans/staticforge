@@ -259,7 +259,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Determine template: frontmatter > category > .env default
             $templateName = 'base'; // Ultimate fallback
             $this->logger->log('DEBUG', "Template metadata: " . json_encode($parsedContent['metadata']));
-            
+
             if (isset($parsedContent['metadata']['template'])) {
                 $templateName = $parsedContent['metadata']['template'];
                 $this->logger->log('DEBUG', "Using frontmatter template: {$templateName}");

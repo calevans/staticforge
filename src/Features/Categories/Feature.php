@@ -81,7 +81,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $filesUpdated = 0;
         foreach ($discoveredFiles as $fileData) {
             $metadata = $fileData['metadata'];
-            
+
             // Skip category definition files themselves
             if (isset($metadata['type']) && $metadata['type'] === 'category') {
                 $updatedFiles[] = $fileData;
@@ -91,7 +91,7 @@ class Feature extends BaseFeature implements FeatureInterface
             // If file has a category and that category has a template, apply it
             if (isset($metadata['category'])) {
                 $categorySlug = $this->slugifyCategory($metadata['category']);
-                
+
                 if (isset($categoryTemplates[$categorySlug])) {
                     // Only apply if no template already set in frontmatter
                     if (!isset($metadata['template']) || $metadata['template'] === 'base') {
@@ -105,7 +105,7 @@ class Feature extends BaseFeature implements FeatureInterface
                     }
                 }
             }
-            
+
             $updatedFiles[] = $fileData;
         }
 
