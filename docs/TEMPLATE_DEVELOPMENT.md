@@ -100,16 +100,42 @@ These come from your content file's frontmatter (if defined):
 {{ tags }}               {# Array of tags #}
 ```
 
-### Menu Variables
+### Feature Data Variables
 
-StaticForge generates menu HTML for you:
+Features expose their data through the `features` object:
 
 ```twig
+{# MenuBuilder - Pre-rendered menu HTML #}
 {{ features.MenuBuilder.html.1|raw }}   {# Primary menu HTML #}
 {{ features.MenuBuilder.html.2|raw }}   {# Secondary menu HTML #}
+
+{# MenuBuilder - Raw menu data for custom rendering #}
+{% if features.MenuBuilder.files[1] is defined %}
+  <ul class="my-menu">
+    {% for item in features.MenuBuilder.files[1] %}
+      <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{# ChapterNav - Previous/Next navigation #}
+{% if features.ChapterNav is defined %}
+  {{ features.ChapterNav.html|raw }}
+{% endif %}
 ```
 
 **Note:** The `|raw` filter tells Twig not to escape the HTML.
+
+### Menu Data Structure
+
+When using `features.MenuBuilder.files[X]`, each menu item contains:
+
+- `title` - Page title
+- `url` - Full URL with category prefix
+- `file` - Source file path
+- `position` - Menu position (e.g., "1.2")
+
+Items are automatically sorted by position.
 
 ### Category Index Variables
 
@@ -131,6 +157,43 @@ Each file object in the `files` array has:
   {{ file.date }}        {# File's date #}
   {{ file.metadata }}    {# All metadata from the file #}
 {% endfor %}
+```
+
+---
+
+## Feature Data Reference
+
+StaticForge features expose their data to templates through the `features` object. Here's what's available:
+
+### MenuBuilder
+
+```twig
+{# Option 1: Pre-rendered HTML #}
+{{ features.MenuBuilder.html.1|raw }}
+{{ features.MenuBuilder.html.2|raw }}
+
+{# Option 2: Raw data for custom markup #}
+{% for item in features.MenuBuilder.files[1] %}
+  <a href="{{ item.url }}">{{ item.title }}</a>
+{% endfor %}
+```
+
+### ChapterNav
+
+```twig
+{# Previous/Next navigation #}
+{{ features.ChapterNav.html|raw }}
+```
+
+### Tags
+
+```twig
+{# Tag cloud or list #}
+{% if features.Tags is defined %}
+  {% for tag, count in features.Tags.tags %}
+    <a href="/tags/{{ tag }}.html">{{ tag }} ({{ count }})</a>
+  {% endfor %}
+{% endif %}
 ```
 
 ---
@@ -173,21 +236,26 @@ Here's a simple but complete template to get you started:
     <p>{{ site_tagline }}</p>
 
     <nav>
-      {# Include the menu template #}
-      {% include 'menu1.html.twig' %}
+      {# Primary menu #}
+      {{ features.MenuBuilder.html.1|raw }}
     </nav>
   </header>
 
   <main>
     {# This is where your page content appears #}
     {{ content|raw }}
+
+    {# Chapter navigation if available #}
+    {% if features.ChapterNav is defined %}
+      {{ features.ChapterNav.html|raw }}
+    {% endif %}
   </main>
 
   <footer>
     <p>&copy; 2025 {{ site_name }}. {{ site_tagline }}</p>
 
     {# Secondary menu in footer #}
-    {% include 'menu2.html.twig' %}
+    {{ features.MenuBuilder.html.2|raw }}
   </footer>
 </body>
 </html>
@@ -198,6 +266,7 @@ Here's a simple but complete template to get you started:
 - Use `|default('fallback')` to provide fallback values
 - Use `|raw` when outputting HTML content
 - Use `{% if variable %}` to check if something exists
+- Check `features.FeatureName is defined` before accessing feature data
 - Use `{% include 'filename.twig' %}` to include other template files
 
 ---

@@ -101,27 +101,92 @@ Menu 2 (Footer):
 
 ## Using Menus in Templates
 
-**Option 1 - Include the menu template:**
-```twig
-<nav>
-  {% include 'menu1.html.twig' %}
-</nav>
-```
+Menus are available in templates through the `features.MenuBuilder` object.
 
-**Option 2 - Access the HTML directly:**
+### Option 1 - Pre-rendered HTML
+
+Use the pre-rendered HTML menu:
+
 ```twig
 <nav>
   {{ features.MenuBuilder.html.1|raw }}
 </nav>
 ```
 
+This outputs the complete `<ul>` structure with all menu items sorted by position.
+
+### Option 2 - Manual Iteration (More Control)
+
+Access the raw menu data to build custom markup:
+
+```twig
+<nav>
+  <ul class="my-custom-menu">
+    {% if features.MenuBuilder.files[1] is defined %}
+      {% for item in features.MenuBuilder.files[1] %}
+        <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+      {% endfor %}
+    {% endif %}
+  </ul>
+</nav>
+```
+
+### Menu Data Structure
+
+Each menu item in `features.MenuBuilder.files[X]` contains:
+
+- `title` - Page title
+- `url` - Generated URL (includes category prefix if applicable)
+- `file` - Source file path
+- `position` - Menu position string (e.g., "1.2")
+
+Items are automatically sorted by position number.
+
+### Multiple Menus Example
+
+```twig
+{# Top navigation - Menu 1 #}
+<nav class="topnav">
+  {{ features.MenuBuilder.html.1|raw }}
+</nav>
+
+{# Sidebar - Menu 2 #}
+<aside class="sidebar">
+  <ul class="nav">
+    {% for item in features.MenuBuilder.files[2] %}
+      <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+    {% endfor %}
+  </ul>
+</aside>
+
+{# Footer - Menu 3 #}
+<footer>
+  {{ features.MenuBuilder.html.3|raw }}
+</footer>
+```
+
+---
+
+## How MenuBuilder Works
+
+1. **POST_GLOB Event** - MenuBuilder listens at priority 100
+2. **Scan discovered_files** - Iterates pre-parsed metadata from FileDiscovery
+3. **Extract menu positions** - Finds all files with `menu` metadata
+4. **Build menu structure** - Organizes items by menu number and position
+5. **Sort by position** - Ensures items appear in correct order (1, 2, 3... not filesystem order)
+6. **Generate HTML** - Creates rendered `<ul>` markup
+7. **Store in features** - Makes both raw data and HTML available to templates
+
+---
+
 ## Tips
 
 - Use commas to place a page in multiple menus
-- If you don't specify a menu number (just `menu = 1`), the item appears but in no specific order
-- Duplicate positions are allowed - the last one wins
-- Position `0` is special - it's always a dropdown title, never a regular link
-- No need for brackets or quotes (but they work if you prefer them)
+- Menu items are automatically sorted by position number
+- Position `0` is reserved for dropdown titles
+- URLs include category prefixes automatically
+- No need for brackets or quotes in frontmatter (but they work if you prefer them)
+- Menu data is pre-parsed during discovery phase for performance
 
 ---
 
