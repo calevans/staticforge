@@ -1,0 +1,60 @@
+# siteconfig.yaml - Site-wide configuration for StaticForge
+#
+# This file contains non-sensitive site configuration that can be
+# safely committed to version control. Unlike .env (which contains
+# credentials and environment-specific settings like SITE_BASE_URL),
+# this file contains site information, menu definitions, and other
+# site-wide settings.
+#
+# This file is OPTIONAL - StaticForge works fine without it.
+
+# Site Information
+# These appear in templates and throughout your site
+site:
+  name: "My Awesome Site"
+  tagline: "Building amazing things with PHP"
+
+# Static menu definitions
+# These create named menus accessible in templates as {{ menu_name }}
+menu:
+  # Main navigation menu
+  # Accessible in templates as {{ menu_top }}
+  top:
+    Home: /
+    About: /about
+    Products: /products
+    Shop: /shop
+    Contact: /contact
+
+  # Footer navigation
+  # Accessible in templates as {{ menu_footer }}
+  footer:
+    Privacy Policy: /privacy
+    Terms of Service: /terms
+    Contact Us: /contact
+    Sitemap: /sitemap
+
+# Chapter navigation configuration
+# Controls sequential navigation links (prev/next) within menu sections
+chapter_nav:
+  # Comma-separated list of menu numbers to generate chapter navigation for
+  # Example: "2" enables chapter nav for menu 2, "2,3" enables for menus 2 and 3
+  menus: "2"
+
+  # Symbol for "previous" link (default: ←)
+  prev_symbol: "←"
+
+  # Symbol for "next" link (default: →)
+  next_symbol: "→"
+
+  # Separator between navigation elements (default: |)
+  separator: "|"
+
+# Future: Additional site-wide settings can be added here
+# Examples:
+# site_title: "My Awesome Site"
+# description: "A great site built with StaticForge"
+# default_author: "John Doe"
+# social_links:
+#   twitter: https://twitter.com/mysite
+#   github: https://github.com/mysite

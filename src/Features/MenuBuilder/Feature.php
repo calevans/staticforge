@@ -41,6 +41,9 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
+        // Process static menus from siteconfig.yaml first
+        $this->processStaticMenus($container);
+
         // Scan files and build menu structure
         $menuData = $this->scanFilesForMenus();
 
@@ -438,10 +441,10 @@ class Feature extends BaseFeature implements FeatureInterface
                 }
             }
 
-            // Sort all items by position
+            // Sort all items by position using version comparison
             /** @phpstan-ignore-next-line argument.unresolvableType (usort callback types are resolvable) */
             usort($allItems, function (array $a, array $b): int {
-                return $a['position'] <=> $b['position'];
+                return $this->compareMenuPositions($a['position'], $b['position']);
             });
 
             // Render all items
@@ -540,4 +543,105 @@ class Feature extends BaseFeature implements FeatureInterface
 
         return $sorted;
     }
+
+    /**
+     * Process static menus from siteconfig.yaml
+     *
+     * Reads menu definitions from site configuration and generates HTML
+     * for named menus (e.g., 'top', 'footer'). These are stored in the
+     * container as menu_{name} variables.
+     */
+    private function processStaticMenus(Container $container): void
+    {
+        $siteConfig = $container->getVariable('site_config');
+
+        // Check if we have menu configuration
+        if (!is_array($siteConfig) || !isset($siteConfig['menu']) || !is_array($siteConfig['menu'])) {
+            return;
+        }
+
+        $menus = $siteConfig['menu'];
+
+        foreach ($menus as $menuName => $menuItems) {
+            if (!is_array($menuItems)) {
+                $this->logger->log('WARNING', "Menu '{$menuName}' in siteconfig.yaml is not an array, skipping");
+                continue;
+            }
+
+            // Convert simple key/value pairs to menu item structure
+            // Using 'direct' key format expected by generateMenuHtml()
+            $items = ['direct' => []];
+            foreach ($menuItems as $title => $url) {
+                $items['direct'][] = [
+                    'title' => (string)$title,
+                    'url' => (string)$url,
+                    'file' => '', // Static menu items have no associated file
+                    'position' => '' // Position is determined by YAML order
+                ];
+            }
+
+            // Generate HTML using existing menu HTML generator
+            $html = $this->generateMenuHtml($items, 0);
+
+            // Store in container as menu_{name}
+            $varName = "menu_{$menuName}";
+            if ($container->hasVariable($varName)) {
+                $container->updateVariable($varName, $html);
+            } else {
+                $container->setVariable($varName, $html);
+            }
+
+            $this->logger->log('INFO', "MenuBuilder: Generated static menu '{$menuName}' with " . count($items['direct']) . ' items');
+        }
+    }
+
+    /**
+     * Compare two menu position strings using version-style comparison
+     *
+     * This ensures that "1.2" comes before "1.10" (not lexicographic sorting)
+     *
+     * @param string|int $a First position (e.g., "1.2", "1.10", 999)
+     * @param string|int $b Second position (e.g., "1.3", "1.2")
+     * @return int -1 if a < b, 0 if equal, 1 if a > b
+     */
+    private function compareMenuPositions($a, $b): int
+    {
+        // Handle numeric positions (used for items without explicit position)
+        if (is_numeric($a) && is_numeric($b)) {
+            return $a <=> $b;
+        }
+
+        // Convert to string if needed
+        $a = (string)$a;
+        $b = (string)$b;
+
+        // If either is empty, handle edge case
+        if ($a === '' && $b === '') {
+            return 0;
+        }
+        if ($a === '') {
+            return -1;
+        }
+        if ($b === '') {
+            return 1;
+        }
+
+        // Split by dots and compare each part numerically
+        $aParts = explode('.', $a);
+        $bParts = explode('.', $b);
+
+        $maxParts = max(count($aParts), count($bParts));
+
+        for ($i = 0; $i < $maxParts; $i++) {
+            $aVal = isset($aParts[$i]) ? (int)$aParts[$i] : 0;
+            $bVal = isset($bParts[$i]) ? (int)$bParts[$i] : 0;
+
+            if ($aVal !== $bVal) {
+                return $aVal <=> $bVal;
+            }
+        }
+
+        return 0;
+    }
+
 }

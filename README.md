@@ -6,6 +6,7 @@ A PHP-based static site generator that processes content files through an event-
 
 - **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get running in 5 minutes
 - **[Configuration Guide](docs/CONFIGURATION.md)** - All configuration options
+- **[Site Configuration](docs/SITE_CONFIG.md)** - Static menus and site-wide settings
 - **[Feature Development](docs/FEATURE_DEVELOPMENT.md)** - Create custom features
 - **[Bootstrap & Initialization](docs/BOOTSTRAP.md)** - How bootstrap works
 - **[Technical Documentation](documents/technical.md)** - Architecture details
@@ -40,15 +41,18 @@ Your StaticForge installation comes ready to use! Here's how to get started:
 1. **Edit your site configuration:**
    Open `.env` and customize your site name, tagline, and other settings.
 
-2. **Generate your site:**
+2. **Optional: Create `siteconfig.yaml`:**
+   For static menus and site-wide settings (see [Site Configuration](docs/SITE_CONFIG.md)).
+
+3. **Generate your site:**
    ```bash
    php bin/console.php render:site
    ```
 
-3. **View your site:**
+4. **View your site:**
    Open `output/index.html` in your browser.
 
-4. **Add more content:**
+5. **Add more content:**
    Create `.md` or `.html` files in the `content/` directory and regenerate.
 
 ### Available Templates
@@ -291,16 +295,28 @@ menu = 1.2.2    # Second item in nested dropdown
 
 ### Using Menus in Templates
 
-**In PHP:**
+**Numbered menus (from content files):**
+
+In PHP:
 ```php
 $features = $container->getVariable('features');
 $menuHtml = $features['MenuBuilder']['html'][1]; // Get menu 1
 ```
 
-**In Twig (future):**
+In Twig:
 ```twig
 {{ features.MenuBuilder.html.1|raw }}
 ```
+
+**Named menus (from siteconfig.yaml):**
+
+In Twig:
+```twig
+{{ menu_top|raw }}
+{{ menu_footer|raw }}
+```
+
+See [Site Configuration](docs/SITE_CONFIG.md) for details on defining static menus in `siteconfig.yaml`.
 
 ### Example CSS for Dropdown Menus
 

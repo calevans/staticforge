@@ -108,17 +108,30 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
   /**
-   * Parse configured menus from environment
+   * Parse configured menus from environment or siteconfig.yaml
    */
     protected function parseConfiguredMenus(): void
     {
-        $menusConfig = $this->container->getVariable('CHAPTER_NAV_MENUS') ?? '';
-        $this->configuredMenus = array_filter(array_map('trim', explode(',', $menusConfig)));
+      // Try siteconfig.yaml first, fall back to .env
+        $siteConfig = $this->container->getVariable('site_config') ?? [];
+        $chapterNavConfig = $siteConfig['chapter_nav'] ?? [];
 
-      // Read symbols from environment
-        $this->prevSymbol = $this->container->getVariable('CHAPTER_NAV_PREV_SYMBOL') ?? '←';
-        $this->nextSymbol = $this->container->getVariable('CHAPTER_NAV_NEXT_SYMBOL') ?? '→';
-        $this->separator = $this->container->getVariable('CHAPTER_NAV_SEPARATOR') ?? '|';
+        if (!empty($chapterNavConfig)) {
+            $menusConfig = $chapterNavConfig['menus'] ?? '';
+            $this->prevSymbol = $chapterNavConfig['prev_symbol'] ?? '←';
+            $this->nextSymbol = $chapterNavConfig['next_symbol'] ?? '→';
+            $this->separator = $chapterNavConfig['separator'] ?? '|';
+            $this->logger->log('INFO', 'ChapterNav: Configuration loaded from siteconfig.yaml');
+        } else {
+          // Fallback to environment variables
+            $menusConfig = $this->container->getVariable('CHAPTER_NAV_MENUS') ?? '';
+            $this->prevSymbol = $this->container->getVariable('CHAPTER_NAV_PREV_SYMBOL') ?? '←';
+            $this->nextSymbol = $this->container->getVariable('CHAPTER_NAV_NEXT_SYMBOL') ?? '→';
+            $this->separator = $this->container->getVariable('CHAPTER_NAV_SEPARATOR') ?? '|';
+            $this->logger->log('INFO', 'ChapterNav: Configuration loaded from .env (fallback)');
+        }
+
+        $this->configuredMenus = array_filter(array_map('trim', explode(',', $menusConfig)));
     }
 
   /**

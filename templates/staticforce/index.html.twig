@@ -40,6 +40,95 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Top Navigation */
+        .top-nav {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand a {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            background: var(--gradient-hero);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu .menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-menu .menu li {
+            list-style: none;
+        }
+
+        .nav-menu .menu a {
+            color: var(--gray-900);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-menu .menu a:hover {
+            color: var(--primary);
+        }
+
+        /* Footer Navigation */
+        .footer-nav {
+            background: var(--gray-900);
+            padding: 2rem 0 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-nav .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-nav .footer-menu .menu {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #374151;
+            margin-bottom: 1rem;
+        }
+
+        .footer-nav .menu li {
+            list-style: none;
+        }
+
+        .footer-nav .menu a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-nav .menu a:hover {
+            color: var(--primary-light);
+        }
+
         /* Hero Section */
         .hero {
             min-height: 100vh;
@@ -335,6 +424,31 @@
     </style>
 </head>
 <body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/">StaticForge</a>
+            </div>
+            {% if menu_top %}
+            <div class="nav-menu">
+                {{ menu_top | raw }}
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
     {{ content | raw }}
+
+    <!-- Footer Navigation -->
+    {% if menu_footer %}
+    <footer class="footer-nav">
+        <div class="footer-container">
+            <div class="footer-menu">
+                {{ menu_footer | raw }}
+            </div>
+        </div>
+    </footer>
+    {% endif %}
 </body>
 </html>

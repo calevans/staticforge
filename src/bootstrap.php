@@ -6,11 +6,13 @@
  * This file initializes the application by:
  * - Loading Composer autoloader
  * - Loading environment variables into $_ENV superglobal
+ * - Loading optional siteconfig.yaml for site-wide configuration
  * - Setting up the dependency injection container
  * - Registering the logger service
  *
  * Environment variables remain in $_ENV and are accessed directly.
  * Only computed values (like app_root) are stored in the container.
+ * Site configuration from siteconfig.yaml is stored in container as 'site_config'.
  *
  * @param string|null $envPath Optional path to .env file (defaults to '.env')
  * @return \EICC\Utils\Container Fully configured container instance
@@ -44,6 +46,7 @@ if (!class_exists('Composer\Autoload\ClassLoader')) {
 use Dotenv\Dotenv;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use Symfony\Component\Yaml\Yaml;
 
 // Accept optional environment path parameter
 $envPath = $envPath ?? '.env';
@@ -86,6 +89,34 @@ $container->setVariable('app_root', $appRoot);
 foreach ($_ENV as $key => $value) {
     $container->setVariable($key, $value);
 }
+
+// Load optional siteconfig.yaml file
+// This file contains non-sensitive site-wide configuration (menus, site title, etc.)
+// Unlike .env, this file can be committed to version control
+$siteConfigPaths = [
+    getcwd() . '/siteconfig.yaml',           // Current working directory
+    $appRoot . 'siteconfig.yaml'             // Application root
+];
+
+$siteConfig = [];
+foreach ($siteConfigPaths as $configPath) {
+    if (file_exists($configPath)) {
+        try {
+            $siteConfig = Yaml::parseFile($configPath);
+            if (!is_array($siteConfig)) {
+                $siteConfig = [];
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail - siteconfig.yaml is optional
+            error_log("Warning: Failed to parse siteconfig.yaml: " . $e->getMessage());
+            $siteConfig = [];
+        }
+        break;
+    }
+}
+
+// Store site configuration in container
+$container->setVariable('site_config', $siteConfig);
 
 // Register logger as singleton service (reads from $_ENV directly)
 $container->stuff('logger', function () {

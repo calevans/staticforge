@@ -13,7 +13,27 @@ category = "docs"
 
 **How to use:** Add a `menu` field to your frontmatter
 
-## Menu Positioning System
+## Menu Types
+
+StaticForge supports two types of menus:
+
+### Numbered Menus (Content-Based)
+
+Defined in content file frontmatter using the `menu` field. These menus are automatically discovered from your content files.
+
+**Access in templates:** `{{ menu1 }}`, `{{ menu2 }}`, etc.
+
+### Named Menus (Static)
+
+Defined in `siteconfig.yaml` for static/external links. See [Site Configuration](SITE_CONFIG.md) for details.
+
+**Access in templates:** `{{ menu_top }}`, `{{ menu_footer }}`, etc.
+
+**Use case:** External links, hardcoded navigation, links to non-StaticForge sections.
+
+---
+
+## Numbered Menu Positioning System
 
 The `menu` value uses a dot-notation system: `menu.position.dropdown-position`
 

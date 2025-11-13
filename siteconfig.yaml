@@ -1,0 +1,24 @@
+# Test siteconfig.yaml
+
+# Site Information
+site:
+  name: "StaticForge"
+  tagline: "Built with ❤️ and PHP"
+
+# Static Menu Definitions
+menu:
+  top:
+    Home: /
+    About: /about
+    Shop: /shop
+    Contact: /contact
+  footer:
+    Privacy: /privacy
+    Terms: /terms
+
+# Chapter Navigation Configuration
+chapter_nav:
+  menus: "2"
+  prev_symbol: "←"
+  next_symbol: "→"
+  separator: "|"

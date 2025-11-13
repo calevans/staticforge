@@ -293,13 +293,16 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             ]);
 
             // Prepare template variables
+            $siteConfig = $container->getVariable('site_config') ?? [];
+            $siteInfo = $siteConfig['site'] ?? [];
+
             $templateVars = array_merge($parsedContent['metadata'], [
                 'title' => $parsedContent['title'],
                 'content' => $parsedContent['content'],
                 'source_file' => $sourceFile,
-                'site_name' => $container->getVariable('SITE_NAME') ?? 'Static Site',
+                'site_name' => $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'Static Site',
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
-                'site_tagline' => $container->getVariable('SITE_TAGLINE') ?? '',
+                'site_tagline' => $siteInfo['tagline'] ?? $container->getVariable('SITE_TAGLINE') ?? '',
                 'features' => $container->getVariable('features') ?? [],
             ]);
 
@@ -321,7 +324,10 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     private function applyBasicTemplate(array $parsedContent, Container $container): string
     {
         // Basic template - simple string replacement for fallback
-        $siteName = $container->getVariable('SITE_NAME') ?? 'Static Site';
+        $siteConfig = $container->getVariable('site_config') ?? [];
+        $siteInfo = $siteConfig['site'] ?? [];
+
+        $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'Static Site';
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
 
         $template = $this->getBasicTemplate();

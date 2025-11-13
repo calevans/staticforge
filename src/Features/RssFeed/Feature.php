@@ -120,7 +120,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? 'https://example.com/';
-        $siteName = $container->getVariable('SITE_NAME') ?? 'My Site';
+
+        $siteConfig = $container->getVariable('site_config') ?? [];
+        $siteInfo = $siteConfig['site'] ?? [];
+        $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'My Site';
 
         foreach ($this->categoryFiles as $categorySlug => $categoryData) {
             $this->generateRssFeed(
@@ -193,7 +196,7 @@ class Feature extends BaseFeature implements FeatureInterface
     ): string {
         // Ensure base URL has trailing slash
         $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
-        
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' . "\n";
         $xml .= '  <channel>' . "\n";
@@ -225,16 +228,16 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         // Ensure base URL has trailing slash
         $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
-        
+
         // Build full URL - file URL is already relative to site root
         $fullUrl = $siteBaseUrl . ltrim($file['url'], '/');
-        
+
         $xml = '    <item>' . "\n";
         $xml .= '      <title>' . $this->escapeXml($file['title']) . '</title>' . "\n";
         $xml .= '      <link>' . $this->escapeXml($fullUrl) . '</link>' . "\n";
         $xml .= '      <guid>' . $this->escapeXml($fullUrl) . '</guid>' . "\n";
         $xml .= '      <pubDate>' . date('r', strtotime($file['date'])) . '</pubDate>' . "\n";
-        
+
         if (!empty($file['description'])) {
             $xml .= '      <description>' . $this->escapeXml($file['description']) . '</description>' . "\n";
         }
@@ -266,23 +269,23 @@ class Feature extends BaseFeature implements FeatureInterface
         // Strip HTML tags and get first 200 characters
         $text = strip_tags($html);
         $text = preg_replace('/\s+/', ' ', $text); // Normalize whitespace
-        
+
         // Handle null return from preg_replace
         if ($text === null) {
             $text = '';
         }
-        
+
         $text = trim($text);
 
         if (strlen($text) > 200) {
             $text = substr($text, 0, 200);
             $lastSpace = strrpos($text, ' ');
-            
+
             // Only truncate at space if one was found
             if ($lastSpace !== false) {
                 $text = substr($text, 0, $lastSpace);
             }
-            
+
             $text .= '...';
         }
 
@@ -329,13 +332,13 @@ class Feature extends BaseFeature implements FeatureInterface
     private function getFileUrl(string $outputPath, Container $container): string
     {
         $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
-        
+
         // Remove public directory from path to get relative URL
         $url = str_replace($publicDir, '', $outputPath);
-        
+
         // Normalize path separators to forward slashes for URLs
         $url = str_replace(DIRECTORY_SEPARATOR, '/', $url);
-        
+
         // Ensure URL starts with /
         if (!str_starts_with($url, '/')) {
             $url = '/' . $url;
@@ -357,7 +360,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Replace spaces and special characters with hyphens
         $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
-        
+
         // Handle null return from preg_replace (regex failure)
         if ($sanitized === null) {
             $sanitized = 'category';
