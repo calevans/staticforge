@@ -1,56 +1,89 @@
 ---
 title: "Welcome to StaticForge"
-template: "sample"
+template: "index"
 menu: 1
+description: "A powerful PHP-based static site generator with an event-driven architecture"
 ---
 
-# Welcome to StaticForge
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-container">
+        <h1>StaticForge</h1>
+        <p class="tagline">A powerful PHP-based static site generator with an event-driven architecture</p>
+        <div class="hero-buttons">
+            <a href="/docs/QUICK_START_GUIDE.html" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/calevans/staticforge" class="btn btn-secondary">View on GitHub</a>
+        </div>
+    </div>
+</section>
 
-Congratulations! You've successfully installed StaticForge, a PHP-based static site generator with an extensible, event-driven architecture.
+<!-- Features Section -->
+<section class="features">
+    <div class="features-container">
+        <h2 class="section-title">Why StaticForge?</h2>
+        <p class="section-subtitle">Everything you need to build beautiful, fast static websites</p>
 
-## What is StaticForge?
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Blazing Fast</h3>
+                <p>Generate static HTML files that load instantly. No server-side processing means maximum performance.</p>
+            </div>
 
-StaticForge transforms your content files (Markdown, HTML) into a complete static website that can be deployed anywhere. It's built by PHP developers, for PHP developers, making it easy to extend and customize.
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Event-Driven</h3>
+                <p>Extensible architecture with hooks at every step. Build custom features that integrate seamlessly.</p>
+            </div>
 
-## Quick Start
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Twig Templates</h3>
+                <p>Powerful templating with Twig. Create beautiful, maintainable themes with ease.</p>
+            </div>
 
-Your site is already set up and ready to generate! Here's what to do next:
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Markdown & HTML</h3>
+                <p>Write in Markdown or HTML. Full support for frontmatter metadata and content organization.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-1. **Edit your site configuration** - Open `.env` and customize your site settings
-2. **Add your content** - Create `.md` or `.html` files in the `content/` directory
-3. **Generate your site** - Run: `php bin/console.php render:site`
-4. **View your site** - Open files in the `output/` directory
+<!-- CTA Section -->
+<section class="cta">
+    <h2>Ready to Get Started?</h2>
+    <p>Install StaticForge and build your first static site in minutes</p>
+    <a href="/docs/QUICK_START_GUIDE.html" class="btn btn-primary">Get Started Now</a>
+</section>
 
-## Available Templates
-
-StaticForge comes with 4 pre-built templates. Switch between them by editing the `TEMPLATE` variable in your `.env` file:
-
-- **sample** (current) - Clean, minimal design
-- **staticforce** - Professional documentation theme
-- **terminal** - Retro terminal-inspired design
-- **vaulttech** - Fallout-inspired post-apocalyptic theme
-
-## Next Steps
-
-- Read the [Quick Start Guide](docs/QUICK_START_GUIDE.md) for detailed instructions
-- Learn about [Features](docs/FEATURES.md) like menus, tags, and categories
-- Explore [Template Development](docs/TEMPLATE_DEVELOPMENT.md) to create custom themes
-- Check out [Feature Development](docs/FEATURE_DEVELOPMENT.md) to extend StaticForge
-
-## Documentation
-
-All documentation is in the `docs/` directory:
-
-- **[Quick Start Guide](docs/QUICK_START_GUIDE.md)** - Get up and running
-- **[Configuration Guide](docs/CONFIGURATION.md)** - All configuration options
-- **[Features](docs/FEATURES.md)** - Built-in features explained
-- **[Template Development](docs/TEMPLATE_DEVELOPMENT.md)** - Create custom templates
-- **[Feature Development](docs/FEATURE_DEVELOPMENT.md)** - Build custom features
-
-## Get Help
-
-- **Documentation**: Check the `docs/` folder
-- **Examples**: See `docs/examples/` for sample content
-- **Issues**: Report bugs on GitHub
-
-Happy site building! 🚀
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div>
+            <h3>StaticForge</h3>
+            <p>A powerful PHP-based static site generator.</p>
+        </div>
+        <div>
+            <h3>Documentation</h3>
+            <ul>
+                <li><a href="/docs/QUICK_START_GUIDE.html">Quick Start</a></li>
+                <li><a href="/docs/CONFIGURATION.html">Configuration</a></li>
+                <li><a href="/docs/FEATURE_DEVELOPMENT.html">Features</a></li>
+                <li><a href="/docs/EVENTS.html">Core Events</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="https://github.com/calevans/staticforge">GitHub</a></li>
+                <li><a href="https://github.com/calevans/staticforge/blob/master/CODE_OF_CONDUCT.md">Contributing</a></li>
+                <li><a href="https://github.com/calevans/staticforge/blob/master/LICENSE">License</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 StaticForge. Built with ❤️ and PHP.</p>
+    </div>
+</footer>

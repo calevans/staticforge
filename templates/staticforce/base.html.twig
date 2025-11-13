@@ -657,9 +657,11 @@
                 <div class="navbar-logo">SF</div>
                 <span>StaticForge</span>
             </a>
+            {% if menu_top %}
             <ul class="navbar-menu">
-                {{ menu1|raw }}
+                {{ menu_top|raw }}
             </ul>
+            {% endif %}
         </div>
     </nav>
 
@@ -685,6 +687,12 @@
                 <h3>StaticForge</h3>
                 <p>A powerful PHP-based static site generator with an event-driven architecture.</p>
             </div>
+            {% if menu_footer %}
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                {{ menu_footer|raw }}
+            </div>
+            {% else %}
             <div class="footer-section">
                 <h3>Documentation</h3>
                 <ul>
@@ -693,6 +701,7 @@
                     <li><a href="/FEATURE_DEVELOPMENT.html">Features</a></li>
                 </ul>
             </div>
+            {% endif %}
             <div class="footer-section">
                 <h3>Community</h3>
                 <ul>
