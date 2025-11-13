@@ -1,6 +1,6 @@
 # Code of Conduct
 
-"Be excellent to each other. "<br>
+"Be excellent to each other."<br>
 -- Bill S. Preston, Esq.
 
 Access to this repo and it's code is a privilege, not a right. A privilege I am happy to revoke when and if I feel like it.

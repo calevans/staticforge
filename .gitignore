@@ -12,6 +12,8 @@ composer.lock
 .phpunit.result.cache
 .env
 *.log
+.lando.local.yml
+
 
 # Development router (created by site:devserver command)
 public/.ht.route.php
