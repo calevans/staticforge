@@ -59,13 +59,16 @@ class Feature extends BaseFeature implements FeatureInterface
             }
         }
 
+        // Sort menu data by position for template iteration
+        $sortedMenuData = $this->sortMenuData($menuData);
+
         // Add to parameters for return to event system
         if (!isset($parameters['features'])) {
             $parameters['features'] = [];
         }
 
         $parameters['features'][$this->getName()] = [
-            'files' => $menuData,
+            'files' => $sortedMenuData,
             'html' => $menuHtml
         ];
 
@@ -493,5 +496,48 @@ class Feature extends BaseFeature implements FeatureInterface
         $html .= '</ul>' . "\n";
 
         return $html;
+    }
+
+    /**
+     * Sort menu data by position for proper ordering in templates
+     *
+     * @param array<int, array<int|string, mixed>> $menuData
+     * @return array<int, array<int|string, mixed>>
+     */
+    private function sortMenuData(array $menuData): array
+    {
+        $sorted = [];
+
+        foreach ($menuData as $menuNumber => $menuItems) {
+            if (!isset($sorted[$menuNumber])) {
+                $sorted[$menuNumber] = [];
+            }
+
+            // Separate direct items from positioned items
+            $direct = [];
+            $positioned = [];
+
+            foreach ($menuItems as $key => $item) {
+                if ($key === 'direct') {
+                    $direct = $item;
+                } elseif (is_numeric($key)) {
+                    $positioned[(int)$key] = $item;
+                }
+            }
+
+            // Sort positioned items by key
+            ksort($positioned);
+
+            // Add direct items first, then positioned items
+            if (!empty($direct)) {
+                $sorted[$menuNumber]['direct'] = $direct;
+            }
+
+            foreach ($positioned as $key => $item) {
+                $sorted[$menuNumber][$key] = $item;
+            }
+        }
+
+        return $sorted;
     }
 }
