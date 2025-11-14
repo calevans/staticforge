@@ -142,66 +142,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     }
 
     /**
-     * Parse Markdown file content, extracting INI frontmatter if present
-     * @deprecated Use extractMarkdownContent() instead - metadata now parsed in FileDiscovery
-     *
-     * @return array{metadata: array<string, mixed>, content: string}
-     */
-    private function parseMarkdownFile(string $content): array
-    {
-        $metadata = [];
-        $markdownContent = $content;
-
-        // Check for INI frontmatter (--- ... ---)
-        if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
-            $iniContent = trim($matches[1]);
-            $markdownContent = trim($matches[2]);
-
-            // Parse INI content
-            if (!empty($iniContent)) {
-                $lines = explode("\n", $iniContent);
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    // INI format uses = not :
-                    if (empty($line) || strpos($line, '=') === false) {
-                        continue;
-                    }
-
-                    list($key, $value) = array_map('trim', explode('=', $line, 2));
-                    // Remove quotes if present
-                    $value = trim($value, '"\'');
-
-                    // Handle arrays in square brackets [item1, item2]
-                    if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
-                        $value = array_map('trim', explode(',', $arrayMatch[1]));
-                    }
-
-                    $metadata[$key] = $value;
-                }
-            }
-        }
-
-        // Convert Markdown to HTML
-        $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
-
-        // Extract title from metadata or first heading
-        if (!isset($metadata['title'])) {
-            $metadata['title'] = $this->extractTitleFromContent($htmlContent);
-        }
-
-        // Apply default metadata
-        $metadata = $this->applyDefaultMetadata($metadata);
-
-        return [
-            'metadata' => $metadata,
-            'content' => $htmlContent,
-            'title' => $metadata['title'],
-            'template' => $metadata['template'],
-            'tags' => $metadata['tags'] ?? []
-        ];
-    }
-
-    /**
      * Extract title from HTML content if not in metadata
      */
     private function extractTitleFromContent(string $htmlContent): string

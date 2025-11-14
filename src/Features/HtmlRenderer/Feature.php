@@ -125,64 +125,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     }
 
     /**
-     * Parse HTML file content, extracting INI metadata if present
-     * @deprecated Use extractHtmlContent() instead - metadata now parsed in FileDiscovery
-     *
-     * @return array{metadata: array<string, mixed>, content: string}
-     */
-    private function parseHtmlFile(string $content): array
-    {
-        $metadata = [];
-        $htmlContent = $content;
-
-        // Check for INI frontmatter (<!-- INI ... -->)
-        if (preg_match('/^<!--\s*INI\s*(.*?)\s*-->\s*\n(.*)$/s', $content, $matches)) {
-            $iniContent = trim($matches[1]);
-            $htmlContent = $matches[2];
-
-            // Parse INI content if present
-            if (!empty($iniContent)) {
-                $lines = explode("\n", $iniContent);
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    // INI format uses = not : (unlike YAML)
-                    if (empty($line) || strpos($line, '=') === false) {
-                        continue;
-                    }
-
-                    list($key, $value) = array_map('trim', explode('=', $line, 2));
-                    // Remove quotes if present
-                    $value = trim($value, '"\'');
-
-                    // Handle arrays in square brackets [item1, item2]
-                    if (preg_match('/^\[(.*)\]$/', $value, $arrayMatch)) {
-                        $value = array_map('trim', explode(',', $arrayMatch[1]));
-                    }
-
-                    $metadata[$key] = $value;
-                }
-            }
-        }
-
-        // Apply category template if file has category but no explicit template
-        $metadata = $this->applyCategoryTemplate($metadata);
-
-        // Apply default metadata
-        $metadata = $this->applyDefaultMetadata($metadata);
-
-        return [
-            'metadata' => $metadata,
-            'content' => $htmlContent,
-            'title' => $metadata['title'],
-            'template' => $metadata['template'],
-            'category' => $metadata['category'] ?? null,
-            'tags' => isset($metadata['tags'])
-                ? (is_array($metadata['tags']) ? $metadata['tags'] : explode(',', $metadata['tags']))
-                : []
-        ];
-    }
-
-    /**
      * Generate output path for rendered HTML file
      */
     private function generateOutputPath(string $inputPath, Container $container): string
