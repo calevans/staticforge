@@ -38,6 +38,10 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         parent::register($eventManager, $container);
         $this->logger = $container->get('logger');
+
+        // Read custom navigation symbols from container
+        $this->prevSymbol = $container->getVariable('CHAPTER_NAV_PREV_SYMBOL') ?? $this->prevSymbol;
+        $this->nextSymbol = $container->getVariable('CHAPTER_NAV_NEXT_SYMBOL') ?? $this->nextSymbol;
     }
 
     /**
@@ -53,6 +57,10 @@ class Feature extends BaseFeature implements FeatureInterface
     {
       // Read configuration from environment
         $this->parseConfiguredMenus();
+
+        // Read custom navigation symbols from container
+        $this->prevSymbol = $container->getVariable('CHAPTER_NAV_PREV_SYMBOL') ?? $this->prevSymbol;
+        $this->nextSymbol = $container->getVariable('CHAPTER_NAV_NEXT_SYMBOL') ?? $this->nextSymbol;
 
         if (empty($this->configuredMenus)) {
             return $parameters;
