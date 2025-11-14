@@ -104,18 +104,21 @@
             padding: 0 2rem;
         }
 
-        .footer-nav .footer-menu .menu {
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding-bottom: 1rem;
+        .footer-nav .menu {
+            display: block;
+            text-align: center;
+            padding: 0 0 1.5rem 0;
+            margin: 0 auto 1.5rem auto;
+            list-style: none;
             border-bottom: 1px solid #374151;
-            margin-bottom: 1rem;
+            width: 100%;
+            padding-left: 0;
         }
 
         .footer-nav .menu li {
+            display: inline-block;
             list-style: none;
+            margin: 0 1rem;
         }
 
         .footer-nav .menu a {
@@ -440,12 +443,13 @@
 
     {{ content | raw }}
 
-    <!-- Footer Navigation -->
+    <!-- Footer -->
     {% if menu_footer %}
     <footer class="footer-nav">
         <div class="footer-container">
-            <div class="footer-menu">
+            <div style="text-align: center; width: 100%;">
                 {{ menu_footer | raw }}
+                <p style="color: #9ca3af; font-size: 0.875rem; margin: 0;">&copy; 2025 StaticForge. Built with ❤️ and PHP.</p>
             </div>
         </div>
     </footer>

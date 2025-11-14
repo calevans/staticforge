@@ -220,7 +220,23 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Get template configuration
             $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
             $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
-            $templateName = ($parsedContent['template'] ?? 'base') . '.html.twig';
+
+            // Determine template: frontmatter > category > .env default
+            $templateName = 'base'; // Ultimate fallback
+            $this->logger->log('DEBUG', "Template metadata: " . json_encode($parsedContent['metadata']));
+
+            if (isset($parsedContent['metadata']['template'])) {
+                $templateName = $parsedContent['metadata']['template'];
+                $this->logger->log('DEBUG', "Using frontmatter template: {$templateName}");
+            } elseif (isset($parsedContent['metadata']['category'])) {
+                // Check if category has a template
+                $categoryTemplates = $container->getVariable('category_templates') ?? [];
+                if (isset($categoryTemplates[$parsedContent['metadata']['category']])) {
+                    $templateName = $categoryTemplates[$parsedContent['metadata']['category']];
+                    $this->logger->log('INFO', "Applied category template '{$templateName}' for category '{$parsedContent['metadata']['category']}'");
+                }
+            }
+            $templateName .= '.html.twig';
 
             // Full template path
             $templatePath = $templateTheme . '/' . $templateName;
@@ -250,6 +266,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
                 'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
                 'site_tagline' => $siteInfo['tagline'] ?? $container->getVariable('SITE_TAGLINE') ?? '',
                 'features' => $container->getVariable('features') ?? [],
+                'menu_top' => $container->getVariable('menu_top') ?? '',
+                'menu_footer' => $container->getVariable('menu_footer') ?? '',
             ]);
 
             $this->logger->log('DEBUG', "Template variables: " . json_encode(array_keys($templateVars)));
