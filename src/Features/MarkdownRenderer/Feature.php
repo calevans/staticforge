@@ -232,19 +232,8 @@ class Feature extends BaseRendererFeature implements FeatureInterface
                 'cache' => false,        // Disable cache for development
             ]);
 
-            // Prepare template variables
-            $siteConfig = $container->getVariable('site_config') ?? [];
-            $siteInfo = $siteConfig['site'] ?? [];
-
-            $templateVars = array_merge($parsedContent['metadata'], [
-                'title' => $parsedContent['title'],
-                'content' => $parsedContent['content'],
-                'source_file' => $sourceFile,
-                'site_name' => $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'Static Site',
-                'site_base_url' => $container->getVariable('SITE_BASE_URL') ?? '',
-                'site_tagline' => $siteInfo['tagline'] ?? $container->getVariable('SITE_TAGLINE') ?? '',
-                'features' => $container->getVariable('features') ?? [],
-            ]);
+            // Build template variables dynamically from all sources
+            $templateVars = $this->buildTemplateVariables($parsedContent, $container, $sourceFile);
 
             // Render template
             return $twig->render($templatePath, $templateVars);
