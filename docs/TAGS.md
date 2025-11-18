@@ -1,7 +1,7 @@
 ---
 title: Tags
 template: docs
-menu: '1.3.7, 2.3.7'
+menu: '1.3.8, 2.3.8'
 category: docs
 ---
 # Tags

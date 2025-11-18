@@ -1,7 +1,7 @@
 ---
 title: 'Category Index Pages'
 template: docs
-menu: '1.3.6, 2.3.6'
+menu: '1.3.7, 2.3.7'
 category: docs
 ---
 # Category Index Pages
