@@ -19,7 +19,7 @@ class Feature extends BaseFeature implements FeatureInterface
      * @var array<string, array{method: string, priority: int}>
      */
     protected array $eventListeners = [
-        'MARKDOWN_CONVERTED' => ['method' => 'handleMarkdownConverted', 'priority' => 100]
+        'MARKDOWN_CONVERTED' => ['method' => 'handleMarkdownConverted', 'priority' => 500]
     ];
 
     public function register(EventManager $eventManager, Container $container): void
@@ -77,14 +77,18 @@ class Feature extends BaseFeature implements FeatureInterface
 
         foreach ($headings as $heading) {
             $level = (int) substr($heading->nodeName, 1);
-            $text = $heading->textContent;
-            $id = $heading->getAttribute('id');
 
-            // If HeadingPermalinkExtension is used, the text might contain the permalink symbol.
-            // We might want to clean it up if it's inside the text content.
-            // But usually HeadingPermalinkExtension adds an <a> tag inside.
-            // textContent gets all text.
-            // Let's assume it's fine for now.
+            // Clone node to manipulate it without affecting the original DOM
+            $clonedHeading = $heading->cloneNode(true);
+
+            // Remove permalink anchors if present (added by HeadingPermalinkExtension)
+            $permalinks = $xpath->query('.//a[contains(@class, "heading-permalink")]', $clonedHeading);
+            foreach ($permalinks as $permalink) {
+                $permalink->parentNode->removeChild($permalink);
+            }
+
+            $text = $clonedHeading->textContent;
+            $id = $heading->getAttribute('id');
 
             if (empty($id)) {
                 continue;
