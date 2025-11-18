@@ -11,6 +11,7 @@ use Exception;
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\MarkdownConverter;
 use Twig\Environment as TwigEnvironment;
@@ -44,6 +45,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         $environment = new Environment();
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new TableExtension());
+        $environment->addExtension(new HeadingPermalinkExtension());
         $this->markdownConverter = new MarkdownConverter($environment);        // Register .md extension for processing
         $extensionRegistry = $container->get('extension_registry');
         $extensionRegistry->registerExtension('.md');
@@ -91,6 +93,17 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
             // Convert Markdown to HTML
             $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
+
+            // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
+            $eventManager = $container->get('event_manager');
+            $eventResult = $eventManager->fire('MARKDOWN_CONVERTED', [
+                'html_content' => $htmlContent,
+                'metadata' => $metadata,
+                'file_path' => $filePath
+            ]);
+
+            $htmlContent = $eventResult['html_content'];
+            $metadata = $eventResult['metadata'];
 
             // Extract title from metadata or first heading
             if (!isset($metadata['title'])) {
