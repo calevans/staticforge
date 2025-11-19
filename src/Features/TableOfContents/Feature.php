@@ -97,14 +97,14 @@ class Feature extends BaseFeature implements FeatureInterface
 
             if ($permalinks->length > 0) {
                 $permalink = $permalinks->item(0);
-                
+
                 // Try to get ID from the anchor, or href (stripping #)
                 $permalinkId = $permalink->getAttribute('id');
                 if (empty($permalinkId)) {
                     $href = $permalink->getAttribute('href');
                     $permalinkId = ltrim($href, '#');
                 }
-                
+
                 // Remove the permalink anchor from the text we want to display
                 $permalink->parentNode->removeChild($permalink);
             }
