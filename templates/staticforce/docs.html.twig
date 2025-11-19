@@ -188,10 +188,10 @@
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: var(--spacing-2xl) var(--spacing-xl);
+            padding: var(--spacing-3xl) var(--spacing-xl);
             display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: var(--spacing-2xl);
+            grid-template-columns: 280px 1fr 250px;
+            gap: var(--spacing-3xl);
             align-items: start;
         }
 
@@ -483,15 +483,16 @@
             margin-bottom: var(--spacing-md);
         }
 
-        .toc-nav {
+        .toc-list {
             list-style: none;
+            padding: 0;
         }
 
-        .toc-nav li {
+        .toc-list li {
             margin-bottom: var(--spacing-xs);
         }
 
-        .toc-nav a {
+        .toc-list a {
             display: block;
             padding: var(--spacing-sm);
             color: var(--gray-600);
@@ -501,20 +502,18 @@
             transition: all var(--transition-base);
         }
 
-        .toc-nav a:hover {
+        .toc-list a:hover {
             color: var(--primary);
             border-left-color: var(--primary);
             transform: translateX(3px);
         }
 
-        .toc-nav a.active {
-            color: var(--primary);
-            border-left-color: var(--primary);
-            font-weight: 600;
+        .toc-list ul {
+            padding-left: var(--spacing-lg);
+            list-style: none;
         }
 
-        .toc-nav .toc-h3 {
-            padding-left: var(--spacing-lg);
+        .toc-list ul a {
             font-size: 0.8rem;
         }
 
@@ -721,6 +720,10 @@
             .toc {
                 display: none;
             }
+
+            .toc-mobile {
+                display: block;
+            }
         }
 
         @media (max-width: 768px) {
@@ -761,6 +764,15 @@
         .font-mono { font-family: var(--font-mono); }
         .mt-0 { margin-top: 0 !important; }
         .mb-0 { margin-bottom: 0 !important; }
+
+        .toc-mobile {
+            display: none; /* Hidden by default, shown on mobile or if sidebar is hidden */
+            background: var(--gray-50);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid var(--gray-200);
+        }
     </style>
 </head>
 <body>
@@ -820,6 +832,13 @@
             {% endif %}
         </aside>        <!-- Main Content -->
         <main class="content">
+            {% if toc %}
+                <div class="toc-mobile">
+                    <div class="toc-title">On This Page</div>
+                    {{ toc|raw }}
+                </div>
+            {% endif %}
+
             {% block content %}
                 {{ content|raw }}
             {% endblock %}
@@ -827,6 +846,14 @@
             {# Chapter Navigation #}
             {% include '_chapter_nav.html.twig' %}
         </main>
+
+        <!-- Right Sidebar (Table of Contents) -->
+        <aside class="toc">
+            {% if toc %}
+                <div class="toc-title">On This Page</div>
+                {{ toc|raw }}
+            {% endif %}
+        </aside>
     </div>
 
     <!-- Footer -->
@@ -859,33 +886,8 @@
     </footer>
 
     <script>
-        // Auto-generate Table of Contents
+        // Smooth scrolling for anchor links
         document.addEventListener('DOMContentLoaded', function() {
-            const content = document.querySelector('.content');
-            const tocNav = document.querySelector('.toc-nav');
-
-            if (content && tocNav && !tocNav.innerHTML.trim()) {
-                const headings = content.querySelectorAll('h2, h3');
-                const tocHtml = [];
-
-                headings.forEach((heading, index) => {
-                    const id = heading.id || `heading-${index}`;
-                    if (!heading.id) {
-                        heading.id = id;
-                    }
-
-                    const level = heading.tagName.toLowerCase();
-                    const text = heading.textContent;
-
-                    tocHtml.push(`<li class="toc-${level}"><a href="#${id}">${text}</a></li>`);
-                });
-
-                if (tocHtml.length > 0) {
-                    tocNav.innerHTML = tocHtml.join('');
-                }
-            }
-
-            // Smooth scrolling for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -897,26 +899,6 @@
                         });
                     }
                 });
-            });
-
-            // Highlight active TOC item on scroll
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const id = entry.target.id;
-                        document.querySelectorAll('.toc-nav a').forEach(link => {
-                            link.classList.remove('active');
-                        });
-                        const activeLink = document.querySelector(`.toc-nav a[href="#${id}"]`);
-                        if (activeLink) {
-                            activeLink.classList.add('active');
-                        }
-                    }
-                });
-            }, { rootMargin: '-100px 0px -80% 0px' });
-
-            document.querySelectorAll('.content h2, .content h3').forEach(heading => {
-                observer.observe(heading);
             });
         });
     </script>

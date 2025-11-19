@@ -37,10 +37,12 @@ class Feature extends BaseFeature implements FeatureInterface
      * @param array<string, mixed> $parameters
      * @return array<string, mixed>
      */
+
     public function handleMarkdownConverted(Container $container, array $parameters): array
     {
         $htmlContent = $parameters['html_content'] ?? '';
         $metadata = $parameters['metadata'] ?? [];
+        $filePath = $parameters['file_path'] ?? 'unknown';
 
         if (empty($htmlContent)) {
             return $parameters;
@@ -48,6 +50,12 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Generate TOC
         $toc = $this->generateToc($htmlContent);
+
+        if (!empty($toc)) {
+            $this->logger->log('INFO', "TOC generated for {$filePath}: " . substr($toc, 0, 50) . "...");
+        } else {
+            $this->logger->log('INFO', "No TOC generated for {$filePath} (no headings found?)");
+        }
 
         // Add to metadata
         $metadata['toc'] = $toc;
@@ -74,6 +82,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $toc = '<ul class="toc-list">';
         $currentLevel = 2;
+        $itemsAdded = 0;
 
         foreach ($headings as $heading) {
             $level = (int) substr($heading->nodeName, 1);
@@ -81,14 +90,32 @@ class Feature extends BaseFeature implements FeatureInterface
             // Clone node to manipulate it without affecting the original DOM
             $clonedHeading = $heading->cloneNode(true);
 
-            // Remove permalink anchors if present (added by HeadingPermalinkExtension)
+            // Find the permalink anchor to get the ID
+            // Note: HeadingPermalinkExtension adds <a class="heading-permalink" ...>
             $permalinks = $xpath->query('.//a[contains(@class, "heading-permalink")]', $clonedHeading);
-            foreach ($permalinks as $permalink) {
+            $permalinkId = '';
+
+            if ($permalinks->length > 0) {
+                $permalink = $permalinks->item(0);
+                
+                // Try to get ID from the anchor, or href (stripping #)
+                $permalinkId = $permalink->getAttribute('id');
+                if (empty($permalinkId)) {
+                    $href = $permalink->getAttribute('href');
+                    $permalinkId = ltrim($href, '#');
+                }
+                
+                // Remove the permalink anchor from the text we want to display
                 $permalink->parentNode->removeChild($permalink);
             }
 
-            $text = $clonedHeading->textContent;
-            $id = $heading->getAttribute('id');
+            // Fallback to heading ID if permalink ID is not found
+            if (empty($permalinkId)) {
+                $permalinkId = $heading->getAttribute('id');
+            }
+
+            $text = trim($clonedHeading->textContent);
+            $id = $permalinkId;
 
             if (empty($id)) {
                 continue;
@@ -102,6 +129,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
             $toc .= sprintf('<li><a href="#%s">%s</a></li>', $id, htmlspecialchars($text));
             $currentLevel = $level;
+            $itemsAdded++;
         }
 
         // Close remaining tags
@@ -110,6 +138,10 @@ class Feature extends BaseFeature implements FeatureInterface
             $currentLevel--;
         }
         $toc .= '</ul>';
+
+        if ($itemsAdded === 0) {
+            return '';
+        }
 
         return $toc;
     }

@@ -45,7 +45,16 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         $environment = new Environment();
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new TableExtension());
+
+        // Configure HeadingPermalinkExtension to use an empty symbol (invisible link)
         $environment->addExtension(new HeadingPermalinkExtension());
+        $environment->mergeConfig([
+            'heading_permalink' => [
+                'symbol' => '',
+                'insert' => 'after',
+            ],
+        ]);
+
         $this->markdownConverter = new MarkdownConverter($environment);        // Register .md extension for processing
         $extensionRegistry = $container->get('extension_registry');
         $extensionRegistry->registerExtension('.md');
