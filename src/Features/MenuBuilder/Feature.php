@@ -47,7 +47,12 @@ class Feature extends BaseFeature implements FeatureInterface
         // Scan files and build menu structure
         $menuData = $this->scanFilesForMenus();
 
-        $this->logger->log('INFO', 'MenuBuilder: Found ' . count($menuData) . ' menus with data: ' . json_encode(array_keys($menuData)));
+        $this->logger->log(
+            'INFO',
+            'MenuBuilder: Found ' . count($menuData)
+            . ' menus with data: '
+            . json_encode(array_keys($menuData))
+        );
 
         // Generate HTML from menu data
         $menuHtml = $this->buildMenuHtml($menuData);
@@ -592,7 +597,11 @@ class Feature extends BaseFeature implements FeatureInterface
                 $container->setVariable($varName, $html);
             }
 
-            $this->logger->log('INFO', "MenuBuilder: Generated static menu '{$menuName}' with " . count($items['direct']) . ' items');
+            $this->logger->log(
+                'INFO',
+                "MenuBuilder: Generated static menu '{$menuName}' with " .
+                count($items['direct']) . ' items'
+            );
         }
     }
 
