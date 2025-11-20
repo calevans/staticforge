@@ -10,91 +10,91 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class InitCommand extends Command
 {
-  protected static $defaultName = 'init';
-  protected static $defaultDescription = 'Initialize a new StaticForge project';
+    protected static $defaultName = 'init';
+    protected static $defaultDescription = 'Initialize a new StaticForge project';
 
-  protected function configure(): void
-  {
-    $this
-      ->setDescription('Initialize a new StaticForge project structure')
-      ->addOption(
-        'force',
-        'f',
-        InputOption::VALUE_NONE,
-        'Overwrite existing files'
-      );
-  }
-
-  protected function execute(InputInterface $input, OutputInterface $output): int
-  {
-    $io = new SymfonyStyle($input, $output);
-    $force = $input->getOption('force');
-
-    $io->title('StaticForge Project Initialization');
-
-    // Create directory structure
-    $directories = [
-      'content',
-      'templates',
-      'public',
-      'config',
-      'logs'
-    ];
-
-    foreach ($directories as $dir) {
-      if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-        $io->success("Created directory: {$dir}/");
-      } else {
-        $io->note("Directory already exists: {$dir}/");
-      }
+    protected function configure(): void
+    {
+        $this
+        ->setDescription('Initialize a new StaticForge project structure')
+        ->addOption(
+            'force',
+            'f',
+            InputOption::VALUE_NONE,
+            'Overwrite existing files'
+        );
     }
 
-    // Copy bundled templates
-    $this->copyBundledTemplates($io, $force);
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $force = $input->getOption('force');
 
-    // Create .env file
-    $this->createEnvFile($io, $force);
+        $io->title('StaticForge Project Initialization');
 
-    // Create sample content
-    $this->createSampleContent($io, $force);
+      // Create directory structure
+        $directories = [
+        'content',
+        'templates',
+        'public',
+        'config',
+        'logs'
+        ];
 
-    $io->success('StaticForge project initialized successfully!');
-    $io->section('Next Steps:');
-    $io->listing([
-      'Edit .env to configure your site settings',
-      'Add your content to the content/ directory',
-      'Customize templates in the templates/ directory',
-      'Run: staticforge render:site to build your site'
-    ]);
+        foreach ($directories as $dir) {
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+                $io->success("Created directory: {$dir}/");
+            } else {
+                $io->note("Directory already exists: {$dir}/");
+            }
+        }
 
-    return Command::SUCCESS;
-  }
+      // Copy bundled templates
+        $this->copyBundledTemplates($io, $force);
 
-  private function copyBundledTemplates(SymfonyStyle $io, bool $force): void
-  {
-    // Find the StaticForge package path where templates are bundled
-    $packagePath = $this->findVendorPath();
-    $bundledTemplatesPath = $packagePath . '/templates';
+      // Create .env file
+        $this->createEnvFile($io, $force);
 
-    if (!is_dir($bundledTemplatesPath)) {
-      $io->warning("Bundled templates not found at: {$bundledTemplatesPath}");
-      return;
+      // Create sample content
+        $this->createSampleContent($io, $force);
+
+        $io->success('StaticForge project initialized successfully!');
+        $io->section('Next Steps:');
+        $io->listing([
+        'Edit .env to configure your site settings',
+        'Add your content to the content/ directory',
+        'Customize templates in the templates/ directory',
+        'Run: staticforge render:site to build your site'
+        ]);
+
+        return Command::SUCCESS;
     }
 
-    $this->recursiveCopy($bundledTemplatesPath, 'templates', $io, $force);
-  }
+    private function copyBundledTemplates(SymfonyStyle $io, bool $force): void
+    {
+      // Find the StaticForge package path where templates are bundled
+        $packagePath = $this->findVendorPath();
+        $bundledTemplatesPath = $packagePath . '/templates';
 
-  private function createEnvFile(SymfonyStyle $io, bool $force): void
-  {
-    $envPath = '.env';
+        if (!is_dir($bundledTemplatesPath)) {
+            $io->warning("Bundled templates not found at: {$bundledTemplatesPath}");
+            return;
+        }
 
-    if (file_exists($envPath) && !$force) {
-      $io->note('.env file already exists. Use --force to overwrite.');
-      return;
+        $this->recursiveCopy($bundledTemplatesPath, 'templates', $io, $force);
     }
 
-    $envContent = <<<ENV
+    private function createEnvFile(SymfonyStyle $io, bool $force): void
+    {
+        $envPath = '.env';
+
+        if (file_exists($envPath) && !$force) {
+            $io->note('.env file already exists. Use --force to overwrite.');
+            return;
+        }
+
+        $envContent = <<<ENV
 # StaticForge Configuration
 SITE_NAME="My StaticForge Site"
 SITE_BASE_URL="/"
@@ -115,20 +115,20 @@ DEBUG=false
 LOG_LEVEL="info"
 ENV;
 
-    file_put_contents($envPath, $envContent);
-    $io->success('Created .env configuration file');
-  }
-
-  private function createSampleContent(SymfonyStyle $io, bool $force): void
-  {
-    $indexPath = 'content/index.md';
-
-    if (file_exists($indexPath) && !$force) {
-      $io->note('Sample content already exists. Use --force to overwrite.');
-      return;
+        file_put_contents($envPath, $envContent);
+        $io->success('Created .env configuration file');
     }
 
-    $indexContent = <<<MARKDOWN
+    private function createSampleContent(SymfonyStyle $io, bool $force): void
+    {
+        $indexPath = 'content/index.md';
+
+        if (file_exists($indexPath) && !$force) {
+            $io->note('Sample content already exists. Use --force to overwrite.');
+            return;
+        }
+
+        $indexContent = <<<MARKDOWN
 ---
 title: Welcome to StaticForge
 description: Your new static site is ready!
@@ -166,58 +166,58 @@ StaticForge comes with powerful features out of the box:
 Happy building! 🚀
 MARKDOWN;
 
-    file_put_contents($indexPath, $indexContent);
-    $io->success('Created sample content file: content/index.md');
-  }
-
-  private function recursiveCopy(string $src, string $dst, SymfonyStyle $io, bool $force): void
-  {
-    if (!is_dir($src)) {
-      return;
+        file_put_contents($indexPath, $indexContent);
+        $io->success('Created sample content file: content/index.md');
     }
 
-    if (!is_dir($dst)) {
-      mkdir($dst, 0755, true);
-    }
-
-    $files = scandir($src);
-    foreach ($files as $file) {
-      if ($file === '.' || $file === '..') {
-        continue;
-      }
-
-      $srcPath = $src . '/' . $file;
-      $dstPath = $dst . '/' . $file;
-
-      if (is_dir($srcPath)) {
-        $this->recursiveCopy($srcPath, $dstPath, $io, $force);
-      } else {
-        if (!file_exists($dstPath) || $force) {
-          copy($srcPath, $dstPath);
-          $io->text("Copied: {$dstPath}");
-        } else {
-          $io->note("File exists (skipped): {$dstPath}");
+    private function recursiveCopy(string $src, string $dst, SymfonyStyle $io, bool $force): void
+    {
+        if (!is_dir($src)) {
+            return;
         }
-      }
+
+        if (!is_dir($dst)) {
+            mkdir($dst, 0755, true);
+        }
+
+        $files = scandir($src);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $srcPath = $src . '/' . $file;
+            $dstPath = $dst . '/' . $file;
+
+            if (is_dir($srcPath)) {
+                $this->recursiveCopy($srcPath, $dstPath, $io, $force);
+            } else {
+                if (!file_exists($dstPath) || $force) {
+                    copy($srcPath, $dstPath);
+                    $io->text("Copied: {$dstPath}");
+                } else {
+                    $io->note("File exists (skipped): {$dstPath}");
+                }
+            }
+        }
     }
-  }
 
-  private function findVendorPath(): string
-  {
-    // Try to find the StaticForge package directory
-    $paths = [
-      __DIR__ . '/../../',              // When running from development
-      getcwd() . '/vendor/eicc/staticforge/', // When installed as dependency
-      __DIR__ . '/../../../../../eicc/staticforge/', // Alternative vendor structure
-    ];
+    private function findVendorPath(): string
+    {
+      // Try to find the StaticForge package directory
+        $paths = [
+        __DIR__ . '/../../',              // When running from development
+        getcwd() . '/vendor/eicc/staticforge/', // When installed as dependency
+        __DIR__ . '/../../../../../eicc/staticforge/', // Alternative vendor structure
+        ];
 
-    foreach ($paths as $path) {
-      if (is_dir($path . 'templates')) {
-        return realpath($path);
-      }
+        foreach ($paths as $path) {
+            if (is_dir($path . 'templates')) {
+                return realpath($path);
+            }
+        }
+
+      // Fallback to development path
+        return realpath(__DIR__ . '/../../');
     }
-
-    // Fallback to development path
-    return realpath(__DIR__ . '/../../');
-  }
 }

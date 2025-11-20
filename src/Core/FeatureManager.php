@@ -187,7 +187,6 @@ class FeatureManager
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;
             $this->logger->log('INFO', "Loaded feature: {$feature->getName()}");
-
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to load feature from {$directoryName}: " . $e->getMessage());
         }

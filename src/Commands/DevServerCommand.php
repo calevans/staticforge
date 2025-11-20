@@ -33,10 +33,10 @@ class DevServerCommand extends Command
     {
         $this->publicDir = getcwd() . '/public';
         $this->routerFile = $this->publicDir . '/.ht.route.php';
-        
+
         // Register cleanup function
         register_shutdown_function([$this, 'cleanup']);
-        
+
         // Handle signals for graceful shutdown
         if (function_exists('pcntl_signal')) {
             pcntl_signal(SIGINT, [$this, 'handleSignal']);
@@ -47,10 +47,10 @@ class DevServerCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $host = $input->getOption('host');
         $port = (int) $input->getOption('port');
-        
+
         // Check if public directory exists
         if (!is_dir($this->publicDir)) {
             $io->error("Public directory not found: {$this->publicDir}");
@@ -67,7 +67,7 @@ class DevServerCommand extends Command
         try {
             // Create router file
             $this->createRouterFile();
-            
+
             $io->success("Development server starting...");
             $io->info("Server: http://{$host}:{$port}");
             $io->info("Document root: {$this->publicDir}");
@@ -76,7 +76,6 @@ class DevServerCommand extends Command
 
             // Start the server
             $this->startServer($host, $port, $io);
-            
         } catch (\Exception $e) {
             $io->error("Failed to start server: " . $e->getMessage());
             $this->cleanup();
@@ -89,7 +88,7 @@ class DevServerCommand extends Command
     private function createRouterFile(): void
     {
         $routerContent = $this->getRouterTemplate();
-        
+
         if (file_put_contents($this->routerFile, $routerContent) === false) {
             throw new \RuntimeException("Failed to create router file: {$this->routerFile}");
         }
@@ -110,7 +109,7 @@ class DevServerCommand extends Command
         chdir($this->publicDir);
 
         $process = popen($command, 'r');
-        
+
         if (!$process) {
             chdir($oldCwd);
             throw new \RuntimeException("Failed to start PHP server");
@@ -122,12 +121,12 @@ class DevServerCommand extends Command
             if ($line !== false) {
                 $io->text(trim($line));
             }
-            
+
             // Allow signal handling
             if (function_exists('pcntl_signal_dispatch')) {
                 pcntl_signal_dispatch();
             }
-            
+
             usleep(100000); // 100ms
         }
 

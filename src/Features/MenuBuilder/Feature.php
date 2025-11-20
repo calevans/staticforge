@@ -644,5 +644,4 @@ class Feature extends BaseFeature implements FeatureInterface
 
         return 0;
     }
-
 }
