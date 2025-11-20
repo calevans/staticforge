@@ -2,6 +2,7 @@
 template: docs
 menu: '1.1, 2.1'
 category: docs
+hero: /assets/images/sf_quickstart_hero.png
 ---
 # Quick Start Guide
 
@@ -194,6 +195,26 @@ php bin/console.php render:site
 ```
 
 Now visit `http://localhost:8000/about.html` to see it!
+
+---
+
+## Adding Images and Assets
+
+You can add images, custom CSS, or JavaScript to your site by placing them in the `content/assets` directory.
+
+1. Create the directory structure:
+   ```bash
+   mkdir -p content/assets/images
+   ```
+
+2. Add an image (e.g., `my-photo.jpg`) to `content/assets/images/`.
+
+3. Reference it in your content:
+   ```markdown
+   ![My Photo](/assets/images/my-photo.jpg)
+   ```
+
+StaticForge will automatically copy everything from `content/assets` to `output/assets` when you build your site.
 
 ---
 

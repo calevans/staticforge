@@ -6,6 +6,18 @@
 {% endblock %}
 
 {% block body %}
+    {% if hero %}
+    <div class="docs-hero" style="background-image: url('{{ hero }}');">
+        <div class="docs-hero-overlay"></div>
+        <div class="docs-hero-content">
+            <h1>{{ title }}</h1>
+            {% if description %}
+            <p class="docs-hero-description">{{ description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Main Content -->
     <div class="main-container">
         <!-- Left Sidebar -->
