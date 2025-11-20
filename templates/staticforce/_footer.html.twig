@@ -1,0 +1,26 @@
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>StaticForge</h3>
+                <p>A powerful PHP-based static site generator with an event-driven architecture.</p>
+            </div>
+            {% if menu_footer %}
+            <div class="footer-section footer-menu-horizontal">
+                {{ menu_footer|raw }}
+            </div>
+            {% else %}
+            <div class="footer-section">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="/">Quick Start</a></li>
+                    <li><a href="/CONFIGURATION.html">Configuration</a></li>
+                    <li><a href="/FEATURE_DEVELOPMENT.html">Features</a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 {{ site_name }}. {{ site_tagline | default('Built with ❤️ and PHP') }}</p>
+        </div>
+    </footer>

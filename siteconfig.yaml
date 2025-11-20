@@ -11,10 +11,11 @@ menu:
     Home:
     About: about
     Shop: shop
-    Contact: contact
+    Contact: contact-us.html
   footer:
     Privacy: privacy
     Terms: terms
+    Github: https://github.com/calevans/staticforge
 
 # Chapter Navigation Configuration
 chapter_nav:
@@ -22,3 +23,28 @@ chapter_nav:
   prev_symbol: "←"
   next_symbol: "→"
   separator: "|"
+
+# Forms Configuration
+forms:
+  contact:
+    provider: "eicc"
+    endpoint: "https://eicc.com/f/YOUR_FORM_ID"
+    submit_text: "Send Message"
+    fields:
+      - name: "name"
+        label: "Your Name"
+        type: "text"
+        required: true
+        placeholder: "John Doe"
+      - name: "email"
+        label: "Email Address"
+        type: "email"
+        required: true
+        placeholder: "john@example.com"
+      - name: "message"
+        label: "Message"
+        placeholder: "THIS IS SO AWESOME..."
+        type: "textarea"
+        rows: 7
+        required: true
+

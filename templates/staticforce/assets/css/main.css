@@ -553,6 +553,32 @@ body {
     color: var(--primary-light);
 }
 
+/* Horizontal Footer Menu */
+.footer-section.footer-menu-horizontal ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.footer-section.footer-menu-horizontal li {
+    margin: 0;
+    width: auto;
+}
+
+.footer-section.footer-menu-horizontal a {
+    display: inline-block;
+    padding: 0;
+    color: var(--gray-400);
+}
+
+.footer-section.footer-menu-horizontal a:hover {
+    color: var(--primary-light);
+}
+
 .footer-bottom {
     max-width: 1400px;
     margin: var(--spacing-2xl) auto 0;

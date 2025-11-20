@@ -2,7 +2,7 @@
 template: docs
 menu: '1.1, 2.1'
 category: docs
-hero: /assets/images/sf_quickstart_hero.png
+hero: assets/images/sf_quickstart_hero.png
 ---
 # Quick Start Guide
 
@@ -66,7 +66,7 @@ The defaults work great for testing, so you can leave them as-is for now!
 StaticForge includes a starter page to get you going. Generate it now:
 
 ```bash
-php bin/console.php render:site
+php bin/staticforge.php site:render
 ```
 
 You'll see output like:
@@ -132,7 +132,7 @@ Pretty cool, right?
 Now tell StaticForge to regenerate your site with the new page:
 
 ```bash
-php bin/console.php render:site
+php bin/staticforge.php site:render
 ```
 
 You'll see:
@@ -191,7 +191,7 @@ description = "Learn more about me"
 Generate your site again:
 
 ```bash
-php bin/console.php render:site
+php bin/staticforge.php site:render
 ```
 
 Now visit `http://localhost:8000/about.html` to see it!
@@ -283,7 +283,7 @@ StaticForge automatically:
 
 ### Quick Tips
 
-**Regenerate after every change:** StaticForge doesn't watch for changes. Run `php bin/console.php render:site` after editing content or templates.
+**Regenerate after every change:** StaticForge doesn't watch for changes. Run `php bin/staticforge.php site:render` after editing content or templates.
 
 **Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default), sample, terminal, or vaulttech.
 

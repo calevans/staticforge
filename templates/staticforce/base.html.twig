@@ -18,9 +18,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/main.css?v={{ build_id }}">
     {% block extra_head %}{% endblock %}
-</head>
 </head>
 <body>
     <!-- Navigation -->
@@ -55,41 +54,7 @@
     </div>
     {% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-section">
-                <h3>StaticForge</h3>
-                <p>A powerful PHP-based static site generator with an event-driven architecture.</p>
-            </div>
-            {% if menu_footer %}
-            <div class="footer-section">
-                <h3>Navigation</h3>
-                {{ menu_footer|raw }}
-            </div>
-            {% else %}
-            <div class="footer-section">
-                <h3>Documentation</h3>
-                <ul>
-                    <li><a href="/">Quick Start</a></li>
-                    <li><a href="/CONFIGURATION.html">Configuration</a></li>
-                    <li><a href="/FEATURE_DEVELOPMENT.html">Features</a></li>
-                </ul>
-            </div>
-            {% endif %}
-            <div class="footer-section">
-                <h3>Community</h3>
-                <ul>
-                    <li><a href="https://github.com/calevans/staticforge">GitHub</a></li>
-                    <li><a href="#">Twitter</a></li>
-                    <li><a href="#">Discord</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {{ site_name }}. {{ site_tagline | default('Built with ❤️ and PHP') }}</p>
-        </div>
-    </footer>
+    {% include 'staticforce/_footer.html.twig' %}
 
     <script src="assets/js/main.js"></script>
     {% block scripts %}{% endblock %}

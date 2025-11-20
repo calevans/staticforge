@@ -13,5 +13,4 @@ To empower developers with simple, powerful tools that let them focus on creatin
 ## Contact
 
 - **Email**: hello@example.com
-- **Twitter**: [@example](https://twitter.com/example)
 - **GitHub**: [github.com/example](https://github.com/example)

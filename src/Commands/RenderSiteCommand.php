@@ -143,7 +143,7 @@ class RenderSiteCommand extends Command
             $output->writeln('<info>✅ Site generation completed successfully!</info>');
 
             if ($output->isVerbose()) {
-                $this->displayStats($container, $output, $duration);
+                $this->displayStats($this->container, $output, $duration);
             } else {
                 $output->writeln("<comment>Time: {$duration}s</comment>");
             }

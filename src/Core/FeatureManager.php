@@ -51,6 +51,8 @@ class FeatureManager
         $vendorFeaturesDir = $this->findVendorFeaturesDir();
         if ($vendorFeaturesDir && is_dir($vendorFeaturesDir)) {
             $featureDirectoriesToScan[] = $vendorFeaturesDir;
+        } else {
+            $this->logger->log('WARNING', "Vendor features dir not found or not a directory: {$vendorFeaturesDir}");
         }
 
         if (empty($featureDirectoriesToScan)) {

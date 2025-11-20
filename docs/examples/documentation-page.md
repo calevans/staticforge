@@ -135,5 +135,4 @@ Errors are returned in JSON format:
 Need help? Contact our support team:
 
 - **Email**: api-support@example.com
-- **Discord**: [Join our server](https://discord.gg/example)
 - **Docs**: [Full documentation](https://docs.example.com)

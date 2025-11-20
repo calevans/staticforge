@@ -265,7 +265,7 @@ This document analyzes features available in popular static site generators (Jek
 **Implementation scope:** XML sitemap generation, URL priority calculation, change frequency detection, and sitemap index creation for large sites.
 
 #### **Meta Tag Management**
-**What it is:** Automatic generation of meta tags for SEO, social media (Open Graph, Twitter Cards), and structured data markup.
+**What it is:** Automatic generation of meta tags for SEO, social media (Open Graph), and structured data markup.
 
 **Why it's valuable:** Improves search engine visibility, enables rich social media sharing, and provides better content discovery.
 

@@ -118,6 +118,9 @@ foreach ($siteConfigPaths as $configPath) {
 // Store site configuration in container
 $container->setVariable('site_config', $siteConfig);
 
+// Set a build ID for cache busting assets
+$container->setVariable('build_id', time());
+
 // Register logger as singleton service (reads from $_ENV directly)
 $container->stuff('logger', function () {
     $logFile = $_ENV['LOG_FILE'] ?? 'logs/staticforge.log';

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="assets/css/docs.css">
+    <style>
+        .standard-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 60vh;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% if hero %}
+    <div class="docs-hero" style="background-image: url('{{ hero }}');">
+        <div class="docs-hero-overlay"></div>
+        <div class="docs-hero-content">
+            <h1>{{ title }}</h1>
+            {% if description %}
+            <p class="docs-hero-description">{{ description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="standard-content">
+        {{ content | raw }}
+    </div>
+{% endblock %}
