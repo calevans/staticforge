@@ -46,15 +46,27 @@ class Feature extends BaseFeature implements FeatureInterface
         $sourceAssetsDir = $templateDir . DIRECTORY_SEPARATOR . $templateName . DIRECTORY_SEPARATOR . 'assets';
         $targetAssetsDir = $outputDir . DIRECTORY_SEPARATOR . 'assets';
 
-        if (!is_dir($sourceAssetsDir)) {
-            $this->logger->log('DEBUG', "No assets directory found at: {$sourceAssetsDir}");
-            return $parameters;
+        // 1. Copy Template Assets
+        if (is_dir($sourceAssetsDir)) {
+            $this->logger->log('INFO', "Copying template assets from {$sourceAssetsDir} to {$targetAssetsDir}");
+            if (!$this->copyDirectory($sourceAssetsDir, $targetAssetsDir)) {
+                $this->logger->log('ERROR', "Failed to copy template assets");
+            }
+        } else {
+            $this->logger->log('DEBUG', "No template assets directory found at: {$sourceAssetsDir}");
         }
 
-        $this->logger->log('INFO', "Copying assets from {$sourceAssetsDir} to {$targetAssetsDir}");
+        // 2. Copy Content Assets (Overwrites template assets)
+        $contentDir = $container->getVariable('SOURCE_DIR') ?? 'content';
+        $contentAssetsDir = $contentDir . DIRECTORY_SEPARATOR . 'assets';
 
-        if (!$this->copyDirectory($sourceAssetsDir, $targetAssetsDir)) {
-            $this->logger->log('ERROR', "Failed to copy assets");
+        if (is_dir($contentAssetsDir)) {
+            $this->logger->log('INFO', "Copying content assets from {$contentAssetsDir} to {$targetAssetsDir}");
+            if (!$this->copyDirectory($contentAssetsDir, $targetAssetsDir)) {
+                $this->logger->log('ERROR', "Failed to copy content assets");
+            }
+        } else {
+            $this->logger->log('DEBUG', "No content assets directory found at: {$contentAssetsDir}");
         }
 
         return $parameters;

@@ -87,8 +87,9 @@ POST_RENDER (after each file)
   └─ Categories - Moves files to category directories
   ↓
 POST_LOOP (after all files rendered)
-  ├─ RSSFeed
-  └─ RobotsTxt
+  ├─ RSSFeed (priority 90)
+  ├─ RobotsTxt (priority 100)
+  └─ TemplateAssets (priority 100)
   ↓
 DESTROY (cleanup)
 ```
