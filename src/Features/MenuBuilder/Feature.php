@@ -574,7 +574,8 @@ class Feature extends BaseFeature implements FeatureInterface
             foreach ($menuItems as $title => $url) {
                 $items['direct'][] = [
                     'title' => (string)$title,
-                    'url' => (string)$url,
+                    // Strip leading slash for relative URL compatibility
+                    'url' => ltrim((string)$url, '/'),
                     'file' => '', // Static menu items have no associated file
                     'position' => '' // Position is determined by YAML order
                 ];

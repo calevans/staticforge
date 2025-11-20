@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands;
 
+use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use phpseclib3\Crypt\PublicKeyLoader;
@@ -50,15 +51,57 @@ class UploadSiteCommand extends Command
             null,
             InputOption::VALUE_NONE,
             'Perform a dry run (connect, verify, list files) without uploading'
+        )
+        ->addOption(
+            'url',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Override site base URL and re-render site before uploading'
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $tempDir = null;
+
         try {
             $isTest = $input->getOption('test');
+            $urlOverride = $input->getOption('url');
+
             // Load and validate configuration
             $config = $this->loadConfiguration($input);
+
+            // Handle URL override and re-rendering
+            if ($urlOverride) {
+                // Ensure URL ends with a trailing slash
+                $urlOverride = rtrim($urlOverride, '/') . '/';
+
+                $output->writeln("<info>URL override detected: {$urlOverride}</info>");
+                $output->writeln('<info>Re-rendering site for production...</info>');
+
+                // Create temporary directory
+                $baseTmpDir = $this->container->getVariable('TMP_DIR') ?? sys_get_temp_dir();
+                $tempDir = $baseTmpDir . '/staticforge_build_' . uniqid();
+
+                if (!mkdir($tempDir, 0755, true)) {
+                    throw new \RuntimeException("Failed to create temporary directory: {$tempDir}");
+                }
+
+                $output->writeln("<comment>Building to temporary directory: {$tempDir}</comment>");
+
+                // Update container with override values
+                $this->container->updateVariable('OUTPUT_DIR', $tempDir);
+                $this->container->updateVariable('SITE_BASE_URL', $urlOverride);
+
+                // Run the render process
+                $app = new Application($this->container);
+                if (!$app->generate()) {
+                    throw new \RuntimeException('Site generation failed');
+                }
+
+                // Update config to point to the temp directory for upload
+                $config['input_dir'] = $tempDir;
+            }
 
             if ($isTest) {
                 $output->writeln('<info>Running in TEST mode (Dry Run)</info>');
@@ -149,7 +192,35 @@ class UploadSiteCommand extends Command
             $this->logger->log('ERROR', 'Upload failed', ['error' => $e->getMessage()]);
             $this->disconnect();
             return Command::FAILURE;
+        } finally {
+            // Clean up temporary directory if it was created
+            if ($tempDir && is_dir($tempDir)) {
+                $output->writeln("<comment>Cleaning up temporary directory...</comment>");
+                $this->recursiveDelete($tempDir);
+            }
         }
+    }
+
+    /**
+     * Recursively delete a directory
+     */
+    protected function recursiveDelete(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($files as $fileinfo) {
+            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+            $todo($fileinfo->getRealPath());
+        }
+
+        rmdir($dir);
     }
 
   /**

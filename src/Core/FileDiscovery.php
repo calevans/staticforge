@@ -217,8 +217,8 @@ class FileDiscovery
             }
         }
 
-        // Ensure leading slash
-        return '/' . ltrim($relativePath, '/');
+        // Return relative path (no leading slash) for compatibility with <base> tag
+        return ltrim($relativePath, '/');
     }
 
     /**

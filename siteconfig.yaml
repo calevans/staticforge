@@ -8,13 +8,13 @@ site:
 # Static Menu Definitions
 menu:
   top:
-    Home: /
-    About: /about
-    Shop: /shop
-    Contact: /contact
+    Home:
+    About: about
+    Shop: shop
+    Contact: contact
   footer:
-    Privacy: /privacy
-    Terms: /terms
+    Privacy: privacy
+    Terms: terms
 
 # Chapter Navigation Configuration
 chapter_nav:

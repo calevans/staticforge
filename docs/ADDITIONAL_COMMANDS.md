@@ -70,6 +70,10 @@ SFTP_REMOTE_PATH="/var/www/html"
 # Upload using OUTPUT_DIR from .env
 php bin/console.php site:upload
 
+# Upload with production URL override (Recommended for deployment)
+# This will re-render the site to a temporary directory with the correct URL before uploading
+php bin/console.php site:upload --url="https://www.mysite.com/"
+
 # Upload from custom directory
 php bin/console.php site:upload --input=/path/to/custom/output
 
@@ -80,24 +84,26 @@ php bin/console.php site:upload -v
 #### Typical Workflow
 
 ```bash
+# 1. Deploy to production (renders with correct URL, uploads, cleans up)
+php bin/console.php site:upload --url="https://www.mysite.com/"
+
+# OR Manual Workflow:
 # 1. Generate your site
 php bin/console.php site:render --clean
 
 # 2. Upload to production
 php bin/console.php site:upload
-
-# Or combine with custom output
-php bin/console.php site:render --clean --output=/tmp/mysite
-php bin/console.php site:upload --input=/tmp/mysite
 ```
 
 #### How It Works
 
 1. **Validates Configuration**: Checks all required SFTP settings are configured
-2. **Establishes Connection**: Connects to remote server and authenticates
-3. **Creates Directory Structure**: Recursively creates any missing directories on remote server
-4. **Uploads All Files**: Uploads every file from output directory (HTML, CSS, JS, images, PDFs, etc.)
-5. **Error Handling**: Logs errors but continues uploading remaining files
+2. **Production Build (Optional)**: If `--url` is provided, re-renders the site to a temporary directory using that URL
+3. **Establishes Connection**: Connects to remote server and authenticates
+4. **Creates Directory Structure**: Recursively creates any missing directories on remote server
+5. **Uploads All Files**: Uploads every file from output directory (HTML, CSS, JS, images, PDFs, etc.)
+6. **Cleanup**: Removes temporary build directory if one was created
+7. **Error Handling**: Logs errors but continues uploading remaining files
 6. **Reports Results**: Shows summary of files uploaded and any errors encountered
 
 #### Important Notes
