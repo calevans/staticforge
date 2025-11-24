@@ -1,7 +1,7 @@
 ---
 title: Contact Us
 template: standard_page
-hero: assets/images/contact-hero.png
+hero: assets/images/contact-hero.jpg
 midjourney_prompt: "A futuristic communication hub, glowing blue and purple data streams connecting people, clean minimal style, soft blue and purple lighting, 8k resolution, --ar 16:9"
 description: "We'd love to hear from you. Send us a message!"
 ---

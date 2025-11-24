@@ -30,7 +30,7 @@ templates/
       js/
         app.js
       images/
-        card_bg.png
+        card_bg.jpg
     index.html.twig
 ```
 
@@ -60,7 +60,7 @@ public/
     js/
       app.js       (from template)
     images/
-      card_bg.png  (from template)
+      card_bg.jpg  (from template)
       hero.jpg     (from content)
   index.html
 ```

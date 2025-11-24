@@ -2,7 +2,7 @@
 template: docs
 menu: '1.1, 2.1'
 category: docs
-hero: assets/images/sf_quickstart_hero.png
+hero: assets/images/sf_quickstart_hero.jpg
 ---
 # Quick Start Guide
 
