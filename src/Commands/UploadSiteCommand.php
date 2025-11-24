@@ -68,6 +68,16 @@ class UploadSiteCommand extends Command
             $isTest = $input->getOption('test');
             $urlOverride = $input->getOption('url');
 
+            // Check for UPLOAD_URL in environment if not provided via CLI
+            if (!$urlOverride) {
+                $urlOverride = $_ENV['UPLOAD_URL'] ?? null;
+            }
+
+            if (!$urlOverride) {
+                $output->writeln('<error>Upload URL is required. Please set UPLOAD_URL in .env or use --url option.</error>');
+                return Command::FAILURE;
+            }
+
             // Load and validate configuration
             $config = $this->loadConfiguration($input);
 

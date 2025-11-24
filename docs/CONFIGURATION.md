@@ -45,6 +45,14 @@ FEATURES_DIR="src/Features"
 # Optional Configuration
 LOG_LEVEL="INFO"
 LOG_FILE="logs/staticforge.log"
+
+# SFTP Upload Configuration
+UPLOAD_URL="https://www.mysite.com"
+SFTP_HOST="example.com"
+SFTP_PORT=22
+SFTP_USERNAME="your-username"
+SFTP_PASSWORD="your-password"
+SFTP_REMOTE_PATH="/var/www/html"
 ```
 
 ---

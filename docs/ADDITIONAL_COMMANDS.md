@@ -41,10 +41,13 @@ Upload your generated static site to a remote server via SFTP. This is the recom
 
 #### Configuration
 
-Before using `site:upload`, configure your SFTP connection in `.env`:
+Before using `site:upload`, configure your SFTP connection in `.env`. You should also set the `UPLOAD_URL` to your production URL.
 
 **Password Authentication** (simple but less secure):
 ```bash
+# The URL to use when building for production upload
+UPLOAD_URL="https://www.mysite.com"
+
 SFTP_HOST="example.com"
 SFTP_PORT=22
 SFTP_USERNAME="your-username"
@@ -54,6 +57,9 @@ SFTP_REMOTE_PATH="/var/www/html"
 
 **SSH Key Authentication** (recommended, more secure):
 ```bash
+# The URL to use when building for production upload
+UPLOAD_URL="https://www.mysite.com"
+
 SFTP_HOST="example.com"
 SFTP_PORT=22
 SFTP_USERNAME="your-username"
@@ -66,15 +72,16 @@ SFTP_REMOTE_PATH="/var/www/html"
 
 #### Usage
 
+The `site:upload` command **always** re-renders your site for production before uploading. It requires a production URL, which can be set in `.env` (as `UPLOAD_URL`) or passed via the `--url` option.
+
 ```bash
-# Upload using OUTPUT_DIR from .env
+# Upload using UPLOAD_URL from .env (Recommended)
 php bin/console.php site:upload
 
-# Upload with production URL override (Recommended for deployment)
-# This will re-render the site to a temporary directory with the correct URL before uploading
-php bin/console.php site:upload --url="https://www.mysite.com/"
+# Upload with production URL override (Overrides .env)
+php bin/console.php site:upload --url="https://staging.mysite.com/"
 
-# Upload from custom directory
+# Upload from custom directory (Advanced)
 php bin/console.php site:upload --input=/path/to/custom/output
 
 # Verbose output shows each file uploaded
@@ -84,20 +91,18 @@ php bin/console.php site:upload -v
 #### Typical Workflow
 
 ```bash
-# 1. Deploy to production (renders with correct URL, uploads, cleans up)
-php bin/console.php site:upload --url="https://www.mysite.com/"
-
-# OR Manual Workflow:
-# 1. Generate your site
-php bin/console.php site:render --clean
-
-# 2. Upload to production
+# 1. Deploy to production
+# This will:
+#   a. Read UPLOAD_URL from .env (or --url)
+#   b. Re-render the site to a temporary directory with that URL
+#   c. Upload the generated files via SFTP
+#   d. Clean up the temporary directory
 php bin/console.php site:upload
 ```
 
 #### How It Works
 
-1. **Validates Configuration**: Checks all required SFTP settings are configured
+1. **Validates Configuration**: Checks all required SFTP settings and `UPLOAD_URL` are configured
 2. **Production Build (Optional)**: If `--url` is provided, re-renders the site to a temporary directory using that URL
 3. **Establishes Connection**: Connects to remote server and authenticates
 4. **Creates Directory Structure**: Recursively creates any missing directories on remote server
