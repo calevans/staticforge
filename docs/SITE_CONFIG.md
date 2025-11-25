@@ -101,6 +101,48 @@ Configure site-wide metadata that appears in templates:
 
 ```yaml
 site:
+  name: "StaticForge"
+  tagline: "Built with ❤️ and PHP"
+  description: "A flexible static site generator"
+  author: "Cal Evans"
+```
+
+### Forms Configuration
+
+Define forms that can be embedded in your content using the `{{ form('name') }}` shortcode.
+
+```yaml
+forms:
+  contact:
+    provider_url: "https://eicc.com/f/"
+    form_id: "YOUR_FORM_ID"
+    challenge_url: "https://sendpoint.lndo.site/?action=challenge"
+    submit_text: "Send Message"
+    success_message: "Thanks! We've received your message."
+    error_message: "Oops! Something went wrong. Please try again."
+    fields:
+      - name: "name"
+        label: "Your Name"
+        type: "text"
+        required: true
+        placeholder: "John Doe"
+      - name: "email"
+        label: "Email Address"
+        type: "email"
+        required: true
+        placeholder: "john@example.com"
+      - name: "message"
+        label: "Message"
+        type: "textarea"
+        rows: 7
+        required: true
+```
+
+See the [Forms Feature documentation](FORMS.html) for full details.
+
+
+```yaml
+site:
   name: "My Awesome Site"
   tagline: "Building amazing things with PHP"
 ```

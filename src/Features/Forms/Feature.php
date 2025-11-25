@@ -52,7 +52,8 @@ class Feature extends BaseFeature implements FeatureInterface
         if (preg_match_all('/\{\{\s*form\([\'"]([a-zA-Z0-9_-]+)[\'"]\)\s*\}\}/', $content, $matches, PREG_SET_ORDER)) {
             $siteConfig = $container->getVariable('site_config') ?? [];
             $formsConfig = $siteConfig['forms'] ?? [];
-            $formsReplaced = false;
+            $twig = $container->get('twig');
+            $activeTemplate = $container->getVariable('TEMPLATE') ?? 'staticforce';
 
             foreach ($matches as $match) {
                 $fullMatch = $match[0];
@@ -63,14 +64,8 @@ class Feature extends BaseFeature implements FeatureInterface
                     continue;
                 }
 
-                $formHtml = $this->generateFormHtml($formName, $formsConfig[$formName]);
+                $formHtml = $this->generateFormHtml($formsConfig[$formName], $twig, $activeTemplate);
                 $content = str_replace($fullMatch, $formHtml, $content);
-                $formsReplaced = true;
-            }
-
-            // Inject CSS if forms were replaced
-            if ($formsReplaced) {
-                $content = $this->injectFormCss($content);
             }
 
             $parameters['file_content'] = $content;
@@ -82,98 +77,42 @@ class Feature extends BaseFeature implements FeatureInterface
     /**
      * Generate HTML for a form based on configuration
      *
-     * @param string $formName
      * @param array<string, mixed> $config
+     * @param \Twig\Environment $twig
+     * @param string $activeTemplate
      * @return string
      */
-    private function generateFormHtml(string $formName, array $config): string
+    private function generateFormHtml(array $config, $twig, string $activeTemplate): string
     {
-        $endpoint = $config['endpoint'] ?? '';
-        $submitText = $config['submit_text'] ?? 'Submit';
-        $fields = $config['fields'] ?? [];
+        $providerUrl = $config['provider_url'] ?? '';
+        $formId = $config['form_id'] ?? '';
+        
+        // Ensure provider URL ends with ? or & if it has query params, or add ?FORMID=
+        if (strpos($providerUrl, '?') !== false) {
+            $endpoint = $providerUrl . '&FORMID=' . $formId;
+        } else {
+            $endpoint = $providerUrl . '?FORMID=' . $formId;
+        }
 
-        $html = "<form action=\"{$endpoint}\" method=\"POST\" class=\"sf-form\">\n";
+        $context = [
+            'endpoint' => $endpoint,
+            'challenge_url' => $config['challenge_url'] ?? null,
+            'submit_text' => $config['submit_text'] ?? 'Submit',
+            'success_message' => $config['success_message'] ?? 'Thank you for your message.',
+            'error_message' => $config['error_message'] ?? 'There was an error sending your message.',
+            'fields' => $config['fields'] ?? [],
+        ];
 
-        foreach ($fields as $field) {
-            $name = $field['name'];
-            $label = $field['label'] ?? ucfirst($name);
-            $type = $field['type'] ?? 'text';
-            $required = !empty($field['required']) ? 'required' : '';
-            $placeholder = $field['placeholder'] ?? '';
-
-            $html .= "  <div class=\"sf-form-group\">\n";
-            $html .= "    <label for=\"{$name}\" class=\"sf-label\">{$label}</label>\n";
-
-            if ($type === 'textarea') {
-                $rows = $field['rows'] ?? 5;
-                $html .= "    <textarea name=\"{$name}\" id=\"{$name}\" rows=\"{$rows}\" class=\"sf-input\" placeholder=\"{$placeholder}\" {$required}></textarea>\n";
-            } else {
-                $html .= "    <input type=\"{$type}\" name=\"{$name}\" id=\"{$name}\" class=\"sf-input\" placeholder=\"{$placeholder}\" {$required}>\n";
+        // Check for custom template
+        if (!empty($config['template'])) {
+            $customTemplate = $activeTemplate . '/' . $config['template'] . '.html.twig';
+            if ($twig->getLoader()->exists($customTemplate)) {
+                return $twig->render($customTemplate, $context);
             }
-
-            $html .= "  </div>\n";
+            $this->logger->log('WARNING', "Custom form template '{$customTemplate}' not found. Falling back to default.");
         }
 
-        $html .= "  <button type=\"submit\" class=\"sf-button\">{$submitText}</button>\n";
-        $html .= "</form>\n";
-
-        return $html;
-    }
-
-    /**
-     * Inject default CSS for forms
-     *
-     * @param string $content
-     * @return string
-     */
-    private function injectFormCss(string $content): string
-    {
-        // Simple check to avoid double injection
-        if (strpos($content, 'id="sf-forms-css"') !== false) {
-            return $content;
-        }
-
-        $css = <<<CSS
-<style id="sf-forms-css">
-.sf-form {
-    max-width: 600px;
-    margin: 20px 0;
-    font-family: inherit;
-}
-.sf-form-group {
-    margin-bottom: 15px;
-}
-.sf-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-.sf-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-.sf-input:focus {
-    border-color: #666;
-    outline: none;
-}
-.sf-button {
-    background-color: #333;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-.sf-button:hover {
-    background-color: #555;
-}
-</style>
-CSS;
-        return $content . "\n" . $css;
+        return $twig->render('staticforce/_form.html.twig', $context);
     }
 }
+

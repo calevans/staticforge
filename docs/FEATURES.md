@@ -37,6 +37,18 @@ Processes `.html` files and wraps them in templates. Ideal for custom layouts, l
 
 ---
 
+## Interactive Features
+
+These features add interactivity to your static pages.
+
+### [Forms](FORMS.html)
+
+Embed contact forms and other input forms using simple shortcodes. Supports configuration via `siteconfig.yaml`, AJAX submission, and Altcha spam protection.
+
+[Read more about Forms →](FORMS.html)
+
+---
+
 ## Organization Features
 
 These features help you organize and structure your content.

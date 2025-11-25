@@ -27,9 +27,13 @@ chapter_nav:
 # Forms Configuration
 forms:
   contact:
-    provider: "eicc"
-    endpoint: "https://eicc.com/f/YOUR_FORM_ID"
+    template: contact_us
+    provider_url: "https://sendpoint.eicc.com/"
+    form_id: "YOUR_FORM_ID"
+    challenge_url: "https://sendpoint.lndo.site/?action=challenge"
     submit_text: "Send Message"
+    success_message: "Thanks! We've received your message."
+    error_message: "Oops! Something went wrong. Please try again."
     fields:
       - name: "name"
         label: "Your Name"
