@@ -47,6 +47,8 @@ use Dotenv\Dotenv;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Symfony\Component\Yaml\Yaml;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 // Accept optional environment path parameter
 $envPath = $envPath ?? '.env';
@@ -134,6 +136,26 @@ $container->stuff('logger', function () {
 
     // Create and return logger instance
     return new Log('staticforge', $logFile, $logLevel);
+});
+
+// Register Twig as a shared service
+$container->stuff('twig', function () use ($container) {
+    $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+    
+    $loader = new FilesystemLoader($templateDir);
+    
+    // Add the active template directory if set
+    $templateTheme = $container->getVariable('TEMPLATE') ?? 'staticforce';
+    if (is_dir($templateDir . '/' . $templateTheme)) {
+        $loader->addPath($templateDir . '/' . $templateTheme);
+    }
+
+    return new Environment($loader, [
+        'debug' => true,
+        'strict_variables' => false,
+        'autoescape' => 'html',
+        'cache' => false,
+    ]);
 });
 
 // Return fully configured container
