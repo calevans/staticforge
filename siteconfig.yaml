@@ -28,9 +28,9 @@ chapter_nav:
 forms:
   contact:
     template: contact_us
-    provider_url: "https://sendpoint.lndo.site/"
-    form_id: "YOUR_FORM_ID"
-    challenge_url: "https://sendpoint.lndo.site/?action=challenge"
+    provider_url: "https://sendpoint.eicc.com/"
+    form_id: "F94G01"
+    challenge_url: "https://sendpoint.eicc.com/?action=challenge"
     submit_text: "Send Message"
     success_message: "Thanks! We've received your message."
     error_message: "Oops! Something went wrong. Please try again."
@@ -40,9 +40,11 @@ forms:
         type: "text"
         required: true
         placeholder: "John Doe"
+        maxlength: 100
       - name: "email"
         label: "Email Address"
         type: "email"
+        maxlength: 100
         required: true
         placeholder: "john@example.com"
       - name: "message"
@@ -51,4 +53,5 @@ forms:
         type: "textarea"
         rows: 7
         required: true
+        maxlength: 2048
 

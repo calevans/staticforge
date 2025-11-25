@@ -1,120 +1,49 @@
 {# templates/staticforce/_form.html.twig #}
 <div class="sf-form-wrapper">
-    <div class="sf-form-message" style="display:none;"></div>
-
-    <form action="{{ endpoint }}" method="POST" class="sf-form" data-success-message="{{ success_message }}" data-error-message="{{ error_message }}">
-        {% for field in fields %}
-            <div class="sf-form-group">
-                <label for="{{ field.name }}" class="sf-label">{{ field.label|default(field.name|capitalize) }}</label>
-                {% if field.type == 'textarea' %}
-                    <textarea name="{{ field.name }}" id="{{ field.name }}" rows="{{ field.rows|default(5) }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}></textarea>
-                {% else %}
-                    <input type="{{ field.type|default('text') }}" name="{{ field.name }}" id="{{ field.name }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}>
-                {% endif %}
-            </div>
-        {% endfor %}
-
-        {# Altcha Widget #}
-        {% if challenge_url %}
-            <div class="sf-form-group">
-                <altcha-widget
-                    challengeurl="{{ challenge_url }}"
-                    floating
-                ></altcha-widget>
-            </div>
-        {% endif %}
-
-        <button type="submit" class="sf-button">{{ submit_text|default('Submit') }}</button>
-    </form>
-</div>
-
-{# Include Altcha Script #}
-{% if challenge_url %}
-    <script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js"></script>
+<div class="sf-form-message" style="display:none;"></div>
+<form action="{{ endpoint }}" method="POST" class="sf-form" data-success-message="{{ success_message }}" data-error-message="{{ error_message }}">
+{% for field in fields %}
+<div class="sf-form-group">
+<label for="{{ field.name }}" class="sf-label">{{ field.label|default(field.name|capitalize) }}</label>
+{% if field.type == 'textarea' %}
+<textarea name="{{ field.name }}" id="{{ field.name }}" rows="{{ field.rows|default(5) }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}></textarea>
+{% else %}
+<input type="{{ field.type|default('text') }}" name="{{ field.name }}" id="{{ field.name }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}>
 {% endif %}
-
-{# Form Styles #}
-<style>
-.sf-form {
-    max-width: 600px;
-    margin: 20px 0;
-    font-family: inherit;
-}
-.sf-form-group {
-    margin-bottom: 15px;
-}
-.sf-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-.sf-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-.sf-input:focus {
-    border-color: #666;
-    outline: none;
-}
-.sf-button {
-    background-color: #333;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-.sf-button:hover {
-    background-color: #555;
-}
-.sf-form-message {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-.sf-message-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-.sf-message-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-</style>
-
-{# Form Handling Script #}
+</div>
+{% endfor %}
+{% if challenge_url %}
+<div class="sf-form-group">
+<altcha-widget challengeurl="{{ challenge_url }}" floating></altcha-widget>
+</div>
+{% endif %}
+<button type="submit" class="sf-button">{{ submit_text|default('Submit') }}</button>
+</form>
+</div>
+{% if challenge_url %}
+<script async defer src="https://cdn.jsdelivr.net/npm/altcha/dist/altcha.min.js"></script>
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('.sf-form');
     forms.forEach(form => {
-        // Only attach listener once
         if (form.dataset.listenerAttached) return;
         form.dataset.listenerAttached = 'true';
-
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerText;
             submitBtn.disabled = true;
             submitBtn.innerText = 'Sending...';
-
             const formData = new FormData(form);
             const messageContainer = form.previousElementSibling;
-
             fetch(form.action, {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
                 if (response.ok) {
-                    messageContainer.className = 'sf-form-message sf-message-success';
+                    messageContainer.className = 'sf-form-message success';
                     messageContainer.innerText = form.dataset.successMessage;
                     messageContainer.style.display = 'block';
                     form.reset();
@@ -123,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                messageContainer.className = 'sf-form-message sf-message-error';
+                messageContainer.className = 'sf-form-message error';
                 messageContainer.innerText = form.dataset.errorMessage;
                 messageContainer.style.display = 'block';
             })
