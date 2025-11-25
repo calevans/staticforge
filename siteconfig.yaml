@@ -9,9 +9,7 @@ site:
 menu:
   top:
     Home:
-    About: about
-    Shop: shop
-    Contact: contact-us.html
+    Contact Us: contact-us.html
   footer:
     Privacy: privacy
     Terms: terms
