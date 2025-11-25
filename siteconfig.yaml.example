@@ -76,17 +76,20 @@ forms:
         type: "text"
         required: true
         placeholder: "John Doe"
+        maxlength: 100
       - name: "email"
         label: "Email Address"
         type: "email"
         required: true
         placeholder: "john@example.com"
+        maxlength: 150
       - name: "message"
         label: "Message"
         type: "textarea"
         rows: 7
         required: true
         placeholder: "How can we help you?"
+        maxlength: 1000
 
 # Future: Additional site-wide settings can be added here
 # Examples:

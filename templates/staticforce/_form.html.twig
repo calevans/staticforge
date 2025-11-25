@@ -7,9 +7,9 @@
             <div class="sf-form-group">
                 <label for="{{ field.name }}" class="sf-label">{{ field.label|default(field.name|capitalize) }}</label>
                 {% if field.type == 'textarea' %}
-                    <textarea name="{{ field.name }}" id="{{ field.name }}" rows="{{ field.rows|default(5) }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}></textarea>
+                    <textarea name="{{ field.name }}" id="{{ field.name }}" rows="{{ field.rows|default(5) }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}></textarea>
                 {% else %}
-                    <input type="{{ field.type|default('text') }}" name="{{ field.name }}" id="{{ field.name }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+                    <input type="{{ field.type|default('text') }}" name="{{ field.name }}" id="{{ field.name }}" class="sf-input" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %} {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}>
                 {% endif %}
             </div>
         {% endfor %}
