@@ -1,0 +1,110 @@
+/* Typography */
+.content h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-lg);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: var(--spacing-3xl);
+    margin-bottom: var(--spacing-lg);
+    color: var(--gray-900);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-800);
+}
+
+.content h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-800);
+}
+
+.content p {
+    margin-bottom: var(--spacing-lg);
+    color: var(--gray-700);
+}
+
+.content a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.content a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.content ul,
+.content ol {
+    margin-bottom: var(--spacing-lg);
+    padding-left: var(--spacing-xl);
+    color: var(--gray-700);
+}
+
+.content li {
+    margin-bottom: var(--spacing-sm);
+    padding-left: var(--spacing-sm);
+}
+
+.content ul li::marker {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.content blockquote {
+    border-left: 4px solid var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-xl) 0;
+    border-radius: var(--radius-md);
+    font-style: italic;
+    color: var(--gray-700);
+}
+
+.content code {
+    font-family: var(--font-mono);
+    background: var(--gray-100);
+    padding: 0.2em 0.4em;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+.content pre {
+    background: var(--gray-900);
+    color: var(--gray-100);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    margin: var(--spacing-lg) 0;
+    box-shadow: var(--shadow-lg);
+}
+
+.content pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+    font-size: 0.875rem;
+    line-height: 1.7;
+}

@@ -69,7 +69,52 @@ class Feature extends BaseFeature implements FeatureInterface
             $this->logger->log('DEBUG', "No content assets directory found at: {$contentAssetsDir}");
         }
 
+        // 3. Process CSS Imports (Bundling)
+        $this->processCssBundling($targetAssetsDir);
+
         return $parameters;
+    }
+
+    /**
+     * Process CSS files to resolve @import statements
+     */
+    private function processCssBundling(string $assetsDir): void
+    {
+        $cssDir = $assetsDir . DIRECTORY_SEPARATOR . 'css';
+        if (!is_dir($cssDir)) {
+            return;
+        }
+
+        $mainCssPath = $cssDir . DIRECTORY_SEPARATOR . 'main.css';
+        if (!file_exists($mainCssPath)) {
+            return;
+        }
+
+        $this->logger->log('INFO', "Bundling CSS imports in {$mainCssPath}");
+        $content = file_get_contents($mainCssPath);
+        if ($content === false) {
+            return;
+        }
+
+        // Regex to find @import 'path/to/file.css';
+        $pattern = '/@import\s+[\'"]([^\'"]+)[\'"];/';
+
+        $newContent = preg_replace_callback($pattern, function ($matches) use ($cssDir) {
+            $importPath = $matches[1];
+            $fullPath = $cssDir . DIRECTORY_SEPARATOR . $importPath;
+
+            if (file_exists($fullPath)) {
+                $this->logger->log('DEBUG', "Resolving CSS import: {$importPath}");
+                return "/* Import: {$importPath} */\n" . file_get_contents($fullPath) . "\n";
+            } else {
+                $this->logger->log('WARNING', "CSS import not found: {$importPath}");
+                return "/* Missing import: {$importPath} */";
+            }
+        }, $content);
+
+        if ($newContent !== null) {
+            file_put_contents($mainCssPath, $newContent);
+        }
     }
 
     /**
