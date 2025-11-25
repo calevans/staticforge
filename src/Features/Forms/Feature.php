@@ -86,7 +86,7 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         $providerUrl = $config['provider_url'] ?? '';
         $formId = $config['form_id'] ?? '';
-        
+
         // Ensure provider URL ends with ? or & if it has query params, or add ?FORMID=
         if (strpos($providerUrl, '?') !== false) {
             $endpoint = $providerUrl . '&FORMID=' . $formId;

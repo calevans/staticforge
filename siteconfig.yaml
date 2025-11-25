@@ -28,7 +28,7 @@ chapter_nav:
 forms:
   contact:
     template: contact_us
-    provider_url: "https://sendpoint.eicc.com/"
+    provider_url: "https://sendpoint.lndo.site/"
     form_id: "YOUR_FORM_ID"
     challenge_url: "https://sendpoint.lndo.site/?action=challenge"
     submit_text: "Send Message"

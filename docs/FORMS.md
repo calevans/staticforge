@@ -102,14 +102,26 @@ Your custom template will receive the following variables:
 
 ## Spam Protection (Altcha)
 
-The Forms feature supports [Altcha](https://altcha.org/) for privacy-friendly spam protection. To enable it:
+The Forms feature supports [Altcha](https://altcha.org/) for privacy-friendly spam protection. This feature is **completely optional**.
 
+### Enabling Altcha
+To enable spam protection:
 1.  Ensure you have an Altcha challenge server running or use a hosted service.
-2.  Add the `challenge_url` to your form configuration in `siteconfig.yaml`.
+2.  Add the `challenge_url` key to your form configuration in `siteconfig.yaml`.
 
-The feature will automatically:
+```yaml
+forms:
+  contact:
+    # ... other config ...
+    challenge_url: "https://your-altcha-server.com/challenge"
+```
+
+When `challenge_url` is present, the system will automatically:
 - Include the Altcha widget in the form.
 - Load the necessary Altcha JavaScript.
+
+### Disabling Altcha
+To disable spam protection, simply **remove or comment out** the `challenge_url` line in your `siteconfig.yaml`. If this key is missing, no Altcha code or widgets will be generated.
 
 ## Styling
 
