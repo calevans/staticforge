@@ -141,9 +141,9 @@ $container->stuff('logger', function () {
 // Register Twig as a shared service
 $container->stuff('twig', function () use ($container) {
     $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
-    
+
     $loader = new FilesystemLoader($templateDir);
-    
+
     // Add the active template directory if set
     $templateTheme = $container->getVariable('TEMPLATE') ?? 'staticforce';
     if (is_dir($templateDir . '/' . $templateTheme)) {
