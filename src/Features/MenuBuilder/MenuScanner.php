@@ -43,7 +43,7 @@ class MenuScanner
             foreach ($menuPositions as $position) {
                 // Get title from metadata or extract from file
                 $title = $metadata['title'] ?? $this->extractTitleFromFile($fileData['path']);
-                
+
                 $this->structureBuilder->addMenuEntry($position, $fileData, $title, $menuData);
             }
         }

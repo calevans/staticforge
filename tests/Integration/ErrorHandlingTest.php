@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Integration;
 
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
+use org\bovigo\vfs\vfsStream;
 
 /**
  * Error handling and graceful failure integration tests
@@ -15,18 +16,23 @@ class ErrorHandlingTest extends IntegrationTestCase
   private string $testContentDir;
   private string $testTemplateDir;
   private Container $container;
+  private $vfsRoot;
 
   protected function setUp(): void
   {
     parent::setUp();
 
-    $this->testOutputDir = sys_get_temp_dir() . '/staticforge_error_output_' . uniqid();
-    $this->testContentDir = sys_get_temp_dir() . '/staticforge_error_content_' . uniqid();
-    $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_error_templates_' . uniqid();
+    // Use vfsStream for file system isolation and performance
+    $this->vfsRoot = vfsStream::setup('root');
+    $this->testOutputDir = vfsStream::url('root/output');
+    $this->testContentDir = vfsStream::url('root/content');
+    $this->testTemplateDir = vfsStream::url('root/templates');
 
-    mkdir($this->testOutputDir, 0755, true);
-    mkdir($this->testContentDir, 0755, true);
-    mkdir($this->testTemplateDir . '/sample', 0755, true);
+    // Create directories in VFS
+    mkdir($this->testOutputDir);
+    mkdir($this->testContentDir);
+    mkdir($this->testTemplateDir);
+    mkdir($this->testTemplateDir . '/sample');
 
     // Override environment variables BEFORE loading bootstrap
     $_ENV['SOURCE_DIR'] = $this->testContentDir;
@@ -34,7 +40,7 @@ class ErrorHandlingTest extends IntegrationTestCase
     $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
 
     $this->container = $this->createContainer(__DIR__ . '/../.env.integration');
-    
+
     // Update container variables after bootstrap to override .env values
     $this->container->updateVariable('SOURCE_DIR', $this->testContentDir);
     $this->container->updateVariable('OUTPUT_DIR', $this->testOutputDir);
@@ -46,9 +52,7 @@ class ErrorHandlingTest extends IntegrationTestCase
   protected function tearDown(): void
   {
     parent::tearDown();
-    $this->removeDirectory($this->testOutputDir);
-    $this->removeDirectory($this->testContentDir);
-    $this->removeDirectory($this->testTemplateDir);
+    // No need to manually remove directories with vfsStream
   }
 
   private function createBaseTemplate(): void
