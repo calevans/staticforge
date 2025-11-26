@@ -69,7 +69,9 @@ class FeatureManager
         $this->container->setVariable('features', []);
 
         $this->logger->log('INFO', "Loaded " . count($this->features) . " features");
-    }    /**
+    }
+
+    /**
      * Get all loaded features
      *
      * @return array<string, FeatureInterface>
@@ -149,7 +151,9 @@ class FeatureManager
             if (file_exists($featureFile)) {
                 $directories[] = $item->getPathname();
             }
-        }        return $directories;
+        }
+
+        return $directories;
     }
 
     /**
@@ -219,7 +223,9 @@ class FeatureManager
 
         $this->logger->log('WARNING', "No valid Feature class found in {$featureFile}");
         return null;
-    }    /**
+    }
+
+    /**
      * Get possible class names for user features only
      */
     private function getUserFeatureClasses(string $directoryName): array

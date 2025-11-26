@@ -48,10 +48,18 @@ class TemplateRenderer
                 $categoryTemplates = $container->getVariable('category_templates') ?? [];
                 // Slugify category name to match how Categories stores them
                 $categorySlug = $this->slugifyCategory($parsedContent['metadata']['category']);
-                $this->logger->log('DEBUG', "Template lookup: category={$parsedContent['metadata']['category']}, slug={$categorySlug}, available=" . json_encode(array_keys($categoryTemplates)));
+                $this->logger->log(
+                    'DEBUG',
+                    "Template lookup: category={$parsedContent['metadata']['category']}, " .
+                    "slug={$categorySlug}, available=" . json_encode(array_keys($categoryTemplates))
+                );
                 if (isset($categoryTemplates[$categorySlug])) {
                     $templateName = $categoryTemplates[$categorySlug];
-                    $this->logger->log('INFO', "Applied category template '{$templateName}' for category '{$parsedContent['metadata']['category']}'");
+                    $this->logger->log(
+                        'INFO',
+                        "Applied category template '{$templateName}' " .
+                        "for category '{$parsedContent['metadata']['category']}'"
+                    );
                 }
             }
             $templateName .= '.html.twig';
@@ -107,7 +115,10 @@ class TemplateRenderer
             '{{PAGE_TITLE}}' => $parsedContent['title'],
             '{{CONTENT}}' => $parsedContent['content'],
             '{{META_DESCRIPTION}}' => $parsedContent['metadata']['description'] ?? '',
-            '{{META_KEYWORDS}}' => isset($parsedContent['metadata']['tags']) && is_array($parsedContent['metadata']['tags']) ? implode(', ', $parsedContent['metadata']['tags']) : ''
+            '{{META_KEYWORDS}}' => isset($parsedContent['metadata']['tags']) &&
+                is_array($parsedContent['metadata']['tags'])
+                ? implode(', ', $parsedContent['metadata']['tags'])
+                : ''
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);

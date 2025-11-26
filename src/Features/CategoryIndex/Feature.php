@@ -158,14 +158,4 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->categoryPageGenerator->processDeferredCategoryFiles($container);
         return $parameters;
     }
-
-  /**
-   * Public wrapper for testing - generates category indexes
-   * This is an alias for processDeferredCategoryFiles to maintain test compatibility
-   */
-    public function generateCategoryIndexes(Container $container, array $parameters): array
-    {
-        return $this->processDeferredCategoryFiles($container, $parameters);
-    }
-
 }

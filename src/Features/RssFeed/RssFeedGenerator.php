@@ -30,10 +30,12 @@ class RssFeedGenerator
         $xml .= '  <channel>' . "\n";
         $xml .= '    <title>' . $this->escapeXml($siteName . ' - ' . $categoryName) . '</title>' . "\n";
         $xml .= '    <link>' . $this->escapeXml($siteBaseUrl . $categorySlug . '/') . '</link>' . "\n";
-        $xml .= '    <description>' . $this->escapeXml($categoryName . ' articles from ' . $siteName) . '</description>' . "\n";
+        $xml .= '    <description>' . $this->escapeXml($categoryName . ' articles from ' . $siteName) .
+                '</description>' . "\n";
         $xml .= '    <language>en-us</language>' . "\n";
         $xml .= '    <lastBuildDate>' . date('r') . '</lastBuildDate>' . "\n";
-        $xml .= '    <atom:link href="' . $this->escapeXml($siteBaseUrl . $categorySlug . '/rss.xml') . '" rel="self" type="application/rss+xml" />' . "\n";
+        $xml .= '    <atom:link href="' . $this->escapeXml($siteBaseUrl . $categorySlug . '/rss.xml') .
+                '" rel="self" type="application/rss+xml" />' . "\n";
 
         foreach ($files as $file) {
             $xml .= $this->buildRssItem($file, $siteBaseUrl);

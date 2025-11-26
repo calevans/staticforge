@@ -166,6 +166,4 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
         return $outputPath;
     }
-
-
 }

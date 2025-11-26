@@ -76,7 +76,9 @@ class UploadSiteCommand extends Command
             }
 
             if (!$urlOverride) {
-                $output->writeln('<error>Upload URL is required. Please set UPLOAD_URL in .env or use --url option.</error>');
+                $output->writeln(
+                    '<error>Upload URL is required. Please set UPLOAD_URL in .env or use --url option.</error>'
+                );
                 return Command::FAILURE;
             }
 
@@ -191,4 +193,3 @@ class UploadSiteCommand extends Command
         rmdir($dir);
     }
 }
-

@@ -8,7 +8,7 @@ class RobotsTxtGenerator
 {
     /**
      * Generate robots.txt content
-     * 
+     *
      * @param array<int, string> $disallowedPaths
      */
     public function generate(string $siteBaseUrl, array $disallowedPaths): string

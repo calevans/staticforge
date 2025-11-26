@@ -157,7 +157,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
     }
 
     // Generate indexes (simulating POST_LOOP)
-    $this->feature->generateCategoryIndexes($this->container, []);
+    $this->feature->processDeferredCategoryFiles($this->container, []);
 
     // Check that index file was created
     $indexPath = $this->tempDir . '/tech/index.html';
@@ -203,7 +203,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
       ]);
     }
 
-    $this->feature->generateCategoryIndexes($this->container, []);
+    $this->feature->processDeferredCategoryFiles($this->container, []);
 
     // Both category indexes should exist
     $this->assertFileExists($this->tempDir . '/technology/index.html');
@@ -243,7 +243,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
       ]);
     }
 
-    $this->feature->generateCategoryIndexes($this->container, []);
+    $this->feature->processDeferredCategoryFiles($this->container, []);
 
     $indexPath = $this->tempDir . '/test/index.html';
     $this->assertFileExists($indexPath);
@@ -261,7 +261,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
   public function testSkipsGenerationWhenNoCategories(): void
   {
     // Don't collect any files
-    $result = $this->feature->generateCategoryIndexes($this->container, []);
+    $result = $this->feature->processDeferredCategoryFiles($this->container, []);
 
     // Should return parameters unchanged
     $this->assertEquals([], $result);

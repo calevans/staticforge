@@ -151,7 +151,11 @@ foreach ($siteConfigPaths as $configPath) {
                 $siteConfig = [];
             }
         } catch (\Exception $e) {
-            throw new \RuntimeException("Critical Error: Failed to parse siteconfig.yaml at {$configPath}: " . $e->getMessage(), 0, $e);
+            throw new \RuntimeException(
+                "Critical Error: Failed to parse siteconfig.yaml at {$configPath}: " . $e->getMessage(),
+                0,
+                $e
+            );
         }
         break;
     }

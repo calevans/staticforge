@@ -247,6 +247,4 @@ class Feature extends BaseFeature implements FeatureInterface
 
         return $sanitized;
     }
-
-
 }

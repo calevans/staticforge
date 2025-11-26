@@ -36,6 +36,4 @@ abstract class BaseRendererFeature extends BaseFeature
         'title' => 'Untitled Page',
         ], $metadata);
     }
-
-
 }

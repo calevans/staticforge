@@ -45,25 +45,6 @@ class BaseFeatureTest extends UnitTestCase
 
         $this->assertEquals(['test' => 'value', 'processed' => true], $result);
     }
-
-    public function testFeatureDataAccess(): void
-    {
-        $this->feature->register($this->eventManager, $this->container);
-
-        // Initialize features array in container
-        $this->setContainerVariable('features', [
-            'TestFeature' => ['setting' => 'enabled'],
-            'OtherFeature' => ['config' => 'value']
-        ]);
-
-        // Test accessing feature data
-        $data = $this->feature->getTestFeatureData('TestFeature');
-        $this->assertEquals(['setting' => 'enabled'], $data);
-
-        // Test accessing nonexistent feature data
-        $emptyData = $this->feature->getTestFeatureData('NonexistentFeature');
-        $this->assertEquals([], $emptyData);
-    }
 }
 
 class TestFeature extends BaseFeature
@@ -83,11 +64,5 @@ class TestFeature extends BaseFeature
     {
         $parameters['another'] = true;
         return $parameters;
-    }
-
-    // Expose protected method for testing feature data access
-    public function getTestFeatureData(string $featureName): array
-    {
-        return $this->getFeatureData($featureName);
     }
 }

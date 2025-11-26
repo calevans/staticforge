@@ -139,15 +139,4 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
         return $parameters;
     }
-
-
-
-
-
-
-
-
-
-
-
 }

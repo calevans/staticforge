@@ -109,10 +109,12 @@ class Feature extends BaseFeature implements FeatureInterface
             if ($twig->getLoader()->exists($customTemplate)) {
                 return $twig->render($customTemplate, $context);
             }
-            $this->logger->log('WARNING', "Custom form template '{$customTemplate}' not found. Falling back to default.");
+            $this->logger->log(
+                'WARNING',
+                "Custom form template '{$customTemplate}' not found. Falling back to default."
+            );
         }
 
         return $twig->render('staticforce/_form.html.twig', $context);
     }
 }
-
