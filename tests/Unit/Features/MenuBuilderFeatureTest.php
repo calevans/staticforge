@@ -158,7 +158,7 @@ class MenuBuilderFeatureTest extends UnitTestCase
         }
     }
     $this->assertEquals([1, 2, 10], $numericKeys);
-    
+
     // Verify values match sorted keys
     $this->assertEquals('Item 3.1', $section3[1]['title']);
     $this->assertEquals('Item 3.2', $section3[2]['title']);
