@@ -44,6 +44,14 @@ class FileProcessor
             return;
         }
 
+        // Ensure critical configuration exists before processing loop
+        if (!$this->container->getVariable('OUTPUT_DIR')) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
+        if (!$this->container->getVariable('SOURCE_DIR')) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
+
         $this->logger->log('INFO', "Processing " . count($files) . " files", [
             'file_count' => count($files),
         ]);
@@ -138,16 +146,22 @@ class FileProcessor
     /**
      * Calculate the expected output path for a given input file
      */
-    private function calculateOutputPath(string $inputPath): string
+    private function calculateOutputPath(string $filePath): string
     {
-        $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
-        $outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';
+        $sourceDir = $this->container->getVariable('SOURCE_DIR');
+        if (!$sourceDir) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
 
         // Remove source directory from path
-        $relativePath = str_replace($sourceDir . '/', '', $inputPath);
+        $relativePath = str_replace($sourceDir . DIRECTORY_SEPARATOR, '', $filePath);
 
         // Convert known extensions to .html
-        $extension = pathinfo($inputPath, PATHINFO_EXTENSION);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
         if (in_array($extension, ['md', 'html'])) {
             $relativePath = preg_replace('/\.' . preg_quote($extension, '/') . '$/', '.html', $relativePath);
         }

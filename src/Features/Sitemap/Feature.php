@@ -62,7 +62,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Calculate relative URL from output path
         // output/foo/bar.html -> foo/bar.html
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'output';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
         $relativePath = str_replace($outputDir . '/', '', $outputPath);
 
         // Construct full URL
@@ -98,6 +101,11 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function generateSitemap(Container $container, array $parameters): array
     {
+        if (empty($this->urls)) {
+            $this->logger->log('INFO', 'No URLs collected, skipping sitemap.xml generation');
+            return $parameters;
+        }
+
         $this->logger->log('INFO', 'Generating sitemap.xml with ' . count($this->urls) . ' URLs');
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL;
@@ -112,7 +120,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $xml .= '</urlset>';
 
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'output';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
         $sitemapPath = $outputDir . '/sitemap.xml';
 
         if (file_put_contents($sitemapPath, $xml) === false) {

@@ -25,72 +25,63 @@ Before you start, make sure you have:
 
 ### Step 1: Install StaticForge
 
-Install StaticForge using Composer:
+Create a new directory for your project and install StaticForge:
 
 ```bash
+mkdir my-static-site
+cd my-static-site
 composer require eicc/staticforge
-vendor/bin/staticforge-install-templates.php
 ```
 
-The second command installs the default templates. It won't overwrite any existing templates if you've already customized them.
+### Step 2: Initialize Your Project
 
-This gives you:
-- All StaticForge dependencies
-- 4 pre-built templates (staticforce, sample, terminal, vaulttech)
-- Command-line tools in `vendor/bin/`
+Run the initialization command to set up the directory structure, configuration, and templates:
 
-### Step 2: Configure Your Site
+```bash
+vendor/bin/staticforge init
+```
 
-Open `.env` in your text editor. You'll see settings like:
+This command will:
+- Create necessary directories (`content/`, `templates/`, `public/`, etc.)
+- Create a default `.env` configuration file
+- Install bundled templates
+- Create a sample homepage
+
+### Step 3: Configure Your Site (Optional)
+
+The `init` command created a `.env` file with default settings that work out of the box. You can edit it to customize your site:
 
 ```bash
 SITE_NAME="My Static Site"
 SITE_TAGLINE="Built with ❤️ and PHP"
-SITE_BASE_URL="https://example.com"
+SITE_BASE_URL="http://localhost:8000"
 TEMPLATE="staticforce"
-OUTPUT_DIR="output"
 ```
 
-**What to change:**
+**Key Settings:**
+- **SITE_NAME**: Your site's name
+- **SITE_BASE_URL**: Your site's URL (use `http://localhost:8000` for local development)
+- **TEMPLATE**: The theme to use (`staticforce`, `sample`, `terminal`, or `vaulttech`)
 
-- **SITE_NAME** - Your site's name (shows in browser tabs and templates)
-- **SITE_TAGLINE** - A catchy tagline for your site
-- **SITE_BASE_URL** - Your site's URL (use `http://localhost:8000/` for local development)
-- **TEMPLATE** - Which theme to use (`staticforce`, `sample`, `terminal`, or `vaulttech`)
-- **OUTPUT_DIR** - Where to put generated files (default is `output`)
+### Step 4: Generate Your Site
 
-The defaults work great for testing, so you can leave them as-is for now!
-
-### Step 3: Generate Your Site
-
-StaticForge includes a starter page to get you going. Generate it now:
+Build your static site using the render command:
 
 ```bash
-php bin/staticforge.php site:render
+vendor/bin/staticforge site:render
 ```
 
-You'll see output like:
+You'll see output confirming the generation. Your site is now in the `public/` directory!
 
-```
-✓ Site generation complete!
-  Generated 1 pages
-```
-
-Your static site is now in the `output/` directory!
-
-### Step 4: View Your Site
+### Step 5: View Your Site
 
 Start PHP's built-in web server to preview your site:
 
 ```bash
-php -S localhost:8000 -t output/
+php -S localhost:8000 -t public/
 ```
 
-**Important:** Make sure the directory name matches your `OUTPUT_DIR` setting in `.env`!
-
-Leave this running in your terminal, and your site will be available at `http://localhost:8000`.
-
-Open your browser to `http://localhost:8000` - you'll see the StaticForge welcome page!
+Open your browser to `http://localhost:8000` to see your new site!
 
 ---
 

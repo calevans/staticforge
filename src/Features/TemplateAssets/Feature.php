@@ -39,9 +39,15 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handlePostLoop(Container $container, array $parameters): array
     {
-        $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+        $templateDir = $container->getVariable('TEMPLATE_DIR');
+        if (!$templateDir) {
+            throw new \RuntimeException('TEMPLATE_DIR not set in container');
+        }
         $templateName = $container->getVariable('TEMPLATE') ?? 'sample';
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
 
         $sourceAssetsDir = $templateDir . DIRECTORY_SEPARATOR . $templateName . DIRECTORY_SEPARATOR . 'assets';
         $targetAssetsDir = $outputDir . DIRECTORY_SEPARATOR . 'assets';

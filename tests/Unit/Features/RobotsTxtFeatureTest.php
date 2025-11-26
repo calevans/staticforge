@@ -163,7 +163,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', []);
+    // Must have at least one file to trigger generation
+    $this->setContainerVariable('discovered_files', [
+        ['path' => '/tmp/dummy.md', 'url' => 'dummy.html', 'metadata' => []]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     // Run POST_GLOB to scan files (none in this case)
@@ -297,7 +300,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', ''); // Empty base URL
-    $this->setContainerVariable('discovered_files', []);
+    // Must have at least one file to trigger generation
+    $this->setContainerVariable('discovered_files', [
+        ['path' => '/tmp/dummy.md', 'url' => 'dummy.html', 'metadata' => []]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     // Run POST_GLOB

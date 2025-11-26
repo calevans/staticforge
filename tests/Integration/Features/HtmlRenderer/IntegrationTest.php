@@ -27,8 +27,7 @@ class IntegrationTest extends IntegrationTestCase
         parent::setUp();
 
         // Set up virtual filesystem with unique name per test
-        self::$testCounter++;
-        $this->root = vfsStream::setup("integration_" . self::$testCounter);
+        $this->root = vfsStream::setup("integration_" . uniqid());
         $this->sourceDir = $this->root->url() . '/source';
         $this->outputDir = $this->root->url() . '/output';
 
@@ -200,6 +199,7 @@ HTML;
         // Load integration test environment
         $container = $this->createContainer(__DIR__ . '/../../../.env.integration');
         $application = new Application($container);
+
         $application->generate();
 
         // Output directory should exist but be empty (except for any dot files)

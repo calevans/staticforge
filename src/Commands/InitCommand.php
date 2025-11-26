@@ -107,7 +107,7 @@ OUTPUT_DIR="public"
 LOG_DIR="logs"
 
 # Build Settings
-DEFAULT_TEMPLATE="staticforce"
+TEMPLATE="staticforce"
 ENABLE_FEATURES="MarkdownRenderer,HtmlRenderer,MenuBuilder,Categories,Tags,ChapterNav"
 
 # Development

@@ -217,7 +217,10 @@ class Application
     private function discoverFiles(): void
     {
         try {
-            $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
+            $sourceDir = $this->container->getVariable('SOURCE_DIR');
+            if (!$sourceDir) {
+                throw new \RuntimeException('SOURCE_DIR not set in container');
+            }
             $this->logger->log('INFO', 'Discovering content files', ['source_dir' => $sourceDir]);
 
             $this->fileDiscovery->discoverFiles();
@@ -234,10 +237,7 @@ class Application
                 new CoreException('File discovery failed', 'FileDiscovery', [], 0, $e),
                 ['stage' => 'discovery']
             );
-            // Set empty array to allow processing to continue
-            if (!$this->container->hasVariable('discovered_files')) {
-                $this->container->setVariable('discovered_files', []);
-            }
+            throw $e; // Critical error, stop generation
         }
     }
 
@@ -257,7 +257,7 @@ class Application
                 new CoreException('File processing failed', 'FileProcessor', [], 0, $e),
                 ['stage' => 'processing']
             );
-            // File processing failures are not fatal, but logged
+            throw $e; // Critical error, stop generation
         }
     }
 

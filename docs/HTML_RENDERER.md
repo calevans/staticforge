@@ -1,7 +1,7 @@
 ---
 title: 'HTML Renderer'
 template: docs
-menu: '1.3.07, 2.3.07'
+menu: '1.3.06, 2.3.06'
 category: docs
 ---
 # HTML Renderer

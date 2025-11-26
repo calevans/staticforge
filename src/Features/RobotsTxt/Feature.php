@@ -96,7 +96,17 @@ class Feature extends BaseFeature implements FeatureInterface
    */
     public function handlePostLoop(Container $container, array $parameters): array
     {
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'output';
+        $discoveredFiles = $container->getVariable('discovered_files');
+        if (empty($discoveredFiles)) {
+            $this->logger->log('INFO', 'RobotsTxt: No files discovered, skipping robots.txt generation');
+            return $parameters;
+        }
+        $this->logger->log('INFO', 'RobotsTxt: Files discovered: ' . count($discoveredFiles));
+
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
 
         $this->logger->log('INFO', 'RobotsTxt: Generating robots.txt file');

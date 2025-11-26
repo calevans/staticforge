@@ -1,7 +1,7 @@
 ---
 title: 'Sitemap Generator'
 template: docs
-menu: '1.3.12, 2.3.12'
+menu: '1.3.11, 2.3.11'
 category: docs
 ---
 # Sitemap Generator

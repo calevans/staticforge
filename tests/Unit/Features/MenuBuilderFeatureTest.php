@@ -117,4 +117,51 @@ class MenuBuilderFeatureTest extends UnitTestCase
     $result = $method->invoke($this->feature, '1.2.3, 2.1, 3.5.0');
     $this->assertEquals(['1.2.3', '2.1', '3.5.0'], $result);
   }
+
+  public function testSortMenuDataRecursive(): void
+  {
+    $reflection = new \ReflectionClass($this->feature);
+    $method = $reflection->getMethod('sortMenuData');
+    $method->setAccessible(true);
+
+    // Create unsorted menu data with nested structure
+    $menuData = [
+        1 => [
+            3 => [
+                'title' => 'Section 3',
+                2 => ['title' => 'Item 3.2'],
+                1 => ['title' => 'Item 3.1'],
+                10 => ['title' => 'Item 3.10']
+            ],
+            1 => ['title' => 'Item 1'],
+            2 => ['title' => 'Item 2']
+        ]
+    ];
+
+    $result = $method->invoke($this->feature, $menuData);
+
+    // Verify top level sorting
+    $this->assertEquals(['Item 1', 'Item 2', 'Section 3'], [
+        $result[1][1]['title'],
+        $result[1][2]['title'],
+        $result[1][3]['title']
+    ]);
+
+    // Verify nested sorting
+    $section3 = $result[1][3];
+    // Keys should be sorted: 1, 2, 10
+    // Note: array_keys returns keys in order
+    $numericKeys = [];
+    foreach ($section3 as $key => $value) {
+        if (is_int($key)) {
+            $numericKeys[] = $key;
+        }
+    }
+    $this->assertEquals([1, 2, 10], $numericKeys);
+    
+    // Verify values match sorted keys
+    $this->assertEquals('Item 3.1', $section3[1]['title']);
+    $this->assertEquals('Item 3.2', $section3[2]['title']);
+    $this->assertEquals('Item 3.10', $section3[10]['title']);
+  }
 }

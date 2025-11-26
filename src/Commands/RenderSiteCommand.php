@@ -109,7 +109,10 @@ class RenderSiteCommand extends Command
                 $output->writeln('<comment>Cleaning output directory...</comment>');
                 $this->cleanOutputDirectory($this->container);
                 if ($output->isVerbose()) {
-                    $outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';
+                    $outputDir = $this->container->getVariable('OUTPUT_DIR');
+                    if (!$outputDir) {
+                        throw new \RuntimeException('OUTPUT_DIR not set in container');
+                    }
                     $output->writeln("  ✓ Cleaned: {$outputDir}");
                 }
             }
@@ -174,10 +177,10 @@ class RenderSiteCommand extends Command
     {
         $output->writeln('');
         $output->writeln('<comment>Configuration:</comment>');
-        $output->writeln('  Source Dir: ' . ($container->getVariable('SOURCE_DIR') ?? 'content'));
-        $output->writeln('  Output Dir: ' . ($container->getVariable('OUTPUT_DIR') ?? 'public'));
+        $output->writeln('  Source Dir: ' . ($container->getVariable('SOURCE_DIR') ?? 'Not Set'));
+        $output->writeln('  Output Dir: ' . ($container->getVariable('OUTPUT_DIR') ?? 'Not Set'));
         $output->writeln('  Template: ' . ($container->getVariable('TEMPLATE') ?? 'default'));
-        $output->writeln('  Template Dir: ' . ($container->getVariable('TEMPLATE_DIR') ?? 'templates'));
+        $output->writeln('  Template Dir: ' . ($container->getVariable('TEMPLATE_DIR') ?? 'Not Set'));
         $output->writeln('');
     }
 
@@ -225,7 +228,10 @@ class RenderSiteCommand extends Command
      */
     private function cleanOutputDirectory(Container $container): void
     {
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
 
         if (is_dir($outputDir)) {
             $this->removeDirectory($outputDir);

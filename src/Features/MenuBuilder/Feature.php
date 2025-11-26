@@ -517,36 +517,42 @@ class Feature extends BaseFeature implements FeatureInterface
         $sorted = [];
 
         foreach ($menuData as $menuNumber => $menuItems) {
-            if (!isset($sorted[$menuNumber])) {
-                $sorted[$menuNumber] = [];
-            }
-
-            // Separate direct items from positioned items
-            $direct = [];
-            $positioned = [];
-
-            foreach ($menuItems as $key => $item) {
-                if ($key === 'direct') {
-                    $direct = $item;
-                } elseif (is_numeric($key)) {
-                    $positioned[(int)$key] = $item;
-                }
-            }
-
-            // Sort positioned items by key
-            ksort($positioned);
-
-            // Add direct items first, then positioned items
-            if (!empty($direct)) {
-                $sorted[$menuNumber]['direct'] = $direct;
-            }
-
-            foreach ($positioned as $key => $item) {
-                $sorted[$menuNumber][$key] = $item;
-            }
+            $sorted[$menuNumber] = $this->sortRecursive($menuItems);
         }
 
         return $sorted;
+    }
+
+    /**
+     * Recursively sort menu items by numeric key
+     *
+     * @param array<mixed> $items
+     * @return array<mixed>
+     */
+    private function sortRecursive(array $items): array
+    {
+        // Separate numeric keys (children/items) from string keys (properties)
+        $numericItems = [];
+        $stringItems = [];
+
+        foreach ($items as $key => $value) {
+            if (is_int($key)) {
+                // Recursively sort children
+                if (is_array($value)) {
+                    $numericItems[$key] = $this->sortRecursive($value);
+                } else {
+                    $numericItems[$key] = $value;
+                }
+            } else {
+                $stringItems[$key] = $value;
+            }
+        }
+
+        // Sort numeric keys
+        ksort($numericItems);
+
+        // Combine: string keys first (properties), then numeric keys (children)
+        return $stringItems + $numericItems;
     }
 
     /**

@@ -118,7 +118,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $this->logger->log('INFO', 'Generating RSS feeds for ' . count($this->categoryFiles) . ' categories');
 
-        $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? 'https://example.com/';
 
         $siteConfig = $container->getVariable('site_config') ?? [];
@@ -129,7 +132,7 @@ class Feature extends BaseFeature implements FeatureInterface
             $this->generateRssFeed(
                 $categorySlug,
                 $categoryData,
-                $publicDir,
+                $outputDir,
                 $siteBaseUrl,
                 $siteName
             );
@@ -143,14 +146,14 @@ class Feature extends BaseFeature implements FeatureInterface
      *
      * @param string $categorySlug Sanitized category name
      * @param array<string, mixed> $categoryData Category data with files
-     * @param string $publicDir Public output directory
+     * @param string $outputDir Output directory
      * @param string $siteBaseUrl Base URL for the site
      * @param string $siteName Site name
      */
     private function generateRssFeed(
         string $categorySlug,
         array $categoryData,
-        string $publicDir,
+        string $outputDir,
         string $siteBaseUrl,
         string $siteName
     ): void {
@@ -166,7 +169,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $xml = $this->buildRssXml($categoryName, $categorySlug, $files, $siteBaseUrl, $siteName);
 
         // Write RSS file
-        $categoryDir = $publicDir . DIRECTORY_SEPARATOR . $categorySlug;
+        $categoryDir = $outputDir . DIRECTORY_SEPARATOR . $categorySlug;
         if (!is_dir($categoryDir)) {
             mkdir($categoryDir, 0755, true);
         }
@@ -331,10 +334,13 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     private function getFileUrl(string $outputPath, Container $container): string
     {
-        $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
 
-        // Remove public directory from path to get relative URL
-        $url = str_replace($publicDir, '', $outputPath);
+        // Remove output directory from path to get relative URL
+        $url = str_replace($outputDir, '', $outputPath);
 
         // Normalize path separators to forward slashes for URLs
         $url = str_replace(DIRECTORY_SEPARATOR, '/', $url);

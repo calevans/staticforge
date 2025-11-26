@@ -111,7 +111,10 @@ class MigrateSiteCommand extends Command
    */
     protected function getDefaultDirectories(): array
     {
-        $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
+        $sourceDir = $this->container->getVariable('SOURCE_DIR');
+        if (!$sourceDir) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
         $directories = [$sourceDir];
 
       // Add docs directory if it exists

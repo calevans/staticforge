@@ -58,7 +58,10 @@ class FileDiscovery
 
         if ($directories === null) {
             // Default to SOURCE_DIR if SCAN_DIRECTORIES not configured
-            $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
+            $sourceDir = $this->container->getVariable('SOURCE_DIR');
+            if (!$sourceDir) {
+                throw new \RuntimeException('SOURCE_DIR not set in container');
+            }
             return [$sourceDir];
         }
 
@@ -207,7 +210,10 @@ class FileDiscovery
      */
     protected function generateUrl(string $filePath, array $metadata): string
     {
-        $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
+        $sourceDir = $this->container->getVariable('SOURCE_DIR');
+        if (!$sourceDir) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
 
         // Remove source directory prefix
         $relativePath = str_replace($sourceDir . '/', '', $filePath);

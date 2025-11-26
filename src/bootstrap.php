@@ -69,21 +69,57 @@ foreach ($possibleEnvPaths as $path) {
     }
 }
 
-// If no .env found, set some sensible defaults
-if (!$envLoaded) {
-    $_ENV['SITE_NAME'] = $_ENV['SITE_NAME'] ?? 'StaticForge Site';
-    $_ENV['SOURCE_DIR'] = $_ENV['SOURCE_DIR'] ?? 'content';
-    $_ENV['TEMPLATE_DIR'] = $_ENV['TEMPLATE_DIR'] ?? 'templates';
-    $_ENV['OUTPUT_DIR'] = $_ENV['OUTPUT_DIR'] ?? 'public';
-    $_ENV['LOG_DIR'] = $_ENV['LOG_DIR'] ?? 'logs';
-    $_ENV['DEFAULT_TEMPLATE'] = $_ENV['DEFAULT_TEMPLATE'] ?? 'staticforce';
+// Calculate appRoot by traversing up from current directory to find composer.json or .env
+$searchPath = getcwd();
+$appRoot = null;
+while ($searchPath !== '/' && $searchPath !== '.' && $searchPath !== false) {
+    if (file_exists($searchPath . '/composer.json') || file_exists($searchPath . '/.env')) {
+        $appRoot = $searchPath . '/';
+        break;
+    }
+    $searchPath = dirname($searchPath);
 }
+
+// Fallback: if not found, assume current directory
+if (!$appRoot) {
+    $appRoot = getcwd() . '/';
+}
+
+// Helper to normalize paths to absolute paths
+$normalizePath = function ($path) use ($appRoot) {
+    if (!$path) {
+        return $path;
+    }
+    // If path starts with / (linux) or X:\ (windows), it's absolute
+    if (strpos($path, '/') === 0 || preg_match('/^[a-zA-Z]:\\\\/', $path)) {
+        return $path;
+    }
+    // If path contains :// it is likely a stream wrapper (vfs://, file://, etc)
+    if (strpos($path, '://') !== false) {
+        return $path;
+    }
+    return $appRoot . $path;
+};
+
+// Ensure sensible defaults are set if not provided in .env or environment
+// Normalize all paths to be absolute based on appRoot
+$_ENV['SOURCE_DIR'] = $normalizePath($_ENV['SOURCE_DIR'] ?? 'content');
+$_ENV['TEMPLATE_DIR'] = $normalizePath($_ENV['TEMPLATE_DIR'] ?? 'templates');
+$_ENV['OUTPUT_DIR'] = $normalizePath($_ENV['OUTPUT_DIR'] ?? 'public');
+$_ENV['LOG_DIR'] = $normalizePath($_ENV['LOG_DIR'] ?? 'logs');
+
+// LOG_FILE might be relative or absolute. If default, construct from LOG_DIR.
+if (!isset($_ENV['LOG_FILE'])) {
+    $_ENV['LOG_FILE'] = $_ENV['LOG_DIR'] . '/staticforge.log';
+} else {
+    $_ENV['LOG_FILE'] = $normalizePath($_ENV['LOG_FILE']);
+}
+
+$_ENV['LOG_LEVEL'] = $_ENV['LOG_LEVEL'] ?? 'INFO';
+$_ENV['TEMPLATE'] = $_ENV['TEMPLATE'] ?? 'staticforce';
 
 // Create and configure the dependency injection container
 $container = new Container();
-
-// Set application root (computed value, not from env)
-$appRoot = rtrim(dirname(__DIR__), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 $container->setVariable('app_root', $appRoot);
 
 // Copy environment variables to container for backward compatibility
@@ -109,9 +145,7 @@ foreach ($siteConfigPaths as $configPath) {
                 $siteConfig = [];
             }
         } catch (\Exception $e) {
-            // Log error but don't fail - siteconfig.yaml is optional
-            error_log("Warning: Failed to parse siteconfig.yaml: " . $e->getMessage());
-            $siteConfig = [];
+            throw new \RuntimeException("Critical Error: Failed to parse siteconfig.yaml at {$configPath}: " . $e->getMessage(), 0, $e);
         }
         break;
     }
@@ -123,8 +157,8 @@ $container->setVariable('site_config', $siteConfig);
 
 // Register logger as singleton service (reads from $_ENV directly)
 $container->stuff('logger', function () {
-    $logFile = $_ENV['LOG_FILE'] ?? 'logs/staticforge.log';
-    $logLevel = $_ENV['LOG_LEVEL'] ?? 'INFO';
+    $logFile = $_ENV['LOG_FILE'];
+    $logLevel = $_ENV['LOG_LEVEL'];
 
     // Ensure logs directory exists
     $logDir = dirname($logFile);
@@ -140,7 +174,7 @@ $container->stuff('logger', function () {
 
 // Register Twig as a shared service
 $container->stuff('twig', function () use ($container) {
-    $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+    $templateDir = $container->getVariable('TEMPLATE_DIR');
 
     // Ensure template directory exists to prevent crashes in tests or fresh installs
     if (!is_dir($templateDir)) {
@@ -152,7 +186,7 @@ $container->stuff('twig', function () use ($container) {
     $loader = new FilesystemLoader($templateDir);
 
     // Add the active template directory if set
-    $templateTheme = $container->getVariable('TEMPLATE') ?? 'staticforce';
+    $templateTheme = $container->getVariable('TEMPLATE');
     if (is_dir($templateDir . '/' . $templateTheme)) {
         $loader->addPath($templateDir . '/' . $templateTheme);
     }

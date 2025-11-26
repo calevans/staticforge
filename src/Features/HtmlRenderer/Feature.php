@@ -134,8 +134,14 @@ class Feature extends BaseRendererFeature implements FeatureInterface
      */
     private function generateOutputPath(string $inputPath, Container $container): string
     {
-        $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
-        $outputDir = $container->getVariable('OUTPUT_DIR') ?? 'public';
+        $sourceDir = $container->getVariable('SOURCE_DIR');
+        if (!$sourceDir) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
 
         // Normalize paths for comparison (handle both real and virtual filesystems)
         $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
@@ -165,8 +171,14 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     {
         try {
             // Get template configuration
-            $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
-            $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
+            $templateDir = $container->getVariable('TEMPLATE_DIR');
+            if (!$templateDir) {
+                throw new \RuntimeException('TEMPLATE_DIR not set in container');
+            }
+            $templateTheme = $container->getVariable('TEMPLATE');
+            if (!$templateTheme) {
+                throw new \RuntimeException('TEMPLATE not set in container');
+            }
 
             // Determine template: frontmatter > category > .env default
             $templateName = 'base'; // Ultimate fallback

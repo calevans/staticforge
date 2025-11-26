@@ -25,7 +25,7 @@ class RssFeedFeatureTest extends UnitTestCase
         mkdir($this->tempDir, 0755, true);
 
         // Setup container
-        $this->setContainerVariable('PUBLIC_DIR', $this->tempDir);
+        $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
         $this->setContainerVariable('SITE_NAME', 'Test Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
 

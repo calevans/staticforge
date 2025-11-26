@@ -126,8 +126,11 @@ class Feature extends BaseFeature implements FeatureInterface
 
         if (isset($this->categoryMetadata[$categorySlug])) {
           // Determine correct output path: public/{category}/index.html
-            $publicDir = $this->container->getVariable('PUBLIC_DIR') ?? 'public';
-            $outputPath = $publicDir . DIRECTORY_SEPARATOR . $categorySlug . DIRECTORY_SEPARATOR . 'index.html';
+            $outputDir = $this->container->getVariable('OUTPUT_DIR');
+            if (!$outputDir) {
+                throw new \RuntimeException('OUTPUT_DIR not set in container');
+            }
+            $outputPath = $outputDir . DIRECTORY_SEPARATOR . $categorySlug . DIRECTORY_SEPARATOR . 'index.html';
 
           // Store this file for later processing
             $this->deferredCategoryFiles[] = [
@@ -524,8 +527,11 @@ class Feature extends BaseFeature implements FeatureInterface
             }
 
           // Convert relative URL to filesystem path
-            $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
-            $imagePath = $publicDir . $imageSrc;
+            $outputDir = $container->getVariable('OUTPUT_DIR');
+            if (!$outputDir) {
+                throw new \RuntimeException('OUTPUT_DIR not set in container');
+            }
+            $imagePath = $outputDir . $imageSrc;
 
             if (file_exists($imagePath)) {
               // Generate thumbnail
@@ -541,8 +547,11 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     private function generateThumbnail(string $sourcePath, string $contentPath, Container $container): string
     {
-        $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
-        $thumbnailDir = $publicDir . '/images';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
+        $thumbnailDir = $outputDir . '/images';
 
       // Create images directory if it doesn't exist
         if (!is_dir($thumbnailDir)) {
@@ -582,7 +591,10 @@ class Feature extends BaseFeature implements FeatureInterface
     private function getPlaceholderImage(Container $container): string
     {
         $theme = $container->getVariable('TEMPLATE') ?? 'terminal';
-        $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+        $templateDir = $container->getVariable('TEMPLATE_DIR');
+        if (!$templateDir) {
+            throw new \RuntimeException('TEMPLATE_DIR not set in container');
+        }
         $placeholderPath = $templateDir . '/' . $theme . '/placeholder.jpg';
 
       // Check if placeholder exists
@@ -618,8 +630,11 @@ class Feature extends BaseFeature implements FeatureInterface
    */
     private function downloadAndCacheImage(string $url, string $sourcePath, Container $container): string
     {
-        $publicDir = $container->getVariable('PUBLIC_DIR') ?? 'public';
-        $cacheDir = $publicDir . '/images/cache';
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
+        $cacheDir = $outputDir . '/images/cache';
 
       // Create cache directory if it doesn't exist
         if (!is_dir($cacheDir)) {
