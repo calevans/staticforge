@@ -26,7 +26,6 @@ use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\RenderSiteCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
-use EICC\StaticForge\Commands\MigrateSiteCommand;
 use Symfony\Component\Console\Application;
 
 // Bootstrap application - handle both dev and vendor/bin locations
@@ -45,7 +44,6 @@ $app->add(new InitCommand());
 $app->add(new RenderSiteCommand($container));
 $app->add(new UploadSiteCommand($container));
 $app->add(new DevServerCommand());
-$app->add(new MigrateSiteCommand($container));
 
 // Run the application
 $app->run();
