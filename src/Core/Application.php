@@ -34,7 +34,7 @@ class Application
         $this->container = $container;
         $this->initializeLogger();
         $this->applyTemplateOverride($templateOverride);
-        
+
         // Retrieve services from container
         $this->eventManager = $container->get(EventManager::class);
         $this->featureManager = $container->get(FeatureManager::class);

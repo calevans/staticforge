@@ -129,10 +129,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
   public function testGeneratesCategoryIndex(): void
   {
     // First, set up a deferred category file (simulating POST_GLOB scan)
-    $reflection = new \ReflectionClass($this->feature);
-    $deferredProp = $reflection->getProperty('deferredCategoryFiles');
-    $deferredProp->setAccessible(true);
-    $deferredProp->setValue($this->feature, [
+    $this->setDeferredCategoryFiles([
       [
         'file_path' => $this->tempDir . '/tech.md',
         'metadata' => ['title' => 'Tech', 'menu' => '1'],
@@ -176,10 +173,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
   public function testHandlesMultipleCategories(): void
   {
     // Set up deferred category files
-    $reflection = new \ReflectionClass($this->feature);
-    $deferredProp = $reflection->getProperty('deferredCategoryFiles');
-    $deferredProp->setAccessible(true);
-    $deferredProp->setValue($this->feature, [
+    $this->setDeferredCategoryFiles([
       [
         'file_path' => $this->tempDir . '/technology.md',
         'metadata' => ['title' => 'Technology'],
@@ -228,10 +222,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
   public function testIncludesPaginationData(): void
   {
     // Set up deferred category file
-    $reflection = new \ReflectionClass($this->feature);
-    $deferredProp = $reflection->getProperty('deferredCategoryFiles');
-    $deferredProp->setAccessible(true);
-    $deferredProp->setValue($this->feature, [
+    $this->setDeferredCategoryFiles([
       [
         'file_path' => $this->tempDir . '/test.md',
         'metadata' => ['title' => 'Test'],
@@ -278,5 +269,18 @@ class CategoryIndexFeatureTest extends UnitTestCase
     // Should not create any index files
     $files = glob($this->tempDir . '/*/index.html');
     $this->assertEmpty($files);
+  }
+
+  private function setDeferredCategoryFiles(array $files): void
+  {
+    $reflection = new \ReflectionClass($this->feature);
+    $generatorProp = $reflection->getProperty('categoryPageGenerator');
+    $generatorProp->setAccessible(true);
+    $generator = $generatorProp->getValue($this->feature);
+
+    $generatorReflection = new \ReflectionClass($generator);
+    $deferredProp = $generatorReflection->getProperty('deferredCategoryFiles');
+    $deferredProp->setAccessible(true);
+    $deferredProp->setValue($generator, $files);
   }
 }
