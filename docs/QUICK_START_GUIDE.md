@@ -38,7 +38,7 @@ composer require eicc/staticforge
 Run the initialization command to set up the directory structure, configuration, and templates:
 
 ```bash
-vendor/bin/staticforge init
+php vendor/bin/staticforge.php init
 ```
 
 This command will:
@@ -68,17 +68,17 @@ TEMPLATE="staticforce"
 Build your static site using the render command:
 
 ```bash
-vendor/bin/staticforge site:render
+php vendor/bin/staticforge.php site:render
 ```
 
 You'll see output confirming the generation. Your site is now in the `public/` directory!
 
 ### Step 5: View Your Site
 
-Start PHP's built-in web server to preview your site:
+Start the built-in development server to preview your site:
 
 ```bash
-php -S localhost:8000 -t public/
+php vendor/bin/staticforge.php site:devserver
 ```
 
 Open your browser to `http://localhost:8000` to see your new site!
