@@ -8,6 +8,10 @@ category: docs
 
 The Forms feature allows you to easily embed contact forms and other types of forms into your static pages using a simple shortcode. It handles form rendering, configuration, and even includes spam protection via Altcha.
 
+## Recommended Backend
+
+While StaticForge can work with any form backend, we highly recommend [SendPoint](https://github.com/calevans/sendpoint). It is a lightweight, self-hosted form processor that handles email notifications, webhooks, and integrates seamlessly with StaticForge's built-in Altcha spam protection.
+
 ## Configuration
 
 Forms are configured in your `siteconfig.yaml` file. You can define multiple forms, each with its own fields and submission endpoint.

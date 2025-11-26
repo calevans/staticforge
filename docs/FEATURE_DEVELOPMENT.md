@@ -584,17 +584,18 @@ public function onPreRender(array $data): array
 ### 5. Log Important Operations
 
 ```php
-use EiccUtils;
-
 public function onCreate(array $data): array
 {
-  EiccUtils::log('YourFeature initialized');
+  // Assuming $this->logger was set in register()
+  $this->logger->log('INFO', 'YourFeature initialized');
+  // OR directly from container
+  // $this->container->get('logger')->log('INFO', 'YourFeature initialized');
   return $data;
 }
 
 public function onPostLoop(array $data): array
 {
-  EiccUtils::log("YourFeature processed {$this->count} items");
+  $this->logger->log('INFO', "YourFeature processed {$this->count} items");
   return $data;
 }
 ```
@@ -895,8 +896,8 @@ use EiccUtils;
 
 public function onPreRender(array $data): array
 {
-  EiccUtils::log('PreRender: ' . ($data['file'] ?? 'unknown'));
-  EiccUtils::log('Metadata: ' . json_encode($data['metadata'] ?? []));
+  $this->logger->log('INFO', 'PreRender: ' . ($data['file'] ?? 'unknown'));
+  $this->logger->log('DEBUG', 'Metadata: ' . json_encode($data['metadata'] ?? []));
 
   // Your processing
 

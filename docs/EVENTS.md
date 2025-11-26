@@ -49,7 +49,7 @@ public function onCreate(array $data): array
 {
   $this->processedCount = 0;
   $this->cache = [];
-  EiccUtils::log('MyFeature initialized');
+  $this->container->get('logger')->log('INFO', 'MyFeature initialized');
   return $data;
 }
 ```
@@ -75,7 +75,7 @@ public function onCreate(array $data): array
 public function onPreGlob(array $data): array
 {
   $this->discoveryStartTime = microtime(true);
-  EiccUtils::log('Starting file discovery');
+  $this->container->get('logger')->log('INFO', 'Starting file discovery');
   return $data;
 }
 ```
@@ -107,7 +107,7 @@ public function onPreGlob(array $data): array
 public function onPostGlob(array $data): array
 {
   $files = $data['files'] ?? [];
-  EiccUtils::log('Discovered ' . count($files) . ' files');
+  $this->container->get('logger')->log('INFO', 'Discovered ' . count($files) . ' files');
 
   // Filter out draft files
   $data['files'] = array_filter($files, function($file) {
@@ -294,7 +294,7 @@ public function onPostRender(array $data): array
   $html = str_replace('</body>', $analytics . '</body>', $html);
 
   $this->processedCount++;
-  EiccUtils::log('Rendered: ' . ($data['file'] ?? 'unknown'));
+  $this->container->get('logger')->log('INFO', 'Rendered: ' . ($data['file'] ?? 'unknown'));
 
   $data['html'] = $html;
   return $data;
@@ -344,7 +344,7 @@ public function onPostLoop(array $data): array
     file_put_contents($categoryFile, $html);
   }
 
-  EiccUtils::log('Generated category indexes for ' . count($this->categorizedPosts) . ' categories');
+  $this->container->get('logger')->log('INFO', 'Generated category indexes for ' . count($this->categorizedPosts) . ' categories');
 
   return $data;
 }
@@ -375,7 +375,7 @@ public function onDestroy(array $data): array
 {
   $elapsed = microtime(true) - $this->startTime;
 
-  EiccUtils::log(sprintf(
+  $this->container->get('logger')->log('INFO', sprintf(
     'MyFeature complete: %d files in %.2fs',
     $this->processedCount,
     $elapsed
@@ -510,11 +510,9 @@ public function onPreRender(array $data): array
 
 ### 4. Log Important Operations
 ```php
-use EiccUtils;
-
 public function onPostLoop(array $data): array
 {
-  EiccUtils::log("Processed {$this->count} items");
+  $this->container->get('logger')->log('INFO', "Processed {$this->count} items");
   return $data;
 }
 ```
