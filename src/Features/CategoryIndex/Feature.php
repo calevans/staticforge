@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Features\CategoryIndex;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Twig\Environment;
@@ -270,7 +271,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $container->updateVariable('features', $features);
 
       // Get Application instance from container
-        $application = $container->get('application');
+        $application = $container->get(Application::class);
 
         try {
           // Use Application's renderSingleFile method with additional context

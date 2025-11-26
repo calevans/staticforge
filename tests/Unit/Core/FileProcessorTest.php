@@ -23,7 +23,7 @@ class FileProcessorTest extends UnitTestCase
         $this->logger = $this->container->get('logger');
         $this->eventManager = new EventManager($this->container);
         $this->errorHandler = new ErrorHandler($this->container);
-        $this->addToContainer('error_handler', $this->errorHandler);
+        $this->addToContainer(ErrorHandler::class, $this->errorHandler);
 
         $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
     }

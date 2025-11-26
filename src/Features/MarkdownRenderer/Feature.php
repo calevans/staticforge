@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Features\MarkdownRenderer;
 use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
@@ -56,7 +57,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         ]);
 
         $this->markdownConverter = new MarkdownConverter($environment);        // Register .md extension for processing
-        $extensionRegistry = $container->get('extension_registry');
+        $extensionRegistry = $container->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.md');
 
         $this->logger->log('INFO', 'Markdown Renderer Feature registered');
@@ -104,7 +105,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
 
             // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
-            $eventManager = $container->get('event_manager');
+            $eventManager = $container->get(EventManager::class);
             $eventResult = $eventManager->fire('MARKDOWN_CONVERTED', [
                 'html_content' => $htmlContent,
                 'metadata' => $metadata,

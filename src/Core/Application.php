@@ -34,7 +34,17 @@ class Application
         $this->container = $container;
         $this->initializeLogger();
         $this->applyTemplateOverride($templateOverride);
-        $this->initializeComponents();
+        
+        // Retrieve services from container
+        $this->eventManager = $container->get(EventManager::class);
+        $this->featureManager = $container->get(FeatureManager::class);
+        $this->extensionRegistry = $container->get(ExtensionRegistry::class);
+        $this->fileDiscovery = $container->get(FileDiscovery::class);
+        $this->errorHandler = $container->get(ErrorHandler::class);
+        $this->fileProcessor = $container->get(FileProcessor::class);
+
+        // Register application instance
+        $this->container->add(Application::class, $this);
     }
 
     /**
@@ -99,31 +109,6 @@ class Application
         }
 
         return $templates;
-    }
-
-    /**
-     * Initialize core components
-     */
-    private function initializeComponents(): void
-    {
-        $this->eventManager = new EventManager($this->container);
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
-        $this->extensionRegistry = new ExtensionRegistry($this->container);
-        $this->fileDiscovery = new FileDiscovery($this->container, $this->extensionRegistry);
-
-        // Create and register ErrorHandler BEFORE FileProcessor (FileProcessor depends on it)
-        $this->errorHandler = new ErrorHandler($this->container);
-        $this->container->add('error_handler', $this->errorHandler);
-
-        $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
-
-        // Register remaining core services in container
-        $this->container->add('event_manager', $this->eventManager);
-        $this->container->add('feature_manager', $this->featureManager);
-        $this->container->add('extension_registry', $this->extensionRegistry);
-        $this->container->add('file_discovery', $this->fileDiscovery);
-        $this->container->add('file_processor', $this->fileProcessor);
-        $this->container->add('application', $this);  // Add application instance for features
     }
 
     /**

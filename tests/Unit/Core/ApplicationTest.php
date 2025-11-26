@@ -6,6 +6,7 @@ use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureManager;
+use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -70,8 +71,8 @@ class ApplicationTest extends UnitTestCase
         $this->assertEquals('Test Application Site', $container->getVariable('SITE_NAME'));
 
         // Verify core services are registered
-        $this->assertInstanceOf(EventManager::class, $container->get('event_manager'));
-        $this->assertInstanceOf(FeatureManager::class, $container->get('feature_manager'));
+        $this->assertInstanceOf(EventManager::class, $container->get(EventManager::class));
+        $this->assertInstanceOf(FeatureManager::class, $container->get(FeatureManager::class));
     }
 
     public function testGetEventManager(): void
@@ -79,7 +80,7 @@ class ApplicationTest extends UnitTestCase
         $eventManager = $this->application->getEventManager();
 
         $this->assertInstanceOf(EventManager::class, $eventManager);
-        $this->assertSame($eventManager, $this->application->getContainer()->get('event_manager'));
+        $this->assertSame($eventManager, $this->application->getContainer()->get(EventManager::class));
     }
 
     public function testGetFeatureManager(): void
@@ -87,7 +88,7 @@ class ApplicationTest extends UnitTestCase
         $featureManager = $this->application->getFeatureManager();
 
         $this->assertInstanceOf(FeatureManager::class, $featureManager);
-        $this->assertSame($featureManager, $this->application->getContainer()->get('feature_manager'));
+        $this->assertSame($featureManager, $this->application->getContainer()->get(FeatureManager::class));
     }
 
     public function testGenerateWithEmptyContent(): void
@@ -114,7 +115,7 @@ class ApplicationTest extends UnitTestCase
     public function testGenerateWithContentFiles(): void
     {
         // Register .html extension so files are discovered
-        $extensionRegistry = $this->application->getContainer()->get('extension_registry');
+        $extensionRegistry = $this->application->getContainer()->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.html');
 
         // Create test content files

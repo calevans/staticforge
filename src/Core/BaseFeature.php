@@ -100,7 +100,7 @@ abstract class BaseFeature implements FeatureInterface
      */
     protected function registerExtension(string $extension): void
     {
-        $extensionRegistry = $this->container->getVariable('extension_registry');
+        $extensionRegistry = $this->container->get(ExtensionRegistry::class);
         if ($extensionRegistry instanceof ExtensionRegistry) {
             $extensionRegistry->registerExtension($extension);
         }

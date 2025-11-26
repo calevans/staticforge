@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Features\HtmlRenderer;
 use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
@@ -35,7 +36,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         $this->logger = $container->get('logger');
 
         // Register .html extension for processing
-        $extensionRegistry = $container->get('extension_registry');
+        $extensionRegistry = $container->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.html');
 
         $this->logger->log('INFO', 'HTML Renderer Feature registered');

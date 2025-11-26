@@ -48,6 +48,12 @@ use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
+use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureManager;
+use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\StaticForge\Core\FileDiscovery;
+use EICC\StaticForge\Core\FileProcessor;
+use EICC\StaticForge\Core\ErrorHandler;
 use Twig\Loader\FilesystemLoader;
 
 // Accept optional environment path parameter
@@ -198,6 +204,25 @@ $container->stuff('twig', function () use ($container) {
         'cache' => false,
     ]);
 });
+
+// Register Core Services
+$eventManager = new EventManager($container);
+$container->add(EventManager::class, $eventManager);
+
+$featureManager = new FeatureManager($container, $eventManager);
+$container->add(FeatureManager::class, $featureManager);
+
+$extensionRegistry = new ExtensionRegistry($container);
+$container->add(ExtensionRegistry::class, $extensionRegistry);
+
+$fileDiscovery = new FileDiscovery($container, $extensionRegistry);
+$container->add(FileDiscovery::class, $fileDiscovery);
+
+$errorHandler = new ErrorHandler($container);
+$container->add(ErrorHandler::class, $errorHandler);
+
+$fileProcessor = new FileProcessor($container, $eventManager);
+$container->add(FileProcessor::class, $fileProcessor);
 
 // Return fully configured container
 return $container;

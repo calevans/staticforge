@@ -29,7 +29,7 @@ class FileProcessor
         $this->container = $container;
         $this->logger = $container->get('logger');
         $this->eventManager = $eventManager;
-        $this->errorHandler = $container->get('error_handler');
+        $this->errorHandler = $container->get(ErrorHandler::class);
     }
 
     /**

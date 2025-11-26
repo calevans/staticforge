@@ -54,7 +54,7 @@ class FeatureTest extends UnitTestCase
 
         // Set up extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->addToContainer('extension_registry', $extensionRegistry);
+        $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Set up event manager
         $this->eventManager = new EventManager($this->container);
@@ -69,7 +69,7 @@ class FeatureTest extends UnitTestCase
 
     public function testRegisterAddsHtmlExtension(): void
     {
-        $extensionRegistry = $this->container->get('extension_registry');
+        $extensionRegistry = $this->container->get(\EICC\StaticForge\Core\ExtensionRegistry::class);
         $this->assertTrue($extensionRegistry->isRegistered('.html'));
     }
 
@@ -241,7 +241,7 @@ HTML;
 
         // Set up extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->addToContainer('extension_registry', $extensionRegistry);
+        $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Set up event manager and register feature
         $eventManager = new EventManager($this->container);

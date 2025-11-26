@@ -67,7 +67,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
       return $context;
     });
 
-    $this->container->add('application', $mockApp);
+    $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
 
     $this->feature = new Feature();
     $this->feature->register($this->eventManager, $this->container);

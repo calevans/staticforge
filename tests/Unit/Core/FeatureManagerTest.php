@@ -25,10 +25,6 @@ class FeatureManagerTest extends UnitTestCase
 
         $this->eventManager = new EventManager($this->container);
 
-        // Create ExtensionRegistry and add to container (needed by BaseFeature)
-        $extensionRegistry = new ExtensionRegistry($this->container);
-        $this->container->add('extension_registry', $extensionRegistry);
-
         // Create a temporary log file for testing
         $logFile = sys_get_temp_dir() . '/test.log';
         $this->logger = $this->container->get('logger');

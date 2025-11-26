@@ -38,7 +38,7 @@ class TemplateRenderingTest extends UnitTestCase
 
         // Create mock extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
-        $this->addToContainer('extension_registry', $extensionRegistry);
+        $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Create EventManager and test feature
         $eventManager = new EventManager($this->container);
