@@ -9,12 +9,6 @@ use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
-use League\CommonMark\CommonMarkConverter;
-use League\CommonMark\Environment\Environment;
-use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
-use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
-use League\CommonMark\Extension\Table\TableExtension;
-use League\CommonMark\MarkdownConverter;
 use Twig\Environment as TwigEnvironment;
 use Twig\Loader\FilesystemLoader;
 
@@ -26,7 +20,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'MarkdownRenderer';
     protected Log $logger;
-    private MarkdownConverter $markdownConverter;
+    private MarkdownProcessor $markdownProcessor;
+    private ContentExtractor $contentExtractor;
+    private PathGenerator $pathGenerator;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -42,21 +38,12 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         // Get logger from container
         $this->logger = $container->get('logger');
 
-    // Create the CommonMark environment and converter with table support
-        $environment = new Environment();
-        $environment->addExtension(new CommonMarkCoreExtension());
-        $environment->addExtension(new TableExtension());
+        // Initialize helpers
+        $this->markdownProcessor = new MarkdownProcessor();
+        $this->contentExtractor = new ContentExtractor();
+        $this->pathGenerator = new PathGenerator();
 
-        // Configure HeadingPermalinkExtension to use an empty symbol (invisible link)
-        $environment->addExtension(new HeadingPermalinkExtension());
-        $environment->mergeConfig([
-            'heading_permalink' => [
-                'symbol' => '',
-                'insert' => 'after',
-            ],
-        ]);
-
-        $this->markdownConverter = new MarkdownConverter($environment);        // Register .md extension for processing
+        // Register .md extension for processing
         $extensionRegistry = $container->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.md');
 
@@ -99,10 +86,10 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             }
 
             // Extract content (skip frontmatter)
-            $markdownContent = $this->extractMarkdownContent($content);
+            $markdownContent = $this->contentExtractor->extractMarkdownContent($content);
 
             // Convert Markdown to HTML
-            $htmlContent = $this->markdownConverter->convert($markdownContent)->getContent();
+            $htmlContent = $this->markdownProcessor->convert($markdownContent);
 
             // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
             $eventManager = $container->get(EventManager::class);
@@ -117,7 +104,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
             // Extract title from metadata or first heading
             if (!isset($metadata['title'])) {
-                $metadata['title'] = $this->extractTitleFromContent($htmlContent);
+                $metadata['title'] = $this->contentExtractor->extractTitleFromContent($htmlContent);
             }
 
             // Apply default metadata
@@ -125,7 +112,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
             // Generate output file path (change .md to .html)
             // Use existing output_path if already set (e.g., by CategoryIndex)
-            $outputPath = $parameters['output_path'] ?? $this->generateOutputPath($filePath, $container);
+            $outputPath = $parameters['output_path'] ?? $this->pathGenerator->generateOutputPath($filePath, $container);
 
             // Apply template (pass source file path)
             $renderedContent = $this->applyTemplate([
@@ -148,70 +135,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         return $parameters;
     }
 
-    /**
-     * Extract markdown content, skipping frontmatter
-     *
-     * @param string $content Full file content
-     * @return string Markdown content without frontmatter
-     */
-    private function extractMarkdownContent(string $content): string
-    {
-        // Check for INI frontmatter (--- ... ---)
-        if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
-            return trim($matches[2]);
-        }
 
-        return $content;
-    }
-
-    /**
-     * Extract title from HTML content if not in metadata
-     */
-    private function extractTitleFromContent(string $htmlContent): string
-    {
-        // Look for first h1-h6 tag
-        if (preg_match('/<h[1-6][^>]*>(.*?)<\/h[1-6]>/i', $htmlContent, $matches)) {
-            return strip_tags($matches[1]);
-        }
-
-        return 'Untitled';
-    }
-
-    /**
-     * Generate output file path, changing .md to .html
-     */
-    private function generateOutputPath(string $inputPath, Container $container): string
-    {
-        $sourceDir = $container->getVariable('SOURCE_DIR');
-        if (!$sourceDir) {
-            throw new \RuntimeException('SOURCE_DIR not set in container');
-        }
-        $outputDir = $container->getVariable('OUTPUT_DIR');
-        if (!$outputDir) {
-            throw new \RuntimeException('OUTPUT_DIR not set in container');
-        }
-
-        // Normalize paths for comparison (handle both real and virtual filesystems)
-        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
-        $normalizedInputPath = $inputPath;
-
-        // Check if input path starts with source directory
-        if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
-            // Get path relative to source directory
-            $relativePath = substr($normalizedInputPath, strlen($normalizedSourceDir) + 1);
-            // Change .md extension to .html
-            $relativePath = preg_replace('/\.md$/', '.html', $relativePath);
-        } else {
-            // Fallback to filename only
-            $relativePath = basename($inputPath);
-            $relativePath = preg_replace('/\.md$/', '.html', $relativePath);
-        }
-
-        // Build output path preserving directory structure
-        $outputPath = $outputDir . '/' . $relativePath;
-
-        return $outputPath;
-    }
 
     /**
      * Apply Twig template to rendered content
@@ -336,46 +260,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 HTML;
     }
 
-    /**
-     * Apply category template if file has category but no explicit template
-     *
-     * @param array<string, mixed> $metadata
-     * @return array<string, mixed>
-     */
-    private function applyCategoryTemplate(array $metadata): array
-    {
-        $this->logger->log('DEBUG', 'applyCategoryTemplate called for file', [
-            'has_template' => isset($metadata['template']),
-            'has_category' => isset($metadata['category']),
-            'category' => $metadata['category'] ?? 'none'
-        ]);
-
-        // If file already has a template, don't override it
-        if (isset($metadata['template'])) {
-            return $metadata;
-        }
-
-        // If file has a category, check for category template
-        if (isset($metadata['category'])) {
-            $categoryTemplates = $this->container->getVariable('category_templates') ?? [];
-            $category = $metadata['category'];
-
-            $this->logger->log('DEBUG', 'Checking category templates', [
-                'category' => $category,
-                'available_templates' => array_keys($categoryTemplates)
-            ]);
-
-            if (isset($categoryTemplates[$category])) {
-                $metadata['template'] = $categoryTemplates[$category];
-                $this->logger->log(
-                    'INFO',
-                    "Applying category template '{$categoryTemplates[$category]}' for category '{$category}'"
-                );
-            }
-        }
-
-        return $metadata;
-    }
 
     /**
      * Slugify category name to match filename format
