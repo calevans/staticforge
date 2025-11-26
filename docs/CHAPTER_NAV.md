@@ -1,7 +1,7 @@
 ---
 title: 'Chapter Navigation'
 template: docs
-menu: '1.3.4, 2.3.4'
+menu: '1.3.05, 2.3.05'
 category: docs
 ---
 # Chapter Navigation

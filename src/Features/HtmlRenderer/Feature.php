@@ -121,6 +121,11 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             return $matches[2];
         }
 
+        // Check for YAML frontmatter (<!-- --- ... --- -->)
+        if (preg_match('/^<!--\s*\n---\s*\n.*?\n---\s*\n-->\s*\n(.*)$/s', $content, $matches)) {
+            return $matches[1];
+        }
+
         return $content;
     }
 

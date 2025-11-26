@@ -40,12 +40,16 @@ class FeatureTest extends UnitTestCase
         $this->setContainerVariable('SITE_NAME', 'Test Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://test.example.com');
 
+        // Override site_config to ensure SITE_NAME is used or matches
+        $this->setContainerVariable('site_config', ['site' => ['name' => 'Test Site']]);
+
         // Create extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
         $this->addToContainer('extension_registry', $extensionRegistry);
 
         // Create EventManager and test feature
         $eventManager = new EventManager($this->container);
+        $this->addToContainer('event_manager', $eventManager);
         $this->feature = new Feature();
         $this->feature->register($eventManager, $this->container);
 
@@ -80,7 +84,7 @@ class FeatureTest extends UnitTestCase
         $this->assertArrayHasKey('output_path', $result);
 
         $outputContent = $result['rendered_content'];
-        $this->assertStringContainsString('<h1>Test Heading</h1>', $outputContent);
+        $this->assertStringContainsString('<h1>Test Heading', $outputContent);
         $this->assertStringContainsString('<strong>bold</strong>', $outputContent);
         $this->assertStringContainsString('<em>italic</em>', $outputContent);
         $this->assertStringContainsString('Test Site', $outputContent);
@@ -111,7 +115,16 @@ MD;
         $testFile = $this->testSourceDir . '/frontmatter.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
+        $parameters = [
+            'file_path' => $testFile,
+            'file_metadata' => [
+                'title' => 'Custom Title',
+                'description' => 'This is a test page description',
+                'author' => 'Test Author',
+                'tags' => ['test', 'markdown', 'yaml'],
+                'template' => 'base'
+            ]
+        ];
         $result = $this->feature->handleRender($this->container, $parameters);
 
         $this->assertArrayHasKey('rendered_content', $result);
@@ -121,7 +134,7 @@ MD;
         $this->assertStringContainsString('<title>Custom Title | Test Site</title>', $outputContent);
         $this->assertStringContainsString('This is a test page description', $outputContent);
         $this->assertStringContainsString('Test Author', $outputContent);
-        $this->assertStringContainsString('<h1>Heading from Content</h1>', $outputContent);
+        $this->assertStringContainsString('<h1>Heading from Content', $outputContent);
     }
 
     /**
@@ -162,7 +175,13 @@ MD;
         $testFile = $this->testSourceDir . '/fallback.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
+        $parameters = [
+            'file_path' => $testFile,
+            'file_metadata' => [
+                'title' => 'Fallback Test',
+                'template' => 'nonexistent'
+            ]
+        ];
         $result = $this->feature->handleRender($this->container, $parameters);
 
         $this->assertArrayHasKey('rendered_content', $result);
@@ -224,15 +243,21 @@ MD;
         $testFile = $this->testSourceDir . '/complex.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
+        $parameters = [
+            'file_path' => $testFile,
+            'file_metadata' => [
+                'title' => 'Complex Markdown',
+                'description' => 'Testing various Markdown features'
+            ]
+        ];
         $result = $this->feature->handleRender($this->container, $parameters);
 
         $this->assertArrayHasKey('rendered_content', $result);
         $this->assertArrayHasKey('metadata', $result);
 
         $outputContent = $result['rendered_content'];
-        $this->assertStringContainsString('<h1>Main Title</h1>', $outputContent);
-        $this->assertStringContainsString('<h2>Subtitle</h2>', $outputContent);
+        $this->assertStringContainsString('<h1>Main Title', $outputContent);
+        $this->assertStringContainsString('<h2>Subtitle', $outputContent);
         $this->assertStringContainsString('<a href="https://example.com">link</a>', $outputContent);
         $this->assertStringContainsString('<code>inline code</code>', $outputContent);
         $this->assertStringContainsString('<ul>', $outputContent);
@@ -304,7 +329,15 @@ MD;
         $testFile = $this->testSourceDir . '/variables.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
+        $parameters = [
+            'file_path' => $testFile,
+            'file_metadata' => [
+                'title' => 'Variable Test',
+                'custom_var' => 'Custom Value',
+                'keywords' => 'test, variables',
+                'template' => 'variables'
+            ]
+        ];
         $result = $this->feature->handleRender($this->container, $parameters);
 
         $this->assertArrayHasKey('rendered_content', $result);

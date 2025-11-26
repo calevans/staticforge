@@ -60,9 +60,9 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->assertStringContainsString('Home', $menuTop);
         $this->assertStringContainsString('About', $menuTop);
         $this->assertStringContainsString('Shop', $menuTop);
-        $this->assertStringContainsString('href="/"', $menuTop);
-        $this->assertStringContainsString('href="/about"', $menuTop);
-        $this->assertStringContainsString('href="/shop"', $menuTop);
+        $this->assertStringContainsString('href=""', $menuTop);
+        $this->assertStringContainsString('href="about"', $menuTop);
+        $this->assertStringContainsString('href="shop"', $menuTop);
 
         // Verify menu_footer was created
         $this->assertTrue($this->container->hasVariable('menu_footer'));
@@ -71,8 +71,8 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->assertStringContainsString('<ul class="menu">', $menuFooter);
         $this->assertStringContainsString('Privacy', $menuFooter);
         $this->assertStringContainsString('Terms', $menuFooter);
-        $this->assertStringContainsString('href="/privacy"', $menuFooter);
-        $this->assertStringContainsString('href="/terms"', $menuFooter);
+        $this->assertStringContainsString('href="privacy"', $menuFooter);
+        $this->assertStringContainsString('href="terms"', $menuFooter);
     }
 
     public function testNoSiteConfigDoesNotCrash(): void

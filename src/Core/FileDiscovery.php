@@ -83,6 +83,19 @@ class FileDiscovery
 
                 // Parse frontmatter and generate URL
                 $metadata = $this->parseFrontmatter($filePath);
+
+                // Check for draft status
+                $showDrafts = $this->container->getVariable('SHOW_DRAFTS') ?? false;
+                // Convert string 'true'/'false' to boolean if coming from env
+                if (is_string($showDrafts)) {
+                    $showDrafts = filter_var($showDrafts, FILTER_VALIDATE_BOOLEAN);
+                }
+
+                if (isset($metadata['draft']) && $metadata['draft'] === true && !$showDrafts) {
+                    $this->logger->log('DEBUG', "Skipping draft file: {$filePath}");
+                    continue;
+                }
+
                 $url = $this->generateUrl($filePath, $metadata);
 
                 $files[] = [

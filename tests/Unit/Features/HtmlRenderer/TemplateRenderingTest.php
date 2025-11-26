@@ -33,6 +33,9 @@ class TemplateRenderingTest extends UnitTestCase
         $this->setContainerVariable('SITE_NAME', 'Test Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://test.example.com');
 
+        // Override site_config to ensure SITE_NAME is used or matches
+        $this->setContainerVariable('site_config', ['site' => ['name' => 'Test Site']]);
+
         // Create mock extension registry
         $extensionRegistry = new \EICC\StaticForge\Core\ExtensionRegistry($this->container);
         $this->addToContainer('extension_registry', $extensionRegistry);
@@ -60,10 +63,12 @@ class TemplateRenderingTest extends UnitTestCase
     public function testBasicTemplateRendering(): void
     {
         $parsedContent = [
-            'metadata' => ['description' => 'Test page description'],
+            'metadata' => [
+                'description' => 'Test page description',
+                'template' => 'base'
+            ],
             'content' => '<h1>Test Content</h1><p>Test paragraph</p>',
-            'title' => 'Test Page',
-            'template' => 'base'
+            'title' => 'Test Page'
         ];
 
         $result = $this->invokeTemplateMethod($parsedContent);
@@ -84,11 +89,11 @@ class TemplateRenderingTest extends UnitTestCase
             'metadata' => [
                 'description' => 'Custom description',
                 'author' => 'Test Author',
-                'keywords' => 'test, template, variables'
+                'keywords' => 'test, template, variables',
+                'template' => 'variables'
             ],
             'content' => '<p>Variable test content</p>',
-            'title' => 'Variable Test',
-            'template' => 'variables'
+            'title' => 'Variable Test'
         ];
 
         $result = $this->invokeTemplateMethod($parsedContent);
@@ -128,10 +133,12 @@ class TemplateRenderingTest extends UnitTestCase
     public function testFallbackTemplate(): void
     {
         $parsedContent = [
-            'metadata' => ['description' => 'Test description'],
+            'metadata' => [
+                'description' => 'Test description',
+                'template' => 'nonexistent'  // This template doesn't exist
+            ],
             'content' => '<p>Test content</p>',
-            'title' => 'Fallback Test',
-            'template' => 'nonexistent'  // This template doesn't exist
+            'title' => 'Fallback Test'
         ];
 
         $result = $this->invokeTemplateMethod($parsedContent);
@@ -149,10 +156,12 @@ class TemplateRenderingTest extends UnitTestCase
     public function testTemplateInheritance(): void
     {
         $parsedContent = [
-            'metadata' => ['section' => 'homepage'],
+            'metadata' => [
+                'section' => 'homepage',
+                'template' => 'extended'
+            ],
             'content' => '<p>Extended template content</p>',
-            'title' => 'Inheritance Test',
-            'template' => 'extended'
+            'title' => 'Inheritance Test'
         ];
 
         $result = $this->invokeTemplateMethod($parsedContent);

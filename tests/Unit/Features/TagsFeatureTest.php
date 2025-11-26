@@ -60,7 +60,7 @@ MD;
 
     // Set up discovered files
     $this->setContainerVariable('discovered_files', [
-      $mdFile->url()
+      ['path' => $mdFile->url(), 'url' => 'test.md', 'metadata' => ['tags' => ['php', 'testing', 'unit-tests']]]
     ]);
 
     $feature = new Feature();
@@ -103,7 +103,7 @@ HTML;
     $htmlFile = vfsStream::newFile('test.html')->at($this->root)->setContent($htmlContent);
 
     $this->setContainerVariable('discovered_files', [
-      $htmlFile->url()
+      ['path' => $htmlFile->url(), 'url' => 'test.html', 'metadata' => ['tags' => ['web', 'html', 'frontend', 'design', 'ui']]]
     ]);
 
     $feature = new Feature();
@@ -145,8 +145,8 @@ MD;
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
     $this->setContainerVariable('discovered_files', [
-      $file1->url(),
-      $file2->url()
+      ['path' => $file1->url(), 'url' => 'post1.md', 'metadata' => ['tags' => ['PHP', 'Testing']]],
+      ['path' => $file2->url(), 'url' => 'post2.md', 'metadata' => ['tags' => ['php', 'TESTING', 'Web']]]
     ]);
 
     $feature = new Feature();
@@ -186,8 +186,8 @@ MD;
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
     $this->setContainerVariable('discovered_files', [
-      $file1->url(),
-      $file2->url()
+      ['path' => $file1->url(), 'url' => 'post1.md', 'metadata' => ['tags' => ['php', 'testing']]],
+      ['path' => $file2->url(), 'url' => 'post2.md', 'metadata' => ['tags' => ['php', 'web']]]
     ]);
 
     $feature = new Feature();
@@ -237,9 +237,9 @@ MD;
     $file3 = vfsStream::newFile('post3.md')->at($this->root)->setContent($md3);
 
     $this->setContainerVariable('discovered_files', [
-      $file1->url(),
-      $file2->url(),
-      $file3->url()
+      ['path' => $file1->url(), 'url' => 'post1.md', 'metadata' => ['tags' => ['php']]],
+      ['path' => $file2->url(), 'url' => 'post2.md', 'metadata' => ['tags' => ['php']]],
+      ['path' => $file3->url(), 'url' => 'post3.md', 'metadata' => ['tags' => ['web']]]
     ]);
 
     $feature = new Feature();
@@ -278,8 +278,8 @@ MD;
     $file2 = vfsStream::newFile('post2.md')->at($this->root)->setContent($md2);
 
     $this->setContainerVariable('discovered_files', [
-      $file1->url(),
-      $file2->url()
+      ['path' => $file1->url(), 'url' => 'post1.md', 'metadata' => ['tags' => ['php', 'testing']]],
+      ['path' => $file2->url(), 'url' => 'post2.md', 'metadata' => ['tags' => ['php', 'web']]]
     ]);
 
     $feature = new Feature();
@@ -338,9 +338,9 @@ MD;
     $file3 = vfsStream::newFile('post3.md')->at($this->root)->setContent($md3);
 
     $this->setContainerVariable('discovered_files', [
-      $file1->url(),
-      $file2->url(),
-      $file3->url()
+      ['path' => $file1->url(), 'url' => 'post1.md', 'metadata' => ['tags' => ['php', 'testing', 'web']]],
+      ['path' => $file2->url(), 'url' => 'post2.md', 'metadata' => ['tags' => ['php', 'testing']]],
+      ['path' => $file3->url(), 'url' => 'post3.md', 'metadata' => ['tags' => ['python']]]
     ]);
 
     $feature = new Feature();
@@ -385,7 +385,7 @@ MD;
     $mdFile = vfsStream::newFile('test.md')->at($this->root)->setContent($mdContent);
 
     $this->setContainerVariable('discovered_files', [
-      $mdFile->url()
+      ['path' => $mdFile->url(), 'url' => 'test.md', 'metadata' => []]
     ]);
 
     $feature = new Feature();

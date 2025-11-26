@@ -281,10 +281,17 @@ More *Markdown*');
     // Should succeed even with no files
     $this->assertTrue($result);
 
-    // Output directory should exist but be empty
+    // Output directory should exist but be empty (except for auto-generated files like robots.txt/sitemap.xml)
     $this->assertDirectoryExists($this->testOutputDir);
     $files = glob($this->testOutputDir . '/*');
-    $this->assertEmpty($files, 'Output directory should be empty when no content exists');
+
+    // Filter out robots.txt and sitemap.xml
+    $contentFiles = array_filter($files, function($file) {
+        $basename = basename($file);
+        return $basename !== 'robots.txt' && $basename !== 'sitemap.xml';
+    });
+
+    $this->assertEmpty($contentFiles, 'Output directory should be empty of content when no content exists');
   }
 
   public function testPreservesMetadataAcrossRenderers(): void

@@ -47,6 +47,9 @@ class FeatureTest extends UnitTestCase
         $this->setContainerVariable('SITE_NAME', 'Test Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
 
+        // Override site_config to ensure SITE_NAME is used or matches
+        $this->setContainerVariable('site_config', ['site' => ['name' => 'Test Site']]);
+
         // Logger already registered by bootstrap
 
         // Set up extension registry
@@ -129,7 +132,13 @@ HTML;
 
         $parameters = [
             'file_path' => $testFile,
-            'file_info' => []
+            'file_info' => [],
+            'file_metadata' => [
+                'title' => 'My Test Page',
+                'description' => 'A test page for StaticForge',
+                'tags' => 'test, example',
+                'category' => 'documentation'
+            ]
         ];
 
         $result = $this->feature->handleRender($this->container, $parameters);
@@ -254,7 +263,12 @@ HTML;
 
         $parameters = [
             'file_path' => $testFile,
-            'file_info' => []
+            'file_info' => [],
+            'file_metadata' => [
+                'title' => 'Full Test Page',
+                'description' => 'Complete test with all metadata',
+                'tags' => 'complete, testing, metadata'
+            ]
         ];
 
         $result = $feature->handleRender($this->container, $parameters);

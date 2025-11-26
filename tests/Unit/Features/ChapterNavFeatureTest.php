@@ -373,6 +373,8 @@ class ChapterNavFeatureTest extends UnitTestCase
   public function testMultipleMenusForSamePage(): void
   {
     $this->setContainerVariable('CHAPTER_NAV_MENUS', '2,3');
+    // Ensure site_config doesn't override our env var
+    $this->setContainerVariable('site_config', []);
 
     $menuData = [
       2 => [

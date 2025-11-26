@@ -1,7 +1,7 @@
 ---
 title: 'Robots.txt Generator'
 template: docs
-menu: '1.3.9, 2.3.9'
+menu: '1.3.10, 2.3.10'
 category: docs
 ---
 # Robots.txt Generator

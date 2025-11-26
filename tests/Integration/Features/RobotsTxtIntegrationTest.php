@@ -93,7 +93,7 @@ MD;
 
     // Generate the site
     $app = new Application($this->container);
-    $app->run();
+    $app->generate();
 
     // Check that robots.txt was generated
     $robotsTxtPath = $this->testOutputDir . '/robots.txt';
@@ -140,7 +140,7 @@ MD;
 
     // Generate the site
     $app = new Application($this->container);
-    $app->run();
+    $app->generate();
 
     // Check robots.txt
     $robotsTxtPath = $this->testOutputDir . '/robots.txt';
@@ -181,7 +181,7 @@ MD;
 
     // Generate the site
     $app = new Application($this->container);
-    $app->run();
+    $app->generate();
 
     // Check robots.txt
     $robotsTxtPath = $this->testOutputDir . '/robots.txt';
@@ -226,7 +226,7 @@ HTML;
 
     // Generate the site
     $app = new Application($this->container);
-    $app->run();
+    $app->generate();
 
     // Check robots.txt
     $robotsTxtPath = $this->testOutputDir . '/robots.txt';
@@ -258,7 +258,7 @@ MD;
 
     // Generate the site
     $app = new Application($this->container);
-    $app->run();
+    $app->generate();
 
     // Check robots.txt
     $robotsTxtPath = $this->testOutputDir . '/robots.txt';

@@ -80,7 +80,7 @@ title: "Test Page"
         $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
-        $command = $application->find('render:site');
+        $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
 
         // Mock environment file path in command
@@ -101,7 +101,7 @@ title: "Test Page"
         $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
-        $command = $application->find('render:site');
+        $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
 
         $result = $commandTester->execute([
@@ -128,7 +128,7 @@ title: "Test Page"
         $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
-        $command = $application->find('render:site');
+        $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
 
         $result = $commandTester->execute([
@@ -163,7 +163,7 @@ title: "Test Page"
         $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
-        $command = $application->find('render:site');
+        $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
 
         $result = $commandTester->execute([
@@ -186,7 +186,7 @@ title: "Test Page"
         $container = $this->container;
         $application->add(new RenderSiteCommand($container));
 
-        $command = $application->find('render:site');
+        $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
 
         $result = $commandTester->execute([
@@ -210,7 +210,7 @@ title: "Test Page"
         $command = new RenderSiteCommand($container);
 
         // Test command basic configuration
-        $this->assertEquals('render:site', $command->getName());
+        $this->assertEquals('site:render', $command->getName());
         $this->assertEquals('Generate the complete static site from content files', $command->getDescription());
 
     // Test that options are properly configured
@@ -254,7 +254,7 @@ title: "Alt Page"
     $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('render:site');
+    $command = $application->find('site:render');
     $commandTester = new CommandTester($command);
 
     $result = $commandTester->execute([
@@ -287,7 +287,7 @@ title: "Alt Page"
     $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('render:site');
+    $command = $application->find('site:render');
     $commandTester = new CommandTester($command);
 
     $result = $commandTester->execute([
@@ -331,7 +331,7 @@ title: "Both Override"
     $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('render:site');
+    $command = $application->find('site:render');
     $commandTester = new CommandTester($command);
 
     $result = $commandTester->execute([
@@ -366,7 +366,7 @@ title: "Both Override"
     $container = $this->container;
     $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('render:site');
+    $command = $application->find('site:render');
     $commandTester = new CommandTester($command);
 
     $result = $commandTester->execute([

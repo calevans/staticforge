@@ -29,6 +29,9 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->setContainerVariable('SITE_NAME', 'Test Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
 
+        // Override site_config to ensure SITE_NAME is used or matches
+        $this->setContainerVariable('site_config', ['site' => ['name' => 'Test Site']]);
+
         $this->eventManager = new EventManager($this->container);
 
         $this->feature = new Feature();
@@ -211,12 +214,12 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->feature->generateRssFeeds($this->container, []);
 
         $xml = file_get_contents($this->tempDir . '/tech/rss.xml');
-        
+
         // Check that newest article appears first
         $posNew = strpos($xml, 'New Article');
         $posMiddle = strpos($xml, 'Middle Article');
         $posOld = strpos($xml, 'Old Article');
-        
+
         $this->assertLessThan($posMiddle, $posNew, 'New Article should appear before Middle Article');
         $this->assertLessThan($posOld, $posMiddle, 'Middle Article should appear before Old Article');
     }
@@ -243,7 +246,7 @@ class RssFeedFeatureTest extends UnitTestCase
     public function testExtractsDescriptionFromContent(): void
     {
         $longContent = '<p>' . str_repeat('This is a very long article content. ', 50) . '</p>';
-        
+
         $this->feature->collectCategoryFiles($this->container, [
             'metadata' => [
                 'title' => 'Test Article',
@@ -318,7 +321,7 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->feature->generateRssFeeds($this->container, []);
 
         $xml = file_get_contents($this->tempDir . '/tech/rss.xml');
-        
+
         // XML should be valid (no unescaped special characters)
         $this->assertStringContainsString('&amp;', $xml);
         $this->assertStringContainsString('&lt;', $xml);
@@ -372,7 +375,7 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->feature->generateRssFeeds($this->container, []);
 
         $xml = file_get_contents($this->tempDir . '/tech/rss.xml');
-        
+
         // Check RSS metadata
         $this->assertStringContainsString('xmlns:atom="http://www.w3.org/2005/Atom"', $xml);
         $this->assertStringContainsString('<language>en-us</language>', $xml);
@@ -398,11 +401,11 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->feature->generateRssFeeds($this->container, []);
 
         $xml = file_get_contents($this->tempDir . '/tech/rss.xml');
-        
+
         // Try to parse XML to ensure it's valid
         $doc = new \DOMDocument();
         $result = @$doc->loadXML($xml);
-        
+
         $this->assertTrue($result, 'Generated RSS should be valid XML');
     }
 
@@ -421,7 +424,7 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->feature->generateRssFeeds($this->container, []);
 
         $xml = file_get_contents($this->tempDir . '/tech/rss.xml');
-        
+
         // Should contain full URL
         $this->assertStringContainsString('https://example.com/tech/article.html', $xml);
         // Should have both link and guid

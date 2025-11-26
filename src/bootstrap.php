@@ -55,8 +55,8 @@ $envPath = $envPath ?? '.env';
 
 // Look for .env in current working directory first, then fallback to package directory
 $possibleEnvPaths = [
-    getcwd() . '/.env',           // Current working directory
-    dirname($envPath) . '/' . basename($envPath)  // Fallback to provided path
+    dirname($envPath) . '/' . basename($envPath),  // Provided path (or default .env)
+    getcwd() . '/.env'           // Current working directory fallback
 ];
 
 $envLoaded = false;
@@ -141,6 +141,13 @@ $container->stuff('logger', function () {
 // Register Twig as a shared service
 $container->stuff('twig', function () use ($container) {
     $templateDir = $container->getVariable('TEMPLATE_DIR') ?? 'templates';
+
+    // Ensure template directory exists to prevent crashes in tests or fresh installs
+    if (!is_dir($templateDir)) {
+        if (!mkdir($templateDir, 0755, true) && !is_dir($templateDir)) {
+            throw new RuntimeException("Cannot create template directory: {$templateDir}");
+        }
+    }
 
     $loader = new FilesystemLoader($templateDir);
 

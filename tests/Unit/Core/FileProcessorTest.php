@@ -50,8 +50,8 @@ class FileProcessorTest extends UnitTestCase
     public function testProcessFilesWithFiles(): void
     {
         $testFiles = [
-            '/tmp/test1.html',
-            '/tmp/test2.html'
+            ['path' => '/tmp/test1.html', 'url' => 'test1.html', 'metadata' => []],
+            ['path' => '/tmp/test2.html', 'url' => 'test2.html', 'metadata' => []]
         ];
 
         $this->setContainerVariable('discovered_files', $testFiles);
@@ -77,7 +77,7 @@ class FileProcessorTest extends UnitTestCase
 
     public function testProcessFileWithSkipFlag(): void
     {
-        $testFiles = ['/tmp/test.html'];
+        $testFiles = [['path' => '/tmp/test.html', 'url' => 'test.html', 'metadata' => []]];
         $this->setContainerVariable('discovered_files', $testFiles);
 
         $eventsTracked = [];
@@ -96,7 +96,7 @@ class FileProcessorTest extends UnitTestCase
 
     public function testRenderContextStructure(): void
     {
-        $testFiles = ['/tmp/test.html'];
+        $testFiles = [['path' => '/tmp/test.html', 'url' => 'test.html', 'metadata' => []]];
         $this->setContainerVariable('discovered_files', $testFiles);
 
         $contextData = [];

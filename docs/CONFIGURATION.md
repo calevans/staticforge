@@ -268,6 +268,37 @@ LOG_FILE="logs/staticforge.log"
 
 ---
 
+### SHOW_DRAFTS
+
+**What it does:** Controls whether draft content is included in the build
+
+**Values:**
+- `true`: Include files marked as `draft: true`
+- `false` (default): Skip draft files
+
+**Example:**
+```bash
+# Show drafts during development
+SHOW_DRAFTS=true
+```
+
+---
+
+### SITE_URL
+
+**What it does:** The base URL for your site (alias for SITE_BASE_URL)
+
+**Used by:**
+- Sitemap Generator
+- RSS Feed
+
+**Example:**
+```bash
+SITE_URL="https://example.com"
+```
+
+---
+
 ## Directory Structure
 
 Understanding how StaticForge organizes files helps you structure your content effectively.

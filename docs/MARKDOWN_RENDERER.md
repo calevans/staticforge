@@ -1,7 +1,7 @@
 ---
 title: 'Markdown Renderer'
 template: docs
-menu: '1.3.1, 2.3.1'
+menu: '1.3.08, 2.3.08'
 category: docs
 ---
 # Markdown Renderer
@@ -51,6 +51,19 @@ Pretty *exciting*, right?
 - File saved as `output/blog-post.html`
 
 **No configuration needed** - just create `.md` files and go!
+
+## Draft Content
+
+You can mark a file as a draft to exclude it from the build (unless `SHOW_DRAFTS=true` is set in `.env`).
+
+```markdown
+---
+title: "Work In Progress"
+draft: true
+---
+```
+
+This is useful for working on content that isn't ready to be published yet.
 
 ---
 

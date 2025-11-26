@@ -1040,10 +1040,73 @@ Enable users to install StaticForge via `composer create-project eicc/staticforg
 
 ---
 
-## Quality Gates
-Each step must result in:
-- ✅ All unit tests passing
-- ✅ System remains in working state
-- ✅ New functionality demonstrated with example
-- ✅ Error handling tested and documented
-- ✅ Code follows SOLID principles and project conventions
+## Step 25. Sitemap.xml Generation ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Create `src/Features/Sitemap/Feature.php` implementing `FeatureInterface`
+- ✅ Register event listeners:
+  - ✅ `POST_RENDER`: Collect URL and modification date from processed file
+  - ✅ `POST_LOOP`: Generate `sitemap.xml` from collected data
+- ✅ Implement XML generation logic (using `SimpleXMLElement` or string concatenation)
+- ✅ Write `sitemap.xml` to output directory
+- ✅ Add unit tests for Sitemap feature
+  - ✅ Apply YAGNI: Basic XML sitemap only, no sitemap index or advanced extensions
+  - ✅ Apply KISS: Simple collection and generation logic
+  - ✅ Apply SOLID: Feature is self-contained and single responsibility
+  - ✅ Apply DRY: Reuse file writing logic if available
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
+
+---
+
+## Step 26. Draft Content Support ✅
+- ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- ✅ Review all code about to be edited and any related code.
+- ✅ Update `src/Core/FileDiscovery.php` to inspect frontmatter for `draft: true`
+- ✅ Add `SHOW_DRAFTS` configuration option to `.env` and `Container`
+- ✅ Implement filtering logic in `FileDiscovery::discoverFiles`
+  - ✅ If `draft: true` and `SHOW_DRAFTS` is false, skip file
+- ✅ Add unit tests for draft filtering logic
+  - ✅ Apply YAGNI: Simple boolean flag, no complex publishing schedules
+  - ✅ Apply KISS: Filter at discovery stage
+  - ✅ Apply SOLID: Modification contained within FileDiscovery
+- ✅ Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- ✅ Wait for further instructions.
+
+---
+
+## Step 27. Image Optimization Pipeline
+- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- Review all code about to be edited and any related code.
+- Add `intervention/image` dependency to `composer.json`
+- Create `src/Features/ImageOptimizer/Feature.php`
+- Register event listeners:
+  - `POST_RENDER`: Scan HTML content for `<img>` tags (optional, or just scan assets dir)
+  - OR `POST_LOOP`: Scan `output/assets/images` and optimize found images
+- Let's go with `POST_LOOP` scanning `output/assets/images` for V1 simplicity
+- Implement image optimization logic (resize/compress)
+- Add configuration for optimization quality/size
+- Add unit tests for image optimization
+  - Apply YAGNI: Basic optimization, no complex responsive image generation yet
+  - Apply KISS: Optimize files in place or in output dir
+  - Apply SOLID: Feature handles optimization only
+- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- Wait for further instructions.
+
+---
+
+## Step 28. Asset Minification & Bundling
+- Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
+- Review all code about to be edited and any related code.
+- Add `matthiasmullie/minify` dependency to `composer.json`
+- Create `src/Features/AssetMinifier/Feature.php`
+- Register event listeners:
+  - `POST_LOOP`: Scan `output/` for `.css` and `.js` files
+- Implement minification logic using the library
+- Overwrite original files with minified versions
+- Add unit tests for minification feature
+  - Apply YAGNI: Minify in place, no complex bundling/concatenation yet
+  - Apply KISS: Use existing library for heavy lifting
+  - Apply SOLID: Feature handles minification only
+- Update `documents/plan.md` to show completed tasks and step with ✅ after verification.
+- Wait for further instructions.

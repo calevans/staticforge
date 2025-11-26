@@ -101,6 +101,12 @@ Automatically generates RSS feeds for each category. Enable readers to subscribe
 
 [Read more about RSS Feed →](RSS_FEED.html)
 
+### [Sitemap Generator](SITEMAP.html)
+
+Automatically generates a `sitemap.xml` file for search engines. Critical for SEO to help search engines index your site correctly.
+
+[Read more about Sitemap Generator →](SITEMAP.html)
+
 ---
 
 ## Managing Features
@@ -152,4 +158,5 @@ Want to add your own functionality? See the [Feature Development Guide](FEATURE_
 | **[Tags](TAGS.html)** | `tags` in frontmatter | Meta tags, tag data | SEO, tag clouds, related content |
 | **[Robots.txt Generator](ROBOTS_TXT.html)** | `robots` in frontmatter | robots.txt file | SEO, search engine control |
 | **[RSS Feed](RSS_FEED.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
+| **[Sitemap Generator](SITEMAP.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
 

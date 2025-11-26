@@ -1,7 +1,7 @@
 ---
 title: 'RSS Feed'
 template: docs
-menu: '1.3.10, 2.3.10'
+menu: '1.3.11, 2.3.11'
 category: docs
 ---
 # RSS Feed

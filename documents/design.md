@@ -96,6 +96,16 @@ This matters now because power users need a static site generator they can fully
 - System logs error and continues processing other files
 - Generation completes successfully for supported content
 
+**Scenario 6: Publishing Workflow**
+- User marks content as `draft: true` in frontmatter
+- System excludes draft content from production builds
+- User can optionally force inclusion of drafts for preview
+
+**Scenario 7: SEO & Performance Optimization**
+- System automatically generates `sitemap.xml` for search engines
+- Images are optimized and converted to modern formats
+- CSS and JS assets are minified for better performance
+
 ## 7. Capabilities & Feature Set
 
 **Core Pipeline Management**
@@ -121,6 +131,12 @@ This matters now because power users need a static site generator they can fully
 - Static file output requiring no runtime dependencies
 - Proper URL structure and asset linking
 - Clean separation of content and presentation
+
+**SEO & Performance**
+- XML Sitemap generation for search engine indexing
+- Image optimization pipeline (resize, crop, format conversion)
+- Asset minification and bundling (CSS/JS)
+- Draft content filtering for publishing workflows
 
 ## 8. Constraints & Assumptions
 
@@ -166,6 +182,12 @@ This matters now because power users need a static site generator they can fully
 - Documentation and usage examples
 - Performance optimization
 - Package preparation for distribution
+
+**Phase 4: Advanced Features** (~1-2 months)
+- Sitemap.xml generation
+- Draft content support
+- Image optimization pipeline
+- Asset minification and bundling
 
 ## 10. Risks & Open Questions
 

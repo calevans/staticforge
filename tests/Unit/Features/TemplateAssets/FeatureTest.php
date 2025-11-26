@@ -24,6 +24,14 @@ class FeatureTest extends UnitTestCase
         $this->root = vfsStream::setup('root');
     }
 
+    public function testRegisterRegistersEvent(): void
+    {
+        $listeners = $this->eventManager->getListeners('POST_LOOP');
+        $this->assertNotEmpty($listeners);
+        $this->assertCount(1, $listeners);
+        $this->assertEquals([$this->feature, 'handlePostLoop'], $listeners[0]['callback']);
+    }
+
     public function testHandlePostLoopCopiesAssets(): void
     {
         // Setup directory structure

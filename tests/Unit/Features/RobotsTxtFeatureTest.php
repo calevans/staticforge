@@ -61,7 +61,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
 
-    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $filePath, 'url' => 'test.md', 'metadata' => ['robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     $parameters = [];
@@ -80,7 +82,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
 
-    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $filePath, 'url' => 'allowed.md', 'metadata' => ['robots' => 'yes']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     $parameters = [];
@@ -99,7 +103,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
 
-    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $filePath, 'url' => 'default.md', 'metadata' => []]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     $parameters = [];
@@ -118,7 +124,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
 
-    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $filePath, 'url' => 'test.html', 'metadata' => ['robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     $parameters = [];
@@ -137,7 +145,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
     vfsStream::create(['content' => []], $this->root);
     file_put_contents($filePath, $content);
 
-    $this->setContainerVariable('discovered_files', [$filePath]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $filePath, 'url' => 'private.html', 'metadata' => ['type' => 'category', 'category' => 'private', 'robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
     $parameters = [];
@@ -186,7 +196,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$file1, $file2]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $file1, 'url' => 'private.html', 'metadata' => ['robots' => 'no']],
+        ['path' => $file2, 'url' => 'secret.html', 'metadata' => ['robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB to scan files
@@ -220,7 +233,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$categoryFile]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $categoryFile, 'url' => 'private-cat.html', 'metadata' => ['type' => 'category', 'category' => 'private-stuff', 'robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB to scan files
@@ -254,7 +269,11 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$file1, $file2, $file3]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $file1, 'url' => 'test.html', 'metadata' => ['robots' => 'no']],
+        ['path' => $file2, 'url' => 'another.html', 'metadata' => ['robots' => 'no']],
+        ['path' => $file3, 'url' => 'zebra.html', 'metadata' => ['robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB to scan files
@@ -312,7 +331,11 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$file1, $file2, $file3]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $file1, 'url' => 'allowed.html', 'metadata' => ['robots' => 'yes']],
+        ['path' => $file2, 'url' => 'disallowed.html', 'metadata' => ['robots' => 'no']],
+        ['path' => $file3, 'url' => 'default.html', 'metadata' => []]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB
@@ -346,7 +369,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$file1, $file2]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $file1, 'url' => 'uppercase.html', 'metadata' => ['robots' => 'NO']],
+        ['path' => $file2, 'url' => 'mixedcase.html', 'metadata' => ['robots' => 'No']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB
@@ -381,7 +407,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
 
     $this->setContainerVariable('OUTPUT_DIR', $outputDir);
     $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-    $this->setContainerVariable('discovered_files', [$file]);
+    $this->setContainerVariable('discovered_files', [
+        ['path' => $file, 'url' => 'subdir/nested.html', 'metadata' => ['robots' => 'no']]
+    ]);
     $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
     // Run POST_GLOB

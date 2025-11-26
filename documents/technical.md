@@ -4,7 +4,7 @@
 
 StaticForge is a PHP-based static site generator that processes content files (HTML, Markdown, PDF) through an event-driven pipeline to produce deployment-ready static websites. The system targets power users comfortable with CLI tools and provides extensible functionality through a built-in feature system.
 
-**In Scope**: CLI-based site generation, event-driven content processing, template rendering, built-in features for common tasks (menus, categories, rendering), error logging and resilience.
+**In Scope**: CLI-based site generation, event-driven content processing, template rendering, built-in features for common tasks (menus, categories, rendering, sitemap, drafts, image optimization, asset minification), error logging and resilience.
 
 **Out of Scope**: Real-time content editing, web-based administration, dynamic content requiring server-side processing, external feature distribution (V1), performance optimization beyond basic efficiency.
 
@@ -25,7 +25,7 @@ StaticForge is a PHP-based static site generator that processes content files (H
 
 **Content File**: Source material with optional YAML metadata header
 - Types: .html, .md, .pdf files
-- Metadata includes: title, menu position, category, tags
+- Metadata includes: title, menu position, category, tags, draft status
 - Source of truth: Local filesystem in configured source directory
 - Retention: Managed by user, no automatic deletion
 
@@ -33,6 +33,16 @@ StaticForge is a PHP-based static site generator that processes content files (H
 - Source of truth: Output directory (overwritten on each generation)
 - Retention: Managed by user deployment process
 - No sensitive data beyond what user includes in source content
+
+**Sitemap Data**: XML file listing all public URLs
+- Source of truth: Generated from processed content files
+- Contains: URL, last modification date
+- Retention: Overwritten on each generation
+
+**Optimized Assets**: Processed images and minified CSS/JS
+- Source of truth: Generated from source assets
+- Contains: WebP/AVIF images, minified code
+- Retention: Overwritten on each generation
 
 **Configuration Data**: Environment variables and feature settings
 - Source of truth: .env file and feature configuration
@@ -55,14 +65,14 @@ StaticForge is a PHP-based static site generator that processes content files (H
 2. Instantiate and register features
 3. Fire CREATE event (feature initialization)
 4. Fire PRE_GLOB event (pre-discovery hooks)
-5. Discover content files
+5. Discover content files (filter out drafts unless overridden)
 6. Fire POST_GLOB event (post-discovery processing)
 7. Fire PRE_LOOP event (pre-processing initialization)
 8. For each content file:
-   - Fire PRE_RENDER event
+   - Fire PRE_RENDER event (image tag detection)
    - Fire RENDER event (content processing chain)
-   - Fire POST_RENDER event
-9. Fire POST_LOOP event (post-processing cleanup)
+   - Fire POST_RENDER event (sitemap URL collection)
+9. Fire POST_LOOP event (sitemap generation, asset minification)
 10. Fire DESTROY event (final cleanup)
 
 **Error Handling Events**:
