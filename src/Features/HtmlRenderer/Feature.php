@@ -6,11 +6,11 @@ use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\StaticForge\Services\TemplateRenderer;
+use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
-use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
 
 /**
  * HTML Renderer Feature - processes .html files during RENDER event
@@ -20,6 +20,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'HtmlRenderer';
     protected Log $logger;
+    private TemplateRenderer $templateRenderer;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -34,6 +35,12 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 
         // Get logger from container
         $this->logger = $container->get('logger');
+
+        // Initialize helpers
+        $this->templateRenderer = new TemplateRenderer(
+            new TemplateVariableBuilder(),
+            $this->logger
+        );
 
         // Register .html extension for processing
         $extensionRegistry = $container->get(ExtensionRegistry::class);
@@ -79,17 +86,14 @@ class Feature extends BaseRendererFeature implements FeatureInterface
             // Extract content (skip frontmatter)
             $htmlContent = $this->extractHtmlContent($content);
 
-            // Apply category template if file has category but no explicit template
-            $metadata = $this->applyCategoryTemplate($metadata);
-
             // Apply default metadata
             $metadata = $this->applyDefaultMetadata($metadata);
 
             // Generate output file path
             $outputPath = $this->generateOutputPath($filePath, $container);
 
-            // Apply basic template (pass source file path)
-            $renderedContent = $this->applyTemplate([
+            // Apply template (pass source file path)
+            $renderedContent = $this->templateRenderer->render([
                 'metadata' => $metadata,
                 'content' => $htmlContent,
                 'title' => $metadata['title'] ?? 'Untitled',
@@ -163,160 +167,5 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         return $outputPath;
     }
 
-    /**
-     * Apply Twig template to rendered content
-     *
-     * @param array{metadata: array<string, mixed>, content: string} $parsedContent
-     */
-    private function applyTemplate(array $parsedContent, Container $container, string $sourceFile = ''): string
-    {
-        try {
-            // Get template configuration
-            $templateDir = $container->getVariable('TEMPLATE_DIR');
-            if (!$templateDir) {
-                throw new \RuntimeException('TEMPLATE_DIR not set in container');
-            }
-            $templateTheme = $container->getVariable('TEMPLATE');
-            if (!$templateTheme) {
-                throw new \RuntimeException('TEMPLATE not set in container');
-            }
 
-            // Determine template: frontmatter > category > .env default
-            $templateName = 'base'; // Ultimate fallback
-            $this->logger->log('DEBUG', "Template metadata: " . json_encode($parsedContent['metadata']));
-
-            if (isset($parsedContent['metadata']['template'])) {
-                $templateName = $parsedContent['metadata']['template'];
-                $this->logger->log('DEBUG', "Using frontmatter template: {$templateName}");
-            } elseif (isset($parsedContent['metadata']['category'])) {
-                // Check if category has a template
-                $categoryTemplates = $container->getVariable('category_templates') ?? [];
-                if (isset($categoryTemplates[$parsedContent['metadata']['category']])) {
-                    $templateName = $categoryTemplates[$parsedContent['metadata']['category']];
-                    $this->logger->log('INFO', "Applied category template '{$templateName}' for category '{$parsedContent['metadata']['category']}'");
-                }
-            }
-            $templateName .= '.html.twig';
-
-            // Full template path
-            $templatePath = $templateTheme . '/' . $templateName;
-
-            $this->logger->log('INFO', "Using template: {$templatePath}");
-
-            // Set up Twig with security enabled
-            $loader = new FilesystemLoader($templateDir);
-            // Add the specific template theme directory so includes work
-            $loader->addPath($templateDir . '/' . $templateTheme);
-            $twig = new Environment($loader, [
-                'debug' => true,
-                'strict_variables' => false,
-                'autoescape' => 'html',  // Enable auto-escaping for security
-                'cache' => false,        // Disable cache for development
-            ]);
-
-            // Build template variables dynamically from all sources
-            $templateVars = $this->buildTemplateVariables($parsedContent, $container, $sourceFile);
-
-            $this->logger->log('DEBUG', "Template variables: " . json_encode(array_keys($templateVars)));
-
-            // Render template
-            return $twig->render($templatePath, $templateVars);
-        } catch (Exception $e) {
-            $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
-
-            // Fallback to basic template
-            return $this->applyBasicTemplate($parsedContent, $container);
-        }
-    }
-
-    /**
-     * Apply basic template as fallback
-     *
-     * @param array{metadata: array<string, mixed>, content: string} $parsedContent
-     */
-    private function applyBasicTemplate(array $parsedContent, Container $container): string
-    {
-        // Basic template - simple string replacement for fallback
-        $siteConfig = $container->getVariable('site_config') ?? [];
-        $siteInfo = $siteConfig['site'] ?? [];
-
-        $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'Static Site';
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
-
-        $template = $this->getBasicTemplate();
-
-        $replacements = [
-            '{{SITE_NAME}}' => $siteName,
-            '{{SITE_BASE_URL}}' => $siteBaseUrl,
-            '{{PAGE_TITLE}}' => $parsedContent['title'],
-            '{{CONTENT}}' => $parsedContent['content'],
-            '{{META_DESCRIPTION}}' => $parsedContent['metadata']['description'] ?? '',
-            '{{META_KEYWORDS}}' => isset($parsedContent['tags']) && is_array($parsedContent['tags'])
-                ? implode(', ', $parsedContent['tags'])
-                : ''
-        ];
-
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
-    }
-
-    /**
-     * Get basic HTML template
-     */
-    private function getBasicTemplate(): string
-    {
-        return <<<HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{PAGE_TITLE}} | {{SITE_NAME}}</title>
-    <meta name="description" content="{{META_DESCRIPTION}}">
-    <meta name="keywords" content="{{META_KEYWORDS}}">
-    <base href="{{SITE_BASE_URL}}">
-</head>
-<body>
-    <header>
-        <h1>{{SITE_NAME}}</h1>
-    </header>
-    <main>
-        {{CONTENT}}
-    </main>
-    <footer>
-        <p>&copy; 2025 {{SITE_NAME}}. Generated by StaticForge.</p>
-    </footer>
-</body>
-</html>
-HTML;
-    }
-
-    /**
-     * Apply category template if file has category but no explicit template
-     *
-     * @param array<string, mixed> $metadata
-     * @return array<string, mixed>
-     */
-    private function applyCategoryTemplate(array $metadata): array
-    {
-        // If file already has a template, don't override it
-        if (isset($metadata['template'])) {
-            return $metadata;
-        }
-
-        // If file has a category, check for category template
-        if (isset($metadata['category'])) {
-            $categoryTemplates = $this->container->getVariable('category_templates') ?? [];
-            $category = $metadata['category'];
-
-            if (isset($categoryTemplates[$category])) {
-                $metadata['template'] = $categoryTemplates[$category];
-                $this->logger->log(
-                    'INFO',
-                    "Applying category template '{$categoryTemplates[$category]}' for category '{$category}'"
-                );
-            }
-        }
-
-        return $metadata;
-    }
 }
