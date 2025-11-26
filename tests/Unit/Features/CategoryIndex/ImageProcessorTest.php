@@ -16,7 +16,7 @@ class ImageProcessorTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->tempDir = sys_get_temp_dir() . '/staticforge_img_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
         mkdir($this->tempDir . '/images', 0755, true);
@@ -54,7 +54,7 @@ class ImageProcessorTest extends UnitTestCase
         $this->createDummyImage($imagePath);
 
         $html = '<p>Some text</p><img src="/test.jpg" alt="Test"><p>More text</p>';
-        
+
         $result = $this->processor->extractHeroImageFromHtml($html, 'source.md', $this->container);
 
         $this->assertEquals('/images/source.jpg', $result);
@@ -64,7 +64,7 @@ class ImageProcessorTest extends UnitTestCase
     public function testExtractHeroImageFromHtmlWithNoImage(): void
     {
         $html = '<p>No images here</p>';
-        
+
         $result = $this->processor->extractHeroImageFromHtml($html, 'source.md', $this->container);
 
         $this->assertEquals('/templates/terminal/placeholder.jpg', $result);
@@ -74,21 +74,21 @@ class ImageProcessorTest extends UnitTestCase
 
     public function testExtractHeroImageFromHtmlWithExternalImage(): void
     {
-        // We mock file_get_contents by creating a local file and using file:// protocol if possible, 
-        // but the regex checks for http/https. 
+        // We mock file_get_contents by creating a local file and using file:// protocol if possible,
+        // but the regex checks for http/https.
         // For unit tests, we might want to avoid actual network calls.
         // However, the class uses @file_get_contents($url).
-        // We can skip the actual download test or try to mock it if we refactor, 
+        // We can skip the actual download test or try to mock it if we refactor,
         // but for now let's test the fallback or valid behavior if we can.
-        
+
         // Since we can't easily mock the network call without refactoring the class to use a downloader service,
         // we will test that it attempts to download and handles failure gracefully (logging error).
-        
+
         $html = '<img src="https://example.com/fake-image.jpg">';
-        
+
         // It will likely fail to download and return placeholder
         $result = $this->processor->extractHeroImageFromHtml($html, 'source.md', $this->container);
-        
+
         // Expect placeholder on failure
         $this->assertEquals('/templates/terminal/placeholder.jpg', $result);
     }

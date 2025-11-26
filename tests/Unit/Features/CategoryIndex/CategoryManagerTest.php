@@ -57,9 +57,9 @@ class CategoryManagerTest extends UnitTestCase
         ];
 
         $this->manager->collectCategoryFile($this->container, $parameters);
-        
+
         $files = $this->manager->getCategoryFiles('tech');
-        
+
         $this->assertNotEmpty($files['files']);
         $this->assertEquals('Post 1', $files['files'][0]['title']);
         $this->assertEquals('/tech/post1.html', $files['files'][0]['url']);

@@ -86,11 +86,11 @@ class CategoryPageGeneratorTest extends UnitTestCase
             ->with(
                 $this->equalTo('/path/to/tech.md'),
                 $this->callback(function($context) {
-                    return isset($context['metadata']['category_files']) 
+                    return isset($context['metadata']['category_files'])
                         && count($context['metadata']['category_files']) === 1;
                 })
             );
-        
+
         $this->container->add(Application::class, $mockApp);
 
         $this->generator->processDeferredCategoryFiles($this->container);

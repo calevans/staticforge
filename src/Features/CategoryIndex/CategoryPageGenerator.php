@@ -26,7 +26,7 @@ class CategoryPageGenerator
     public function deferCategoryFile(string $filePath, array $metadata, Container $container): void
     {
         $categorySlug = pathinfo($filePath, PATHINFO_FILENAME);
-        
+
         // Determine correct output path: public/{category}/index.html
         $outputDir = $container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
