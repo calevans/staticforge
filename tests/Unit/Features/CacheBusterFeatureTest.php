@@ -14,7 +14,7 @@ class CacheBusterFeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->eventManager = new EventManager($this->container);
         $this->feature = new Feature();
         $this->feature->register($this->eventManager, $this->container);
@@ -34,12 +34,12 @@ class CacheBusterFeatureTest extends UnitTestCase
         $result = $this->feature->handleCreate($this->container, $parameters);
 
         $this->assertEquals($parameters, $result);
-        
+
         $buildId = $this->container->getVariable('build_id');
         $this->assertNotNull($buildId);
         $this->assertIsString($buildId);
         $this->assertNotEmpty($buildId);
-        
+
         // Should be a timestamp
         $this->assertTrue(is_numeric($buildId));
         $this->assertGreaterThan(0, (int)$buildId);

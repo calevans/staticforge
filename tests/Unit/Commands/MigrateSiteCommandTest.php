@@ -17,7 +17,7 @@ class MigrateSiteCommandTest extends TestCase
     {
         $this->testDir = sys_get_temp_dir() . '/staticforge_migrate_test_' . uniqid();
         mkdir($this->testDir);
-        
+
         $this->container = new Container();
         $this->container->setVariable('SOURCE_DIR', $this->testDir);
     }
@@ -60,7 +60,7 @@ INI;
         $commandTester->execute(['--directory' => [$this->testDir]]);
 
         $migratedContent = file_get_contents($this->testDir . '/test.html');
-        
+
         $this->assertStringContainsString('<!--', $migratedContent);
         $this->assertStringContainsString('---', $migratedContent);
         // YAML dumper might use single or double quotes depending on content
@@ -89,7 +89,7 @@ MD;
         $commandTester->execute(['--directory' => [$this->testDir]]);
 
         $migratedContent = file_get_contents($this->testDir . '/test.md');
-        
+
         $this->assertMatchesRegularExpression('/title:\s*[\'"]Markdown Page[\'"]/', $migratedContent);
         $this->assertStringContainsString('category: docs', $migratedContent);
     }

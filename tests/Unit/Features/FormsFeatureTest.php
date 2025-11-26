@@ -16,7 +16,7 @@ class FormsFeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->eventManager = new EventManager($this->container);
         $this->feature = new Feature();
         $this->feature->register($this->eventManager, $this->container);
@@ -27,7 +27,7 @@ class FormsFeatureTest extends UnitTestCase
             'custom/contact.html.twig' => '<form class="custom" action="{{ endpoint }}">Custom Form</form>'
         ]);
         $twig = new Environment($loader);
-        
+
         // Override the twig service in the container
         // Since Container doesn't have a remove/update method for services (only variables),
         // we use reflection to modify the protected $data property.
@@ -35,10 +35,10 @@ class FormsFeatureTest extends UnitTestCase
         $dataProp = $reflection->getProperty('data');
         $dataProp->setAccessible(true);
         $data = $dataProp->getValue($this->container);
-        
+
         // Replace the existing twig service
         $data['twig'] = function() use ($twig) { return $twig; };
-        
+
         $dataProp->setValue($this->container, $data);
     }
 
@@ -70,7 +70,7 @@ class FormsFeatureTest extends UnitTestCase
         ];
 
         $result = $this->feature->handleRender($this->container, $parameters);
-        
+
         $this->assertStringContainsString('<form action="https://api.example.com/submit?FORMID=123">Form Content</form>', $result['file_content']);
         $this->assertStringNotContainsString('{{ form("contact") }}', $result['file_content']);
     }
@@ -96,7 +96,7 @@ class FormsFeatureTest extends UnitTestCase
         ];
 
         $result = $this->feature->handleRender($this->container, $parameters);
-        
+
         $this->assertStringContainsString('<form class="custom"', $result['file_content']);
     }
 
@@ -111,7 +111,7 @@ class FormsFeatureTest extends UnitTestCase
         ];
 
         $result = $this->feature->handleRender($this->container, $parameters);
-        
+
         // Should remain unchanged
         $this->assertEquals($content, $result['file_content']);
     }
@@ -135,7 +135,7 @@ class FormsFeatureTest extends UnitTestCase
         ];
 
         $result = $this->feature->handleRender($this->container, $parameters);
-        
+
         $this->assertStringContainsString('action="https://api.example.com/submit?key=abc&amp;FORMID=123"', $result['file_content']);
     }
 }

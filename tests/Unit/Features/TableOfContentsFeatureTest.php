@@ -14,7 +14,7 @@ class TableOfContentsFeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->eventManager = new EventManager($this->container);
         $this->feature = new Feature();
         $this->feature->register($this->eventManager, $this->container);
@@ -51,15 +51,15 @@ HTML;
 
         $this->assertArrayHasKey('metadata', $result);
         $this->assertArrayHasKey('toc', $result['metadata']);
-        
+
         $toc = $result['metadata']['toc'];
-        
+
         // Check structure
         $this->assertStringContainsString('<ul class="toc-list">', $toc);
         $this->assertStringContainsString('<li><a href="#section-1">Section 1</a></li>', $toc);
         $this->assertStringContainsString('<li><a href="#subsection-1-1">Subsection 1.1</a></li>', $toc);
         $this->assertStringContainsString('<li><a href="#section-2">Section 2</a></li>', $toc);
-        
+
         // Check nesting
         $this->assertStringContainsString('<ul>', $toc); // Nested list for h3
     }
@@ -85,7 +85,7 @@ HTML;
         // Should use the permalink ID
         $this->assertStringContainsString('href="#content-section-1"', $toc);
         $this->assertStringContainsString('href="#content-subsection-1-1"', $toc);
-        
+
         // Should strip the anchor text from the link text
         $this->assertStringContainsString('>Section 1<', $toc);
         $this->assertStringNotContainsString('Permalink', $toc);
@@ -94,7 +94,7 @@ HTML;
     public function testHandleMarkdownConvertedNoHeadings(): void
     {
         $htmlContent = '<p>Just text</p>';
-        
+
         $parameters = [
             'html_content' => $htmlContent,
             'metadata' => [],
@@ -102,7 +102,7 @@ HTML;
         ];
 
         $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
-        
+
         $this->assertEmpty($result['metadata']['toc']);
     }
 
@@ -115,7 +115,7 @@ HTML;
         ];
 
         $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
-        
+
         $this->assertEquals($parameters, $result);
     }
 }

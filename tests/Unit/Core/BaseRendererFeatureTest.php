@@ -10,7 +10,7 @@ use EICC\Utils\Container;
 class TestRendererFeature extends BaseRendererFeature
 {
     protected string $name = 'TestRenderer';
-    
+
     // Expose protected method for testing
     public function testBuildTemplateVariables(array $parsedContent, Container $container, string $sourceFile = ''): array
     {
@@ -78,15 +78,15 @@ class BaseRendererFeatureTest extends UnitTestCase
 
         // Check env var normalization
         $this->assertEquals('My Site', $result['site_name']);
-        
+
         // Check site config flattening
         $this->assertEquals(['top' => []], $result['menu']);
-        
+
         // Check content variables
         $this->assertEquals('Page Title', $result['title']);
         $this->assertEquals('Page Content', $result['content']);
         $this->assertEquals('test.md', $result['source_file']);
-        
+
         // Check metadata merge and override
         $this->assertEquals('Me', $result['author']);
         $this->assertEquals('Page Description', $result['description']);
