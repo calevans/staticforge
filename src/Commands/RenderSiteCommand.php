@@ -208,10 +208,33 @@ class RenderSiteCommand extends Command
         $output->writeln('  Active Features: ' . count($features));
 
         if (!empty($features)) {
-            $output->writeln('');
-            $output->writeln('  <comment>Loaded Features:</comment>');
-            foreach (array_keys($features) as $featureName) {
-                $output->writeln("    - {$featureName}");
+            $standardFeatures = [];
+            $customFeatures = [];
+
+            foreach ($features as $name => $data) {
+                if (isset($data['type']) && $data['type'] === 'Custom') {
+                    $customFeatures[] = $name;
+                } else {
+                    $standardFeatures[] = $name;
+                }
+            }
+
+            if (!empty($standardFeatures)) {
+                $output->writeln('');
+                $output->writeln('  <comment>Standard Features:</comment>');
+                sort($standardFeatures);
+                foreach ($standardFeatures as $featureName) {
+                    $output->writeln("    - {$featureName}");
+                }
+            }
+
+            if (!empty($customFeatures)) {
+                $output->writeln('');
+                $output->writeln('  <comment>Custom Features:</comment>');
+                sort($customFeatures);
+                foreach ($customFeatures as $featureName) {
+                    $output->writeln("    - {$featureName}");
+                }
             }
         }
 

@@ -26,6 +26,12 @@ class FeatureManager
      */
     private array $disabledFeatures = [];
 
+    /**
+     * Map of feature names to their type (Standard/Custom)
+     * @var array<string, string>
+     */
+    private array $featureTypes = [];
+
     public function __construct(Container $container, EventManager $eventManager)
     {
         $this->container = $container;
@@ -39,36 +45,30 @@ class FeatureManager
      */
     public function loadFeatures(): void
     {
-        $featureDirectoriesToScan = [];
-
         // Load user features first (higher priority - can disable library features)
         $userFeaturesDir = $this->container->getVariable('FEATURES_DIR') ?? 'src/Features';
         if (is_dir($userFeaturesDir)) {
-            $featureDirectoriesToScan[] = $userFeaturesDir;
+            $this->loadFeaturesFromDirectory($userFeaturesDir, 'Custom');
         }
 
         // Then load library features (lower priority - may be disabled by user features)
         $vendorFeaturesDir = $this->findVendorFeaturesDir();
         if ($vendorFeaturesDir && is_dir($vendorFeaturesDir)) {
-            $featureDirectoriesToScan[] = $vendorFeaturesDir;
+            $this->loadFeaturesFromDirectory($vendorFeaturesDir, 'Standard');
         } else {
             $this->logger->log('WARNING', "Vendor features dir not found or not a directory: {$vendorFeaturesDir}");
         }
 
-        if (empty($featureDirectoriesToScan)) {
-            $this->logger->log('WARNING', 'No feature directories found to scan');
-            return;
-        }
-
-        // Process each directory
-        foreach ($featureDirectoriesToScan as $directory) {
-            $this->loadFeaturesFromDirectory($directory);
+        if (empty($this->features)) {
+            $this->logger->log('WARNING', 'No features loaded');
         }
 
         // Initialize features array in container with feature names as keys
         $featuresData = [];
         foreach (array_keys($this->features) as $featureName) {
-            $featuresData[$featureName] = [];
+            $featuresData[$featureName] = [
+                'type' => $this->featureTypes[$featureName] ?? 'Standard'
+            ];
         }
         $this->container->setVariable('features', $featuresData);
 
@@ -122,13 +122,13 @@ class FeatureManager
     /**
      * Load features from a specific directory
      */
-    private function loadFeaturesFromDirectory(string $baseDir): void
+    private function loadFeaturesFromDirectory(string $baseDir, string $type): void
     {
         $this->logger->log('INFO', "Scanning features directory: {$baseDir}");
         $featureDirectories = $this->discoverFeatureDirectories($baseDir);
 
         foreach ($featureDirectories as $featureDir) {
-            $this->loadFeature($featureDir);
+            $this->loadFeature($featureDir, $type);
         }
     }
 
@@ -163,7 +163,7 @@ class FeatureManager
     /**
      * Load a single feature from directory
      */
-    private function loadFeature(string $featureDir): void
+    private function loadFeature(string $featureDir, string $type): void
     {
         $directoryName = basename($featureDir);
         $featureFile = $featureDir . '/Feature.php';
@@ -194,6 +194,7 @@ class FeatureManager
             // Register and store the feature
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;
+            $this->featureTypes[$feature->getName()] = $type;
             $this->logger->log('INFO', "Loaded feature: {$feature->getName()}");
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to load feature from {$directoryName}: " . $e->getMessage());

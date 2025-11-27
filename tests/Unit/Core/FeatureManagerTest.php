@@ -105,6 +105,11 @@ class FeatureManagerTest extends UnitTestCase
         $this->assertIsArray($featuresArray);
         // Features array should contain keys for loaded features
         $this->assertNotEmpty($featuresArray);
+        
+        // Check structure of feature data
+        $firstFeature = reset($featuresArray);
+        $this->assertIsArray($firstFeature);
+        $this->assertArrayHasKey('type', $firstFeature);
     }
 
     /**
