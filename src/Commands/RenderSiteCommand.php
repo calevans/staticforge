@@ -127,6 +127,9 @@ class RenderSiteCommand extends Command
                 $output->writeln('  3. POST_GLOB - Process discovered files');
                 $output->writeln('  4. PRE_LOOP - Before render loop');
                 $output->writeln('  5. RENDER LOOP - Process each file');
+                $output->writeln('     - PRE_RENDER');
+                $output->writeln('     - RENDER');
+                $output->writeln('     - POST_RENDER');
                 $output->writeln('  6. POST_LOOP - After render loop');
                 $output->writeln('  7. DESTROY - Cleanup');
                 $output->writeln('');
