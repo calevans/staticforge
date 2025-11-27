@@ -65,8 +65,12 @@ class FeatureManager
             $this->loadFeaturesFromDirectory($directory);
         }
 
-        // Initialize features array in container
-        $this->container->setVariable('features', []);
+        // Initialize features array in container with feature names as keys
+        $featuresData = [];
+        foreach (array_keys($this->features) as $featureName) {
+            $featuresData[$featureName] = [];
+        }
+        $this->container->setVariable('features', $featuresData);
 
         $this->logger->log('INFO', "Loaded " . count($this->features) . " features");
     }
