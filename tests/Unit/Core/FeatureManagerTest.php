@@ -103,7 +103,8 @@ class FeatureManagerTest extends UnitTestCase
 
         $featuresArray = $this->container->getVariable('features');
         $this->assertIsArray($featuresArray);
-        $this->assertEmpty($featuresArray);
+        // Features array should contain keys for loaded features
+        $this->assertNotEmpty($featuresArray);
     }
 
     /**
