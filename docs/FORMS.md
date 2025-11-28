@@ -3,6 +3,9 @@ title: 'Forms'
 template: docs
 menu: '1.3.05, 2.3.05'
 category: docs
+tags:
+  - forms
+  - feature
 ---
 # Forms Feature
 

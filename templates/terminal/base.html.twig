@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title | default('Untitled Page') }}{% if site_name %} | {{ site_name }}{% endif %}{% endblock %}</title>
-    {% if site_base_url %}<base href="{{ site_base_url }}">{% endif %}
-    {% if description %}<meta name="description" content="{{ description }}">{% endif %}
-    {% if tags is defined and tags %}
-        {% if tags is iterable %}
-            {% if tags|length > 0 %}<meta name="keywords" content="{{ tags|join(', ') }}">{% endif %}
-        {% else %}
-            <meta name="keywords" content="{{ tags }}">
-        {% endif %}
+    {% if site_base_url %}
+    <base href="{{ site_base_url }}">
     {% endif %}
+    {% if description %}
+    <meta name="description" content="{{ description }}">
+    {% endif %}
+{% if tags is defined and tags %}
+{% if tags is iterable %}
+{% if tags|length > 0 %}
+    <meta name="keywords" content="{{ tags|join(', ') }}">
+{% endif %}
+{% else %}
+    <meta name="keywords" content="{{ tags }}">
+{% endif %}
+{% endif %}
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
