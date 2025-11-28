@@ -37,7 +37,9 @@ class CategoryPageGeneratorTest extends UnitTestCase
 
     private function recursiveRemoveDirectory(string $dir): void
     {
-        if (!is_dir($dir)) return;
+        if (!is_dir($dir)) {
+            return;
+        }
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
             $path = $dir . DIRECTORY_SEPARATOR . $file;
@@ -85,7 +87,7 @@ class CategoryPageGeneratorTest extends UnitTestCase
             ->method('renderSingleFile')
             ->with(
                 $this->equalTo('/path/to/tech.md'),
-                $this->callback(function($context) {
+                $this->callback(function ($context) {
                     return isset($context['metadata']['category_files'])
                         && count($context['metadata']['category_files']) === 1;
                 })

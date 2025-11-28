@@ -37,7 +37,9 @@ class FormsFeatureTest extends UnitTestCase
         $data = $dataProp->getValue($this->container);
 
         // Replace the existing twig service
-        $data['twig'] = function() use ($twig) { return $twig; };
+        $data['twig'] = function () use ($twig) {
+            return $twig;
+        };
 
         $dataProp->setValue($this->container, $data);
     }

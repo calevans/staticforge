@@ -13,34 +13,34 @@ use EICC\StaticForge\Commands\RenderSiteCommand;
  */
 class RenderSiteCommandTest extends IntegrationTestCase
 {
-  private string $testOutputDir;
-  private string $testContentDir;
-  private string $testTemplateDir;
-  private Container $container;
+    private string $testOutputDir;
+    private string $testContentDir;
+    private string $testTemplateDir;
+    private Container $container;
 
-  protected function setUp(): void
-  {
-    parent::setUp();
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    // Create temporary directories for testing
-    $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
-    $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
-    $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
+      // Create temporary directories for testing
+        $this->testOutputDir = sys_get_temp_dir() . '/staticforge_test_output_' . uniqid();
+        $this->testContentDir = sys_get_temp_dir() . '/staticforge_test_content_' . uniqid();
+        $this->testTemplateDir = sys_get_temp_dir() . '/staticforge_test_templates_' . uniqid();
 
-    mkdir($this->testOutputDir, 0755, true);
-    mkdir($this->testContentDir, 0755, true);
-    mkdir($this->testTemplateDir . '/sample', 0755, true);
+        mkdir($this->testOutputDir, 0755, true);
+        mkdir($this->testContentDir, 0755, true);
+        mkdir($this->testTemplateDir . '/sample', 0755, true);
 
-    // Override environment variables BEFORE loading bootstrap
-    $_ENV['SOURCE_DIR'] = $this->testContentDir;
-    $_ENV['OUTPUT_DIR'] = $this->testOutputDir;
-    $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
+      // Override environment variables BEFORE loading bootstrap
+        $_ENV['SOURCE_DIR'] = $this->testContentDir;
+        $_ENV['OUTPUT_DIR'] = $this->testOutputDir;
+        $_ENV['TEMPLATE_DIR'] = $this->testTemplateDir;
 
-    // Load testing environment
-    $this->container = $this->createContainer(__DIR__ . '/../../.env.testing');
+      // Load testing environment
+        $this->container = $this->createContainer(__DIR__ . '/../../.env.testing');
 
-    // Create test template
-    $baseTemplate = '<!DOCTYPE html>
+      // Create test template
+        $baseTemplate = '<!DOCTYPE html>
 <html>
 <head><title>{{ title | default("Test Site") }}</title></head>
 <body>
@@ -48,28 +48,28 @@ class RenderSiteCommandTest extends IntegrationTestCase
     <main>{{ content | raw }}</main>
 </body>
 </html>';
-    file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
+        file_put_contents($this->testTemplateDir . '/sample/base.html.twig', $baseTemplate);
 
-    // Create test content
-    $testContent = '<!--
+      // Create test content
+        $testContent = '<!--
 ---
 title: "Test Page"
 ---
 -->
 <h2>Test Content</h2>
 <p>This is a test page.</p>';
-    file_put_contents($this->testContentDir . '/test.html', $testContent);
-  }
+        file_put_contents($this->testContentDir . '/test.html', $testContent);
+    }
 
-  protected function tearDown(): void
-  {
-    // Clean up test directories
-    $this->removeDirectory($this->testOutputDir);
-    $this->removeDirectory($this->testContentDir);
-    $this->removeDirectory($this->testTemplateDir);
+    protected function tearDown(): void
+    {
+      // Clean up test directories
+        $this->removeDirectory($this->testOutputDir);
+        $this->removeDirectory($this->testContentDir);
+        $this->removeDirectory($this->testTemplateDir);
 
-    parent::tearDown();
-  }
+        parent::tearDown();
+    }
 
     /**
      * Test basic site generation command
@@ -214,170 +214,169 @@ title: "Test Page"
         $this->assertEquals('Generate the complete static site from content files', $command->getDescription());
 
     // Test that options are properly configured
-    $definition = $command->getDefinition();
-    $this->assertTrue($definition->hasOption('clean'));
-    $this->assertTrue($definition->hasOption('template'));
-    $this->assertTrue($definition->hasOption('input'));
-    $this->assertTrue($definition->hasOption('output'));
+        $definition = $command->getDefinition();
+        $this->assertTrue($definition->hasOption('clean'));
+        $this->assertTrue($definition->hasOption('template'));
+        $this->assertTrue($definition->hasOption('input'));
+        $this->assertTrue($definition->hasOption('output'));
 
-    $cleanOption = $definition->getOption('clean');
-    $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
+        $cleanOption = $definition->getOption('clean');
+        $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
 
-    $templateOption = $definition->getOption('template');
-    $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
+        $templateOption = $definition->getOption('template');
+        $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
 
-    $inputOption = $definition->getOption('input');
-    $this->assertEquals('Override input/content directory path', $inputOption->getDescription());
+        $inputOption = $definition->getOption('input');
+        $this->assertEquals('Override input/content directory path', $inputOption->getDescription());
 
-    $outputOption = $definition->getOption('output');
-    $this->assertEquals('Override output directory path', $outputOption->getDescription());
-  }
+        $outputOption = $definition->getOption('output');
+        $this->assertEquals('Override output directory path', $outputOption->getDescription());
+    }
 
   /**
    * Test command with input directory override
    */
-  public function testRenderSiteCommandWithInputOverride(): void
-  {
-    // Create alternate input directory
-    $altInputDir = sys_get_temp_dir() . '/staticforge_alt_input_' . uniqid();
-    mkdir($altInputDir, 0755, true);
+    public function testRenderSiteCommandWithInputOverride(): void
+    {
+      // Create alternate input directory
+        $altInputDir = sys_get_temp_dir() . '/staticforge_alt_input_' . uniqid();
+        mkdir($altInputDir, 0755, true);
 
-    $altContent = '<!--
+        $altContent = '<!--
 ---
 title: "Alt Page"
 ---
 -->
 <h2>Alt Content</h2>';
-    file_put_contents($altInputDir . '/alt.html', $altContent);
+        file_put_contents($altInputDir . '/alt.html', $altContent);
 
-    $application = new Application();
-    $container = $this->container;
-    $application->add(new RenderSiteCommand($container));
+        $application = new Application();
+        $container = $this->container;
+        $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('site:render');
-    $commandTester = new CommandTester($command);
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
 
-    $result = $commandTester->execute([
-      'command' => $command->getName(),
-      '--input' => $altInputDir,
-    ]);
+        $result = $commandTester->execute([
+        'command' => $command->getName(),
+        '--input' => $altInputDir,
+        ]);
 
-    $this->assertEquals(0, $result);
-    $output = $commandTester->getDisplay();
-    $this->assertStringContainsString('Using input directory override: ' . $altInputDir, $output);
-    $this->assertStringContainsString('Site generation completed successfully', $output);
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Using input directory override: ' . $altInputDir, $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
 
-    // Check that alt.html was generated
-    $this->assertFileExists($this->testOutputDir . '/alt.html');
+      // Check that alt.html was generated
+        $this->assertFileExists($this->testOutputDir . '/alt.html');
 
-    // Cleanup
-    $this->removeDirectory($altInputDir);
-  }
+      // Cleanup
+        $this->removeDirectory($altInputDir);
+    }
 
   /**
    * Test command with output directory override
    */
-  public function testRenderSiteCommandWithOutputOverride(): void
-  {
-    // Create alternate output directory
-    $altOutputDir = sys_get_temp_dir() . '/staticforge_alt_output_' . uniqid();
-    mkdir($altOutputDir, 0755, true);
+    public function testRenderSiteCommandWithOutputOverride(): void
+    {
+      // Create alternate output directory
+        $altOutputDir = sys_get_temp_dir() . '/staticforge_alt_output_' . uniqid();
+        mkdir($altOutputDir, 0755, true);
 
-    $application = new Application();
-    $container = $this->container;
-    $application->add(new RenderSiteCommand($container));
+        $application = new Application();
+        $container = $this->container;
+        $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('site:render');
-    $commandTester = new CommandTester($command);
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
 
-    $result = $commandTester->execute([
-      'command' => $command->getName(),
-      '--output' => $altOutputDir,
-    ]);
+        $result = $commandTester->execute([
+        'command' => $command->getName(),
+        '--output' => $altOutputDir,
+        ]);
 
-    $this->assertEquals(0, $result);
-    $output = $commandTester->getDisplay();
-    $this->assertStringContainsString('Using output directory override: ' . $altOutputDir, $output);
-    $this->assertStringContainsString('Site generation completed successfully', $output);
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Using output directory override: ' . $altOutputDir, $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
 
-    // Check that file was generated in alt output directory
-    $this->assertFileExists($altOutputDir . '/test.html');
-    $this->assertFileDoesNotExist($this->testOutputDir . '/test.html');
+      // Check that file was generated in alt output directory
+        $this->assertFileExists($altOutputDir . '/test.html');
+        $this->assertFileDoesNotExist($this->testOutputDir . '/test.html');
 
-    // Cleanup
-    $this->removeDirectory($altOutputDir);
-  }
+      // Cleanup
+        $this->removeDirectory($altOutputDir);
+    }
 
   /**
    * Test command with both input and output overrides
    */
-  public function testRenderSiteCommandWithBothOverrides(): void
-  {
-    // Create alternate directories
-    $altInputDir = sys_get_temp_dir() . '/staticforge_both_input_' . uniqid();
-    $altOutputDir = sys_get_temp_dir() . '/staticforge_both_output_' . uniqid();
-    mkdir($altInputDir, 0755, true);
-    mkdir($altOutputDir, 0755, true);
+    public function testRenderSiteCommandWithBothOverrides(): void
+    {
+      // Create alternate directories
+        $altInputDir = sys_get_temp_dir() . '/staticforge_both_input_' . uniqid();
+        $altOutputDir = sys_get_temp_dir() . '/staticforge_both_output_' . uniqid();
+        mkdir($altInputDir, 0755, true);
+        mkdir($altOutputDir, 0755, true);
 
-    $altContent = '<!--
+        $altContent = '<!--
 ---
 title: "Both Override"
 ---
 -->
 <h2>Both directories overridden</h2>';
-    file_put_contents($altInputDir . '/both.html', $altContent);
+        file_put_contents($altInputDir . '/both.html', $altContent);
 
-    $application = new Application();
-    $container = $this->container;
-    $application->add(new RenderSiteCommand($container));
+        $application = new Application();
+        $container = $this->container;
+        $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('site:render');
-    $commandTester = new CommandTester($command);
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
 
-    $result = $commandTester->execute([
-      'command' => $command->getName(),
-      '--input' => $altInputDir,
-      '--output' => $altOutputDir,
-      '--clean' => true,
-    ]);
+        $result = $commandTester->execute([
+        'command' => $command->getName(),
+        '--input' => $altInputDir,
+        '--output' => $altOutputDir,
+        '--clean' => true,
+        ]);
 
-    $this->assertEquals(0, $result);
-    $output = $commandTester->getDisplay();
-    $this->assertStringContainsString('Using input directory override: ' . $altInputDir, $output);
-    $this->assertStringContainsString('Using output directory override: ' . $altOutputDir, $output);
-    $this->assertStringContainsString('Site generation completed successfully', $output);
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Using input directory override: ' . $altInputDir, $output);
+        $this->assertStringContainsString('Using output directory override: ' . $altOutputDir, $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
 
-    // Check that file was generated in alt output directory from alt input
-    $this->assertFileExists($altOutputDir . '/both.html');
-    $this->assertFileDoesNotExist($this->testOutputDir . '/both.html');
-    $this->assertFileDoesNotExist($altOutputDir . '/test.html');
+      // Check that file was generated in alt output directory from alt input
+        $this->assertFileExists($altOutputDir . '/both.html');
+        $this->assertFileDoesNotExist($this->testOutputDir . '/both.html');
+        $this->assertFileDoesNotExist($altOutputDir . '/test.html');
 
-    // Cleanup
-    $this->removeDirectory($altInputDir);
-    $this->removeDirectory($altOutputDir);
-  }
+      // Cleanup
+        $this->removeDirectory($altInputDir);
+        $this->removeDirectory($altOutputDir);
+    }
 
   /**
    * Test command with invalid input directory
    */
-  public function testRenderSiteCommandWithInvalidInput(): void
-  {
-    $application = new Application();
-    $container = $this->container;
-    $application->add(new RenderSiteCommand($container));
+    public function testRenderSiteCommandWithInvalidInput(): void
+    {
+        $application = new Application();
+        $container = $this->container;
+        $application->add(new RenderSiteCommand($container));
 
-    $command = $application->find('site:render');
-    $commandTester = new CommandTester($command);
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
 
-    $result = $commandTester->execute([
-      'command' => $command->getName(),
-      '--input' => '/nonexistent/directory',
-    ]);
+        $result = $commandTester->execute([
+        'command' => $command->getName(),
+        '--input' => '/nonexistent/directory',
+        ]);
 
-    $this->assertEquals(1, $result);
-    $output = $commandTester->getDisplay();
-    $this->assertStringContainsString('Site generation failed', $output);
-    $this->assertStringContainsString('Input directory does not exist', $output);
-  }
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Site generation failed', $output);
+        $this->assertStringContainsString('Input directory does not exist', $output);
+    }
 }
-

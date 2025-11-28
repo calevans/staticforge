@@ -138,7 +138,7 @@ class ApplicationTest extends UnitTestCase
         $firedEvents = [];
         $eventManager = $this->application->getEventManager();
 
-        $testListener = new class($firedEvents) {
+        $testListener = new class ($firedEvents) {
             private array $firedEvents;
 
             public function __construct(array &$firedEvents)

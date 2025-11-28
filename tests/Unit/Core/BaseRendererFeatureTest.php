@@ -49,6 +49,4 @@ class BaseRendererFeatureTest extends UnitTestCase
         $this->assertEquals('custom', $result['template']);
         $this->assertEquals('My Title', $result['title']);
     }
-
-
 }
