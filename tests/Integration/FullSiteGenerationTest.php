@@ -125,7 +125,7 @@ MD;
     // Verify HTML content
     $indexHtml = file_get_contents($this->testOutputDir . '/index.html');
     $this->assertStringContainsString('Home Page', $indexHtml);
-    $this->assertStringContainsString('<h2>Welcome</h2>', $indexHtml);
+    $this->assertMatchesRegularExpression('/<h2>\s*Welcome\s*<\/h2>/', $indexHtml);
     $this->assertStringContainsString('This is the home page', $indexHtml);
 
     // Verify Markdown was converted

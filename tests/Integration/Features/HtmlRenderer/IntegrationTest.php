@@ -136,7 +136,7 @@ TWIG;
         // Verify content processing
         $indexContent = file_get_contents($this->outputDir . '/main/index.html');
         $this->assertStringContainsString('<title>Home Page | Integration Test Site</title>', $indexContent);
-        $this->assertStringContainsString('<h1>Welcome to Our Site</h1>', $indexContent);
+        $this->assertMatchesRegularExpression('/<h1>\s*Welcome to Our Site\s*<\/h1>/', $indexContent);
         $this->assertStringContainsString('<meta name="description" content="Welcome to our amazing website">', $indexContent);
 
         $aboutContent = file_get_contents($this->outputDir . '/about.html');

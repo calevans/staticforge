@@ -99,6 +99,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
                 'title' => $metadata['title'] ?? 'Untitled',
             ], $container, $filePath);
 
+            // Beautify HTML output
+            $renderedContent = $this->beautifyHtml($renderedContent);
+
             $this->logger->log('INFO', "HTML file rendered: {$filePath}");
 
             // Store rendered content and metadata for Core to write

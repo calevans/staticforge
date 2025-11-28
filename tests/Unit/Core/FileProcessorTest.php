@@ -59,9 +59,9 @@ class FileProcessorTest extends UnitTestCase
         // Track events fired
         $eventsTracked = [];
 
-        $this->eventManager->registerListener('PRE_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
-        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
-        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
+        $this->eventManager->registerListener('PRE_RENDER', [new TestEventListener($eventsTracked, 'PRE_RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked, 'RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked, 'POST_RENDER'), 'handleEvent'], 100);
 
         $this->fileProcessor->processFiles();
 
@@ -84,8 +84,8 @@ class FileProcessorTest extends UnitTestCase
 
         // Listener that sets skip_file flag in PRE_RENDER
         $this->eventManager->registerListener('PRE_RENDER', [new SkipFileListener($eventsTracked), 'handleEvent'], 100);
-        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
-        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked), 'handleEvent'], 100);
+        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked, 'RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked, 'POST_RENDER'), 'handleEvent'], 100);
 
         $this->fileProcessor->processFiles();
 
@@ -122,28 +122,18 @@ class FileProcessorTest extends UnitTestCase
 class TestEventListener
 {
     private array $eventsTracked;
+    private string $eventName;
 
-    public function __construct(array &$eventsTracked)
+    public function __construct(array &$eventsTracked, string $eventName)
     {
         $this->eventsTracked = &$eventsTracked;
+        $this->eventName = $eventName;
     }
 
     public function handleEvent(Container $container, array $parameters): array
     {
-        // Determine which event this is based on call stack
-        $trace = debug_backtrace();
-        $eventName = null;
-
-        foreach ($trace as $frame) {
-            if (isset($frame['function']) && $frame['function'] === 'fire') {
-                // Get the event name from the previous frame
-                $eventName = $frame['args'][0] ?? 'UNKNOWN';
-                break;
-            }
-        }
-
         $this->eventsTracked[] = [
-            'event' => $eventName,
+            'event' => $this->eventName,
             'parameters' => $parameters
         ];
 
