@@ -330,4 +330,38 @@ MD;
     $this->assertStringContainsString('Metadata Test', $html);
     $this->assertStringContainsString('test, metadata, integration', $html);
   }
+
+  public function testPreservesWhitespaceInCodeBlocks(): void
+  {
+    $markdownContent = <<<'MD'
+---
+title: "Code Block Test"
+---
+# Code Block
+
+```php
+function hello() {
+    echo "Hello World";
+    return true;
+}
+```
+MD;
+    file_put_contents($this->testContentDir . '/code-test.md', $markdownContent);
+
+    $app = new Application($this->container);
+    $app->generate();
+
+    $outputFile = $this->testOutputDir . '/code-test.html';
+    $this->assertFileExists($outputFile);
+    $content = file_get_contents($outputFile);
+
+    // Check that newlines and indentation are preserved
+    $this->assertStringContainsString('function hello() {', $content);
+    // Note: Quotes are HTML encoded in the output
+    $this->assertStringContainsString('    echo &quot;Hello World&quot;;', $content);
+    $this->assertStringContainsString('    return true;', $content);
+
+    // Ensure it's not all on one line (check for newline after brace)
+    $this->assertMatchesRegularExpression('/function hello\(\) \{\s+echo &quot;Hello World&quot;;/', $content);
+  }
 }
