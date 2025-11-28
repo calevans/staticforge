@@ -18,8 +18,12 @@ category: docs
 
 ```markdown
 ---
-title = "Introduction to PHP"
-tags = ["php", "tutorial", "beginner", "web-development"]
+title: "Introduction to PHP"
+tags:
+  - php
+  - tutorial
+  - beginner
+  - web-development
 ---
 
 # Introduction to PHP

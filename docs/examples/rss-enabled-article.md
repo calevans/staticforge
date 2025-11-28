@@ -5,10 +5,10 @@ description: 'Learn how to build a RESTful API using PHP without frameworks'
 author: dev@example.com
 published_date: '2024-01-15'
 tags:
-  - '"php"'
-  - '"api"'
-  - '"rest"'
-  - '"tutorial"'
+  - php
+  - api
+  - rest
+  - tutorial
 ---
 # Building a REST API with PHP
 

@@ -167,69 +167,6 @@ class Feature extends BaseFeature implements FeatureInterface
     }
 
   /**
-   * Extract tags from Markdown INI frontmatter
-   *
-   * @return array<int, string>
-   */
-    private function extractTagsFromMarkdown(string $content): array
-    {
-      // Check for INI frontmatter (--- ... ---)
-        if (preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
-            $iniContent = trim($matches[1]);
-
-          // Look for tags line in INI format: tags = [tag1, tag2, tag3]
-            if (preg_match('/^tags\s*=\s*\[([^\]]+)\]/m', $iniContent, $tagMatches)) {
-                // Array format: tags = [tag1, tag2, tag3]
-                $tagString = $tagMatches[1];
-                $tags = array_map('trim', explode(',', $tagString));
-                return $tags;
-            } elseif (preg_match('/^tags\s*=\s*"?([^"\n]+)"?/m', $iniContent, $tagMatches)) {
-              // String format: tags = "tag1, tag2, tag3"
-                $tagString = trim($tagMatches[1], '"\'');
-                $tags = array_map('trim', explode(',', $tagString));
-                return $tags;
-            }
-        }
-
-        return [];
-    }
-
-  /**
-   * Extract tags from HTML meta or frontmatter
-   *
-   * @return array<int, string>
-   */
-    private function extractTagsFromHtml(string $content): array
-    {
-        $tags = [];
-
-      // Check for INI frontmatter block
-        if (preg_match('/<!--\s*INI\s*\n(.*?)\n-->/s', $content, $matches)) {
-            $iniContent = $matches[1];
-
-          // Look for tags line in INI format: tags = [tag1, tag2, tag3]
-            if (preg_match('/^tags\s*=\s*(.+)$/m', $iniContent, $tagMatches)) {
-                $tagString = trim($tagMatches[1]);
-
-                // Remove brackets if present
-                $tagString = trim($tagString, '[]');
-
-                $tags = array_map('trim', explode(',', $tagString));
-            }
-        }
-
-      // Also check for meta tags
-        if (preg_match_all('/<meta\s+name=["\']keywords["\']\s+content=["\']([^"\']+)["\']/i', $content, $matches)) {
-            foreach ($matches[1] as $keywords) {
-                $metaTags = array_map('trim', explode(',', $keywords));
-                $tags = array_merge($tags, $metaTags);
-            }
-        }
-
-        return $tags;
-    }
-
-  /**
    * Get all tags sorted alphabetically
    *
    * @return array<int, string>
