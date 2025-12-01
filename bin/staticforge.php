@@ -22,6 +22,22 @@ if (!$autoloaderLoaded) {
     exit(1);
 }
 
+// Check for required extensions
+$requiredExtensions = ['xml', 'mbstring'];
+$missingExtensions = [];
+
+foreach ($requiredExtensions as $ext) {
+    if (!extension_loaded($ext)) {
+        $missingExtensions[] = $ext;
+    }
+}
+
+if (!empty($missingExtensions)) {
+    echo "Error: The following required PHP extensions are missing: " . implode(', ', $missingExtensions) . ".\n";
+    echo "Please install them and try again.\n";
+    exit(1);
+}
+
 use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\RenderSiteCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;

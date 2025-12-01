@@ -56,6 +56,9 @@ class InitCommand extends Command
       // Create .env file
         $this->createEnvFile($io, $force);
 
+      // Create siteconfig.yaml file
+        $this->createSiteConfigFile($io, $force);
+
       // Create sample content
         $this->createSampleContent($io, $force);
 
@@ -113,10 +116,86 @@ ENABLE_FEATURES="MarkdownRenderer,HtmlRenderer,MenuBuilder,Categories,Tags,Chapt
 # Development
 DEBUG=false
 LOG_LEVEL="info"
+
+# SFTP Configuration
+SFTP_HOST="your.sftp.host"
+SFTP_PORT=22
+SFTP_USERNAME="username"
+SFTP_PASSWORD="password"
+SFTP_REMOTE_ROOT="/path/to/remote/root"
+SFTP_PRIVATE_KEY_PATH="/path/to/private/key"
+UPLOAD_URL="https://your-production-site.com"
 ENV;
 
         file_put_contents($envPath, $envContent);
         $io->success('Created .env configuration file');
+    }
+
+    private function createSiteConfigFile(SymfonyStyle $io, bool $force): void
+    {
+        $configPath = 'siteconfig.yaml';
+
+        if (file_exists($configPath) && !$force) {
+            $io->note('siteconfig.yaml file already exists. Use --force to overwrite.');
+            return;
+        }
+
+        $configContent = <<<YAML
+# siteconfig.yaml - Site-wide configuration for StaticForge
+#
+# This file contains non-sensitive site configuration that can be
+# safely committed to version control. Unlike .env (which contains
+# credentials and environment-specific settings like SITE_BASE_URL),
+# this file contains site information, menu definitions, and other
+# site-wide settings.
+#
+# This file is OPTIONAL - StaticForge works fine without it.
+
+# Site Information
+# These appear in templates and throughout your site
+site:
+  name: "My Awesome Site"
+  tagline: "Building amazing things with PHP"
+
+# Static menu definitions
+# These create named menus accessible in templates as {{ menu_name }}
+menu:
+  # Main navigation menu
+  # Accessible in templates as {{ menu_top }}
+  top:
+    Home: /
+    About: /about
+    Products: /products
+    Shop: /shop
+    Contact: /contact
+
+  # Footer navigation
+  # Accessible in templates as {{ menu_footer }}
+  footer:
+    Privacy Policy: /privacy
+    Terms of Service: /terms
+    Contact Us: /contact
+    Sitemap: /sitemap
+
+# Chapter navigation configuration
+# Controls sequential navigation links (prev/next) within menu sections
+chapter_nav:
+  # Comma-separated list of menu numbers to generate chapter navigation for
+  # Example: "2" enables chapter nav for menu 2, "2,3" enables for menus 2 and 3
+  menus: "2"
+
+  # Symbol for "previous" link (default: ←)
+  prev_symbol: "←"
+
+  # Symbol for "next" link (default: →)
+  next_symbol: "→"
+
+  # Separator between navigation elements (default: |)
+  separator: "|"
+YAML;
+
+        file_put_contents($configPath, $configContent);
+        $io->success('Created siteconfig.yaml configuration file');
     }
 
     private function createSampleContent(SymfonyStyle $io, bool $force): void
