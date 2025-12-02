@@ -121,4 +121,65 @@ class RssDataProcessor
 
         return $url;
     }
+
+    /**
+     * Process podcast media file (copy local files, get metadata)
+     *
+     * @param array<string, mixed> $fileData File data including metadata
+     * @param string $sourceDir Source content directory
+     * @param string $outputDir Output directory
+     * @return array<string, mixed>|null Enclosure data or null if no media
+     */
+    public function processPodcastMedia(array $fileData, string $sourceDir, string $outputDir): ?array
+    {
+        $metadata = $fileData['metadata'] ?? [];
+        $audioFile = $metadata['audio_file'] ?? $metadata['video_file'] ?? null;
+
+        if (!$audioFile) {
+            return null;
+        }
+
+        // Check if remote URL
+        if (preg_match('~^https?://~i', $audioFile)) {
+            return [
+                'url' => $audioFile,
+                'length' => $metadata['audio_size'] ?? 0,
+                'type' => $metadata['audio_type'] ?? 'audio/mpeg', // Default fallback
+            ];
+        }
+
+        // Handle local file
+        $sourcePath = $sourceDir . DIRECTORY_SEPARATOR . ltrim($audioFile, '/\\');
+
+        if (!file_exists($sourcePath)) {
+            return null;
+        }
+
+        // Create target directory
+        $targetDir = $outputDir . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'media';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        $fileName = basename($audioFile);
+        $targetPath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
+
+        // Copy file if it doesn't exist or is newer
+        if (!file_exists($targetPath) || filemtime($sourcePath) > filemtime($targetPath)) {
+            copy($sourcePath, $targetPath);
+        }
+
+        // Get file info
+        $length = filesize($targetPath);
+        $mimeType = mime_content_type($targetPath) ?: 'audio/mpeg';
+
+        // Build public URL
+        $url = '/assets/media/' . $fileName;
+
+        return [
+            'url' => $url,
+            'length' => $length,
+            'type' => $mimeType,
+        ];
+    }
 }

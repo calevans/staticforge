@@ -136,19 +136,45 @@ class Feature extends BaseFeature implements FeatureInterface
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
+        $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? 'https://example.com/';
 
         $siteConfig = $container->getVariable('site_config') ?? [];
         $siteInfo = $siteConfig['site'] ?? [];
         $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'My Site';
 
+        // Get category definitions to find podcast settings
+        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $categoryDefinitions = [];
+
+        foreach ($discoveredFiles as $file) {
+            $metadata = $file['metadata'] ?? [];
+            if (($metadata['type'] ?? '') === 'category') {
+                $slug = pathinfo($file['path'], PATHINFO_FILENAME);
+                $categoryDefinitions[$slug] = $metadata;
+            }
+        }
+
         foreach ($this->categoryFiles as $categorySlug => $categoryData) {
+            $categoryMetadata = $categoryDefinitions[$categorySlug] ?? [];
+
+            // Process podcast media if this is a podcast category
+            if (($categoryMetadata['rss_type'] ?? '') === 'podcast') {
+                foreach ($categoryData['files'] as $key => $file) {
+                    $mediaData = $this->dataProcessor->processPodcastMedia($file, $sourceDir, $outputDir);
+                    if ($mediaData) {
+                        $categoryData['files'][$key]['enclosure'] = $mediaData;
+                    }
+                }
+            }
+
             $this->generateRssFeed(
                 $categorySlug,
                 $categoryData,
                 $outputDir,
                 $siteBaseUrl,
-                $siteName
+                $siteName,
+                $categoryMetadata
             );
         }
 
@@ -163,13 +189,15 @@ class Feature extends BaseFeature implements FeatureInterface
      * @param string $outputDir Output directory
      * @param string $siteBaseUrl Base URL for the site
      * @param string $siteName Site name
+     * @param array<string, mixed> $categoryMetadata Category definition metadata
      */
     private function generateRssFeed(
         string $categorySlug,
         array $categoryData,
         string $outputDir,
         string $siteBaseUrl,
-        string $siteName
+        string $siteName,
+        array $categoryMetadata = []
     ): void {
         $files = $categoryData['files'] ?? [];
         $categoryName = $categoryData['display_name'] ?? ucfirst($categorySlug);
@@ -180,7 +208,14 @@ class Feature extends BaseFeature implements FeatureInterface
         });
 
         // Build RSS XML
-        $xml = $this->feedGenerator->generateFeedXml($categoryName, $categorySlug, $files, $siteBaseUrl, $siteName);
+        $xml = $this->feedGenerator->generateFeedXml(
+            $categoryName,
+            $categorySlug,
+            $files,
+            $siteBaseUrl,
+            $siteName,
+            $categoryMetadata
+        );
 
         // Write RSS file
         $categoryDir = $outputDir . DIRECTORY_SEPARATOR . $categorySlug;

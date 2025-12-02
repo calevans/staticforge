@@ -98,6 +98,75 @@ Content here...
     <title>Your Site - Tutorials</title>
     <link>https://yoursite.com/tutorials/</link>
     <description>Tutorials articles from Your Site</description>
+
+## Podcast Feeds
+
+StaticForge supports generating iTunes-compatible podcast feeds. To turn a category into a podcast, you need to define it as such in a category definition file.
+
+### 1. Configure the Category
+
+Create a category definition file (e.g., `content/podcast.md`) with `rss_type: podcast` and the required iTunes metadata:
+
+```markdown
+---
+type: category
+rss_type: podcast
+itunes_author: "Your Name"
+itunes_summary: "A show about interesting things."
+itunes_owner_name: "Your Name"
+itunes_owner_email: "you@example.com"
+itunes_image: "https://example.com/podcast-cover.jpg"
+itunes_category: "Technology"
+itunes_explicit: false
+---
+```
+
+### 2. Create Episodes
+
+Add episodes to the category. You must include an `audio_file` (or `video_file`) in the frontmatter.
+
+```markdown
+---
+title: "Episode 1: The Beginning"
+category: podcast
+audio_file: "/media/episode1.mp3"
+itunes_duration: "30:00"
+itunes_episode: 1
+itunes_season: 1
+itunes_explicit: false
+---
+
+Show notes for this episode...
+```
+
+### Asset Management
+
+StaticForge handles your media files automatically:
+
+*   **Local Files:** If `audio_file` points to a local file (e.g., `/media/episode1.mp3`), StaticForge will:
+    1. Look for the file in your `content` directory (e.g., `content/media/episode1.mp3`).
+    2. Copy it to `public/assets/media/`.
+    3. Automatically detect the file size and MIME type for the RSS feed.
+*   **Remote Files:** If `audio_file` is a URL (starts with `http` or `https`), it is used as-is. You can optionally provide `audio_size` and `audio_type` manually if needed.
+
+### Supported iTunes Tags
+
+**Channel Level (Category Definition):**
+*   `itunes_author`
+*   `itunes_summary` (falls back to `description`)
+*   `itunes_owner_name`
+*   `itunes_owner_email`
+*   `itunes_image`
+*   `itunes_category`
+*   `itunes_explicit`
+
+**Item Level (Episode):**
+*   `itunes_duration`
+*   `itunes_episode`
+*   `itunes_season`
+*   `itunes_explicit`
+*   `itunes_image` (for episode-specific artwork)
+
     <language>en-us</language>
     <lastBuildDate>Thu, 07 Nov 2024 12:00:00 +0000</lastBuildDate>
     <atom:link href="https://yoursite.com/tutorials/rss.xml" rel="self" type="application/rss+xml" />
