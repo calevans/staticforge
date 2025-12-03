@@ -38,12 +38,12 @@ composer require eicc/staticforge
 Run the initialization command to set up the directory structure, configuration, and templates:
 
 ```bash
-php vendor/bin/staticforge.php init
+php vendor/bin/staticforge.php site:init
 ```
 
 This command will:
 - Create necessary directories (`content/`, `templates/`, `public/`, etc.)
-- Create a default `.env` configuration file
+- Copy example configuration files (`.env.example` to `.env`, `siteconfig.yaml.example` to `siteconfig.yaml`)
 - Install bundled templates
 - Create a sample homepage
 

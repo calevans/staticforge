@@ -38,9 +38,13 @@ class InitCommandTest extends TestCase
 
     public function testExecuteCreatesDirectoryStructure(): void
     {
+        // Create dummy example files needed for init
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=Test');
+        file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: Test');
+
         $application = new Application();
         $application->add(new InitCommand());
-        $command = $application->find('init');
+        $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);
@@ -54,23 +58,30 @@ class InitCommandTest extends TestCase
 
     public function testExecuteCreatesEnvFile(): void
     {
+        // Create dummy example file
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=TestEnv');
+
         $application = new Application();
         $application->add(new InitCommand());
-        $command = $application->find('init');
+        $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);
 
         $this->assertFileExists($this->testDir . '/.env');
         $content = file_get_contents($this->testDir . '/.env');
-        $this->assertStringContainsString('SITE_NAME=', $content);
+        $this->assertStringContainsString('SITE_NAME=TestEnv', $content);
     }
 
     public function testExecuteCreatesSampleContent(): void
     {
+        // Create dummy example files
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=Test');
+        file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: Test');
+
         $application = new Application();
         $application->add(new InitCommand());
-        $command = $application->find('init');
+        $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);
@@ -82,12 +93,16 @@ class InitCommandTest extends TestCase
 
     public function testExecuteDoesNotOverwriteExistingFilesWithoutForce(): void
     {
+        // Create dummy example files
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=New');
+        file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: New');
+
         // Create existing file
         file_put_contents($this->testDir . '/.env', 'EXISTING_CONTENT');
 
         $application = new Application();
         $application->add(new InitCommand());
-        $command = $application->find('init');
+        $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);
@@ -99,18 +114,24 @@ class InitCommandTest extends TestCase
 
     public function testExecuteOverwritesExistingFilesWithForce(): void
     {
+        // Create dummy example files
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=NewContent');
+        file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: NewContent');
+
         // Create existing file
-        file_put_contents($this->testDir . '/.env', 'EXISTING_CONTENT');
+        file_put_contents($this->testDir . '/.env', 'OLD_CONTENT');
 
         $application = new Application();
         $application->add(new InitCommand());
-        $command = $application->find('init');
+        $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['--force' => true]);
 
+        $this->assertFileExists($this->testDir . '/.env');
         $content = file_get_contents($this->testDir . '/.env');
-        $this->assertStringNotContainsString('EXISTING_CONTENT', $content);
-        $this->assertStringContainsString('SITE_NAME=', $content);
+        $this->assertStringContainsString('SITE_NAME=NewContent', $content);
     }
+
 }
+
