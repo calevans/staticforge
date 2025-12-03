@@ -53,4 +53,47 @@ class TemplateVariableBuilderTest extends UnitTestCase
         $this->assertEquals('Me', $result['author']);
         $this->assertEquals('Page Description', $result['description']);
     }
+
+    public function testBuildTemplateVariablesFromSiteConfig(): void
+    {
+        // Setup container variables WITHOUT SITE_NAME env var
+        $this->setContainerVariable('site_config', [
+            'site' => [
+                'name' => 'Config Site Name',
+                'tagline' => 'Config Tagline'
+            ]
+        ]);
+
+        $parsedContent = [
+            'title' => 'Page Title',
+            'content' => 'Page Content'
+        ];
+
+        $result = $this->builder->build($parsedContent, $this->container, 'test.md');
+
+        // Check that site_name and site_tagline are populated from site_config
+        $this->assertEquals('Config Site Name', $result['site_name']);
+        $this->assertEquals('Config Tagline', $result['site_tagline']);
+    }
+
+    public function testSiteConfigTakesPrecedenceOverEnvVars(): void
+    {
+        // Setup container variables WITH SITE_NAME env var AND site_config
+        $this->setContainerVariable('SITE_NAME', 'Env Site Name');
+        $this->setContainerVariable('site_config', [
+            'site' => [
+                'name' => 'Config Site Name'
+            ]
+        ]);
+
+        $parsedContent = [
+            'title' => 'Page Title',
+            'content' => 'Page Content'
+        ];
+
+        $result = $this->builder->build($parsedContent, $this->container, 'test.md');
+
+        // Config should win because it is processed first in the new logic
+        $this->assertEquals('Config Site Name', $result['site_name']);
+    }
 }

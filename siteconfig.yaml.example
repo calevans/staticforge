@@ -12,7 +12,7 @@
 # These appear in templates and throughout your site
 site:
   name: "My Awesome Site"
-  tagline: "Building amazing things with PHP"
+  tagline: "Built with ❤️ and PHP"
 
 # Static menu definitions
 # These create named menus accessible in templates as {{ menu_name }}

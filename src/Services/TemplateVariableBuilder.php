@@ -34,6 +34,17 @@ class TemplateVariableBuilder
             }
         }
 
+        // Map site config values to top-level variables
+        // This allows siteconfig.yaml to define site_name and site_tagline
+        if (isset($templateVars['site']) && is_array($templateVars['site'])) {
+            if (isset($templateVars['site']['name']) && !isset($templateVars['site_name'])) {
+                $templateVars['site_name'] = $templateVars['site']['name'];
+            }
+            if (isset($templateVars['site']['tagline']) && !isset($templateVars['site_tagline'])) {
+                $templateVars['site_tagline'] = $templateVars['site']['tagline'];
+            }
+        }
+
         // Normalize common env variable names to lowercase for template consistency
         // Templates expect site_name, site_base_url, etc. but env vars are UPPERCASE
         $envVarMap = [
