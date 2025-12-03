@@ -35,29 +35,32 @@ class CategoryIndexFeatureTest extends UnitTestCase
 
         $this->eventManager = new EventManager($this->container);
 
-      // Mock Application with renderSingleFile method
+        // Mock Application with renderSingleFile method
         $mockApp = $this->createMock(Application::class);
         $mockApp->method('renderSingleFile')->willReturnCallback(function ($filePath, $context) {
-          // Simulate rendering by creating the output file
+            // Simulate rendering by creating the output file
             $outputPath = $context['output_path'] ?? $filePath;
-            $metadata = $context['metadata'] ?? [];
+
+            // Use file_metadata if available (new behavior), fallback to metadata (old behavior)
+            $metadata = $context['file_metadata'] ?? $context['metadata'] ?? [];
+
             $content = "<!-- Generated category index -->\n";
             $content .= "<h1>" . ($metadata['title'] ?? 'Category Index') . "</h1>\n";
 
-          // Include files in output
+            // Include files in output
             if (isset($metadata['category_files'])) {
                 foreach ($metadata['category_files'] as $file) {
                     $content .= "<div>" . ($file['title'] ?? 'Untitled') . "</div>\n";
                 }
             }
 
-          // Add pagination if needed
+            // Add pagination if needed
             if (isset($metadata['total_files']) && $metadata['total_files'] > 5) {
                 $content .= '<div data-per-page="5"></div>';
                 $content .= '<script>function showPage() {} function updatePagination() {}</script>';
             }
 
-          // Create directory if needed
+            // Create directory if needed
             $dir = dirname($outputPath);
             if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
@@ -65,9 +68,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
             file_put_contents($outputPath, $content);
 
             return $context;
-        });
-
-        $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
+        });        $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
 
         $this->feature = new Feature();
         $this->feature->register($this->eventManager, $this->container);

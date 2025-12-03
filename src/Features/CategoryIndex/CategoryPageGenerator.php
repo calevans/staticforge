@@ -80,17 +80,15 @@ class CategoryPageGenerator
             "Processing category file: {$filePath} with " . count($categoryData['files'] ?? []) . " files"
         );
 
-        // Build complete markdown content with frontmatter
-        // Include the files array in metadata so Twig can access it
-        $frontmatter = "---\n";
-        foreach ($metadata as $key => $value) {
-            if ($key !== 'type') {  // Don't include type = category in output
-                $frontmatter .= "{$key} = {$value}\n";
-            }
-        }
-        $frontmatter .= "category_files_count = " . count($categoryData['files'] ?? []) . "\n";
-        $frontmatter .= "---\n\n";
-        $markdownContent = $frontmatter . "<!-- Category file listing will be rendered by template -->";
+        // Prepare enriched metadata directly
+        $enrichedMetadata = array_merge($metadata, [
+            'category_files_count' => count($categoryData['files'] ?? []),
+            'category_files' => $categoryData['files'] ?? [],
+            'total_files' => count($categoryData['files'] ?? []),
+        ]);
+
+        // Remove internal 'type' field
+        unset($enrichedMetadata['type']);
 
         // Store category_files in container features so template can access it
         $features = $container->getVariable('features') ?? [];
@@ -103,11 +101,8 @@ class CategoryPageGenerator
         try {
             // Use Application's renderSingleFile method with additional context
             $application->renderSingleFile($filePath, [
-                'file_content' => $markdownContent,  // Provide the content to MarkdownRenderer
-                'metadata' => array_merge($metadata, [
-                    'category_files' => $categoryData['files'] ?? [],  // Pass files to template
-                    'total_files' => count($categoryData['files'] ?? []),
-                ]),
+                'file_content' => "<!-- Category file listing will be rendered by template -->",
+                'file_metadata' => $enrichedMetadata,
                 'output_path' => $categoryFile['output_path'],
                 'bypass_category_defer' => true  // Tell PRE_RENDER to not defer this file
             ]);

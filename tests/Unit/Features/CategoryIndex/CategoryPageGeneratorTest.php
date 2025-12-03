@@ -88,8 +88,11 @@ class CategoryPageGeneratorTest extends UnitTestCase
             ->with(
                 $this->equalTo('/path/to/tech.md'),
                 $this->callback(function ($context) {
-                    return isset($context['metadata']['category_files'])
-                        && count($context['metadata']['category_files']) === 1;
+                    // Check that we are passing enriched metadata in 'file_metadata'
+                    return isset($context['file_metadata']['category_files'])
+                        && count($context['file_metadata']['category_files']) === 1
+                        && isset($context['file_metadata']['category_files_count'])
+                        && $context['file_metadata']['category_files_count'] === 1;
                 })
             );
 
