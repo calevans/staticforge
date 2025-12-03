@@ -14,15 +14,21 @@ category: docs
 
 **How to use:** Just add a `category` to your frontmatter - RSS feeds are generated automatically!
 
-## Example Content File
+## Basic Usage
+
+StaticForge automatically generates an RSS feed for every category on your site. Any content file (post, page, etc.) that has a `category` defined in its frontmatter will be included in that category's feed.
+
+### 1. Categorize Your Content
+
+Add a `category` field to your content's frontmatter.
 
 ```markdown
 ---
-title = "Getting Started with PHP"
-category = "Tutorials"
-description = "A beginner-friendly introduction to PHP programming"
-author = "Jane Doe"
-date = "2024-01-15"
+title: "Getting Started with PHP"
+category: "Tutorials"
+description: "A beginner-friendly introduction to PHP programming"
+author: "Jane Doe"
+date: "2024-01-15"
 ---
 
 # Getting Started with PHP
@@ -30,15 +36,17 @@ date = "2024-01-15"
 This tutorial will teach you the basics of PHP...
 ```
 
-## What Happens
+### 2. Generate Your Site
 
-1. Files with categories are collected during rendering
-2. After all files are processed, RSS feeds are generated
-3. Each category gets its own `rss.xml` file in its directory
-4. Feeds are sorted by date (newest first)
-5. Feeds include title, description, author, and publication date
+Run the build command:
 
-## Output Location
+```bash
+php bin/console.php site:render
+```
+
+### 3. Find Your Feeds
+
+StaticForge creates an `rss.xml` file in each category's directory.
 
 ```
 public/
@@ -50,62 +58,33 @@ public/
     rss.xml                        ← RSS feed for News category
 ```
 
-## RSS Feed URL
+Your feed URLs will be:
+- `https://yoursite.com/tutorials/rss.xml`
+- `https://yoursite.com/news/rss.xml`
 
-Your RSS feed will be available at:
-```
-https://yoursite.com/tutorials/rss.xml
-https://yoursite.com/news/rss.xml
-```
+## Metadata
 
-## Metadata Used in RSS Feeds
+You can control how your content appears in the feed using frontmatter.
 
 | Frontmatter Field | RSS Element | Required | Default |
 |-------------------|-------------|----------|---------|
 | `title` | `<title>` | Yes | "Untitled" |
-| `description` | `<description>` | No | Auto-extracted from content |
+| `description` | `<description>` | No | Auto-extracted from content (first 200 chars) |
 | `author` | `<author>` | No | Not included |
 | `date` or `published_date` | `<pubDate>` | No | File modification time |
-| `category` | Determines which feed | Yes | File not included |
+| `category` | Determines feed | Yes | File not included |
 
-## Auto-Generated Descriptions
+## Podcasts
 
-If you don't provide a `description` in the frontmatter, StaticForge will:
-1. Strip HTML tags from your content
-2. Take the first 200 characters
-3. Add "..." if truncated
+StaticForge supports generating iTunes-compatible podcast feeds. This is a specialized type of RSS feed designed for podcast players like [Apple Podcasts](https://podcasters.apple.com/support/823-podcast-requirements), [Spotify](https://support.spotify.com/us/podcasters/article/your-rss-feed/), and [Overcast](https://overcast.fm/podcasterinfo).
 
-## Example with All Metadata
+To create a podcast, you need to:
+1.  Define a category as a podcast.
+2.  Add episodes to that category.
 
-```markdown
----
-title = "Advanced PHP Techniques"
-category = "Tutorials"
-description = "Learn advanced PHP patterns and best practices"
-author = "john.doe@example.com"
-published_date = "2024-03-20"
----
+### 1. Configure the Podcast Category
 
-Content here...
-```
-
-## RSS Feed Structure
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Your Site - Tutorials</title>
-    <link>https://yoursite.com/tutorials/</link>
-    <description>Tutorials articles from Your Site</description>
-
-## Podcast Feeds
-
-StaticForge supports generating iTunes-compatible podcast feeds. To turn a category into a podcast, you need to define it as such in a category definition file.
-
-### 1. Configure the Category
-
-Create a category definition file (e.g., `content/podcast.md`) with `rss_type: podcast` and the required iTunes metadata:
+Create a category definition file (e.g., `content/podcast.md`) to tell StaticForge that this category is a podcast. You must set `rss_type: podcast` and provide the required iTunes metadata.
 
 ```markdown
 ---
@@ -123,7 +102,7 @@ itunes_explicit: false
 
 ### 2. Create Episodes
 
-Add episodes to the category. You must include an `audio_file` (or `video_file`) in the frontmatter.
+Add episodes to the category. Unlike regular content, podcast episodes **must** include an `audio_file` (or `video_file`) in the frontmatter.
 
 ```markdown
 ---
@@ -139,7 +118,7 @@ itunes_explicit: false
 Show notes for this episode...
 ```
 
-### Asset Management
+### Asset Management for Episodes
 
 StaticForge handles your media files automatically:
 
@@ -166,22 +145,6 @@ StaticForge handles your media files automatically:
 *   `itunes_season`
 *   `itunes_explicit`
 *   `itunes_image` (for episode-specific artwork)
-
-    <language>en-us</language>
-    <lastBuildDate>Thu, 07 Nov 2024 12:00:00 +0000</lastBuildDate>
-    <atom:link href="https://yoursite.com/tutorials/rss.xml" rel="self" type="application/rss+xml" />
-
-    <item>
-      <title>Advanced PHP Techniques</title>
-      <link>https://yoursite.com/tutorials/advanced-php-techniques.html</link>
-      <guid>https://yoursite.com/tutorials/advanced-php-techniques.html</guid>
-      <pubDate>Wed, 20 Mar 2024 00:00:00 +0000</pubDate>
-      <description>Learn advanced PHP patterns and best practices</description>
-      <author>john.doe@example.com</author>
-    </item>
-  </channel>
-</rss>
-```
 
 ## Adding RSS Links to Your Site
 
@@ -212,7 +175,7 @@ In your category index or base template:
 
 ## Testing Your RSS Feed
 
-1. Generate your site: `php bin/console.php render:site`
+1. Generate your site: `php bin/console.php site:render`
 2. Check the feed: `cat public/tutorials/rss.xml`
 3. Validate it: Use [W3C Feed Validator](https://validator.w3.org/feed/)
 4. Subscribe in a reader: Try Feedly, NewsBlur, or another RSS reader
