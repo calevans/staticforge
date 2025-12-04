@@ -59,7 +59,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $features = $parameters['features'] ?? [];
         $categories = $this->categoryService->getCategories();
-        
+
         $parameters['features'] = $this->menuService->injectCategories($categories, $features, $container);
 
         return $parameters;

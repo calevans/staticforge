@@ -39,7 +39,7 @@ class MenuService
 
         if (isset($features['MenuBuilder'])) {
             $features['MenuBuilder']['files'] = $menuData;
-            
+
             // Try to use MenuHtmlGenerator from container to avoid duplication
             // This is a cleaner approach than the original code which duplicated logic
             $generatorClass = 'EICC\StaticForge\Features\MenuBuilder\MenuHtmlGenerator';
@@ -77,21 +77,21 @@ class MenuService
         } elseif (count($parts) === 3) {
             $menuData[$menu][(int)$parts[1]][(int)$parts[2]] = $entry;
         }
-        
+
         $this->logger->log('INFO', "Added category '{$title}' to menu {$position}");
     }
 
     private function rebuildHtml(array $menuData): array
     {
-        // Simplified rebuild logic to satisfy the contract. 
+        // Simplified rebuild logic to satisfy the contract.
         // Real logic is in MenuBuilder, this is a temporary duplication/shim.
         // Since we don't have access to MenuHtmlGenerator here easily without coupling,
-        // we will assume for now that the MenuBuilder feature will handle final generation 
+        // we will assume for now that the MenuBuilder feature will handle final generation
         // OR we accept that this might be slightly broken until the next task fixes menus properly.
         // However, the original code duplicated the logic.
-        
+
         // For now, return empty array or try to replicate basic structure if critical.
         // Given the prompt "address menu logic in next task", I will leave this minimal.
-        return []; 
+        return [];
     }
 }

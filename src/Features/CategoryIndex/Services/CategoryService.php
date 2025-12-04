@@ -80,7 +80,7 @@ class CategoryService
         // Process Image
         $imageUrl = $this->imageService->extractHeroImage($renderedContent, $filePath, $container);
         $date = $this->getFileDate($metadata, $filePath);
-        
+
         // Calculate URL relative to output dir
         $outputDir = $container->getVariable('OUTPUT_DIR');
         $url = '/' . $slug . '/' . basename($outputPath); // Simplified assumption based on previous logic

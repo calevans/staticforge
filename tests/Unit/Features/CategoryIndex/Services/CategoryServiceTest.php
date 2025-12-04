@@ -61,7 +61,7 @@ class CategoryServiceTest extends UnitTestCase
         $this->service->collectFile($this->container, $parameters);
 
         $category = $this->service->getCategory('tech');
-        
+
         $this->assertNotNull($category);
         $this->assertNotEmpty($category->files);
         $this->assertEquals('Post 1', $category->files[0]->title);

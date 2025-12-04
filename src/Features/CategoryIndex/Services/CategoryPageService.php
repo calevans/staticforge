@@ -25,7 +25,7 @@ class CategoryPageService
     public function deferFile(string $filePath, array $metadata, Container $container): void
     {
         $slug = pathinfo($filePath, PATHINFO_FILENAME);
-        
+
         $outputDir = $container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set');

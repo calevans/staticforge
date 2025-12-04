@@ -26,7 +26,7 @@ class ImageService
             if (preg_match('/^https?:\/\//i', $src)) {
                 // TODO: Implement download logic if needed, for now return as is or placeholder
                 // The original code had download logic, let's keep it simple for now or implement if critical
-                return $src; 
+                return $src;
             }
 
             $outputDir = $container->getVariable('OUTPUT_DIR');
@@ -47,7 +47,7 @@ class ImageService
     {
         $outputDir = $container->getVariable('OUTPUT_DIR');
         $thumbDir = $outputDir . '/images';
-        
+
         if (!is_dir($thumbDir)) {
             mkdir($thumbDir, 0755, true);
         }
