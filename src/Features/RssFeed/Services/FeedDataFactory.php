@@ -16,7 +16,7 @@ class FeedDataFactory
     {
         $sanitized = strtolower($category);
         $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
-        
+
         if ($sanitized === null) {
             $sanitized = 'category';
         }
@@ -102,7 +102,7 @@ class FeedDataFactory
         array $categoryMetadata
     ): FeedChannel {
         $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
-        
+
         $copyright = $categoryMetadata['copyright'] ?? null;
         if (!$copyright && !empty($categoryMetadata['itunes_owner_name'])) {
             $copyright = '© ' . date('Y') . ' ' . $categoryMetadata['itunes_owner_name'];
@@ -137,9 +137,9 @@ class FeedDataFactory
         $metadata = $file['metadata'] ?? [];
         if (!empty($metadata['itunes_image'])) {
              $imgUrl = $metadata['itunes_image'];
-             if (!preg_match('~^https?://~i', $imgUrl)) {
-                 $metadata['itunes_image'] = $siteBaseUrl . ltrim($imgUrl, '/');
-             }
+            if (!preg_match('~^https?://~i', $imgUrl)) {
+                $metadata['itunes_image'] = $siteBaseUrl . ltrim($imgUrl, '/');
+            }
         }
 
         return new FeedItem(

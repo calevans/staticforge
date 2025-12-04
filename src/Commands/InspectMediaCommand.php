@@ -136,7 +136,6 @@ class InspectMediaCommand extends Command
             file_put_contents($filePath, $newContent);
 
             $io->success("Updated {$filePath} (Backup created at {$filePath}.bak)");
-
         } catch (\Exception $e) {
             $io->error("Analysis failed: " . $e->getMessage());
             return Command::FAILURE;
@@ -165,12 +164,16 @@ class InspectMediaCommand extends Command
         // Progress bar
         $progressBar = $io->createProgressBar();
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($progressBar) {
-            if ($downloadSize > 0) {
-                $progressBar->setMaxSteps($downloadSize);
-                $progressBar->setProgress($downloaded);
+        curl_setopt(
+            $ch,
+            CURLOPT_PROGRESSFUNCTION,
+            function ($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($progressBar) {
+                if ($downloadSize > 0) {
+                    $progressBar->setMaxSteps($downloadSize);
+                    $progressBar->setProgress($downloaded);
+                }
             }
-        });
+        );
 
         $io->text("Downloading...");
         $success = curl_exec($ch);

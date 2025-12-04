@@ -11,7 +11,8 @@ class PodcastMediaService
 {
     public function __construct(
         private MediaInspector $mediaInspector
-    ) {}
+    ) {
+    }
 
     /**
      * Process podcast media file (copy local files, get metadata)

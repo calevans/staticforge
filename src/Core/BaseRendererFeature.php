@@ -28,11 +28,15 @@ abstract class BaseRendererFeature extends BaseFeature
 
         // Protect <pre> and <textarea> tags from whitespace collapsing
         $protectedBlocks = [];
-        $html = preg_replace_callback('/<(pre|textarea)\b[^>]*>([\s\S]*?)<\/\1>/im', function ($matches) use (&$protectedBlocks) {
-            $placeholder = '<!--PROTECTED_BLOCK_' . count($protectedBlocks) . '-->';
-            $protectedBlocks[$placeholder] = $matches[0];
-            return $placeholder;
-        }, $html);
+        $html = preg_replace_callback(
+            '/<(pre|textarea)\b[^>]*>([\s\S]*?)<\/\1>/im',
+            function ($matches) use (&$protectedBlocks) {
+                $placeholder = '<!--PROTECTED_BLOCK_' . count($protectedBlocks) . '-->';
+                $protectedBlocks[$placeholder] = $matches[0];
+                return $placeholder;
+            },
+            $html
+        );
 
         try {
             $indenter = new Indenter();
@@ -48,7 +52,9 @@ abstract class BaseRendererFeature extends BaseFeature
         }
 
         return $html;
-    }  /**
+    }
+
+    /**
    * Apply default metadata values, merging with provided metadata
    * Ensures consistent defaults across all renderer types
    *

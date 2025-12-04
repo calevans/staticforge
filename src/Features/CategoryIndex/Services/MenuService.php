@@ -36,10 +36,14 @@ class MenuService
         }
 
         return $menuData;
-    }    private function addToMenu(string $position, string $slug, string $title, array &$menuData): void
+    }
+
+    private function addToMenu(string $position, string $slug, string $title, array &$menuData): void
     {
         $parts = explode('.', $position);
-        if (count($parts) > 3) return;
+        if (count($parts) > 3) {
+            return;
+        }
 
         $entry = [
             'title' => $title,
@@ -49,7 +53,9 @@ class MenuService
         ];
 
         $menu = (int)$parts[0];
-        if (!isset($menuData[$menu])) $menuData[$menu] = [];
+        if (!isset($menuData[$menu])) {
+            $menuData[$menu] = [];
+        }
 
         if (count($parts) === 1) {
             $menuData[$menu]['direct'][] = $entry;
