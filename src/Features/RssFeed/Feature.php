@@ -7,6 +7,12 @@ namespace EICC\StaticForge\Features\RssFeed;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
+use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
+use EICC\StaticForge\Features\RssFeed\Services\Extensions\PodcastExtension;
+use EICC\StaticForge\Features\RssFeed\Services\PodcastMediaService;
+use EICC\StaticForge\Features\RssFeed\Services\RssBuilder;
+use EICC\StaticForge\Services\MediaInspector;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -18,8 +24,7 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'RssFeed';
     protected Log $logger;
-    private RssDataProcessor $dataProcessor;
-    private RssFeedGenerator $feedGenerator;
+    private PodcastMediaService $mediaService;
 
     /**
      * Files organized by category for RSS feeds
@@ -37,8 +42,9 @@ class Feature extends BaseFeature implements FeatureInterface
 
     public function __construct()
     {
-        $this->dataProcessor = new RssDataProcessor();
-        $this->feedGenerator = new RssFeedGenerator();
+        // We instantiate services here. MediaInspector is a core service but not in container by default yet,
+        // so we instantiate it.
+        $this->mediaService = new PodcastMediaService(new MediaInspector());
     }
 
     public function register(EventManager $eventManager, Container $container): void
@@ -80,7 +86,7 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         // Sanitize category name to match filesystem
-        $sanitizedCategory = $this->dataProcessor->sanitizeCategoryName($category);
+        $sanitizedCategory = $this->sanitizeCategoryName($category);
 
         if (!isset($this->categoryFiles[$sanitizedCategory])) {
             $this->categoryFiles[$sanitizedCategory] = [
@@ -90,15 +96,15 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         // Extract description from rendered content
-        $description = $this->dataProcessor->extractDescription($renderedContent, $metadata);
-        $date = $this->dataProcessor->getFileDate($metadata, $filePath);
+        $description = $this->extractDescription($renderedContent, $metadata);
+        $date = $this->getFileDate($metadata, $filePath);
 
         $outputDir = $container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
              // Should not happen if output_path is set, but safe fallback
              return $parameters;
         }
-        $url = $this->dataProcessor->getFileUrl($outputPath, $outputDir);
+        $url = $this->getFileUrl($outputPath, $outputDir);
 
         $this->categoryFiles[$sanitizedCategory]['files'][] = [
             'title' => $title,
@@ -159,20 +165,11 @@ class Feature extends BaseFeature implements FeatureInterface
         foreach ($this->categoryFiles as $categorySlug => $categoryData) {
             $categoryMetadata = $categoryDefinitions[$categorySlug] ?? [];
 
-            // Process podcast media if this is a podcast category
-            if (($categoryMetadata['rss_type'] ?? '') === 'podcast') {
-                foreach ($categoryData['files'] as $key => $file) {
-                    $mediaData = $this->dataProcessor->processPodcastMedia($file, $sourceDir, $outputDir);
-                    if ($mediaData) {
-                        $categoryData['files'][$key]['enclosure'] = $mediaData;
-                    }
-                }
-            }
-
             $this->generateRssFeed(
                 $categorySlug,
                 $categoryData,
                 $outputDir,
+                $sourceDir,
                 $siteBaseUrl,
                 $siteName,
                 $categoryMetadata
@@ -188,6 +185,7 @@ class Feature extends BaseFeature implements FeatureInterface
      * @param string $categorySlug Sanitized category name
      * @param array<string, mixed> $categoryData Category data with files
      * @param string $outputDir Output directory
+     * @param string $sourceDir Source directory
      * @param string $siteBaseUrl Base URL for the site
      * @param string $siteName Site name
      * @param array<string, mixed> $categoryMetadata Category definition metadata
@@ -196,6 +194,7 @@ class Feature extends BaseFeature implements FeatureInterface
         string $categorySlug,
         array $categoryData,
         string $outputDir,
+        string $sourceDir,
         string $siteBaseUrl,
         string $siteName,
         array $categoryMetadata = []
@@ -208,15 +207,60 @@ class Feature extends BaseFeature implements FeatureInterface
             return strtotime($b['date']) <=> strtotime($a['date']);
         });
 
-        // Build RSS XML
-        $xml = $this->feedGenerator->generateFeedXml(
-            $categoryName,
-            $categorySlug,
-            $files,
-            $siteBaseUrl,
-            $siteName,
+        // Ensure base URL has trailing slash
+        $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
+        $isPodcast = ($categoryMetadata['rss_type'] ?? '') === 'podcast';
+
+        // Prepare Builder
+        $builder = new RssBuilder();
+        if ($isPodcast) {
+            $builder->addExtension(new PodcastExtension());
+        }
+
+        // Create Channel Model
+        $channel = new FeedChannel(
+            $siteName . ' - ' . $categoryName,
+            $siteBaseUrl . $categorySlug . '/',
+            $categoryName . ' articles from ' . $siteName,
+            $siteBaseUrl . $categorySlug . '/rss.xml',
             $categoryMetadata
         );
+
+        // Create Item Models
+        $feedItems = [];
+        foreach ($files as $file) {
+            $fullUrl = $siteBaseUrl . ltrim($file['url'], '/');
+
+            $item = new FeedItem(
+                $file['title'],
+                $fullUrl,
+                $fullUrl,
+                date('r', strtotime($file['date'])),
+                $file['metadata']
+            );
+
+            $item->description = $file['description'];
+            $item->content = $file['content'];
+            $item->author = $file['metadata']['author'] ?? null;
+
+            // Process Media if Podcast
+            if ($isPodcast) {
+                $mediaData = $this->mediaService->processMedia($file, $sourceDir, $outputDir);
+                if ($mediaData) {
+                    // Ensure URL is absolute if needed, or relative.
+                    // Podcast clients usually need absolute URLs.
+                    if (!preg_match('~^https?://~i', $mediaData['url'])) {
+                        $mediaData['url'] = $siteBaseUrl . ltrim($mediaData['url'], '/');
+                    }
+                    $item->enclosure = $mediaData;
+                }
+            }
+
+            $feedItems[] = $item;
+        }
+
+        // Build XML
+        $xml = $builder->build($channel, $feedItems);
 
         // Write RSS file
         $categoryDir = $outputDir . DIRECTORY_SEPARATOR . $categorySlug;
@@ -228,5 +272,70 @@ class Feature extends BaseFeature implements FeatureInterface
         file_put_contents($rssPath, $xml);
 
         $this->logger->log('INFO', "Generated RSS feed: {$rssPath} with " . count($files) . " items");
+    }
+
+    // --- Helper Methods ---
+
+    private function sanitizeCategoryName(string $category): string
+    {
+        $sanitized = strtolower($category);
+        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
+        if ($sanitized === null) {
+            $sanitized = 'category';
+        }
+        $sanitized = trim($sanitized, '-');
+        return $sanitized === '' ? 'category' : $sanitized;
+    }
+
+    private function extractDescription(string $html, array $metadata): string
+    {
+        if (!empty($metadata['description'])) {
+            return $metadata['description'];
+        }
+
+        $text = strip_tags($html);
+        $text = preg_replace('/\s+/', ' ', $text);
+        if ($text === null) {
+            $text = '';
+        }
+        $text = trim($text);
+
+        if (strlen($text) > 200) {
+            $text = substr($text, 0, 200);
+            $lastSpace = strrpos($text, ' ');
+            if ($lastSpace !== false) {
+                $text = substr($text, 0, $lastSpace);
+            }
+            $text .= '...';
+        }
+
+        return $text;
+    }
+
+    private function getFileDate(array $metadata, string $filePath): string
+    {
+        if (!empty($metadata['published_date'])) {
+            return $metadata['published_date'];
+        }
+        if (!empty($metadata['date'])) {
+            return $metadata['date'];
+        }
+        if (file_exists($filePath)) {
+            $mtime = filemtime($filePath);
+            if ($mtime !== false) {
+                return date('Y-m-d', $mtime);
+            }
+        }
+        return date('Y-m-d');
+    }
+
+    private function getFileUrl(string $outputPath, string $outputDir): string
+    {
+        $url = str_replace($outputDir, '', $outputPath);
+        $url = str_replace(DIRECTORY_SEPARATOR, '/', $url);
+        if (!str_starts_with($url, '/')) {
+            $url = '/' . $url;
+        }
+        return $url;
     }
 }
