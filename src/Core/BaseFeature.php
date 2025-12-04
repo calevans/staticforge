@@ -48,15 +48,7 @@ abstract class BaseFeature implements FeatureInterface
         $this->registerEventListeners();
     }
 
-    /**
-     * Get list of events this feature listens to
-     *
-     * @return array<string, array{method: string, priority: int}>
-     */
-    public function getEventListeners(): array
-    {
-        return $this->eventListeners;
-    }
+
 
     /**
      * Register event listeners for this feature

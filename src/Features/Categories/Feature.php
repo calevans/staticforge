@@ -137,34 +137,7 @@ class Feature extends BaseFeature implements FeatureInterface
         return strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($category)));
     }
 
-    /**
-     * Parse INI frontmatter into metadata array
-     * @deprecated Metadata now extracted in FileDiscovery during discovery phase
-     *
-     * @param string $ini INI-formatted string
-     * @return array<string, mixed> Parsed metadata
-     */
-    private function parseIniFrontmatter(string $ini): array
-    {
-        $metadata = [];
-        $lines = explode("\n", $ini);
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line) || strpos($line, '=') === false) {
-                continue;
-            }
-
-            list($key, $value) = array_map('trim', explode('=', $line, 2));
-
-            // Strip quotes from value
-            $value = trim($value, '"\'');
-
-            $metadata[$key] = $value;
-        }
-
-        return $metadata;
-    }
 
     /**
      * Handle POST_RENDER event to modify output path based on category

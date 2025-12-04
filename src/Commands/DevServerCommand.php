@@ -19,6 +19,7 @@ class DevServerCommand extends Command
 {
     private string $routerFile;
     private string $publicDir;
+    private string $projectRoot;
     private ?int $serverPid = null;
 
     protected function configure(): void

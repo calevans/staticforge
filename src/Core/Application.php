@@ -325,18 +325,7 @@ class Application
         }
     }
 
-    /**
-     * Ensure features are loaded before rendering files
-     * Call this explicitly before using renderSingleFile() outside of generate()
-     */
-    public function ensureFeaturesLoaded(): void
-    {
-        // Don't use static - allow features to reload for each Application instance
-        if (!$this->featuresLoaded) {
-            $this->featureManager->loadFeatures();
-            $this->featuresLoaded = true;
-        }
-    }
+
 
     /**
      * Write output file to disk

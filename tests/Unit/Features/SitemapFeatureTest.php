@@ -69,10 +69,6 @@ class SitemapFeatureTest extends UnitTestCase
     {
         $this->assertInstanceOf(Feature::class, $this->feature);
         $this->assertEquals('Sitemap', $this->feature->getName());
-
-        $listeners = $this->feature->getEventListeners();
-        $this->assertArrayHasKey('POST_RENDER', $listeners);
-        $this->assertArrayHasKey('POST_LOOP', $listeners);
     }
 
     public function testCollectUrl(): void

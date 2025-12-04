@@ -172,6 +172,14 @@ HTML;
 
         // Load integration test environment
         $container = $this->createContainer(__DIR__ . '/../../../.env.integration');
+
+        // Override site_config to ensure SITE_NAME is used or matches
+        if ($container->hasVariable('site_config')) {
+            $container->updateVariable('site_config', ['site' => ['name' => 'Integration Test Site']]);
+        } else {
+            $container->setVariable('site_config', ['site' => ['name' => 'Integration Test Site']]);
+        }
+
         $application = new Application($container);
         $application->generate();
 

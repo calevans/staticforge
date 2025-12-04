@@ -237,6 +237,9 @@ HTML;
         $this->setContainerVariable('SITE_NAME', 'My Amazing Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://mysite.com/');
 
+        // Clear site_config to ensure SITE_NAME env var is used (site_config takes precedence)
+        $this->setContainerVariable('site_config', []);
+
         // Logger already registered by bootstrap
 
         // Set up extension registry

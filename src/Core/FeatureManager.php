@@ -93,23 +93,7 @@ class FeatureManager
         return $this->features[$name] ?? null;
     }
 
-    /**
-     * Disable a feature by name - removes it from features array if already loaded
-     * and prevents future features with that name from being registered
-     */
-    public function disableFeature(string $featureName): void
-    {
-        // Mark as disabled for future loading
-        $this->disabledFeatures[$featureName] = true;
 
-        // Remove from loaded features if already loaded
-        if (isset($this->features[$featureName])) {
-            unset($this->features[$featureName]);
-            $this->logger->log('INFO', "Disabled and removed feature: {$featureName}");
-        } else {
-            $this->logger->log('INFO', "Marked feature as disabled: {$featureName}");
-        }
-    }
 
     /**
      * Check if a feature is disabled
@@ -230,29 +214,7 @@ class FeatureManager
         return null;
     }
 
-    /**
-     * Get possible class names for user features only
-     */
-    private function getUserFeatureClasses(string $directoryName): array
-    {
-        return [
-            // Common user namespaces (no library namespace)
-            "App\\Features\\{$directoryName}\\Feature",
-            "App\\StaticForge\\Features\\{$directoryName}\\Feature",
-            "Features\\{$directoryName}\\Feature",
-            "MyProject\\Features\\{$directoryName}\\Feature",
-        ];
-    }
 
-    /**
-     * Get possible class names for library features only
-     */
-    private function getLibraryFeatureClasses(string $directoryName): array
-    {
-        return [
-            "EICC\\StaticForge\\Features\\{$directoryName}\\Feature",
-        ];
-    }
 
     /**
      * Get possible class names for all features (library + user)
@@ -270,31 +232,7 @@ class FeatureManager
         ];
     }
 
-    /**
-     * Get the feature's actual name from its $name property
-     */
-    private function getFeatureName(FeatureInterface $feature): string
-    {
-        // Try to get the name property via reflection
-        try {
-            $reflection = new \ReflectionClass($feature);
-            if ($reflection->hasProperty('name')) {
-                $nameProperty = $reflection->getProperty('name');
-                $nameProperty->setAccessible(true);
-                $name = $nameProperty->getValue($feature);
-                if (is_string($name) && !empty($name)) {
-                    return $name;
-                }
-            }
-        } catch (\ReflectionException $e) {
-            // Fallback to class name
-        }
 
-        // Fallback: use the last part of the class name
-        $className = get_class($feature);
-        $parts = explode('\\', $className);
-        return end($parts);
-    }
 
     /**
      * Find features directory in vendor when used as library
