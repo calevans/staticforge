@@ -128,6 +128,19 @@ StaticForge handles your media files automatically:
     3. Automatically detect the file size and MIME type for the RSS feed.
 *   **Remote Files:** If `audio_file` is a URL (starts with `http` or `https`), it is used as-is. You can optionally provide `audio_size` and `audio_type` manually if needed.
 
+### Inspecting Media
+
+You can use the `site:inspect-media` command to automatically analyze your media files (local or remote) and update your episode frontmatter with the correct size, type, and duration.
+
+```bash
+php bin/console.php site:inspect-media content/podcast/episode-01.md
+```
+
+This command will:
+1.  Download the file (if remote) to a temporary location.
+2.  Analyze it to find the exact file size, MIME type, and duration.
+3.  Update your markdown file with `audio_size`, `audio_type`, and `itunes_duration`.
+
 ### Supported iTunes Tags
 
 **Channel Level (Category Definition):**
@@ -136,8 +149,27 @@ StaticForge handles your media files automatically:
 *   `itunes_owner_name`
 *   `itunes_owner_email`
 *   `itunes_image`
-*   `itunes_category`
+*   `itunes_category` (Supports multiple categories and subcategories via `>`)
 *   `itunes_explicit`
+*   `itunes_type` (episodic or serial)
+*   `copyright`
+
+**Example Category Definition:**
+```yaml
+type: category
+rss_type: podcast
+itunes_author: "Jane Doe"
+itunes_summary: "A show about tech."
+itunes_owner_name: "Jane Doe"
+itunes_owner_email: "jane@example.com"
+itunes_image: "https://example.com/cover.jpg"
+itunes_explicit: false
+itunes_type: episodic
+copyright: "© 2025 Jane Doe"
+itunes_category:
+  - "Technology"
+  - "Arts > Visual Arts"
+```
 
 **Item Level (Episode):**
 *   `itunes_duration`

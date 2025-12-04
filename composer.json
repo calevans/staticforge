@@ -13,6 +13,7 @@
         "php": "^8.3",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
+        "james-heinrich/getid3": "^1.9",
         "league/commonmark": "^2.4",
         "phpseclib/phpseclib": "^3.0",
         "symfony/console": "^6.0",

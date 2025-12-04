@@ -68,6 +68,19 @@ class RssFeedGenerator
      */
     private function addPodcastChannelTags(string &$xml, array $metadata, string $siteBaseUrl): void
     {
+        // Copyright
+        $copyright = $metadata['copyright'] ?? null;
+        if (!$copyright && !empty($metadata['itunes_owner_name'])) {
+            $copyright = '© ' . date('Y') . ' ' . $metadata['itunes_owner_name'];
+        }
+        if ($copyright) {
+            $xml .= '    <copyright>' . $this->escapeXml($copyright) . '</copyright>' . "\n";
+        }
+
+        // iTunes Type (episodic/serial)
+        $type = $metadata['itunes_type'] ?? 'episodic';
+        $xml .= '    <itunes:type>' . $this->escapeXml($type) . '</itunes:type>' . "\n";
+
         if (!empty($metadata['itunes_author'])) {
             $xml .= '    <itunes:author>' . $this->escapeXml($metadata['itunes_author']) . '</itunes:author>' . "\n";
         }
@@ -98,7 +111,22 @@ class RssFeedGenerator
         }
 
         if (!empty($metadata['itunes_category'])) {
-            $xml .= '    <itunes:category text="' . $this->escapeXml($metadata['itunes_category']) . '" />' . "\n";
+            $categories = $metadata['itunes_category'];
+            if (!is_array($categories)) {
+                $categories = [$categories];
+            }
+
+            foreach ($categories as $category) {
+                // Check for subcategory (Format: "Category > Subcategory")
+                if (str_contains($category, '>')) {
+                    $parts = array_map('trim', explode('>', $category, 2));
+                    $xml .= '    <itunes:category text="' . $this->escapeXml($parts[0]) . '">' . "\n";
+                    $xml .= '      <itunes:category text="' . $this->escapeXml($parts[1]) . '" />' . "\n";
+                    $xml .= '    </itunes:category>' . "\n";
+                } else {
+                    $xml .= '    <itunes:category text="' . $this->escapeXml($category) . '" />' . "\n";
+                }
+            }
         }
 
         if (isset($metadata['itunes_explicit'])) {
