@@ -1,14 +1,12 @@
 ---
-title: 'Core Events Reference'
-template: docs
 menu: '1.8, 2.8'
+name: 'Core Events Reference'
 category: docs
+template: docs
 ---
-# Core Events Reference
+# Events Reference
 
-This document provides a complete reference of all events fired by the StaticForge core system. Features can hook into these events to extend functionality.
-
-> **Note**: This reference only includes events fired by the core system. Individual features may fire their own events which are not documented here.
+This document provides a complete reference of all events fired by the StaticForge system, including Core events and events fired by built-in Features.
 
 ## Event Pipeline Overview
 
@@ -23,6 +21,7 @@ StaticForge executes events in a specific order during site generation:
 6. [For each file:]
    - PRE_RENDER  - Before rendering file
    - RENDER      - During rendering
+     - MARKDOWN_CONVERTED - After markdown conversion (if applicable)
    - POST_RENDER - After rendering file
 7. POST_LOOP     - After processing all files
 8. DESTROY       - Final cleanup
@@ -392,6 +391,81 @@ public function onDestroy(array $data): array
 **Registered By**: Features during `register()` method
 **Execution**: Linear, priority-sorted
 **Returns**: Modified data array (typically ignored)
+
+---
+
+## Feature Events
+
+These events are fired by specific built-in features. They are only available if the corresponding feature is enabled.
+
+### COLLECT_MENU_ITEMS
+
+**Fired By**: [Menu Builder](MENU_BUILDER.html) feature during `POST_GLOB` processing
+**Purpose**: Allow other features to inject items into the menu structure before HTML generation
+**Data**:
+```php
+[
+  'menu_data' => array  // The current menu structure array
+]
+```
+
+**Use Cases**:
+- Add dynamic pages (like category indexes) to menus
+- Inject external links
+- Modify existing menu items
+
+**Example**:
+```php
+public function onCollectMenuItems(Container $container, array $parameters): array
+{
+    $menuData = $parameters['menu_data'];
+    $menuData[1]['direct'][] = [
+        'title' => 'My Dynamic Page',
+        'url' => '/dynamic-page/',
+        'position' => '1.99'
+    ];
+    $parameters['menu_data'] = $menuData;
+    return $parameters;
+}
+```
+**Registered By**: `MenuBuilder` feature
+**Execution**: Linear, priority-sorted
+
+---
+
+### MARKDOWN_CONVERTED
+
+**Fired By**: [Markdown Renderer](MARKDOWN_RENDERER.html) feature during `RENDER` processing
+**Purpose**: Allow modification of HTML content after Markdown conversion but before template rendering
+**Data**:
+```php
+[
+  'html_content' => string, // The converted HTML
+  'metadata' => array,      // File metadata
+  'file_path' => string     // Source file path
+]
+```
+
+**Use Cases**:
+- Generate Table of Contents
+- Add anchor links to headings
+- Process shortcodes in HTML
+- Syntax highlighting
+
+**Example**:
+```php
+public function onMarkdownConverted(Container $container, array $parameters): array
+{
+    $html = $parameters['html_content'];
+    // Add class to all tables
+    $html = str_replace('<table>', '<table class="table">', $html);
+    $parameters['html_content'] = $html;
+    return $parameters;
+}
+```
+
+**Registered By**: `MarkdownRenderer` feature
+**Execution**: Linear, priority-sorted
 
 ---
 

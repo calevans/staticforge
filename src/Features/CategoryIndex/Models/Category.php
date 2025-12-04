@@ -19,7 +19,7 @@ class Category
         $this->slug = $slug;
         $this->metadata = $metadata;
         $this->title = $metadata['title'] ?? ucfirst($slug);
-        $this->menuPosition = $metadata['menu'] ?? null;
+        $this->menuPosition = isset($metadata['menu']) ? (string)$metadata['menu'] : null;
     }
 
     public function addFile(CategoryFile $file): void

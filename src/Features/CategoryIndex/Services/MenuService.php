@@ -19,13 +19,11 @@ class MenuService
 
     /**
      * @param Category[] $categories
-     * @param array<string, mixed> $features
-     * @return array<string, mixed> Updated features array
+     * @param array<int, mixed> $menuData
+     * @return array<int, mixed> Updated menu data
      */
-    public function injectCategories(array $categories, array $features, Container $container): array
+    public function addCategoriesToMenu(array $categories, array $menuData): array
     {
-        $menuData = $features['MenuBuilder']['files'] ?? [];
-
         foreach ($categories as $category) {
             if ($category->menuPosition) {
                 $this->addToMenu(
@@ -37,25 +35,8 @@ class MenuService
             }
         }
 
-        if (isset($features['MenuBuilder'])) {
-            $features['MenuBuilder']['files'] = $menuData;
-
-            // Try to use MenuHtmlGenerator from container to avoid duplication
-            // This is a cleaner approach than the original code which duplicated logic
-            $generatorClass = 'EICC\StaticForge\Features\MenuBuilder\MenuHtmlGenerator';
-            if ($container->has($generatorClass)) {
-                $generator = $container->get($generatorClass);
-                // @phpstan-ignore-next-line
-                $features['MenuBuilder']['html'] = $generator->buildMenuHtml($menuData);
-            } else {
-                $features['MenuBuilder']['html'] = $this->rebuildHtml($menuData);
-            }
-        }
-
-        return $features;
-    }
-
-    private function addToMenu(string $position, string $slug, string $title, array &$menuData): void
+        return $menuData;
+    }    private function addToMenu(string $position, string $slug, string $title, array &$menuData): void
     {
         $parts = explode('.', $position);
         if (count($parts) > 3) return;
@@ -79,19 +60,5 @@ class MenuService
         }
 
         $this->logger->log('INFO', "Added category '{$title}' to menu {$position}");
-    }
-
-    private function rebuildHtml(array $menuData): array
-    {
-        // Simplified rebuild logic to satisfy the contract.
-        // Real logic is in MenuBuilder, this is a temporary duplication/shim.
-        // Since we don't have access to MenuHtmlGenerator here easily without coupling,
-        // we will assume for now that the MenuBuilder feature will handle final generation
-        // OR we accept that this might be slightly broken until the next task fixes menus properly.
-        // However, the original code duplicated the logic.
-
-        // For now, return empty array or try to replicate basic structure if critical.
-        // Given the prompt "address menu logic in next task", I will leave this minimal.
-        return [];
     }
 }

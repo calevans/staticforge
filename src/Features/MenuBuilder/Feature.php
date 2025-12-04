@@ -43,6 +43,9 @@ class Feature extends BaseFeature implements FeatureInterface
         $container->add(MenuScanner::class, $this->menuScanner);
         $container->add(StaticMenuProcessor::class, $this->staticMenuProcessor);
 
+        // Register new event for other features to inject menu items
+        $eventManager->registerEvent('COLLECT_MENU_ITEMS');
+
         $this->logger->log('INFO', 'MenuBuilder Feature registered');
     }
 
@@ -70,6 +73,10 @@ class Feature extends BaseFeature implements FeatureInterface
             . ' menus with data: '
             . json_encode(array_keys($menuData))
         );
+
+        // Allow other features to inject menu items
+        $eventResult = $this->eventManager->fire('COLLECT_MENU_ITEMS', ['menu_data' => $menuData]);
+        $menuData = $eventResult['menu_data'] ?? $menuData;
 
         // Generate HTML from menu data
         $menuHtml = $this->htmlGenerator->buildMenuHtml($menuData);

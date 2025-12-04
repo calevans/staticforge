@@ -1,0 +1,57 @@
+/* Table of Contents (Right Sidebar) */
+.toc {
+    position: sticky;
+    top: var(--spacing-3xl);
+    max-height: calc(100vh - var(--spacing-3xl) * 2);
+    overflow-y: auto;
+    padding-left: var(--spacing-md);
+    border-left: 2px solid var(--gray-200);
+}
+
+.toc-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.toc a {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    text-decoration: none;
+    padding: 2px 0;
+    transition: color var(--transition-base);
+    line-height: 1.4;
+}
+
+.toc a:hover {
+    color: var(--primary);
+}
+
+.toc a.active {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* Nested levels indentation */
+.toc ul ul {
+    margin-left: var(--spacing-md);
+    margin-top: var(--spacing-xs);
+}
+
+.toc ul ul a {
+    font-size: 0.85rem;
+}

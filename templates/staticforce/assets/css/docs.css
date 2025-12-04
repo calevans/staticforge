@@ -4,9 +4,15 @@
     margin: 0 auto;
     padding: var(--spacing-3xl) var(--spacing-xl);
     display: grid;
-    grid-template-columns: 280px 1fr 250px;
-    gap: var(--spacing-3xl);
+    grid-template-columns: 280px minmax(0, 1fr) 250px;
+    gap: var(--spacing-2xl);
     align-items: start;
+}
+
+/* Ensure content doesn't blow out the grid */
+.content {
+    min-width: 0;
+    width: 100%;
 }
 
 /* Menu styles (for MenuBuilder feature) */
@@ -119,8 +125,8 @@
 /* Responsive */
 @media (max-width: 1200px) {
     .main-container {
-        grid-template-columns: 200px 1fr;
-        gap: var(--spacing-xl);
+        grid-template-columns: 200px minmax(0, 1fr);
+        gap: var(--spacing-lg);
     }
 
     .toc {
@@ -134,7 +140,7 @@
 
 @media (max-width: 768px) {
     .main-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         padding: var(--spacing-lg);
     }
 

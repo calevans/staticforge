@@ -326,7 +326,8 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->assertStringContainsString('&amp;', $xml);
         $this->assertStringContainsString('&lt;', $xml);
         $this->assertStringContainsString('&gt;', $xml);
-        $this->assertStringContainsString('&quot;', $xml);
+        // DOMDocument doesn't always escape quotes in text nodes as it's not strictly required
+        $this->assertStringContainsString('Description with "quotes" and \'apostrophes\'', $xml);
     }
 
     public function testSkipsGenerationWhenNoCategories(): void

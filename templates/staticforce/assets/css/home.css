@@ -3,7 +3,7 @@
     min-height: 100vh;
     background: var(--gradient-hero);
     /* Use the asset image if available, falling back to gradient */
-    background-image: url('../images/sf_home_hero.png'), var(--gradient-hero);
+    background-image: url('../images/sf_home_hero.jpg'), var(--gradient-hero);
     background-size: cover;
     background-position: center;
     background-blend-mode: overlay;

@@ -31,7 +31,8 @@ class Feature extends BaseFeature implements FeatureInterface
      * @var array<string, array{method: string, priority: int}>
      */
     protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 200],
+        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 50],
+        'COLLECT_MENU_ITEMS' => ['method' => 'handleCollectMenuItems', 'priority' => 100],
         'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 150],
         'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 50],
         'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 100]
@@ -57,10 +58,15 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $this->categoryService->scanCategories($container);
 
-        $features = $parameters['features'] ?? [];
+        return $parameters;
+    }
+
+    public function handleCollectMenuItems(Container $container, array $parameters): array
+    {
+        $menuData = $parameters['menu_data'] ?? [];
         $categories = $this->categoryService->getCategories();
 
-        $parameters['features'] = $this->menuService->injectCategories($categories, $features, $container);
+        $parameters['menu_data'] = $this->menuService->addCategoriesToMenu($categories, $menuData);
 
         return $parameters;
     }

@@ -14,7 +14,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class InspectMediaCommand extends Command
 {
-    protected static $defaultName = 'site:inspect-media';
+    protected static $defaultName = 'media:inspect';
     protected static $defaultDescription = 'Inspect media file referenced in markdown frontmatter and update metadata';
 
     private MediaInspector $mediaInspector;
