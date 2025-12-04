@@ -1,18 +1,20 @@
 <?php
 
-namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex;
+namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex\Services;
 
-use EICC\StaticForge\Features\CategoryIndex\CategoryPageGenerator;
-use EICC\StaticForge\Features\CategoryIndex\CategoryManager;
+use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
+use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
+use EICC\StaticForge\Features\CategoryIndex\Models\Category;
+use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
-class CategoryPageGeneratorTest extends UnitTestCase
+class CategoryPageServiceTest extends UnitTestCase
 {
-    private CategoryPageGenerator $generator;
+    private CategoryPageService $service;
     private Log $logger;
-    private CategoryManager $manager;
+    private CategoryService $categoryService;
     private string $tempDir;
 
     protected function setUp(): void
@@ -22,8 +24,8 @@ class CategoryPageGeneratorTest extends UnitTestCase
         mkdir($this->tempDir, 0755, true);
 
         $this->logger = $this->createMock(Log::class);
-        $this->manager = $this->createMock(CategoryManager::class);
-        $this->generator = new CategoryPageGenerator($this->logger, $this->manager);
+        $this->categoryService = $this->createMock(CategoryService::class);
+        $this->service = new CategoryPageService($this->logger, $this->categoryService);
 
         $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
         $this->setContainerVariable('features', []);
@@ -48,38 +50,41 @@ class CategoryPageGeneratorTest extends UnitTestCase
         rmdir($dir);
     }
 
-    public function testDeferCategoryFile(): void
+    public function testDeferFile(): void
     {
-        $this->generator->deferCategoryFile(
+        $this->service->deferFile(
             '/path/to/tech.md',
             ['title' => 'Tech'],
             $this->container
         );
 
-        // We can't easily inspect private property deferredCategoryFiles without reflection,
-        // but we can verify it processes them later.
-        // Or use reflection to verify state.
-        $reflection = new \ReflectionClass($this->generator);
-        $prop = $reflection->getProperty('deferredCategoryFiles');
+        // Use reflection to verify state
+        $reflection = new \ReflectionClass($this->service);
+        $prop = $reflection->getProperty('deferredFiles');
         $prop->setAccessible(true);
-        $deferred = $prop->getValue($this->generator);
+        $deferred = $prop->getValue($this->service);
 
         $this->assertCount(1, $deferred);
         $this->assertEquals('/path/to/tech.md', $deferred[0]['file_path']);
     }
 
-    public function testProcessDeferredCategoryFiles(): void
+    public function testProcessDeferredFiles(): void
     {
         // Setup deferred file
-        $this->generator->deferCategoryFile(
+        $this->service->deferFile(
             '/path/to/tech.md',
             ['title' => 'Tech'],
             $this->container
         );
 
-        // Mock CategoryManager to return some files
-        $this->manager->method('getCategoryFiles')
-            ->willReturn(['files' => [['title' => 'Post 1']]]);
+        // Mock CategoryService to return a category with files
+        $category = new Category('tech', ['title' => 'Tech']);
+        $file = new CategoryFile('Post 1', '/url', '2023-01-01');
+        $category->addFile($file);
+
+        $this->categoryService->method('getCategory')
+            ->with('tech')
+            ->willReturn($category);
 
         // Mock Application
         $mockApp = $this->createMock(Application::class);
@@ -98,6 +103,6 @@ class CategoryPageGeneratorTest extends UnitTestCase
 
         $this->container->add(Application::class, $mockApp);
 
-        $this->generator->processDeferredCategoryFiles($this->container);
+        $this->service->processDeferredFiles($this->container);
     }
 }

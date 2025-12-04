@@ -275,13 +275,13 @@ class CategoryIndexFeatureTest extends UnitTestCase
     private function setDeferredCategoryFiles(array $files): void
     {
         $reflection = new \ReflectionClass($this->feature);
-        $generatorProp = $reflection->getProperty('categoryPageGenerator');
-        $generatorProp->setAccessible(true);
-        $generator = $generatorProp->getValue($this->feature);
+        $serviceProp = $reflection->getProperty('pageService');
+        $serviceProp->setAccessible(true);
+        $service = $serviceProp->getValue($this->feature);
 
-        $generatorReflection = new \ReflectionClass($generator);
-        $deferredProp = $generatorReflection->getProperty('deferredCategoryFiles');
+        $serviceReflection = new \ReflectionClass($service);
+        $deferredProp = $serviceReflection->getProperty('deferredFiles');
         $deferredProp->setAccessible(true);
-        $deferredProp->setValue($generator, $files);
+        $deferredProp->setValue($service, $files);
     }
 }
