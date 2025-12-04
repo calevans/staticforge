@@ -200,6 +200,33 @@ class RssFeedGenerator
             );
         }
 
+        // iTunes Title
+        if (!empty($metadata['itunes_title'])) {
+            $xml .= '      <itunes:title>' . $this->escapeXml($metadata['itunes_title']) . '</itunes:title>' . "\n";
+        }
+
+        // iTunes Episode Type
+        if (!empty($metadata['itunes_episode_type'])) {
+            $xml .= '      <itunes:episodeType>' . $this->escapeXml($metadata['itunes_episode_type']) . '</itunes:episodeType>' . "\n";
+        }
+
+        // iTunes Author
+        $author = $metadata['itunes_author'] ?? $metadata['author'] ?? null;
+        if ($author) {
+            $xml .= '      <itunes:author>' . $this->escapeXml($author) . '</itunes:author>' . "\n";
+        }
+
+        // iTunes Subtitle
+        if (!empty($metadata['itunes_subtitle'])) {
+            $xml .= '      <itunes:subtitle>' . $this->escapeXml($metadata['itunes_subtitle']) . '</itunes:subtitle>' . "\n";
+        }
+
+        // iTunes Summary
+        $summary = $metadata['itunes_summary'] ?? $file['description'] ?? null;
+        if ($summary) {
+            $xml .= '      <itunes:summary>' . $this->escapeXml($summary) . '</itunes:summary>' . "\n";
+        }
+
         if (!empty($metadata['itunes_duration'])) {
             $xml .= '      <itunes:duration>' . $this->escapeXml((string)$metadata['itunes_duration']) . '</itunes:duration>' . "\n";
         }
