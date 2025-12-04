@@ -16,7 +16,6 @@ class FeatureManagerTest extends UnitTestCase
     private FeatureManager $featureManager;
 
     private EventManager $eventManager;
-    private Log $logger;
     private string $tempDir;
 
     protected function setUp(): void
@@ -24,10 +23,6 @@ class FeatureManagerTest extends UnitTestCase
         parent::setUp();
 
         $this->eventManager = new EventManager($this->container);
-
-        // Create a temporary log file for testing
-        $logFile = sys_get_temp_dir() . '/test.log';
-        $this->logger = $this->container->get('logger');
 
         // Create temporary directory for test features
         $this->tempDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();

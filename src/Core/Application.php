@@ -22,12 +22,10 @@ class Application
     private Container $container;
     private EventManager $eventManager;
     private FeatureManager $featureManager;
-    private ExtensionRegistry $extensionRegistry;
     private FileDiscovery $fileDiscovery;
     private FileProcessor $fileProcessor;
     private ErrorHandler $errorHandler;
     private Log $logger;
-    private bool $featuresLoaded = false;
 
     public function __construct(Container $container, ?string $templateOverride = null)
     {
@@ -38,7 +36,6 @@ class Application
         // Retrieve services from container
         $this->eventManager = $container->get(EventManager::class);
         $this->featureManager = $container->get(FeatureManager::class);
-        $this->extensionRegistry = $container->get(ExtensionRegistry::class);
         $this->fileDiscovery = $container->get(FileDiscovery::class);
         $this->errorHandler = $container->get(ErrorHandler::class);
         $this->fileProcessor = $container->get(FileProcessor::class);

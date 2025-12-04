@@ -14,13 +14,11 @@ class FileProcessorTest extends UnitTestCase
     private FileProcessor $fileProcessor;
     private EventManager $eventManager;
     private ErrorHandler $errorHandler;
-    private Log $logger;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->logger = $this->container->get('logger');
         $this->eventManager = new EventManager($this->container);
         $this->errorHandler = new ErrorHandler($this->container);
         $this->addToContainer(ErrorHandler::class, $this->errorHandler);
@@ -59,9 +57,31 @@ class FileProcessorTest extends UnitTestCase
         // Track events fired
         $eventsTracked = [];
 
-        $this->eventManager->registerListener('PRE_RENDER', [new TestEventListener($eventsTracked, 'PRE_RENDER'), 'handleEvent'], 100);
-        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked, 'RENDER'), 'handleEvent'], 100);
-        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked, 'POST_RENDER'), 'handleEvent'], 100);
+        $createListener = function (string $eventName) use (&$eventsTracked) {
+            return new class ($eventsTracked, $eventName) {
+                public array $eventsTracked;
+                public string $eventName;
+
+                public function __construct(array &$eventsTracked, string $eventName)
+                {
+                    $this->eventsTracked = &$eventsTracked;
+                    $this->eventName = $eventName;
+                }
+
+                public function handleEvent(Container $container, array $parameters): array
+                {
+                    $this->eventsTracked[] = [
+                        'event' => $this->eventName,
+                        'parameters' => $parameters
+                    ];
+                    return $parameters;
+                }
+            };
+        };
+
+        $this->eventManager->registerListener('PRE_RENDER', [$createListener('PRE_RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('RENDER', [$createListener('RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('POST_RENDER', [$createListener('POST_RENDER'), 'handleEvent'], 100);
 
         $this->fileProcessor->processFiles();
 
@@ -82,10 +102,51 @@ class FileProcessorTest extends UnitTestCase
 
         $eventsTracked = [];
 
+        $skipListener = new class ($eventsTracked) {
+            public array $eventsTracked;
+
+            public function __construct(array &$eventsTracked)
+            {
+                $this->eventsTracked = &$eventsTracked;
+            }
+
+            public function handleEvent(Container $container, array $parameters): array
+            {
+                $this->eventsTracked[] = [
+                    'event' => 'PRE_RENDER',
+                    'parameters' => $parameters
+                ];
+                $parameters['skip_file'] = true;
+                return $parameters;
+            }
+        };
+
+        $createListener = function (string $eventName) use (&$eventsTracked) {
+            return new class ($eventsTracked, $eventName) {
+                public array $eventsTracked;
+                public string $eventName;
+
+                public function __construct(array &$eventsTracked, string $eventName)
+                {
+                    $this->eventsTracked = &$eventsTracked;
+                    $this->eventName = $eventName;
+                }
+
+                public function handleEvent(Container $container, array $parameters): array
+                {
+                    $this->eventsTracked[] = [
+                        'event' => $this->eventName,
+                        'parameters' => $parameters
+                    ];
+                    return $parameters;
+                }
+            };
+        };
+
         // Listener that sets skip_file flag in PRE_RENDER
-        $this->eventManager->registerListener('PRE_RENDER', [new SkipFileListener($eventsTracked), 'handleEvent'], 100);
-        $this->eventManager->registerListener('RENDER', [new TestEventListener($eventsTracked, 'RENDER'), 'handleEvent'], 100);
-        $this->eventManager->registerListener('POST_RENDER', [new TestEventListener($eventsTracked, 'POST_RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('PRE_RENDER', [$skipListener, 'handleEvent'], 100);
+        $this->eventManager->registerListener('RENDER', [$createListener('RENDER'), 'handleEvent'], 100);
+        $this->eventManager->registerListener('POST_RENDER', [$createListener('POST_RENDER'), 'handleEvent'], 100);
 
         $this->fileProcessor->processFiles();
 
@@ -101,7 +162,22 @@ class FileProcessorTest extends UnitTestCase
 
         $contextData = [];
 
-        $this->eventManager->registerListener('PRE_RENDER', [new ContextCapturingListener($contextData), 'handleEvent'], 100);
+        $listener = new class ($contextData) {
+            public array $contextData;
+
+            public function __construct(array &$contextData)
+            {
+                $this->contextData = &$contextData;
+            }
+
+            public function handleEvent(Container $container, array $parameters): array
+            {
+                $this->contextData = $parameters;
+                return $parameters;
+            }
+        };
+
+        $this->eventManager->registerListener('PRE_RENDER', [$listener, 'handleEvent'], 100);
 
         $this->fileProcessor->processFiles();
 
@@ -115,65 +191,7 @@ class FileProcessorTest extends UnitTestCase
         $this->assertNull($contextData['rendered_content']);
         $this->assertIsArray($contextData['metadata']);
         $this->assertNull($contextData['output_path']);
-        $this->assertFalse($contextData['skip_file']);
+                $this->assertFalse($contextData['skip_file']);
     }
 }
 
-class TestEventListener
-{
-    private array $eventsTracked;
-    private string $eventName;
-
-    public function __construct(array &$eventsTracked, string $eventName)
-    {
-        $this->eventsTracked = &$eventsTracked;
-        $this->eventName = $eventName;
-    }
-
-    public function handleEvent(Container $container, array $parameters): array
-    {
-        $this->eventsTracked[] = [
-            'event' => $this->eventName,
-            'parameters' => $parameters
-        ];
-
-        return $parameters;
-    }
-}
-
-class SkipFileListener
-{
-    private array $eventsTracked;
-
-    public function __construct(array &$eventsTracked)
-    {
-        $this->eventsTracked = &$eventsTracked;
-    }
-
-    public function handleEvent(Container $container, array $parameters): array
-    {
-        $this->eventsTracked[] = [
-            'event' => 'PRE_RENDER',
-            'parameters' => $parameters
-        ];
-
-        $parameters['skip_file'] = true;
-        return $parameters;
-    }
-}
-
-class ContextCapturingListener
-{
-    private array $contextData;
-
-    public function __construct(array &$contextData)
-    {
-        $this->contextData = &$contextData;
-    }
-
-    public function handleEvent(Container $container, array $parameters): array
-    {
-        $this->contextData = $parameters;
-        return $parameters;
-    }
-}

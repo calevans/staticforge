@@ -13,14 +13,11 @@ class FileDiscoveryTest extends UnitTestCase
     private FileDiscovery $fileDiscovery;
     private ExtensionRegistry $extensionRegistry;
 
-    private Log $logger;
     private string $tempDir;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->logger = $this->container->get('logger');
 
         $this->extensionRegistry = new ExtensionRegistry($this->container);
 

@@ -16,14 +16,13 @@ class ErrorHandlingTest extends IntegrationTestCase
     private string $testContentDir;
     private string $testTemplateDir;
     private Container $container;
-    private $vfsRoot;
 
     protected function setUp(): void
     {
         parent::setUp();
 
       // Use vfsStream for file system isolation and performance
-        $this->vfsRoot = vfsStream::setup('root');
+        vfsStream::setup('root');
         $this->testOutputDir = vfsStream::url('root/output');
         $this->testContentDir = vfsStream::url('root/content');
         $this->testTemplateDir = vfsStream::url('root/templates');

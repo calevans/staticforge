@@ -16,7 +16,6 @@ use EICC\Utils\Log;
 class ApplicationTest extends UnitTestCase
 {
     private Application $application;
-    private string $testEnvFile;
     private string $tempSourceDir;
     private string $tempOutputDir;
     private string $tempFeaturesDir;

@@ -16,7 +16,6 @@ use org\bovigo\vfs\vfsStreamDirectory;
  */
 class IntegrationTest extends IntegrationTestCase
 {
-    private static int $testCounter = 0;
     private vfsStreamDirectory $root;
     private string $sourceDir;
     private string $outputDir;

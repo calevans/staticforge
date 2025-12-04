@@ -120,11 +120,8 @@ class EventManagerTest extends UnitTestCase
 
 class TestListener
 {
-    private string $name;
-
     public function __construct(string $name = 'test')
     {
-        $this->name = $name;
     }
 
     public function handle(Container $container, array $parameters): array

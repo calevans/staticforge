@@ -10,13 +10,11 @@ use EICC\Utils\Log;
 class ExtensionRegistryTest extends UnitTestCase
 {
     private ExtensionRegistry $registry;
-    private Log $logger;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->logger = $this->container->get('logger');
         $this->registry = new ExtensionRegistry($this->container);
     }
 
