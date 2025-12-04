@@ -30,6 +30,7 @@ class RssFeedGenerator
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $namespaces = 'xmlns:atom="http://www.w3.org/2005/Atom"';
+        $namespaces .= ' xmlns:content="http://purl.org/rss/1.0/modules/content/"';
         if ($isPodcast) {
             $namespaces .= ' xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"';
         }
@@ -50,7 +51,7 @@ class RssFeedGenerator
         }
 
         foreach ($files as $file) {
-            $xml .= $this->buildRssItem($file, $siteBaseUrl, $isPodcast);
+            $xml .= $this->buildRssItem($file, $siteBaseUrl, $isPodcast, $categoryMetadata);
         }
 
         $xml .= '  </channel>' . "\n";
@@ -141,8 +142,9 @@ class RssFeedGenerator
      * @param array<string, mixed> $file File data
      * @param string $siteBaseUrl Base URL for the site
      * @param bool $isPodcast Whether this is a podcast feed
+     * @param array<string, mixed> $categoryMetadata Category metadata
      */
-    private function buildRssItem(array $file, string $siteBaseUrl, bool $isPodcast = false): string
+    private function buildRssItem(array $file, string $siteBaseUrl, bool $isPodcast = false, array $categoryMetadata = []): string
     {
         // Ensure base URL has trailing slash
         $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
@@ -160,13 +162,17 @@ class RssFeedGenerator
             $xml .= '      <description>' . $this->escapeXml($file['description']) . '</description>' . "\n";
         }
 
+        if (!empty($file['content'])) {
+            $xml .= '      <content:encoded><![CDATA[' . $file['content'] . ']]></content:encoded>' . "\n";
+        }
+
         // Add author if available in metadata
         if (!empty($file['metadata']['author'])) {
             $xml .= '      <author>' . $this->escapeXml($file['metadata']['author']) . '</author>' . "\n";
         }
 
         if ($isPodcast) {
-            $this->addPodcastItemTags($xml, $file, $siteBaseUrl);
+            $this->addPodcastItemTags($xml, $file, $siteBaseUrl, $categoryMetadata);
         }
 
         $xml .= '    </item>' . "\n";
@@ -180,8 +186,9 @@ class RssFeedGenerator
      * @param string $xml Reference to XML string
      * @param array<string, mixed> $file File data
      * @param string $siteBaseUrl Base URL
+     * @param array<string, mixed> $categoryMetadata Category metadata
      */
-    private function addPodcastItemTags(string &$xml, array $file, string $siteBaseUrl): void
+    private function addPodcastItemTags(string &$xml, array $file, string $siteBaseUrl, array $categoryMetadata = []): void
     {
         $metadata = $file['metadata'] ?? [];
 
@@ -211,7 +218,7 @@ class RssFeedGenerator
         }
 
         // iTunes Author
-        $author = $metadata['itunes_author'] ?? $metadata['author'] ?? null;
+        $author = $metadata['itunes_author'] ?? $metadata['author'] ?? $categoryMetadata['itunes_author'] ?? null;
         if ($author) {
             $xml .= '      <itunes:author>' . $this->escapeXml($author) . '</itunes:author>' . "\n";
         }

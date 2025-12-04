@@ -114,4 +114,70 @@ class RssFeedGeneratorPodcastTest extends UnitTestCase
         // Should default itunes:author to author
         $this->assertStringContainsString('<itunes:author>John Doe</itunes:author>', $xml);
     }
+
+    public function testGeneratePodcastFeedXmlUsesCategoryAuthorFallback(): void
+    {
+        $files = [
+            [
+                'title' => 'Episode 1',
+                'url' => '/episode-1.html',
+                'date' => '2023-01-01',
+                'description' => 'Episode Description',
+                'metadata' => [] // No author here
+            ]
+        ];
+
+        $categoryMetadata = [
+            'rss_type' => 'podcast',
+            'itunes_author' => 'Category Author'
+        ];
+
+        $xml = $this->generator->generateFeedXml(
+            'Podcast',
+            'podcast',
+            $files,
+            'https://example.com',
+            'My Site',
+            $categoryMetadata
+        );
+
+        // Should use category author when item author is missing
+        // We need to make sure it's inside the item, not just the channel
+        // Simple check: split by <item> and check the second part
+        $parts = explode('<item>', $xml);
+        $this->assertCount(2, $parts);
+        $itemXml = $parts[1];
+
+        $this->assertStringContainsString('<itunes:author>Category Author</itunes:author>', $itemXml);
+    }
+
+    public function testGeneratePodcastFeedXmlIncludesContentEncoded(): void
+    {
+        $files = [
+            [
+                'title' => 'Episode 1',
+                'url' => '/episode-1.html',
+                'date' => '2023-01-01',
+                'description' => 'Episode Description',
+                'content' => '<p>This is the <strong>HTML</strong> content.</p>',
+                'metadata' => []
+            ]
+        ];
+
+        $categoryMetadata = [
+            'rss_type' => 'podcast'
+        ];
+
+        $xml = $this->generator->generateFeedXml(
+            'Podcast',
+            'podcast',
+            $files,
+            'https://example.com',
+            'My Site',
+            $categoryMetadata
+        );
+
+        $this->assertStringContainsString('xmlns:content="http://purl.org/rss/1.0/modules/content/"', $xml);
+        $this->assertStringContainsString('<content:encoded><![CDATA[<p>This is the <strong>HTML</strong> content.</p>]]></content:encoded>', $xml);
+    }
 }
