@@ -1,12 +1,12 @@
 /*
  * StaticForge Main Stylesheet
- * 
+ *
  * Structure:
  * - base/: Variables, reset, typography
  * - layout/: Core layout structures (navbar, sidebar, content, footer)
  * - components/: Reusable UI components (cards, forms, etc.)
  * - utils/: Utility classes
- * 
+ *
  * Note: Page-specific styles (like docs.css) are loaded separately.
  */
 
