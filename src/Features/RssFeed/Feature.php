@@ -105,7 +105,8 @@ class Feature extends BaseFeature implements FeatureInterface
             'url' => $url,
             'description' => $description,
             'date' => $date,
-            'metadata' => $metadata
+            'metadata' => $metadata,
+            'content' => $renderedContent
         ];
 
         $this->logger->log('DEBUG', "Collected file for RSS: {$title} in category {$category}");
