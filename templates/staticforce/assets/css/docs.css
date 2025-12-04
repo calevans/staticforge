@@ -1,3 +1,11 @@
+/*
+ * Documentation Layout Styles
+ * 
+ * This file overrides the default layout for documentation pages.
+ * It defines a 3-column grid (Sidebar | Content | ToC) and handles
+ * specific menu styling for the nested docs navigation.
+ */
+
 /* Main Content */
 .main-container {
     max-width: 1400px;
