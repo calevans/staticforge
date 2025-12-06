@@ -94,6 +94,50 @@ class TemplateRenderer
     }
 
     /**
+     * Render a specific template with provided variables
+     * Used by Shortcodes and other features needing direct template rendering
+     *
+     * @param string $templateName Template name (e.g., 'shortcodes/youtube.html.twig')
+     * @param array<string, mixed> $variables Variables to pass to the template
+     * @param Container $container Dependency injection container
+     * @return string Rendered HTML
+     */
+    public function renderTemplate(string $templateName, array $variables, Container $container): string
+    {
+        try {
+            $templateDir = $container->getVariable('TEMPLATE_DIR');
+            if (!$templateDir) {
+                throw new \RuntimeException('TEMPLATE_DIR not set in container');
+            }
+            $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
+
+            // Set up Twig
+            $loader = new FilesystemLoader($templateDir);
+            // Add the specific template theme directory so includes work
+            $loader->addPath($templateDir . '/' . $templateTheme);
+
+            // Also add the root templates directory to find shared templates like shortcodes
+            // if they are not in the theme
+
+            $twig = new TwigEnvironment($loader, [
+                'debug' => true,
+                'strict_variables' => false,
+                'autoescape' => 'html',
+                'cache' => false,
+            ]);
+
+            // Add global site config variables if available
+            $siteConfig = $container->getVariable('site_config') ?? [];
+            $variables = array_merge(['site' => $siteConfig], $variables);
+
+            return $twig->render($templateName, $variables);
+        } catch (Exception $e) {
+            $this->logger->log('ERROR', "Partial template rendering failed for {$templateName}: " . $e->getMessage());
+            return "<!-- Error rendering {$templateName} -->";
+        }
+    }
+
+    /**
      * Apply basic template as fallback
      *
      * @param array{metadata: array<string, mixed>, content: string, title: string} $parsedContent

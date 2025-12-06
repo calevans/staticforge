@@ -83,7 +83,16 @@ class CategoryService
 
         // Calculate URL relative to output dir
         $outputDir = $container->getVariable('OUTPUT_DIR');
-        $url = '/' . $slug . '/' . basename($outputPath); // Simplified assumption based on previous logic
+
+        // Normalize paths to ensure consistent separators
+        $normalizedOutputDir = rtrim($outputDir, '/\\') . DIRECTORY_SEPARATOR;
+
+        if (str_starts_with($outputPath, $normalizedOutputDir)) {
+            $url = str_replace('\\', '/', substr($outputPath, strlen($normalizedOutputDir)));
+        } else {
+            // Fallback if path doesn't start with output dir
+            $url = $slug . '/' . basename($outputPath);
+        }
 
         $file = new CategoryFile($title, $url, $date, $metadata);
         $file->image = $imageUrl;

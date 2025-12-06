@@ -1,0 +1,14 @@
+<div style="background-color: white; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); border-radius: 0.5rem; padding: 1rem; max-width: 24rem; font-family: sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="font-size: 1.125rem; line-height: 1.75rem; font-weight: 700; color: #1f2937; margin: 0;">{{ location }}</h3>
+            <p style="color: #6b7280; margin: 0;">{{ condition }}</p>
+        </div>
+        <div style="font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #1f2937;">
+            {{ temperature }}{{ unit }}
+        </div>
+    </div>
+    <div style="margin-top: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; color: #6b7280;">
+        Wind: {{ windspeed }} km/h
+    </div>
+</div>

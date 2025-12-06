@@ -34,7 +34,7 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 50],
         'COLLECT_MENU_ITEMS' => ['method' => 'handleCollectMenuItems', 'priority' => 100],
         'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 150],
-        'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 50],
+        'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 150],
         'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 100]
     ];
 

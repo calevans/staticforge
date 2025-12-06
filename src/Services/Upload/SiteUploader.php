@@ -61,7 +61,9 @@ class SiteUploader
 
         // Upload files
         foreach ($files as $localPath) {
-            $relativePath = substr($localPath, strlen($inputDir) + 1);
+            // Ensure inputDir does not have a trailing slash for correct substring calculation
+            $normalizedInputDir = rtrim($inputDir, '/\\');
+            $relativePath = substr($localPath, strlen($normalizedInputDir) + 1);
             $targetPath = $remotePath . '/' . $relativePath;
 
             if ($this->client->uploadFile($localPath, $targetPath)) {

@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="assets/css/docs.css">
+{% endblock %}
+
+{% block body %}
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            {% if features.MenuBuilder.files[1] is defined %}
+            <ul class="menu menu-1">
+                {% for key, item in features.MenuBuilder.files[1] %}
+                    {% if key == 'direct' %}
+                        {# Direct menu items (menu = 1) #}
+                        {% for directItem in item %}
+                            <li class="menu-1"><a href="{{ directItem.url }}">{{ directItem.title }}</a></li>
+                        {% endfor %}
+                    {% elseif item.title is defined %}
+                        {# This is a positioned item - check if it has numeric sub-keys (children) #}
+                        {% set childItems = [] %}
+                        {% for subKey, subItem in item %}
+                            {% if subKey is iterable == false and subKey != 'title' and subKey != 'url' and subKey != 'file' and subKey != 'position' and subItem.title is defined %}
+                                {% set childItems = childItems|merge([{key: subKey, item: subItem}]) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if childItems|length > 0 %}
+                            {# Parent item with children - show as expandable #}
+                            <li class="menu-1-{{ key }} menu-parent">
+                                <a href="{{ item.url }}">{{ item.title }}</a>
+                                <ul class="menu-1-{{ key }}-submenu submenu">
+                                    {% for child in childItems %}
+                                        <li class="menu-1-{{ key }}-{{ child.key }}"><a href="{{ child.item.url }}">{{ child.item.title }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% else %}
+                            {# Regular menu item without children #}
+                            <li class="menu-1-{{ key }}"><a href="{{ item.url }}">{{ item.title }}</a></li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="prose max-w-none mb-8">
+                <h1>{{ title }}</h1>
+                {{ content | raw }}
+            </div>
+
+            {% if category_files is defined and category_files|length > 0 %}
+                <div class="category-list grid gap-6">
+                    {% for file in category_files %}
+                        <div class="category-item border rounded-lg p-6 hover:shadow-md transition-shadow">
+                            <h2 class="text-2xl font-bold mb-2">
+                                <a href="{{ file.url }}" class="text-blue-600 hover:text-blue-800 no-underline">{{ file.title }}</a>
+                            </h2>
+                            {% if file.date %}
+                                <p class="text-gray-500 text-sm mb-3">{{ file.date }}</p>
+                            {% endif %}
+                            {% if file.metadata.description %}
+                                <p class="text-gray-700">{{ file.metadata.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 italic">No examples found in this category.</p>
+            {% endif %}
+        </main>
+    </div>
+{% endblock %}
