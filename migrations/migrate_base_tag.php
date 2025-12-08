@@ -2,29 +2,29 @@
 
 /**
  * StaticForge Base Tag Migration Tool
- * 
+ *
  * DESCRIPTION:
- * This script migrates StaticForge templates from the legacy "<base> tag" architecture 
+ * This script migrates StaticForge templates from the legacy "<base> tag" architecture
  * to the new "Absolute URL" architecture.
- * 
+ *
  * BACKGROUND:
  * Previously, StaticForge templates used a <base href="{{ site_base_url }}"> tag in the <head>.
- * This allowed relative links (e.g., <link href="assets/css/style.css">) to work from any 
+ * This allowed relative links (e.g., <link href="assets/css/style.css">) to work from any
  * subdirectory. However, this broke relative links in Markdown content (e.g., [Link](page.md)),
  * causing them to resolve to the site root instead of relative to the current page.
- * 
+ *
  * THE FIX:
  * 1. Remove the <base> tag from templates.
  * 2. Update all asset links (CSS, JS, Images) to use absolute paths prefixed with {{ site_base_url }}.
- * 
+ *
  * WHAT THIS SCRIPT DOES:
  * 1. Scans ALL templates in the configured 'templates/' directory.
  * 2. Removes <base> tags (both HTML and Twig-wrapped versions).
  * 3. Finds relative asset links (starting with assets/, css/, js/, images/, img/) and prepends {{ site_base_url }}.
- * 
+ *
  * USAGE:
  * lando php migrations/migrate_base_tag.php
- * 
+ *
  * WARNING:
  * This script modifies files in place. Ensure you have a backup or clean git state before running.
  */
@@ -62,7 +62,7 @@ foreach ($templates as $templatePath) {
     $templateName = basename($templatePath);
     echo "Processing Template: [$templateName]\n";
     echo "-----------------------------------\n";
-    
+
     // 2. Scan for Twig files in this template
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($templatePath, RecursiveDirectoryIterator::SKIP_DOTS)
@@ -81,7 +81,7 @@ echo "Migration complete. Total files modified: $totalFilesModified\n";
 
 function processTemplateFile($filePath, $templateName) {
     global $totalFilesModified;
-    
+
     $content = file_get_contents($filePath);
     $originalContent = $content;
     $filename = basename($filePath);
@@ -108,9 +108,9 @@ function processTemplateFile($filePath, $templateName) {
     // 4. Update Asset Links
     // Look for href="..." or src="..." that are relative paths
     // Exclude: http://, https://, //, {{ (already twig variables), # (anchors), mailto:
-    
+
     $assetPattern = '/(href|src)=(["\'])(?!(?:https?:)?\/\/|\{\{|#|mailto:)([^"\']+)\2/i';
-    
+
     $content = preg_replace_callback($assetPattern, function($matches) use ($filename, &$modified, &$changes) {
         $attr = $matches[1];
         $quote = $matches[2];
@@ -123,7 +123,7 @@ function processTemplateFile($filePath, $templateName) {
                 return sprintf('%s=%s{{ site_base_url }}%s%s', $attr, $quote, $path, $quote);
             }
         }
-        
+
         return $matches[0]; // No change
     }, $content, -1, $count);
 
