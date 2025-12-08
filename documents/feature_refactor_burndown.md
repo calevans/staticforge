@@ -46,7 +46,7 @@ To meet the standard, a feature must adhere to the following criteria:
 | **RssFeed** | ✅ **Standard** | Refactored to use `RssFeedService`. |
 | **ShortcodeProcessor** | ✅ **Standard** | Refactored to use `ShortcodeProcessorService`. |
 | **Sitemap** | ✅ **Standard** | Refactored to use `SitemapService`. |
-| **TableOfContents** | 🔴 Todo | |
+| **TableOfContents** | ✅ **Standard** | Refactored to use `TableOfContentsService`. |
 | **Tags** | 🔴 Todo | |
 | **TemplateAssets** | 🔴 Todo | |
 

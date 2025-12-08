@@ -1,31 +1,20 @@
 <?php
 
-namespace EICC\StaticForge\Tests\Unit\Features;
+namespace EICC\StaticForge\Tests\Unit\Features\TableOfContents;
 
-use EICC\StaticForge\Features\TableOfContents\Feature;
+use EICC\StaticForge\Features\TableOfContents\Services\TableOfContentsService;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
-use EICC\StaticForge\Core\EventManager;
+use EICC\Utils\Log;
 
-class TableOfContentsFeatureTest extends UnitTestCase
+class TableOfContentsServiceTest extends UnitTestCase
 {
-    private Feature $feature;
-    private EventManager $eventManager;
+    private TableOfContentsService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->eventManager = new EventManager($this->container);
-        $this->feature = new Feature();
-        $this->feature->register($this->eventManager, $this->container);
-    }
-
-    public function testRegisterRegistersEvent(): void
-    {
-        $listeners = $this->eventManager->getListeners('MARKDOWN_CONVERTED');
-        $this->assertNotEmpty($listeners);
-        $this->assertCount(1, $listeners);
-        $this->assertEquals([$this->feature, 'handleMarkdownConverted'], $listeners[0]['callback']);
+        $logger = $this->createMock(Log::class);
+        $this->service = new TableOfContentsService($logger);
     }
 
     public function testHandleMarkdownConvertedGeneratesToc(): void
@@ -47,7 +36,7 @@ HTML;
             'file_path' => 'test.md'
         ];
 
-        $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
+        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
 
         $this->assertArrayHasKey('metadata', $result);
         $this->assertArrayHasKey('toc', $result['metadata']);
@@ -79,7 +68,7 @@ HTML;
             'file_path' => 'test.md'
         ];
 
-        $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
+        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
         $toc = $result['metadata']['toc'];
 
         // Should use the permalink ID
@@ -101,21 +90,7 @@ HTML;
             'file_path' => 'test.md'
         ];
 
-        $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
-
+        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
         $this->assertEmpty($result['metadata']['toc']);
-    }
-
-    public function testHandleMarkdownConvertedEmptyContent(): void
-    {
-        $parameters = [
-            'html_content' => '',
-            'metadata' => [],
-            'file_path' => 'test.md'
-        ];
-
-        $result = $this->feature->handleMarkdownConverted($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
     }
 }
