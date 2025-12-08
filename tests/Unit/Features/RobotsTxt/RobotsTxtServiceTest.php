@@ -57,15 +57,15 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $parameters = [];
         $this->service->scanForRobotsMetadata($this->container, $parameters);
-        
-        // We can't easily inspect private property disallowedPaths, 
+
+        // We can't easily inspect private property disallowedPaths,
         // but we can verify generateRobotsTxt produces expected output
-        
+
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-        
+
         $this->service->generateRobotsTxt($this->container, []);
-        
+
         $this->assertTrue($this->root->hasChild('output/robots.txt'));
         $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /test.html', $content);
@@ -87,12 +87,12 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
         $this->service->scanForRobotsMetadata($this->container, []);
-        
+
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-        
+
         $this->service->generateRobotsTxt($this->container, []);
-        
+
         $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
         $this->assertStringNotContainsString('Disallow: /allowed.html', $content);
     }
@@ -113,12 +113,12 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
         $this->service->scanForRobotsMetadata($this->container, []);
-        
+
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
-        
+
         $this->service->generateRobotsTxt($this->container, []);
-        
+
         $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /secret-category/', $content);
     }
