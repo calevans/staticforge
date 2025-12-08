@@ -44,8 +44,8 @@ To meet the standard, a feature must adhere to the following criteria:
 | **MenuBuilder** | ✅ **Standard** | Refactored to use `MenuBuilderService`. |
 | **RobotsTxt** | ✅ **Standard** | Refactored to use `RobotsTxtService`. |
 | **RssFeed** | ✅ **Standard** | Refactored to use `RssFeedService`. |
-| **ShortcodeProcessor** | 🔴 Todo | |
-| **Sitemap** | 🔴 Todo | |
+| **ShortcodeProcessor** | ✅ **Standard** | Refactored to use `ShortcodeProcessorService`. |
+| **Sitemap** | ✅ **Standard** | Refactored to use `SitemapService`. |
 | **TableOfContents** | 🔴 Todo | |
 | **Tags** | 🔴 Todo | |
 | **TemplateAssets** | 🔴 Todo | |
