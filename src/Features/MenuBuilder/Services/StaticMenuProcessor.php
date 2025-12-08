@@ -1,6 +1,6 @@
 <?php
 
-namespace EICC\StaticForge\Features\MenuBuilder;
+namespace EICC\StaticForge\Features\MenuBuilder\Services;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;

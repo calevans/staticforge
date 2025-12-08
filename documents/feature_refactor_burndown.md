@@ -40,8 +40,8 @@ To meet the standard, a feature must adhere to the following criteria:
 | **ChapterNav** | ✅ **Standard** | Refactored to use `ChapterNavService`. |
 | **Forms** | ✅ **Standard** | Refactored to use `FormsService`. |
 | **HtmlRenderer** | ✅ **Standard** | Refactored to use `HtmlRendererService`. |
-| **MarkdownRenderer** | 🔴 Todo | |
-| **MenuBuilder** | 🔴 Todo | |
+| **MarkdownRenderer** | ✅ **Standard** | Refactored to use `MarkdownRendererService` and `BaseRendererService`. |
+| **MenuBuilder** | ✅ **Standard** | Refactored to use `MenuBuilderService`. |
 | **RobotsTxt** | 🔴 Todo | |
 | **RssFeed** | 🔴 Todo | |
 | **ShortcodeProcessor** | 🔴 Todo | |
@@ -55,4 +55,4 @@ To meet the standard, a feature must adhere to the following criteria:
 1. **RssFeed**: Currently contains significant logic in `Feature.php`.
 2. **Tags**: Holds state (`$allTags`, `$tagIndex`) directly in the Feature.
 3. **Sitemap**: Holds `$urls` state directly in the Feature.
-4. **MarkdownRenderer**: Already uses some services, but check for strict separation.
+

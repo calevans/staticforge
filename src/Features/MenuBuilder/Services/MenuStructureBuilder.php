@@ -1,6 +1,6 @@
 <?php
 
-namespace EICC\StaticForge\Features\MenuBuilder;
+namespace EICC\StaticForge\Features\MenuBuilder\Services;
 
 class MenuStructureBuilder
 {

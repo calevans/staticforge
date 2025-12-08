@@ -3,7 +3,7 @@
 namespace EICC\StaticForge\Tests\Unit\Features\MenuBuilder;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
-use EICC\StaticForge\Features\MenuBuilder\MenuStructureBuilder;
+use EICC\StaticForge\Features\MenuBuilder\Services\MenuStructureBuilder;
 
 class MenuStructureBuilderTest extends UnitTestCase
 {

@@ -205,6 +205,12 @@ class FeatureManager
                 return;
             }
 
+            // Check if feature is already loaded (Custom features take precedence over Standard)
+            if (isset($this->features[$feature->getName()])) {
+                $this->logger->log('INFO', "Skipping duplicate feature (already loaded): {$feature->getName()}");
+                return;
+            }
+
             // Register and store the feature
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;
