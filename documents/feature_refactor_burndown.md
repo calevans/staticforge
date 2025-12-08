@@ -24,6 +24,8 @@ To meet the standard, a feature must adhere to the following criteria:
 ### 4. Testing
 - [ ] **Unit Tests**: Services are unit tested in isolation.
 - [ ] **Feature Tests**: The Feature class is tested to ensure it wires events correctly.
+- [ ] **Meaningful Tests**: Tests must verify actual feature behavior and business logic. Avoid trivial tests (e.g., testing PHP's ability to add numbers) or testing mocks against themselves.
+
 
 ---
 
