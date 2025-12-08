@@ -39,7 +39,7 @@ To meet the standard, a feature must adhere to the following criteria:
 | **Categories** | ✅ **Standard** | Refactored to use `CategoriesService`. |
 | **ChapterNav** | ✅ **Standard** | Refactored to use `ChapterNavService`. |
 | **Forms** | ✅ **Standard** | Refactored to use `FormsService`. |
-| **HtmlRenderer** | 🔴 Todo | |
+| **HtmlRenderer** | ✅ **Standard** | Refactored to use `HtmlRendererService`. |
 | **MarkdownRenderer** | 🔴 Todo | |
 | **MenuBuilder** | 🔴 Todo | |
 | **RobotsTxt** | 🔴 Todo | |
