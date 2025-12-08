@@ -18,8 +18,6 @@ class FormsFeatureTest extends UnitTestCase
         parent::setUp();
 
         $this->eventManager = new EventManager($this->container);
-        $this->feature = new Feature();
-        $this->feature->register($this->eventManager, $this->container);
 
         // Mock Twig
         $loader = new ArrayLoader([
@@ -42,6 +40,9 @@ class FormsFeatureTest extends UnitTestCase
         };
 
         $dataProp->setValue($this->container, $data);
+
+        $this->feature = new Feature();
+        $this->feature->register($this->eventManager, $this->container);
     }
 
     public function testRegisterRegistersEvent(): void
