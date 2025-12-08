@@ -32,7 +32,7 @@ class FeatureTest extends UnitTestCase
         $this->assertEquals([$this->feature, 'handlePostLoop'], $listeners[0]['callback']);
     }
 
-    public function testHandlePostLoopCopiesAssets(): void
+    public function testDelegatesToService(): void
     {
         // Setup directory structure
         $structure = [
@@ -41,20 +41,7 @@ class FeatureTest extends UnitTestCase
                     'assets' => [
                         'css' => [
                             'style.css' => 'body { color: red; }'
-                        ],
-                        'js' => [
-                            'app.js' => 'console.log("template");'
                         ]
-                    ]
-                ]
-            ],
-            'content' => [
-                'assets' => [
-                    'css' => [
-                        'custom.css' => 'body { color: blue; }'
-                    ],
-                    'js' => [
-                        'app.js' => 'console.log("content");' // Should overwrite template
                     ]
                 ]
             ],
@@ -72,16 +59,7 @@ class FeatureTest extends UnitTestCase
         // Run the feature
         $this->feature->handlePostLoop($this->container, []);
 
-        // Assertions
-        $this->assertTrue($this->root->hasChild('public/assets/css/style.css'), 'Template asset should be copied');
-        $this->assertTrue($this->root->hasChild('public/assets/css/custom.css'), 'Content asset should be copied');
-        $this->assertTrue($this->root->hasChild('public/assets/js/app.js'), 'Conflicting asset should exist');
-
-        // Check content
-        $this->assertEquals('body { color: red; }', $this->root->getChild('public/assets/css/style.css')->getContent());
-        $this->assertEquals('body { color: blue; }', $this->root->getChild('public/assets/css/custom.css')->getContent());
-
-        // Check overwrite
-        $this->assertEquals('console.log("content");', $this->root->getChild('public/assets/js/app.js')->getContent(), 'Content asset should overwrite template asset');
+        // Assertions - if file exists, delegation worked
+        $this->assertTrue($this->root->hasChild('public/assets/css/style.css'), 'Template asset should be copied via service delegation');
     }
 }

@@ -47,12 +47,11 @@ To meet the standard, a feature must adhere to the following criteria:
 | **ShortcodeProcessor** | ✅ **Standard** | Refactored to use `ShortcodeProcessorService`. |
 | **Sitemap** | ✅ **Standard** | Refactored to use `SitemapService`. |
 | **TableOfContents** | ✅ **Standard** | Refactored to use `TableOfContentsService`. |
-| **Tags** | 🔴 Todo | |
-| **TemplateAssets** | 🔴 Todo | |
+| **Tags** | ✅ **Standard** | Refactored to use `TagsService`. |
+| **TemplateAssets** | ✅ **Standard** | Refactored to use `TemplateAssetsService`. |
 
 ## Refactoring Priority
 
-1. **RssFeed**: Currently contains significant logic in `Feature.php`.
-2. **Tags**: Holds state (`$allTags`, `$tagIndex`) directly in the Feature.
-3. **Sitemap**: Holds `$urls` state directly in the Feature.
+All features have been refactored to the CategoryIndex Standard.
+
 
