@@ -53,3 +53,6 @@ forms:
         required: true
         maxlength: 2048
 
+# Disabled Features
+disabled_features:
+  #- Sitemap

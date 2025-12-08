@@ -89,6 +89,10 @@ class CategoryService
 
         if (str_starts_with($outputPath, $normalizedOutputDir)) {
             $url = str_replace('\\', '/', substr($outputPath, strlen($normalizedOutputDir)));
+            // Ensure leading slash
+            if (!str_starts_with($url, '/')) {
+                $url = '/' . $url;
+            }
         } else {
             // Fallback if path doesn't start with output dir
             $url = $slug . '/' . basename($outputPath);

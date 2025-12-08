@@ -145,3 +145,30 @@ php bin/console.php site:upload
 - Verify `OUTPUT_DIR` contains generated files
 - Check that `site:render` completed successfully
 
+## System Commands
+
+### system:features - List Features
+
+List all available features and their current status (enabled/disabled). This is useful for verifying which features are active, especially when using `disabled_features` in `siteconfig.yaml`.
+
+```bash
+# List features
+php bin/console.php system:features
+
+# Alias
+php bin/console.php system:plugins
+```
+
+**Example Output:**
+
+```text
++--------------------+----------+
+| Feature Name       | Status   |
++--------------------+----------+
+| CacheBuster        | Enabled  |
+| Categories         | Enabled  |
+| ...                | ...      |
+| Sitemap            | Disabled |
++--------------------+----------+
+```
+

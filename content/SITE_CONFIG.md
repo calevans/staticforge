@@ -95,6 +95,22 @@ StaticForge supports two types of menus:
 
 These are **completely separate** systems. Use numbered menus for content-based navigation and named menus for static/external links.
 
+### Disabling Features
+
+You can disable specific features (both core and custom) by adding them to the `disabled_features` list. This is useful for turning off functionality you don't need or troubleshooting issues.
+
+```yaml
+disabled_features:
+  - WeatherShortcode
+  - Sitemap
+  - SomeOtherFeature
+```
+
+When a feature is disabled:
+- It is not loaded by the system
+- Its event listeners are not registered
+- Other features that depend on it may also be skipped (if they use `requireFeatures`)
+
 ### Site Information
 
 Configure site-wide metadata that appears in templates:

@@ -1,15 +1,5 @@
 # Feature Ideas
 
-## 1. Sitemap.xml Generation
-**Priority:** High
-**Why:** Critical for SEO. Search engines rely on this to index the site correctly.
-**Implementation:** Similar to `RssFeed` feature, listen to `POST_RENDER` to collect URLs and `POST_LOOP` to write the XML file.
-
-## 2. Draft Content Support
-**Priority:** High
-**Why:** Essential for publishing workflows. Need to exclude files with `draft: true` in frontmatter.
-**Implementation:** Update `FileDiscovery` or create a new `Drafts` feature to filter files based on frontmatter.
-
 ## 3. Image Optimization Pipeline
 **Priority:** Medium
 **Why:** Need built-in feature to automatically resize, crop, or convert images (to WebP/AVIF).
@@ -19,3 +9,15 @@
 **Priority:** Medium
 **Why:** Improve performance by minifying CSS and JS files.
 **Implementation:** A feature to minify assets in `public/` after the build.
+
+## 5. Refactor all features to make sure we are instantiating them in a standard way.
+
+## 6. Breakup siteconfig.yml into data directory
+**Priority:** Low
+**Why:** Easier to manage large configurations.
+**Implementation:** Support loading multiple YAML files from `data/` and merging them.
+
+## 7. Validate yml before parsing.
+**Priority:** Medium
+**Why:** Prevent runtime errors due to misconfigurations.
+**Implementation:** Validate that the YAML in a file is valid and will read before trying to load it.

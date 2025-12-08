@@ -45,6 +45,52 @@ class BaseFeatureTest extends UnitTestCase
 
         $this->assertEquals(['test' => 'value', 'processed' => true], $result);
     }
+
+    public function testRequireFeatures(): void
+    {
+        // Mock FeatureManager
+        $featureManager = $this->createMock(\EICC\StaticForge\Core\FeatureManager::class);
+
+        // Configure mock behavior
+        $featureManager->method('isFeatureEnabled')
+            ->willReturnMap([
+                ['EnabledFeature', true],
+                ['DisabledFeature', false]
+            ]);
+
+        // Add mock to container
+        // Note: FeatureManager is already added in bootstrap, so we need to overwrite it
+        // But Container::add throws if exists. We should use stuff() or just replace the instance if possible.
+        // Container doesn't have replace. But UnitTestCase::setContainerVariable is for variables, not services.
+        // Wait, Container::stuff overwrites? No, stuff is for lazy loading.
+        // Let's check Container.php again.
+
+        // Actually, bootstrap adds it with $container->add(FeatureManager::class, $featureManager);
+        // If I want to replace it, I might need to use reflection on Container or just create a new container.
+        // But UnitTestCase sets up the container in setUp.
+
+        // Let's try to use reflection to replace the service in the container.
+        $reflection = new \ReflectionClass($this->container);
+        $property = $reflection->getProperty('data');
+        $property->setAccessible(true);
+        $services = $property->getValue($this->container);
+        $services[\EICC\StaticForge\Core\FeatureManager::class] = $featureManager;
+        $property->setValue($this->container, $services);
+
+        $this->feature->register($this->eventManager, $this->container);
+
+        // Test with enabled feature
+        $this->assertTrue($this->feature->checkRequirements(['EnabledFeature']));
+
+        // Test with disabled feature
+        $this->assertFalse($this->feature->checkRequirements(['DisabledFeature']));
+
+        // Test with mixed features
+        $this->assertFalse($this->feature->checkRequirements(['EnabledFeature', 'DisabledFeature']));
+
+        // Test with no requirements
+        $this->assertTrue($this->feature->checkRequirements([]));
+    }
 }
 
 class TestFeature extends BaseFeature
@@ -64,5 +110,10 @@ class TestFeature extends BaseFeature
     {
         $parameters['another'] = true;
         return $parameters;
+    }
+
+    public function checkRequirements(array $requiredFeatures): bool
+    {
+        return $this->requireFeatures($requiredFeatures);
     }
 }

@@ -145,6 +145,31 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         // This will replace the library's MarkdownRenderer
     }
 }
+```
+
+### Feature Dependencies
+
+If your feature relies on another feature being enabled (e.g., a navigation feature that depends on `MenuBuilder`), you can enforce this dependency using the `requireFeatures` method.
+
+```php
+public function handleEvent(Container $container, array $parameters): array
+{
+    // Check if required features are enabled
+    if (!$this->requireFeatures(['MenuBuilder'])) {
+        // Gracefully exit if dependency is missing
+        return $parameters;
+    }
+
+    // Proceed with logic that depends on MenuBuilder
+    // ...
+}
+```
+
+If a required feature is disabled, `requireFeatures` will:
+1. Log a warning explaining which dependency is missing.
+2. Return `false`.
+
+This allows your feature to degrade gracefully rather than crashing the application.
 
 ---
 

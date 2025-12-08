@@ -161,4 +161,30 @@ PHP;
 
         rmdir($dir);
     }
+
+    public function testFeatureDisabling(): void
+    {
+        // Create a test feature
+        $this->createSimpleTestFeature('DisabledFeature');
+
+        // Configure site config to disable this feature
+        $siteConfig = [
+            'disabled_features' => ['DisabledFeature']
+        ];
+        $this->setContainerVariable('site_config', $siteConfig);
+
+        // Re-initialize feature manager to pick up the config
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager->loadFeatures();
+
+        // Verify feature is not loaded
+        $feature = $this->featureManager->getFeature('DisabledFeature');
+        $this->assertNull($feature, 'Disabled feature should not be loaded');
+
+        // Verify isFeatureEnabled returns false
+        $this->assertFalse($this->featureManager->isFeatureEnabled('DisabledFeature'));
+
+        // Verify enabled feature works
+        $this->assertTrue($this->featureManager->isFeatureEnabled('SomeOtherFeature'));
+    }
 }

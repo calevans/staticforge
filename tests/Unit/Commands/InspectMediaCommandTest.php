@@ -45,7 +45,7 @@ class InspectMediaCommandTest extends TestCase
     {
         $application = new Application();
         $application->add(new InspectMediaCommand());
-        $command = $application->find('site:inspect-media');
+        $command = $application->find('media:inspect');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['file' => '/non/existent/file.md']);
@@ -61,7 +61,7 @@ class InspectMediaCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new InspectMediaCommand());
-        $command = $application->find('site:inspect-media');
+        $command = $application->find('media:inspect');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['file' => $this->markdownFile]);
@@ -78,7 +78,7 @@ class InspectMediaCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new InspectMediaCommand());
-        $command = $application->find('site:inspect-media');
+        $command = $application->find('media:inspect');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['file' => $this->markdownFile]);
@@ -95,7 +95,7 @@ class InspectMediaCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new InspectMediaCommand());
-        $command = $application->find('site:inspect-media');
+        $command = $application->find('media:inspect');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['file' => $this->markdownFile]);
@@ -126,7 +126,7 @@ class InspectMediaCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new InspectMediaCommand($inspectorMock));
-        $command = $application->find('site:inspect-media');
+        $command = $application->find('media:inspect');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute(['file' => $this->markdownFile]);

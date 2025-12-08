@@ -43,6 +43,8 @@ use EICC\StaticForge\Commands\RenderSiteCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
 use EICC\StaticForge\Commands\InspectMediaCommand;
+use EICC\StaticForge\Commands\ListFeaturesCommand;
+use EICC\StaticForge\Core\FeatureManager;
 use Symfony\Component\Console\Application;
 
 // Bootstrap application - handle both dev and vendor/bin locations
@@ -62,6 +64,7 @@ $app->add(new RenderSiteCommand($container));
 $app->add(new UploadSiteCommand($container));
 $app->add(new DevServerCommand());
 $app->add(new InspectMediaCommand());
+$app->add(new ListFeaturesCommand($container->get(FeatureManager::class)));
 
 // Run the application
 $app->run();

@@ -32,6 +32,12 @@ class FeatureManager
      */
     private array $featureTypes = [];
 
+    /**
+     * Map of feature names to their status (enabled/disabled)
+     * @var array<string, string>
+     */
+    private array $featureStatuses = [];
+
     public function __construct(Container $container, EventManager $eventManager)
     {
         $this->container = $container;
@@ -45,6 +51,12 @@ class FeatureManager
      */
     public function loadFeatures(): void
     {
+        // Load disabled features from site config
+        $siteConfig = $this->container->getVariable('site_config') ?? [];
+        if (isset($siteConfig['disabled_features']) && is_array($siteConfig['disabled_features'])) {
+            $this->disabledFeatures = array_fill_keys($siteConfig['disabled_features'], true);
+        }
+
         // Load user features first (higher priority - can disable library features)
         $userFeaturesDir = $this->container->getVariable('FEATURES_DIR') ?? 'src/Features';
         if (is_dir($userFeaturesDir)) {
@@ -86,6 +98,15 @@ class FeatureManager
     }
 
     /**
+     * Get all feature statuses
+     * @return array<string, string>
+     */
+    public function getFeatureStatuses(): array
+    {
+        return $this->featureStatuses;
+    }
+
+    /**
      * Get a specific feature by name
      */
     public function getFeature(string $name): ?FeatureInterface
@@ -94,6 +115,14 @@ class FeatureManager
     }
 
 
+
+    /**
+     * Check if a feature is enabled
+     */
+    public function isFeatureEnabled(string $featureName): bool
+    {
+        return !$this->isFeatureDisabled($featureName);
+    }
 
     /**
      * Check if a feature is disabled
@@ -171,6 +200,7 @@ class FeatureManager
 
             // Check if this feature is disabled before registering
             if ($this->isFeatureDisabled($feature->getName())) {
+                $this->featureStatuses[$feature->getName()] = 'disabled';
                 $this->logger->log('INFO', "Skipping disabled feature: {$feature->getName()}");
                 return;
             }
@@ -179,6 +209,7 @@ class FeatureManager
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;
             $this->featureTypes[$feature->getName()] = $type;
+            $this->featureStatuses[$feature->getName()] = 'enabled';
             $this->logger->log('INFO', "Loaded feature: {$feature->getName()}");
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to load feature from {$directoryName}: " . $e->getMessage());

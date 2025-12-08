@@ -48,6 +48,41 @@ abstract class BaseFeature implements FeatureInterface
         $this->registerEventListeners();
     }
 
+    /**
+     * Check if required features are enabled
+     *
+     * @param array<string> $requiredFeatures List of feature names that must be enabled
+     * @return bool True if all required features are enabled, false otherwise
+     */
+    protected function requireFeatures(array $requiredFeatures): bool
+    {
+        // If no requirements, we're good
+        if (empty($requiredFeatures)) {
+            return true;
+        }
+
+        try {
+            $featureManager = $this->container->get(FeatureManager::class);
+        } catch (\Exception $e) {
+            // If we can't get the feature manager, we can't check requirements
+            // This shouldn't happen in normal operation
+            return false;
+        }
+
+        foreach ($requiredFeatures as $feature) {
+            if (!$featureManager->isFeatureEnabled($feature)) {
+                // Log a warning so the developer knows why this feature is skipping its logic
+                $logger = $this->container->get('logger');
+                $logger->log('WARNING',
+                    "Feature '{$this->getName()}' requires feature '{$feature}' which is disabled. Skipping functionality."
+                );
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
 
     /**
