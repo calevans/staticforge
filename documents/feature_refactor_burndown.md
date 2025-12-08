@@ -43,7 +43,7 @@ To meet the standard, a feature must adhere to the following criteria:
 | **MarkdownRenderer** | ✅ **Standard** | Refactored to use `MarkdownRendererService` and `BaseRendererService`. |
 | **MenuBuilder** | ✅ **Standard** | Refactored to use `MenuBuilderService`. |
 | **RobotsTxt** | ✅ **Standard** | Refactored to use `RobotsTxtService`. |
-| **RssFeed** | 🔴 Todo | |
+| **RssFeed** | ✅ **Standard** | Refactored to use `RssFeedService`. |
 | **ShortcodeProcessor** | 🔴 Todo | |
 | **Sitemap** | 🔴 Todo | |
 | **TableOfContents** | 🔴 Todo | |
