@@ -87,7 +87,7 @@ function processTemplateFile($filePath, $templateName) {
     // Matches: {{ site_base_url }}/{{ item.url }}
     // Matches: {{ site_base_url }}{{ child.item.url }} (Nested variables)
     $pattern = '/\{\{\s*site_base_url\s*\}\}\/?\{\{\s*([a-zA-Z0-9_.]+\.url)\s*\}\}/';
-    
+
     $content = preg_replace_callback($pattern, function($matches) use (&$changes) {
         $variable = $matches[1];
         $changes[] = "Removed site_base_url prefix from {{ $variable }}";

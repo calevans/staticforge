@@ -78,6 +78,14 @@ These come from your `.env` configuration:
 {{ site_tagline }}       {# Your site's tagline (from SITE_TAGLINE) #}
 ```
 
+> **Important Note on URLs:**
+> StaticForge generates fully qualified absolute URLs for all content links (menus, category files, etc.).
+> You should **only** use `{{ site_base_url }}` when linking to static assets like CSS, JS, or images in your template.
+>
+> **Correct:** `<link href="{{ site_base_url }}assets/css/style.css">`
+> **Correct:** `<a href="{{ item.url }}">Link</a>` (where item.url is already absolute)
+> **Incorrect:** `<a href="{{ site_base_url }}{{ item.url }}">Link</a>` (results in double URL)
+
 ### Page Content Variables
 
 These are available on every page:
@@ -212,11 +220,6 @@ Here's a simple but complete template to get you started:
   {# Page title with site name #}
   <title>{{ title|default('Untitled Page') }} - {{ site_name }}</title>
 
-  {# Base URL for relative links #}
-  {% if site_base_url %}
-    <base href="{{ site_base_url }}">
-  {% endif %}
-
   {# SEO meta tags #}
   {% if description %}
     <meta name="description" content="{{ description }}">
@@ -227,7 +230,8 @@ Here's a simple but complete template to get you started:
     <meta name="keywords" content="{{ tags|join(', ') }}">
   {% endif %}
 
-  <link rel="stylesheet" href="assets/css/style.css">
+  {# Use site_base_url for assets #}
+  <link rel="stylesheet" href="{{ site_base_url }}assets/css/style.css">
 </head>
 <body>
   <header>
