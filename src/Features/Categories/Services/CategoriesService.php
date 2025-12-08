@@ -124,7 +124,7 @@ class CategoriesService
 
         // Build new path: output_dir/category/filename
         $newPath = $dirName . DIRECTORY_SEPARATOR . $sanitizedCategory . DIRECTORY_SEPARATOR . $fileName;
-        
+
         $this->logger->log('INFO', "Categorizing file: {$outputPath} -> {$newPath}");
 
         return $newPath;

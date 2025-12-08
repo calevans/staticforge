@@ -99,7 +99,7 @@ class CategoriesServiceTest extends TestCase
         $this->container->expects($this->once())
             ->method('setVariable')
             ->with('category_templates', $this->anything());
-            
+
         $this->service->processCategoryTemplates($this->container);
     }
 }

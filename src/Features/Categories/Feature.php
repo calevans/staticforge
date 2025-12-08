@@ -33,7 +33,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Get logger from container
         $this->logger = $container->get('logger');
-        
+
         $this->service = new CategoriesService($this->logger);
 
         $this->logger->log('INFO', 'Categories Feature registered');
