@@ -46,8 +46,8 @@ class StaticMenuProcessor
             foreach ($menuItems as $title => $url) {
                 $items['direct'][] = [
                     'title' => (string)$title,
-                    // Strip leading slash for relative URL compatibility
-                    'url' => ltrim((string)$url, '/'),
+                    // Do not strip leading slash - allow absolute paths like "/"
+                    'url' => (string)$url,
                     'file' => '', // Static menu items have no associated file
                     'position' => '' // Position is determined by YAML order
                 ];
