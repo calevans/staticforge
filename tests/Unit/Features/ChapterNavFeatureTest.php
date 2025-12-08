@@ -24,6 +24,9 @@ class ChapterNavFeatureTest extends UnitTestCase
       // Create virtual filesystem
         $this->root = vfsStream::setup('test');
 
+        // Clear site_config to ensure tests use environment variables
+        $this->setContainerVariable('site_config', []);
+
       // Create container config
         $this->setContainerVariable('CHAPTER_NAV_MENUS', '2');
         $this->setContainerVariable('CHAPTER_NAV_PREV_SYMBOL', '←');
