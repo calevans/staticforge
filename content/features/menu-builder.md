@@ -1,8 +1,7 @@
 ---
 title: 'Menu Builder'
 template: docs
-menu: '1.3.08, 2.3.08'
-category: docs
+menu: '3.1.8'
 ---
 # Menu Builder
 
@@ -24,7 +23,7 @@ Defined in content file frontmatter using the `menu` field. These menus are auto
 
 ### Named Menus (Static)
 
-Defined in `siteconfig.yaml` for static/external links. See [Site Configuration](SITE_CONFIG.md) for details.
+Defined in `siteconfig.yaml` for static/external links. See [Site Configuration](../guide/site-config.md) for details.
 
 **Access in templates:** `{{ menu_top }}`, `{{ menu_footer }}`, etc.
 
@@ -209,4 +208,4 @@ Items are automatically sorted by position number.
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

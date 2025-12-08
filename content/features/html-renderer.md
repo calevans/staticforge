@@ -1,8 +1,7 @@
 ---
 title: 'HTML Renderer'
 template: docs
-menu: '1.3.06, 2.3.06'
-category: docs
+menu: '3.1.6'
 ---
 # HTML Renderer
 
@@ -56,4 +55,4 @@ template: "about-page"
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

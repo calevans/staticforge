@@ -1,8 +1,7 @@
 ---
 title: Categories
 template: docs
-menu: '1.3.03, 2.3.03'
-category: docs
+menu: '3.1.2'
 ---
 # Categories
 
@@ -111,4 +110,4 @@ This smart detection ensures clean URL structures when you organize both your so
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

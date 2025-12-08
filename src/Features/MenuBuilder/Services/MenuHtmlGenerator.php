@@ -27,86 +27,22 @@ class MenuHtmlGenerator
         $menuClass = $menuNumber > 0 ? "menu menu-{$menuNumber}" : "menu";
         $html = '<ul class="' . $menuClass . '">' . "\n";
 
-        // Collect all direct items and positioned items at this level
-        $allItems = [];
-
-        // Get direct items (menu: X format) - these have no explicit position
+        // 1. Handle 'direct' items (Top level items without position)
         if (isset($menuItems['direct'])) {
             foreach ($menuItems['direct'] as $item) {
-                $allItems[] = [
-                    'item' => $item,
-                    'position' => 999, // Put at end if no other positioning
-                    'type' => 'direct'
-                ];
+                $html .= $this->renderItem($item, $menuNumber);
             }
             unset($menuItems['direct']);
         }
 
-        // Check for positioned single items (menu: X.Y where we want them as direct items, not dropdown)
-        // These should be treated as regular menu items with explicit positions
+        // Sort by key (position)
         ksort($menuItems);
 
-        // Check if this is a dropdown structure (has 0 key with submenu items)
-        $hasDropdownTitle = isset($menuItems[0]);
-        $hasSubmenuItems = false;
-        foreach ($menuItems as $key => $item) {
-            if (is_numeric($key) && $key > 0) {
-                $hasSubmenuItems = true;
-                break;
-            }
-        }
-
-        // If we have positioned items that aren't a dropdown structure, treat them as direct items
-        if (!$hasDropdownTitle || !$hasSubmenuItems) {
-            // These are direct positioned items (like menu: 1.1)
-            foreach ($menuItems as $key => $item) {
-                if (is_numeric($key)) {
-                    // Item is now stored directly, not in array
-                    $allItems[] = [
-                        'item' => $item,
-                        'position' => $key,
-                        'type' => 'positioned'
-                    ];
-                }
-            }
-
-            // Sort all items by position using version comparison
-            /** @phpstan-ignore-next-line argument.unresolvableType (usort callback types are resolvable) */
-            usort($allItems, function (array $a, array $b): int {
-                return $this->compareMenuPositions($a['position'], $b['position']);
-            });
-
-            // Render all items
-            foreach ($allItems as $entry) {
-                $item = $entry['item'];
-                $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}" : "";
-                $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-                $html .= '  <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
-                         htmlspecialchars($item['title']) . '</a></li>' . "\n";
-            }
-
-            $html .= '</ul>' . "\n";
-            return $html;
-        }
-
-        // At this point, both $hasDropdownTitle and $hasSubmenuItems must be true
-        // (otherwise we would have returned above)
-
-        // This is a dropdown structure - a menu with submenus
-        $dropdownTitle = 'Menu';
-        $submenuItems = [];
-        $submenuPosition = 0;
-
-        foreach ($menuItems as $key => $item) {
-            if ($key === 0 && isset($item['title'])) {
-                // This is the dropdown title (position x.0)
-                $dropdownTitle = $item['title'];
-                $submenuPosition = $key;
-            } elseif ($key > 0 && isset($item['title'])) {
-                // These are submenu items (position x.1, x.2, etc.)
-                $submenuItems[$key] = $item;
-            }
-        }
+        // 2. Check for Legacy Dropdown (Key 0 exists)
+        // This preserves the specific markup for "Dropdowns" (menu: X.0)
+        if (isset($menuItems[0])) {
+            $dropdownTitle = $menuItems[0]['title'] ?? 'Menu';
+            $submenuPosition = 0;
 
             $dropdownClass = $menuNumber > 0 ? "dropdown menu-{$menuNumber}-{$submenuPosition}" : "dropdown";
             $html .= '  <li class="' . $dropdownClass . '">' . "\n";
@@ -115,17 +51,84 @@ class MenuHtmlGenerator
             $submenuClass = $menuNumber > 0 ? "dropdown-menu menu-{$menuNumber}-submenu" : "dropdown-menu";
             $html .= '    <ul class="' . $submenuClass . '">' . "\n";
 
-        foreach ($submenuItems as $position => $submenuItem) {
-            $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$position}" : "";
-            $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
-            $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($submenuItem['url']) . '">' .
-                     htmlspecialchars($submenuItem['title']) . '</a></li>' . "\n";
-        }
+            foreach ($menuItems as $key => $item) {
+                if ($key === 0) continue; // Skip title
+                // Render children as simple links
+                $itemClass = $menuNumber > 0 ? "menu-{$menuNumber}-{$key}" : "";
+                $liClass = $itemClass ? ' class="' . $itemClass . '"' : '';
+                $html .= '      <li' . $liClass . '><a href="' . htmlspecialchars($item['url']) . '">' .
+                         htmlspecialchars($item['title']) . '</a></li>' . "\n";
+            }
 
             $html .= '    </ul>' . "\n";
             $html .= '  </li>' . "\n";
+        } else {
+            // 3. Standard/Recursive Logic (No Key 0)
+            // This handles flat lists AND nested trees (menu: X.Y -> X.Y.Z)
+            foreach ($menuItems as $key => $item) {
+                if (is_numeric($key)) {
+                    $html .= $this->renderItem($item, $menuNumber, $key);
+                }
+            }
+        }
 
         $html .= '</ul>' . "\n";
+        return $html;
+    }
+
+    /**
+     * Recursively render a menu item and its children
+     *
+     * @param array<string, mixed> $item
+     * @param int $menuNumber
+     * @param int|string|null $position
+     * @return string
+     */
+    private function renderItem(array $item, int $menuNumber, $position = null): string
+    {
+        // Check for children (numeric keys inside the item array)
+        $children = [];
+        foreach ($item as $k => $v) {
+            if (is_numeric($k) && is_array($v)) {
+                $children[$k] = $v;
+            }
+        }
+        ksort($children);
+
+        $hasChildren = !empty($children);
+
+        // Build classes
+        $classes = [];
+        if ($menuNumber > 0 && $position !== null) {
+            $classes[] = "menu-{$menuNumber}-{$position}";
+        }
+        if ($hasChildren) {
+            $classes[] = "has-children";
+        }
+
+        $liClass = !empty($classes) ? ' class="' . implode(' ', $classes) . '"' : '';
+
+        $html = '  <li' . $liClass . '>';
+
+        // Render Link
+        $title = $item['title'] ?? '';
+        $url = $item['url'] ?? '#';
+
+        if ($title) {
+            $html .= '<a href="' . htmlspecialchars($url) . '">' . htmlspecialchars($title) . '</a>';
+        }
+
+        // Render Children
+        if ($hasChildren) {
+            $submenuClass = $menuNumber > 0 ? "submenu menu-{$menuNumber}-submenu" : "submenu";
+            $html .= "\n    <ul class=\"{$submenuClass}\">\n";
+            foreach ($children as $childPos => $child) {
+                $html .= $this->renderItem($child, $menuNumber, $childPos);
+            }
+            $html .= "    </ul>\n  ";
+        }
+
+        $html .= '</li>' . "\n";
 
         return $html;
     }

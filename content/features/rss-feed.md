@@ -1,8 +1,7 @@
 ---
 title: 'RSS Feed'
 template: docs
-menu: '1.3.10, 2.3.10'
-category: docs
+menu: '3.1.10'
 ---
 # RSS Feed
 
@@ -218,4 +217,4 @@ Files without a `category` are not included in any RSS feed. This is intentional
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

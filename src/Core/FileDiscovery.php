@@ -237,8 +237,13 @@ class FileDiscovery
             }
         }
 
-        // Return relative path (no leading slash) for compatibility with <base> tag
-        return ltrim($relativePath, '/');
+        // Get Base URL
+        $baseUrl = $this->container->getVariable('SITE_BASE_URL') ?? '/';
+        // Ensure trailing slash
+        $baseUrl = rtrim($baseUrl, '/') . '/';
+
+        // Return full URL to ensure links work correctly regardless of hosting subdirectory
+        return $baseUrl . ltrim($relativePath, '/');
     }
 
     /**

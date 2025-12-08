@@ -1,8 +1,7 @@
 ---
 title: 'Markdown Renderer'
 template: docs
-menu: '1.3.07, 2.3.07'
-category: docs
+menu: '3.1.7'
 ---
 # Markdown Renderer
 
@@ -67,4 +66,4 @@ This is useful for working on content that isn't ready to be published yet.
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

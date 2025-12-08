@@ -1,8 +1,7 @@
 ---
 title: 'Sitemap Generator'
 template: docs
-menu: '1.3.11, 2.3.11'
-category: docs
+menu: '3.1.11'
 ---
 # Sitemap Generator
 
@@ -61,4 +60,4 @@ date: "2023-12-01"
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

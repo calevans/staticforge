@@ -1,8 +1,7 @@
 ---
 title: 'Bootstrap & Initialization'
 template: docs
-menu: '1.6, 2.6'
-category: docs
+menu: '4.1.2'
 ---
 # Bootstrap & Initialization
 

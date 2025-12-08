@@ -1,8 +1,7 @@
 ---
 title: 'Site Configuration (siteconfig.yaml)'
 template: docs
-menu: '1.9, 2.9'
-category: docs
+menu: '2.1.3'
 ---
 # Site Configuration (siteconfig.yaml)
 
@@ -154,7 +153,7 @@ forms:
         required: true
 ```
 
-See the [Forms Feature documentation](FORMS.html) for full details.
+See the [Forms Feature documentation](../features/forms.html) for full details.
 
 
 ```yaml

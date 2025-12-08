@@ -1,8 +1,7 @@
 ---
 title: 'Robots.txt Generator'
 template: docs
-menu: '1.3.09, 2.3.09'
-category: docs
+menu: '3.1.9'
 ---
 # Robots.txt Generator
 
@@ -133,4 +132,4 @@ SITE_BASE_URL="https://example.com"
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

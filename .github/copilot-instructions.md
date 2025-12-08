@@ -104,3 +104,7 @@ lando rebuild
 - Test namespace PSR-4 compliance issues (safe to ignore)
 
 **Trust these instructions** - they are comprehensive and tested. Only search for additional information if instructions are incomplete or found to be incorrect.
+
+# The Golden Rules
+- When writing tools, thou shalt use no language other than PHP.
+- Before writing code, read the necessary classes fully before trying to use them. Do not guess at hoe they should work, read the code.

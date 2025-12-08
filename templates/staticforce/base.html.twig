@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title | default('Documentation') }}{% if site_name %} | {{ site_name }}{% endif %}{% endblock %}</title>
-    {% if site_base_url %}
-    <base href="{{ site_base_url }}">
-    {% endif %}
     {% if description %}
     <meta name="description" content="{{ description }}">
     {% endif %}
@@ -24,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/css/main.css?v={{ build_id }}">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/main.css?v={{ build_id }}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -62,7 +59,7 @@
 
     {% include 'staticforce/_footer.html.twig' %}
 
-    <script src="assets/js/main.js"></script>
+    <script src="{{ site_base_url }}assets/js/main.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

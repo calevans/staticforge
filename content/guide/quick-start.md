@@ -1,7 +1,6 @@
 ---
 template: docs
-menu: '1.1, 2.1'
-category: docs
+menu: '2.1.1'
 hero: assets/images/sf_quickstart_hero.jpg
 ---
 # Quick Start Guide
@@ -97,7 +96,7 @@ StaticForge looks for content in the `content/` directory. Create a new file cal
 ---
 title: "My First Page"
 description: "Learning how to use StaticForge"
-menu: 2
+menu: '2.1.1'
 ---
 
 # Hello, World!

@@ -1,8 +1,7 @@
 ---
 title: 'Table of Contents'
 template: docs
-menu: '1.3.12, 2.3.12'
-category: docs
+menu: '3.1.12'
 ---
 # Table of Contents
 

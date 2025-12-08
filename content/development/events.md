@@ -1,7 +1,6 @@
 ---
-menu: '1.8, 2.8'
+menu: '4.1.3'
 name: 'Core Events Reference'
-category: docs
 template: docs
 ---
 # Events Reference
@@ -400,7 +399,7 @@ These events are fired by specific built-in features. They are only available if
 
 ### COLLECT_MENU_ITEMS
 
-**Fired By**: [Menu Builder](MENU_BUILDER.html) feature during `POST_GLOB` processing
+**Fired By**: [Menu Builder](../features/menu-builder.html) feature during `POST_GLOB` processing
 **Purpose**: Allow other features to inject items into the menu structure before HTML generation
 **Data**:
 ```php
@@ -435,7 +434,7 @@ public function onCollectMenuItems(Container $container, array $parameters): arr
 
 ### MARKDOWN_CONVERTED
 
-**Fired By**: [Markdown Renderer](MARKDOWN_RENDERER.html) feature during `RENDER` processing
+**Fired By**: [Markdown Renderer](../features/markdown-renderer.html) feature during `RENDER` processing
 **Purpose**: Allow modification of HTML content after Markdown conversion but before template rendering
 **Data**:
 ```php

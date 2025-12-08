@@ -1,8 +1,7 @@
 ---
 title: 'Configuration Guide'
 template: docs
-menu: '1.2, 2.2'
-category: docs
+menu: '2.1.2'
 ---
 # Configuration Guide
 
@@ -365,7 +364,7 @@ StaticForge comes with several powerful features out of the box:
 - **Category Index** - Creates index pages for categories
 - **Tags** - Extracts and manages content tags
 
-For detailed information about each feature, including examples and template usage, see the **[Built-in Features Guide](FEATURES.html)**.
+For detailed information about each feature, including examples and template usage, see the **[Built-in Features Guide](../features/index.html)**.
 
 ### Quick Feature Reference
 
@@ -394,7 +393,7 @@ mv src/Features/Categories src/Features/Categories.disabled
 
 **Creating custom features:**
 
-See the [Feature Development Guide](FEATURE_DEVELOPMENT.html) for step-by-step instructions.
+See the [Feature Development Guide](../development/features.html) for step-by-step instructions.
 
 ---
 

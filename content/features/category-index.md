@@ -1,8 +1,7 @@
 ---
 title: 'Category Index Pages'
 template: docs
-menu: '1.3.04, 2.3.04'
-category: docs
+menu: '3.1.3'
 ---
 # Category Index Pages
 
@@ -95,4 +94,4 @@ StaticForge generates `output/tutorials/index.html` containing:
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

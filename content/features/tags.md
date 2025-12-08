@@ -1,8 +1,7 @@
 ---
 title: Tags
 template: docs
-menu: '1.3.13, 2.3.13'
-category: docs
+menu: '3.1.13'
 ---
 # Tags
 
@@ -86,4 +85,4 @@ tags = "php, tutorial, beginner"
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

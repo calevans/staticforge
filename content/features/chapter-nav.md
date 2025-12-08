@@ -1,8 +1,7 @@
 ---
 title: 'Chapter Navigation'
 template: docs
-menu: '1.3.05, 2.3.05'
-category: docs
+menu: '3.1.4'
 ---
 # Chapter Navigation
 
@@ -114,4 +113,4 @@ The navigation includes CSS classes for styling:
 
 ---
 
-[← Back to Features Overview](FEATURES.html)
+[← Back to Features Overview](index.html)

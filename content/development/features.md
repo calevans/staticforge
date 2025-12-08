@@ -1,13 +1,12 @@
 ---
 template: docs
-menu: '1.5, 2.5'
-category: docs
+menu: '4.1.4'
 ---
 # Feature Development Guide
 
 This guide explains how to create custom features for StaticForge's event-driven architecture.
 
-> **Quick Reference**: See [Core Events Reference](EVENTS.md) for complete documentation of all core events.
+> **Quick Reference**: See [Core Events Reference](events.md) for complete documentation of all core events.
 
 ---
 
@@ -306,7 +305,7 @@ Features are auto-discovered from `src/Features/*/Feature.php`, so no manual reg
 
 ## Event Hooks Reference
 
-> **Note**: For a complete and detailed list of all events, including parameters and examples, please refer to the [Events Reference](EVENTS.md).
+> **Note**: For a complete and detailed list of all events, including parameters and examples, please refer to the [Events Reference](events.md).
 
 The following is a high-level overview of the event pipeline:
 

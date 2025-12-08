@@ -87,8 +87,8 @@ Your site is now in the `public/` directory!
 
 ## Next Steps
 
-- Explore the [Configuration Guide](../CONFIGURATION.md)
-- Learn about [custom features](../FEATURE_DEVELOPMENT.md)
+- Explore the [Configuration Guide](../guide/configuration.md)
+- Learn about [custom features](../development/features.md)
 - Check out more [examples](.)
 
 Happy building! 🚀

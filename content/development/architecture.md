@@ -1,8 +1,7 @@
 ---
 title: 'Architecture & Data Flow'
 template: docs
-menu: '1.1.5, 2.1.5'
-category: docs
+menu: '4.1.1'
 ---
 # Architecture & Data Flow
 

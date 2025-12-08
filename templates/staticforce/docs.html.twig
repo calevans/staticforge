@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="assets/css/docs.css">
-    <link rel="stylesheet" href="assets/css/components/chapter-nav.css">
-    <link rel="stylesheet" href="assets/css/components/toc.css">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/docs.css">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/chapter-nav.css">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/toc.css">
 {% endblock %}
 
 {% block body %}
@@ -23,40 +23,19 @@
     <div class="main-container">
         <!-- Left Sidebar -->
         <aside class="sidebar">
-            {% if features.MenuBuilder.files[1] is defined %}
-            <ul class="menu menu-1">
-                {% for key, item in features.MenuBuilder.files[1] %}
-                    {% if key == 'direct' %}
-                        {# Direct menu items (menu = 1) #}
-                        {% for directItem in item %}
-                            <li class="menu-1"><a href="{{ directItem.url }}">{{ directItem.title }}</a></li>
-                        {% endfor %}
-                    {% elseif item.title is defined %}
-                        {# This is a positioned item - check if it has numeric sub-keys (children) #}
-                        {% set childItems = [] %}
-                        {% for subKey, subItem in item %}
-                            {% if subKey is iterable == false and subKey != 'title' and subKey != 'url' and subKey != 'file' and subKey != 'position' and subItem.title is defined %}
-                                {% set childItems = childItems|merge([{key: subKey, item: subItem}]) %}
-                            {% endif %}
-                        {% endfor %}
+            {% if menu2 is defined %}
+                <div class="menu-section-title">User Guide</div>
+                {{ menu2|raw }}
+            {% endif %}
 
-                        {% if childItems|length > 0 %}
-                            {# Parent item with children - show as expandable #}
-                            <li class="menu-1-{{ key }} menu-parent">
-                                <a href="{{ item.url }}">{{ item.title }}</a>
-                                <ul class="menu-1-{{ key }}-submenu submenu">
-                                    {% for child in childItems %}
-                                        <li class="menu-1-{{ key }}-{{ child.key }}"><a href="{{ child.item.url }}">{{ child.item.title }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        {% else %}
-                            {# Regular menu item without children #}
-                            <li class="menu-1-{{ key }}"><a href="{{ item.url }}">{{ item.title }}</a></li>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-            </ul>
+            {% if menu3 is defined %}
+                <div class="menu-section-title">Features</div>
+                {{ menu3|raw }}
+            {% endif %}
+
+            {% if menu4 is defined %}
+                <div class="menu-section-title">Development</div>
+                {{ menu4|raw }}
             {% endif %}
         </aside>        <!-- Main Content -->
         <main class="content">

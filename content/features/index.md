@@ -1,8 +1,7 @@
 ---
 title: 'Built-in Features'
 template: docs
-menu: '1.3, 2.3'
-category: docs
+menu: '3.1'
 ---
 # Built-in Features
 
@@ -15,7 +14,7 @@ Features are plugins that extend StaticForge's capabilities. They listen to even
 **Good to know:**
 - All features are optional - you can disable any feature by deleting its directory
 - Features are loaded automatically from `src/Features/`
-- You can create your own custom features (see [Feature Development](FEATURE_DEVELOPMENT.html))
+- You can create your own custom features (see [Feature Development](../development/features.html))
 
 ---
 
@@ -23,17 +22,17 @@ Features are plugins that extend StaticForge's capabilities. They listen to even
 
 These features handle converting your content files into HTML.
 
-### [Markdown Renderer](MARKDOWN_RENDERER.html)
+### [Markdown Renderer](markdown-renderer.html)
 
 Converts `.md` files to HTML using Markdown syntax. Perfect for writing blog posts, articles, and documentation in a simple, readable format.
 
-[Read more about Markdown Renderer →](MARKDOWN_RENDERER.html)
+[Read more about Markdown Renderer →](markdown-renderer.html)
 
-### [HTML Renderer](HTML_RENDERER.html)
+### [HTML Renderer](html-renderer.html)
 
 Processes `.html` files and wraps them in templates. Ideal for custom layouts, landing pages, or when you need precise HTML control.
 
-[Read more about HTML Renderer →](HTML_RENDERER.html)
+[Read more about HTML Renderer →](html-renderer.html)
 
 ---
 
@@ -41,11 +40,11 @@ Processes `.html` files and wraps them in templates. Ideal for custom layouts, l
 
 These features add interactivity to your static pages.
 
-### [Forms](FORMS.html)
+### [Forms](forms.html)
 
 Embed contact forms and other input forms using simple shortcodes. Supports configuration via `siteconfig.yaml`, AJAX submission, and Altcha spam protection.
 
-[Read more about Forms →](FORMS.html)
+[Read more about Forms →](forms.html)
 
 ---
 
@@ -53,35 +52,35 @@ Embed contact forms and other input forms using simple shortcodes. Supports conf
 
 These features help you organize and structure your content.
 
-### [Menu Builder](MENU_BUILDER.html)
+### [Menu Builder](menu-builder.html)
 
 Automatically creates navigation menus from your content using a simple dot-notation system. Supports multiple menus, dropdowns, and flexible positioning.
 
-[Read more about Menu Builder →](MENU_BUILDER.html)
+[Read more about Menu Builder →](menu-builder.html)
 
-### [Chapter Navigation](CHAPTER_NAV.html)
+### [Chapter Navigation](chapter-nav.html)
 
 Generates sequential prev/next navigation links for documentation pages. Perfect for tutorials, guides, and any content that follows a specific order.
 
-[Read more about Chapter Navigation →](CHAPTER_NAV.html)
+[Read more about Chapter Navigation →](chapter-nav.html)
 
-### [Categories](CATEGORIES.html)
+### [Categories](categories.html)
 
 Organizes content into subdirectories based on category metadata. The only way to create subdirectories in your output.
 
-[Read more about Categories →](CATEGORIES.html)
+[Read more about Categories →](categories.html)
 
-### [Category Index Pages](CATEGORY_INDEX.html)
+### [Category Index Pages](category-index.html)
 
 Creates index pages that list all files in each category. Automatically generates organized directory listings with pagination support.
 
-[Read more about Category Index Pages →](CATEGORY_INDEX.html)
+[Read more about Category Index Pages →](category-index.html)
 
-### [Tags](TAGS.html)
+### [Tags](tags.html)
 
 Extracts tags from frontmatter and makes them available site-wide. Great for SEO, tag clouds, and content filtering.
 
-[Read more about Tags →](TAGS.html)
+[Read more about Tags →](tags.html)
 
 ---
 
@@ -89,23 +88,23 @@ Extracts tags from frontmatter and makes them available site-wide. Great for SEO
 
 These features help optimize your site for search engines.
 
-### [Robots.txt Generator](ROBOTS_TXT.html)
+### [Robots.txt Generator](robots-txt.html)
 
 Automatically generates a `robots.txt` file to control search engine crawling. Keep private pages out of search results effortlessly.
 
-[Read more about Robots.txt Generator →](ROBOTS_TXT.html)
+[Read more about Robots.txt Generator →](robots-txt.html)
 
-### [RSS Feed](RSS_FEED.html)
+### [RSS Feed](rss-feed.html)
 
 Automatically generates RSS feeds for each category. Enable readers to subscribe to your content updates.
 
-[Read more about RSS Feed →](RSS_FEED.html)
+[Read more about RSS Feed →](rss-feed.html)
 
-### [Sitemap Generator](SITEMAP.html)
+### [Sitemap Generator](sitemap.html)
 
 Automatically generates a `sitemap.xml` file for search engines. Critical for SEO to help search engines index your site correctly.
 
-[Read more about Sitemap Generator →](SITEMAP.html)
+[Read more about Sitemap Generator →](sitemap.html)
 
 ---
 
@@ -141,7 +140,7 @@ StaticForge will continue working without that feature.
 
 ### Creating Custom Features
 
-Want to add your own functionality? See the [Feature Development Guide](FEATURE_DEVELOPMENT.html) for step-by-step instructions on creating custom features.
+Want to add your own functionality? See the [Feature Development Guide](../development/features.html) for step-by-step instructions on creating custom features.
 
 ---
 
@@ -149,14 +148,14 @@ Want to add your own functionality? See the [Feature Development Guide](FEATURE_
 
 | Feature | Input Required | Output Created | Use Case |
 |---------|---------------|----------------|----------|
-| **[Markdown Renderer](MARKDOWN_RENDERER.html)** | `.md` files | HTML files | Writing content in Markdown |
-| **[HTML Renderer](HTML_RENDERER.html)** | `.html` files | HTML files | Custom layouts, precise HTML control |
-| **[Menu Builder](MENU_BUILDER.html)** | `menu` in frontmatter | Navigation HTML | Automatic menu generation |
-| **[Chapter Navigation](CHAPTER_NAV.html)** | `menu` in frontmatter | Prev/Next links | Sequential page navigation |
-| **[Categories](CATEGORIES.html)** | `category` in frontmatter | Subdirectories | Organizing content into sections |
-| **[Category Index](CATEGORY_INDEX.html)** | Category `.md` file | Index page | Listing all category files |
-| **[Tags](TAGS.html)** | `tags` in frontmatter | Meta tags, tag data | SEO, tag clouds, related content |
-| **[Robots.txt Generator](ROBOTS_TXT.html)** | `robots` in frontmatter | robots.txt file | SEO, search engine control |
-| **[RSS Feed](RSS_FEED.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
-| **[Sitemap Generator](SITEMAP.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
+| **[Markdown Renderer](markdown-renderer.html)** | `.md` files | HTML files | Writing content in Markdown |
+| **[HTML Renderer](html-renderer.html)** | `.html` files | HTML files | Custom layouts, precise HTML control |
+| **[Menu Builder](menu-builder.html)** | `menu` in frontmatter | Navigation HTML | Automatic menu generation |
+| **[Chapter Navigation](chapter-nav.html)** | `menu` in frontmatter | Prev/Next links | Sequential page navigation |
+| **[Categories](categories.html)** | `category` in frontmatter | Subdirectories | Organizing content into sections |
+| **[Category Index](category-index.html)** | Category `.md` file | Index page | Listing all category files |
+| **[Tags](tags.html)** | `tags` in frontmatter | Meta tags, tag data | SEO, tag clouds, related content |
+| **[Robots.txt Generator](robots-txt.html)** | `robots` in frontmatter | robots.txt file | SEO, search engine control |
+| **[RSS Feed](rss-feed.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
+| **[Sitemap Generator](sitemap.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
 

@@ -1,8 +1,7 @@
 ---
-menu: '1.4, 2.4'
+menu: '4.1.5'
 name: 'Template Development'
 template: docs
-category: docs
 ---
 # Template Development
 
