@@ -85,8 +85,9 @@ function processTemplateFile($filePath, $templateName) {
     // Pattern 1: {{ site_base_url }} followed by {{ variable.url }} (with optional slash)
     // Matches: {{ site_base_url }}{{ item.url }}
     // Matches: {{ site_base_url }}/{{ item.url }}
-    $pattern = '/\{\{\s*site_base_url\s*\}\}\/?\{\{\s*([a-zA-Z0-9_]+\.url)\s*\}\}/';
-
+    // Matches: {{ site_base_url }}{{ child.item.url }} (Nested variables)
+    $pattern = '/\{\{\s*site_base_url\s*\}\}\/?\{\{\s*([a-zA-Z0-9_.]+\.url)\s*\}\}/';
+    
     $content = preg_replace_callback($pattern, function($matches) use (&$changes) {
         $variable = $matches[1];
         $changes[] = "Removed site_base_url prefix from {{ $variable }}";
@@ -97,17 +98,27 @@ function processTemplateFile($filePath, $templateName) {
         $modified = true;
     }
 
-    // Pattern 2: href="{{ site_base_url }}{{ variable }}"
-    // This catches cases where the variable might not be named .url but is used in href
-    // We be careful to only match if the second variable is likely a dynamic URL
-    $hrefPattern = '/href=["\']\{\{\s*site_base_url\s*\}\}\/?\{\{\s*([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)?)\s*\}\}["\']/';
+    // Pattern 2: href="/{{ variable.url }}" (Hardcoded slash prefix)
+    // Matches: href="/{{ item.url }}"
+    // Matches: href="/{{ child.item.url }}"
+    $slashPattern = '/href=["\']\/?\{\{\s*([a-zA-Z0-9_.]+\.url)\s*\}\}["\']/';
 
-    // We don't auto-fix this one blindly because it might be {{ site_base_url }}{{ image_path }} which is valid if image_path is relative.
-    // But if it's .url, it's likely absolute now.
+    $content = preg_replace_callback($slashPattern, function($matches) use (&$changes) {
+        $variable = $matches[1];
+        // Check if we are replacing a slash
+        if (strpos($matches[0], '/{{') !== false) {
+             $changes[] = "Removed hardcoded slash prefix from {{ $variable }}";
+             // Reconstruct the tag without the slash
+             // We need to be careful to preserve the quote style
+             $quote = $matches[0][5]; // href=" or href='
+             return 'href=' . $quote . '{{ ' . $variable . ' }}' . $quote;
+        }
+        return $matches[0];
+    }, $content, -1, $slashCount);
 
-    // Let's stick to the safe pattern of .url for now.
-
-    if ($modified && $content !== $originalContent) {
+    if ($slashCount > 0) {
+        $modified = true;
+    }    if ($modified && $content !== $originalContent) {
         file_put_contents($filePath, $content);
         $totalFilesModified++;
         echo "  MODIFIED: $filename\n";
