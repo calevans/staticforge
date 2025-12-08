@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Features\CacheBuster;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Features\CacheBuster\Services\CacheBusterService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -12,6 +13,7 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'CacheBuster';
     protected Log $logger;
+    private CacheBusterService $service;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -24,6 +26,9 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         parent::register($eventManager, $container);
         $this->logger = $container->get('logger');
+
+        $this->service = new CacheBusterService($this->logger);
+
         $this->logger->log('INFO', 'CacheBuster Feature registered');
     }
 
@@ -36,13 +41,11 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handleCreate(Container $container, array $parameters): array
     {
-        // Generate build ID
-        $buildId = (string)time();
+        // Generate build ID via service
+        $buildId = $this->service->generateBuildId();
 
         // Set in container
         $container->setVariable('build_id', $buildId);
-
-        $this->logger->log('INFO', "CacheBuster: Set build_id to {$buildId}");
 
         return $parameters;
     }

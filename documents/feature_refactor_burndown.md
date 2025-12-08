@@ -13,7 +13,8 @@ To meet the standard, a feature must adhere to the following criteria:
 
 ### 2. Dependency Injection & Wiring
 - [ ] **Explicit Dependencies**: Services are instantiated or retrieved from the Container in the `register()` method.
-- [ ] **Dependency Injection**: Dependencies are passed into Services via their constructor, not fetched globally inside the Service (where possible).
+- [ ] **Constructor Injection**: Dependencies (Logger, other Services) are passed into Services via their constructor.
+- [ ] **Method Injection**: The `Container` is passed as an argument to Service methods that need access to application state (e.g., `process(Container $container)`), rather than being stored as a property on the Service.
 - [ ] **Feature Dependencies**: If the feature relies on another feature, it uses `$this->requireFeatures(['OtherFeature'])` in its event handlers.
 
 ### 3. Code Quality (DRY, KISS, YAGNI)
@@ -34,7 +35,7 @@ To meet the standard, a feature must adhere to the following criteria:
 | Feature | Status | Notes |
 | :--- | :--- | :--- |
 | **CategoryIndex** | ✅ **Standard** | The reference implementation. |
-| **CacheBuster** | 🔴 Todo | |
+| **CacheBuster** | ✅ **Standard** | Refactored to use `CacheBusterService`. |
 | **Categories** | 🔴 Todo | |
 | **ChapterNav** | 🔴 Todo | |
 | **Forms** | 🔴 Todo | |
