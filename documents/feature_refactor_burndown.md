@@ -37,7 +37,7 @@ To meet the standard, a feature must adhere to the following criteria:
 | **CategoryIndex** | ✅ **Standard** | The reference implementation. |
 | **CacheBuster** | ✅ **Standard** | Refactored to use `CacheBusterService`. |
 | **Categories** | ✅ **Standard** | Refactored to use `CategoriesService`. |
-| **ChapterNav** | 🔴 Todo | |
+| **ChapterNav** | ✅ **Standard** | Refactored to use `ChapterNavService`. |
 | **Forms** | 🔴 Todo | |
 | **HtmlRenderer** | 🔴 Todo | |
 | **MarkdownRenderer** | 🔴 Todo | |
