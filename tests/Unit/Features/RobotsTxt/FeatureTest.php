@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Tests\Unit\Features;
+namespace EICC\StaticForge\Tests\Unit\Features\RobotsTxt;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\RobotsTxt\Feature as RobotsTxtFeature;

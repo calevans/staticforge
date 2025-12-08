@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Features\RobotsTxt;
+namespace EICC\StaticForge\Features\RobotsTxt\Services;
 
 class RobotsTxtGenerator
 {
