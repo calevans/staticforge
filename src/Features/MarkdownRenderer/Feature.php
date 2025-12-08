@@ -6,11 +6,11 @@ use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\StaticForge\Features\MarkdownRenderer\Services\MarkdownRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use Exception;
 
 /**
  * Markdown Renderer Feature - processes .md files during RENDER event
@@ -20,10 +20,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
 {
     protected string $name = 'MarkdownRenderer';
     protected Log $logger;
-    private MarkdownProcessor $markdownProcessor;
-    private ContentExtractor $contentExtractor;
-    private PathGenerator $pathGenerator;
-    private TemplateRenderer $templateRenderer;
+    private MarkdownRendererService $service;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -39,13 +36,20 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         // Get logger from container
         $this->logger = $container->get('logger');
 
-        // Initialize helpers
-        $this->markdownProcessor = new MarkdownProcessor();
-        $this->contentExtractor = new ContentExtractor();
-        $this->pathGenerator = new PathGenerator();
-        $this->templateRenderer = new TemplateRenderer(
+        // Initialize dependencies
+        $markdownProcessor = new MarkdownProcessor();
+        $contentExtractor = new ContentExtractor();
+        $templateRenderer = new TemplateRenderer(
             new TemplateVariableBuilder(),
             $this->logger
+        );
+
+        // Initialize service
+        $this->service = new MarkdownRendererService(
+            $this->logger,
+            $markdownProcessor,
+            $contentExtractor,
+            $templateRenderer
         );
 
         // Register .md extension for processing
@@ -66,80 +70,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
      */
     public function handleRender(Container $container, array $parameters): array
     {
-        $filePath = $parameters['file_path'] ?? null;
-
-        if (!$filePath) {
-            return $parameters;
-        }
-
-        // Only process .md files
-        if (pathinfo($filePath, PATHINFO_EXTENSION) !== 'md') {
-            return $parameters;
-        }
-
-        try {
-            $this->logger->log('INFO', "Processing Markdown file: {$filePath}");
-
-            // Get pre-parsed metadata from file discovery
-            $metadata = $parameters['file_metadata'] ?? [];
-
-            // Read file content
-            // Use provided content if available (e.g., from CategoryIndex)
-            $content = $parameters['file_content'] ?? @file_get_contents($filePath);
-            if ($content === false) {
-                throw new Exception("Failed to read file: {$filePath}");
-            }
-
-            // Extract content (skip frontmatter)
-            $markdownContent = $this->contentExtractor->extractMarkdownContent($content);
-
-            // Convert Markdown to HTML
-            $htmlContent = $this->markdownProcessor->convert($markdownContent);
-
-            // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
-            $eventManager = $container->get(EventManager::class);
-            $eventResult = $eventManager->fire('MARKDOWN_CONVERTED', [
-                'html_content' => $htmlContent,
-                'metadata' => $metadata,
-                'file_path' => $filePath
-            ]);
-
-            $htmlContent = $eventResult['html_content'];
-            $metadata = $eventResult['metadata'];
-
-            // Extract title from metadata or first heading
-            if (!isset($metadata['title'])) {
-                $metadata['title'] = $this->contentExtractor->extractTitleFromContent($htmlContent);
-            }
-
-            // Apply default metadata
-            $metadata = $this->applyDefaultMetadata($metadata);
-
-            // Generate output file path (change .md to .html)
-            // Use existing output_path if already set (e.g., by CategoryIndex)
-            $outputPath = $parameters['output_path'] ?? $this->pathGenerator->generateOutputPath($filePath, $container);
-
-            // Apply template (pass source file path)
-            $renderedContent = $this->templateRenderer->render([
-                'metadata' => $metadata,
-                'content' => $htmlContent,
-                'title' => $metadata['title'],
-            ], $container, $filePath);
-
-            // Beautify HTML output
-            $renderedContent = $this->beautifyHtml($renderedContent);
-
-            $this->logger->log('INFO', "Markdown file rendered: {$filePath}");
-
-            // Store rendered content and metadata for Core to write
-            $parameters['rendered_content'] = $renderedContent;
-            $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $metadata;
-        } catch (Exception $e) {
-            $this->logger->log('ERROR', "Failed to process Markdown file {$filePath}: " . $e->getMessage());
-            $parameters['error'] = $e->getMessage();
-        }
-
-        return $parameters;
+        return $this->service->processMarkdownFile($container, $parameters);
     }
 }

@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\HtmlRenderer\Services;
 
+use EICC\StaticForge\Services\BaseRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Exception;
-use Gajus\Dindent\Indenter;
 
-class HtmlRendererService
+class HtmlRendererService extends BaseRendererService
 {
-    private Log $logger;
     private TemplateRenderer $templateRenderer;
-    private string $defaultTemplate = 'base';
 
     public function __construct(Log $logger, TemplateRenderer $templateRenderer)
     {
-        $this->logger = $logger;
+        parent::__construct($logger);
         $this->templateRenderer = $templateRenderer;
     }
 
@@ -106,91 +104,5 @@ class HtmlRendererService
         }
 
         return $content;
-    }
-
-    /**
-     * Generate output path for rendered HTML file
-     */
-    public function generateOutputPath(string $inputPath, Container $container): string
-    {
-        $sourceDir = $container->getVariable('SOURCE_DIR');
-        if (!$sourceDir) {
-            throw new \RuntimeException('SOURCE_DIR not set in container');
-        }
-        $outputDir = $container->getVariable('OUTPUT_DIR');
-        if (!$outputDir) {
-            throw new \RuntimeException('OUTPUT_DIR not set in container');
-        }
-
-        // Normalize paths for comparison (handle both real and virtual filesystems)
-        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
-        $normalizedInputPath = $inputPath;
-
-        // Check if input path starts with source directory
-        if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
-            // Get path relative to source directory
-            $relativePath = substr($normalizedInputPath, strlen($normalizedSourceDir) + 1);
-        } else {
-            // Fallback to filename only
-            $relativePath = basename($inputPath);
-        }
-
-        // Build output path preserving directory structure
-        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $relativePath;
-
-        return $outputPath;
-    }
-
-    /**
-     * Apply default metadata to file metadata
-     * Merges default values with file-specific metadata
-     *
-     * @param array<string, mixed> $metadata
-     * @return array<string, mixed>
-     */
-    public function applyDefaultMetadata(array $metadata): array
-    {
-        return array_merge([
-            'template' => $this->defaultTemplate,
-            'title' => 'Untitled Page',
-        ], $metadata);
-    }
-
-    /**
-     * Beautify HTML content using Dindent
-     *
-     * @param string $html Raw HTML content
-     * @return string Beautified HTML content
-     */
-    public function beautifyHtml(string $html): string
-    {
-        $originalHtml = $html;
-
-        // Protect <pre> and <textarea> tags from whitespace collapsing
-        $protectedBlocks = [];
-        $html = preg_replace_callback(
-            '/<(pre|textarea)\b[^>]*>([\s\S]*?)<\/\1>/im',
-            function ($matches) use (&$protectedBlocks) {
-                $placeholder = '<!--PROTECTED_BLOCK_' . count($protectedBlocks) . '-->';
-                $protectedBlocks[$placeholder] = $matches[0];
-                return $placeholder;
-            },
-            $html
-        );
-
-        try {
-            $indenter = new Indenter();
-            $html = $indenter->indent($html);
-        } catch (\Exception $e) {
-            // If beautification fails, return original HTML
-            return $originalHtml;
-        }
-
-        // Restore protected blocks
-        if (!empty($protectedBlocks)) {
-            $html = str_replace(array_keys($protectedBlocks), array_values($protectedBlocks), $html);
-        }
-
-        return $html;
     }
 }
