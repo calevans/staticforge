@@ -26,7 +26,7 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.5",
         "shipmonk/dead-code-detector": "^0.13.5",
-        "squizlabs/php_codesniffer": "*"
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "autoload": {
         "psr-4": {

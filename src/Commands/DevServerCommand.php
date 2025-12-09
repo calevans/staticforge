@@ -30,6 +30,7 @@ class DevServerCommand extends Command
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
+        $output->writeln("CWD: " . getcwd());
         $this->publicDir = getcwd() . '/public';
         $this->routerFile = $this->publicDir . '/.ht.route.php';
 

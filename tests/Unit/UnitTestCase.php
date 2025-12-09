@@ -60,4 +60,20 @@ abstract class UnitTestCase extends TestCase
             $this->container->add($key, $value);
         }
     }
+
+    /**
+     * Recursively remove a directory
+     */
+    protected function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            (is_dir("$dir/$file")) ? $this->removeDirectory("$dir/$file") : unlink("$dir/$file");
+        }
+        rmdir($dir);
+    }
 }

@@ -63,6 +63,9 @@ class FeatureManager
             $this->loadFeaturesFromDirectory($userFeaturesDir, 'Custom');
         }
 
+        // Load Composer features (medium priority)
+        $this->discoverComposerFeatures();
+
         // Then load library features (lower priority - may be disabled by user features)
         $vendorFeaturesDir = $this->findVendorFeaturesDir();
         if ($vendorFeaturesDir && is_dir($vendorFeaturesDir)) {
@@ -270,6 +273,93 @@ class FeatureManager
     }
 
 
+
+    /**
+     * Discover features from Composer packages
+     */
+    private function discoverComposerFeatures(): void
+    {
+        // Allow override for testing
+        $installedJsonPath = $this->container->getVariable('COMPOSER_INSTALLED_JSON_PATH');
+
+        if (!$installedJsonPath) {
+            $installedJsonPath = getcwd() . '/vendor/composer/installed.json';
+
+            // Fallback for when running inside vendor/bin or different structure
+            if (!file_exists($installedJsonPath)) {
+                 $installedJsonPath = __DIR__ . '/../../../../composer/installed.json';
+            }
+        }
+
+        if (!file_exists($installedJsonPath)) {
+            // Silent fail or debug log - it's possible (though unlikely) to run without composer install?
+            // But we check for autoloader in bin/staticforge.php so this should exist.
+            $this->logger->log('DEBUG', "Composer installed.json not found at {$installedJsonPath}");
+            return;
+        }
+
+        $content = file_get_contents($installedJsonPath);
+        if (!$content) {
+            return;
+        }
+
+        $installedData = json_decode($content, true);
+        if (!is_array($installedData)) {
+            return;
+        }
+
+        // Handle Composer 2.0 structure
+        $packages = $installedData['packages'] ?? $installedData;
+
+        foreach ($packages as $package) {
+            if (isset($package['extra']['staticforge']['feature'])) {
+                $featureClass = $package['extra']['staticforge']['feature'];
+                $this->loadComposerFeature($featureClass, $package['name']);
+            }
+        }
+    }
+
+    /**
+     * Load a single feature from a Composer package
+     */
+    private function loadComposerFeature(string $className, string $packageName): void
+    {
+        if (!class_exists($className)) {
+            $this->logger->log('WARNING', "Feature class {$className} from package {$packageName} not found.");
+            return;
+        }
+
+        try {
+            $feature = new $className();
+            if (!$feature instanceof FeatureInterface) {
+                 $this->logger->log('WARNING', "Class {$className} from package {$packageName} does not implement FeatureInterface.");
+                 return;
+            }
+
+            // Check disabled
+            if ($this->isFeatureDisabled($feature->getName())) {
+                $this->featureStatuses[$feature->getName()] = 'disabled';
+                $this->logger->log('INFO', "Skipping disabled composer feature: {$feature->getName()}");
+                return;
+            }
+
+            // Check duplicate (Local wins)
+            if (isset($this->features[$feature->getName()])) {
+                $this->logger->log('INFO', "Skipping duplicate feature (already loaded): {$feature->getName()}");
+                return;
+            }
+
+            // Register
+            $feature->register($this->eventManager, $this->container);
+            $this->features[$feature->getName()] = $feature;
+            $this->featureTypes[$feature->getName()] = 'Composer';
+            $this->featureStatuses[$feature->getName()] = 'enabled';
+            $this->logger->log('INFO', "Loaded composer feature: {$feature->getName()} from {$packageName}");
+
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', "Failed to load composer feature {$className}: " . $e->getMessage());
+        }
+    }
 
     /**
      * Find features directory in vendor when used as library

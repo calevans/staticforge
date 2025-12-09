@@ -749,3 +749,56 @@ Used by: Reading Time, Last Modified
 
 Used by: Markdown Renderer, Shortcodes
 
+
+---
+
+## Developing Distributable Features
+
+If you plan to share your feature as a standalone Composer package (e.g., `vendor/package-name`), StaticForge provides a workflow to develop it in-tree and then "eject" it into its own repository.
+
+### 1. Develop Locally
+Create your feature in `src/Features/MyFeature` just like any other user feature.
+
+If your feature requires external packages (e.g., AWS SDK), install them in the main project:
+```bash
+composer require aws/aws-sdk-php
+```
+
+Develop, test, and debug your feature within the StaticForge application.
+
+### 2. Extract to Package
+Once your feature is working, use the extraction script to create a standalone package. This script will:
+- Create a new project directory (sibling to your current project root).
+- Copy your feature code.
+- **Rewrite namespaces** from `EICC\StaticForge\Features\...` to your target namespace.
+- **Auto-discover dependencies** by scanning your code and matching it against installed packages.
+- Generate a `composer.json` with the correct `extra.staticforge.feature` configuration.
+
+**Usage:**
+```bash
+php scripts/extract_feature.php <FeatureName> <VendorName> <PackageName> <TargetNamespace>
+```
+
+**Example:**
+```bash
+# Extracts src/Features/S3MediaOffload to ../staticforge-s3
+php scripts/extract_feature.php S3MediaOffload calevans staticforge-s3 "Calevans\\StaticForgeS3"
+```
+
+### 3. Verify and Cleanup
+After extraction, the script will output instructions to:
+
+1.  **Link the new package** locally for verification:
+    Add this to your `composer.json`:
+    ```json
+    "repositories": [
+        { "type": "path", "url": "../staticforge-s3" }
+    ]
+    ```
+2.  **Require the new package**:
+    ```bash
+    composer require calevans/staticforge-s3 @dev
+    ```
+3.  **Remove the original code**: Delete `src/Features/S3MediaOffload`.
+4.  **Remove dev dependencies**: The script will tell you which packages (like `aws/aws-sdk-php`) were moved to the new package and can be removed from the main project.
+

@@ -324,17 +324,5 @@ HTML;
         file_put_contents($this->templateDir . '/test/base.html.twig', $baseTemplate);
     }
 
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
-        }
-        rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 }

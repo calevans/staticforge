@@ -17,35 +17,42 @@ Implement a system where features can be installed via Composer and automaticall
 ## Tasks
 
 ### 1. Core Infrastructure (`src/Core/FeatureManager.php`)
-- [ ] **Refactor `loadFeatures`**: Add a step to scan `vendor/composer/installed.json`.
-- [ ] **Implement `discoverComposerFeatures`**:
+- [x] **Refactor `loadFeatures`**: Add a step to scan `vendor/composer/installed.json`.
+- [x] **Implement `discoverComposerFeatures`**:
     - Read `vendor/composer/installed.json`.
     - Iterate through packages.
     - Check for `extra.staticforge.feature` (class name).
     - Validate class exists.
     - Instantiate and register.
-- [ ] **Conflict Resolution**: Ensure Composer features don't overwrite local `src/Features` with the same name (Local wins).
+- [x] **Conflict Resolution**: Ensure Composer features don't overwrite local `src/Features` with the same name (Local wins).
 
 ### 2. Feature Interface Update (Optional but Recommended)
-- [ ] **Review `FeatureInterface`**: Ensure it supports the new lifecycle (if needed). *Decision: Current interface `register(EventManager, Container)` is sufficient.*
+- [x] **Review `FeatureInterface`**: Ensure it supports the new lifecycle (if needed). *Decision: Current interface `register(EventManager, Container)` is sufficient.*
 
 ### 3. Testing & Validation
-- [ ] **Mock Package**: Create a dummy `installed.json` entry in tests to simulate a package.
-- [ ] **Unit Test**: Verify `FeatureManager` correctly loads the "external" feature.
-- [ ] **Integration Test**: Verify the feature's events are actually fired.
+- [x] **Mock Package**: Create a dummy `installed.json` entry in tests to simulate a package.
+- [x] **Unit Test**: Verify `FeatureManager` correctly loads the "external" feature.
+- [x] **Integration Test**: Verify the feature's events are actually fired.
 
 ### 4. User Experience Improvements
-- [ ] **Implement `feature:setup <feature-name>` command**:
+- [x] **Implement `feature:setup <feature-name>` command**:
     - Locate the feature's package in `vendor/`.
     - Look for `siteconfig.yaml.example` and `.env.example` in the package root.
     - Copy them to the project root as `siteconfig.yaml.example.<feature>` and `.env.example.<feature>`.
     - Output instructions to the user to merge these files.
 
 ### 5. Documentation
-- [ ] **Developer Guide**: Create `documents/feature_development.md` explaining how to create a StaticForge-compatible package.
+- [x] **Developer Guide**: Create `documents/feature_development.md` explaining how to create a StaticForge-compatible package.
     - `composer.json` schema (`extra.staticforge`).
     - Class requirements.
     - Configuration best practices (fail gracefully).
+
+### 6. Command Registration (Event-Driven)
+- [x] **Update `bin/staticforge.php`**:
+    - Dispatch a new event `console.init` before `$app->run()`.
+    - Pass the `$app` instance in the event data.
+- [x] **Update Documentation**:
+    - Add a section to `documents/feature_development.md` explaining how to register commands using the `console.init` event.
 
 ## Example `composer.json` for a Feature Package
 ```json

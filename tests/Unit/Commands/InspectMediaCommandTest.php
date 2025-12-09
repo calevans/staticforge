@@ -6,17 +6,18 @@ namespace EICC\StaticForge\Tests\Unit\Commands;
 
 use EICC\StaticForge\Commands\InspectMediaCommand;
 use EICC\StaticForge\Services\MediaInspector;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class InspectMediaCommandTest extends TestCase
+class InspectMediaCommandTest extends UnitTestCase
 {
     private string $testDir;
     private string $markdownFile;
 
     protected function setUp(): void
     {
+        parent::setUp();
         $this->testDir = sys_get_temp_dir() . '/sf_inspect_test_' . uniqid();
         mkdir($this->testDir);
 
@@ -28,18 +29,7 @@ class InspectMediaCommandTest extends TestCase
         $this->removeDirectory($this->testDir);
     }
 
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
-        }
-        rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 
     public function testExecuteFailsIfFileDoesNotExist(): void
     {

@@ -3,16 +3,17 @@
 namespace EICC\StaticForge\Tests\Unit\Commands;
 
 use EICC\StaticForge\Commands\InitCommand;
-use PHPUnit\Framework\TestCase;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class InitCommandTest extends TestCase
+class InitCommandTest extends UnitTestCase
 {
     private string $testDir;
 
     protected function setUp(): void
     {
+        parent::setUp();
         $this->testDir = sys_get_temp_dir() . '/staticforge_init_test_' . uniqid();
         mkdir($this->testDir);
         chdir($this->testDir);
@@ -23,18 +24,7 @@ class InitCommandTest extends TestCase
         $this->removeDirectory($this->testDir);
     }
 
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
-        }
-        rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 
     public function testExecuteCreatesDirectoryStructure(): void
     {

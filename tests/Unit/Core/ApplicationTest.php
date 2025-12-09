@@ -183,23 +183,5 @@ class ApplicationTest extends UnitTestCase
         $this->assertTrue($result); // Should not fail due to feature error
     }
 
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 }

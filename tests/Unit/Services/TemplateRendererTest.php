@@ -181,15 +181,5 @@ EOT;
         file_put_contents($this->testTemplateDir . '/test/child.html.twig', $childTemplate);
     }
 
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            (is_dir("$dir/$file")) ? $this->removeDirectory("$dir/$file") : unlink("$dir/$file");
-        }
-        rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 }

@@ -394,26 +394,5 @@ MD;
         file_put_contents($this->testTemplateDir . '/test/variables.html.twig', $variablesTemplate);
     }
 
-    /**
-     * Recursively remove a directory and its contents
-     */
-    private function removeDirectory(string $dir): bool
-    {
-        if (!is_dir($dir)) {
-            return false;
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                unlink($path);
-            }
-        }
-
-        return rmdir($dir);
-    }
+    // removeDirectory is now provided by UnitTestCase
 }
