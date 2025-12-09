@@ -69,6 +69,9 @@ $app->add(new InspectMediaCommand());
 $app->add(new ListFeaturesCommand($container->get(FeatureManager::class)));
 $app->add(new FeatureSetupCommand());
 
+// Load features
+$container->get(FeatureManager::class)->loadFeatures();
+
 // Dispatch console.init event to allow features to register commands
 $container->get(EventManager::class)->fire('console.init', ['application' => $app]);
 

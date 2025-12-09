@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-**Agents** StaticForge is a PHP-based static site generator that addresses the language barrier and extensibility limitations of existing tools like Jekyll, Hugo, and Gatsby. By building in PHP, it opens static site generation to the large PHP developer community who can easily create and customize features. The system generates completely static websites that require no PHP or database at runtime, while providing a flexible, event-driven architecture for content processing.
+**StaticForge** is a PHP-based static site generator that addresses the language barrier and extensibility limitations of existing tools like Jekyll, Hugo, and Gatsby. By building in PHP, it opens static site generation to the large PHP developer community who can easily create and customize features. The system generates completely static websites that require no PHP or database at runtime, while providing a flexible, event-driven architecture for content processing.
 
-**Tech Stack**: PHP 8.4, Lando (development), Docker (production), Twig templating, Composer dependency management, Symfony Console for CLI commands.
+**Tech Stack**: PHP 8.4, Lando (development),Twig templating, Composer dependency management, Symfony Console for CLI commands.
 
 ## Development Environment & Build Instructions
 
 ### Environment Setup (CRITICAL - Always Use Lando)
-**NEVER use Docker directly for development** - Docker (`docker-compose.yml`) is for production only. Always use Lando for development:
+**NEVER use Docker directly for development** - Always use Lando for development:
 
 
 ### Environment Configuration
@@ -61,6 +61,7 @@ lando rebuild
 - **`phpunit.xml`**: Test configuration with test database
 - **`phpcs.xml`**: PHP coding standards (PSR-2, PSR-12)
 - **`.env`**: Environment variables (database creds, API keys)
+- **`siteconfig.yaml`**: Main site configuration (themes, plugins, site settings)
 
 
 ### Code Standards
@@ -97,14 +98,9 @@ lando rebuild
 - Image processing can be memory intensive - monitor for large datasets
 - Database queries are optimized with indexes for maintenance operations
 
-### Known Technical Debt
-- TODO: Add cache buster for static assets
-- TODO: Refactor JavaScript modules for better maintainability
-- Property.php model is oversized and needs refactoring
-- Test namespace PSR-4 compliance issues (safe to ignore)
-
-**Trust these instructions** - they are comprehensive and tested. Only search for additional information if instructions are incomplete or found to be incorrect.
-
 # The Golden Rules
 - When writing tools, thou shalt use no language other than PHP.
 - Before writing code, read the necessary classes fully before trying to use them. Do not guess and hope they work, read the code.
+
+**Trust these instructions** - they are comprehensive and tested. Only search for additional information if instructions are incomplete or found to be incorrect.
+

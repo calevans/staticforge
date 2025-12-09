@@ -98,4 +98,15 @@ forms:
 # default_author: "John Doe"
 # social_links:
 #   twitter: https://twitter.com/mysite
+
+# S3 Media Offload Configuration
+# Offload static assets to AWS S3
+s3_offload:
+  bucket: "my-static-site-assets"
+  region: "us-east-1"
+  # Optional: Custom endpoint for S3-compatible services (e.g., MinIO, DigitalOcean Spaces)
+  # endpoint: "https://nyc3.digitaloceanspaces.com"
+  # Credentials can be set here or via environment variables / IAM roles
+  # key: "YOUR_AWS_ACCESS_KEY"
+  # secret: "YOUR_AWS_SECRET_KEY"
 #   github: https://github.com/mysite
