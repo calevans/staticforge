@@ -9,7 +9,7 @@ use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\RssFeed\Services\PodcastMediaService;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 

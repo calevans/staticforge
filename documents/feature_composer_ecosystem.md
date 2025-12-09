@@ -49,10 +49,10 @@ Implement a system where features can be installed via Composer and automaticall
 
 ### 6. Command Registration (Event-Driven)
 - [x] **Update `bin/staticforge.php`**:
-    - Dispatch a new event `console.init` before `$app->run()`.
+    - Dispatch a new event `CONSOLE_INIT` before `$app->run()`.
     - Pass the `$app` instance in the event data.
 - [x] **Update Documentation**:
-    - Add a section to `documents/feature_development.md` explaining how to register commands using the `console.init` event.
+    - Add a section to `documents/feature_development.md` explaining how to register commands using the `CONSOLE_INIT` event.
 
 ## Example `composer.json` for a Feature Package
 ```json

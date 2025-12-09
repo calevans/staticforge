@@ -42,7 +42,6 @@ use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\RenderSiteCommand;
 use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
-use EICC\StaticForge\Commands\InspectMediaCommand;
 use EICC\StaticForge\Commands\ListFeaturesCommand;
 use EICC\StaticForge\Commands\FeatureSetupCommand;
 use EICC\StaticForge\Core\FeatureManager;
@@ -65,15 +64,14 @@ $app->add(new InitCommand());
 $app->add(new RenderSiteCommand($container));
 $app->add(new UploadSiteCommand($container));
 $app->add(new DevServerCommand());
-$app->add(new InspectMediaCommand());
 $app->add(new ListFeaturesCommand($container->get(FeatureManager::class)));
 $app->add(new FeatureSetupCommand());
 
 // Load features
 $container->get(FeatureManager::class)->loadFeatures();
 
-// Dispatch console.init event to allow features to register commands
-$container->get(EventManager::class)->fire('console.init', ['application' => $app]);
+// Dispatch CONSOLE_INIT event to allow features to register commands
+$container->get(EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
 
 // Run the application
 $app->run();

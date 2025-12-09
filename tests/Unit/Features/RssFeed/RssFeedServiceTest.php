@@ -6,7 +6,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\RssFeed;
 
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
 use EICC\StaticForge\Features\RssFeed\Services\PodcastMediaService;
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
 use ReflectionMethod;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\RssFeed\Services;
 
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use RuntimeException;
 
 class PodcastMediaService

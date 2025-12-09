@@ -99,7 +99,7 @@ if (!$apiKey) {
 
 ### 5. Registering Console Commands
 
-Features can register their own CLI commands by listening to the `console.init` event.
+Features can register their own CLI commands by listening to the `CONSOLE_INIT` event.
 
 ```php
 use Symfony\Component\Console\Application;
@@ -108,7 +108,7 @@ use Vendor\MyFeature\Commands\MyCommand;
 public function register(EventManager $eventManager, Container $container): void
 {
     // Listen for console initialization
-    $eventManager->registerListener('console.init', [$this, 'onConsoleInit']);
+    $eventManager->registerListener('CONSOLE_INIT', [$this, 'onConsoleInit']);
 }
 
 public function onConsoleInit(Container $container, array $data): void

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Tests\Unit\Commands;
+namespace EICC\StaticForge\Tests\Unit\Features\MediaInspect\Commands;
 
-use EICC\StaticForge\Commands\InspectMediaCommand;
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Commands\InspectMediaCommand;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;

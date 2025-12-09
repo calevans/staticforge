@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Services;
+namespace EICC\StaticForge\Features\MediaInspect\Services;
 
 use getID3;
 use RuntimeException;

@@ -38,6 +38,12 @@
             "EICC\\StaticForge\\Tests\\": "tests/"
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../staticforge-s3"
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {

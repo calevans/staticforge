@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Commands;
+namespace EICC\StaticForge\Features\MediaInspect\Commands;
 
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

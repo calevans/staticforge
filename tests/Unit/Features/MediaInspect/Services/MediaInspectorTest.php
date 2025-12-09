@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Tests\Unit\Services;
+namespace EICC\StaticForge\Tests\Unit\Features\MediaInspect\Services;
 
-use EICC\StaticForge\Services\MediaInspector;
+use EICC\StaticForge\Features\MediaInspect\Services\MediaInspector;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use RuntimeException;
 

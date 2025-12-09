@@ -30,6 +30,35 @@ StaticForge executes events in a specific order during site generation:
 
 ## Event Definitions
 
+### CONSOLE_INIT
+
+**Fired**: During application bootstrap, before any command is executed.
+**Purpose**: Allow features to register custom CLI commands.
+**Data**:
+```php
+[
+  'application' => Symfony\Component\Console\Application // The console application instance
+]
+```
+**Use Cases**:
+- Registering new console commands (e.g., `media:inspect`)
+- Configuring the console application
+
+**Example**:
+```php
+public function registerCommands(array $data): array
+{
+    $app = $data['application'];
+    $app->add(new MyCustomCommand());
+    return $data;
+}
+```
+
+**Registered By**: `bin/staticforge.php`
+**Execution**: Linear
+
+---
+
 ### CREATE
 
 **Fired**: At the start of site generation, after features are registered
