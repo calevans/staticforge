@@ -222,8 +222,12 @@ function copyAndRewriteTests($source, $dest, $oldNs, $newNs, $featureName, &$tes
 
 function rewriteTestContent($content, $oldNs, $newNs, $featureName) {
     // Rewrite Namespace
+    // Handle both standard and legacy/incorrect namespaces
     $content = str_replace("EICC\\StaticForge\\Tests\\Unit\\Features\\$featureName", "$newNs\\Tests\\Unit", $content);
+    $content = str_replace("Tests\\Unit\\Features\\$featureName", "$newNs\\Tests\\Unit", $content);
+
     $content = str_replace("EICC\\StaticForge\\Tests\\Integration\\Features\\$featureName", "$newNs\\Tests\\Integration", $content);
+    $content = str_replace("Tests\\Integration\\Features\\$featureName", "$newNs\\Tests\\Integration", $content);
 
     // Rewrite Feature Usage
     $content = str_replace("EICC\\StaticForge\\Features\\$featureName", $newNs, $content);
@@ -356,4 +360,99 @@ if (!empty($detectedDependencies)) {
 }
 
 echo "\nNOTE: Check if your feature uses any global templates in 'templates/' and move them to your package if necessary.\n";
+
+// --- Verification Logic ---
+echo "\nVerifying extraction...\n";
+
+function verifyDirectoryContents($source, $targetBase) {
+    if (!is_dir($source)) return true;
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $item) {
+        $relativePath = $iterator->getSubPathName();
+        $targetPath = $targetBase . '/' . $relativePath;
+
+        if ($item->isDir()) {
+            if (!is_dir($targetPath)) {
+                echo "Verification Failed: Target directory missing: $targetPath\n";
+                return false;
+            }
+        } else {
+            if (!file_exists($targetPath)) {
+                echo "Verification Failed: Target file missing: $targetPath\n";
+                return false;
+            }
+            if (filesize($targetPath) === 0) {
+                 echo "Verification Failed: Target file is empty: $targetPath\n";
+                 return false;
+            }
+        }
+    }
+    return true;
+}
+
+$verificationPassed = true;
+$verificationPassed &= verifyDirectoryContents($sourceDir, $targetDir . '/src');
+$verificationPassed &= verifyDirectoryContents($sourceUnitTestDir, $targetUnitTestDir);
+$verificationPassed &= verifyDirectoryContents($sourceIntegrationTestDir, $targetIntegrationTestDir);
+
+// Check single files if they exist
+if (file_exists($sourceUnitTestFile)) {
+    $targetFile = $targetUnitTestDir . '/FeatureTest.php';
+    if (!file_exists($targetFile) || filesize($targetFile) === 0) {
+        echo "Verification Failed: Unit Test file missing or empty: $targetFile\n";
+        $verificationPassed = false;
+    }
+}
+
+if (file_exists($sourceIntegrationTestFile)) {
+    $targetFile = $targetIntegrationTestDir . '/IntegrationTest.php';
+    if (!file_exists($targetFile) || filesize($targetFile) === 0) {
+        echo "Verification Failed: Integration Test file missing or empty: $targetFile\n";
+        $verificationPassed = false;
+    }
+}
+
+if (!$verificationPassed) {
+    die("Extraction verification failed. Source files were NOT deleted.\n");
+}
+
+echo "Verification successful.\n";
+
+// --- Cleanup Logic ---
+echo "\nCleaning up source files...\n";
+$filesToDelete = [
+    $sourceDir,
+    $sourceUnitTestDir,
+    $sourceUnitTestFile,
+    $sourceIntegrationTestDir,
+    $sourceIntegrationTestFile
+];
+
+foreach ($filesToDelete as $path) {
+    if (is_dir($path)) {
+        // Recursive delete
+        $it = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($it as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
+        rmdir($path);
+        echo "Deleted directory: $path\n";
+    } elseif (file_exists($path)) {
+        unlink($path);
+        echo "Deleted file: $path\n";
+    }
+}
+
 
