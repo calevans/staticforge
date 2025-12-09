@@ -30,8 +30,6 @@ Here's what a typical `.env` file looks like:
 # StaticForge Environment Configuration
 
 # Site Information
-SITE_NAME="My Static Site"
-SITE_TAGLINE="Built with ❤️ and PHP"
 SITE_BASE_URL="https://example.com"
 TEMPLATE="staticforce"
 
@@ -54,40 +52,19 @@ SFTP_PASSWORD="your-password"
 SFTP_REMOTE_PATH="/var/www/html"
 ```
 
+> **Note:** Site Name and Tagline are configured in `siteconfig.yaml`, not `.env`. See the [Site Configuration Guide](site-config.html) for details.
+
 ---
 
 ## Required Settings
 
 These settings **must** be present in your `.env` file or StaticForge won't run.
 
-### SITE_NAME
-
-**What it does:** The name of your website
-
-**Where it appears:**
-- Browser tab titles
-- Template header areas
-- Footer copyright notices
-
-**Example:**
-```bash
-SITE_NAME="My Awesome Blog"
-```
-
-**Template usage:**
-```twig
-<title>{{ title }} - {{ site_name }}</title>
-<h1>{{ site_name }}</h1>
-```
-
----
-
 ### SITE_BASE_URL
 
 **What it does:** The full URL where your site will be hosted
 
 **Why it matters:**
-- Sets the `<base>` tag in HTML for relative links
 - Used for generating absolute URLs
 - Critical for production deployments
 
@@ -104,7 +81,8 @@ SITE_BASE_URL="https://www.mysite.com/"
 
 **Template usage:**
 ```twig
-<base href="{{ site_base_url }}">
+{# Use for assets only #}
+<link rel="stylesheet" href="{{ site_base_url }}assets/css/style.css">
 ```
 
 ---
@@ -216,9 +194,85 @@ You won't typically change this setting.
 
 These settings enhance StaticForge but aren't required to run.
 
-### SITE_TAGLINE
+### LOG_LEVEL
 
-**What it does:** A short phrase that describes your site
+**What it does:** Controls how much information is logged
+
+**Default:** `INFO`
+
+**Options:**
+- `DEBUG` - Everything (useful for troubleshooting)
+- `INFO` - Standard operations (default)
+- `WARNING` - Only potential issues
+- `ERROR` - Only critical failures
+
+**Example:**
+```bash
+LOG_LEVEL="DEBUG"
+```
+
+---
+
+### LOG_FILE
+
+**What it does:** Where to write log messages
+
+**Default:** `logs/staticforge.log`
+
+**Example:**
+```bash
+LOG_FILE="logs/site-build.log"
+```
+
+---
+
+### UPLOAD_URL
+
+**What it does:** The public URL used when uploading to production
+
+**Why it matters:**
+- Used by the `site:upload` command
+- Ensures links are correct in the production environment
+
+**Example:**
+```bash
+UPLOAD_URL="https://www.mysite.com"
+```
+
+---
+
+## SFTP Configuration
+
+These settings are used by the `site:upload` command to deploy your site.
+
+### SFTP_HOST
+
+**What it does:** The hostname or IP address of your server
+
+**Example:**
+```bash
+SFTP_HOST="example.com"
+```
+
+### SFTP_USERNAME
+
+**What it does:** The username to log in with
+
+**Example:**
+```bash
+SFTP_USERNAME="deploy"
+```
+
+### SFTP_REMOTE_PATH
+
+**What it does:** The directory on the server where files should be uploaded
+
+**Example:**
+```bash
+SFTP_REMOTE_PATH="/var/www/html"
+```
+
+See the [Deployment Guide](deployment.html) for more details on setting up SFTP.
 
 **Example:**
 ```bash

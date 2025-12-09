@@ -15,6 +15,16 @@ The file is **completely optional** - your site will work fine without it.
 
 ## Configuration Options
 
+### Site Information
+
+You can define your site's name and tagline here. These values are available in templates as `{{ site_name }}` and `{{ site_tagline }}`.
+
+```yaml
+site:
+  name: "My Awesome Site"
+  tagline: "Built with StaticForge"
+```
+
 ### Static Menus
 
 The primary use case for `siteconfig.yaml` is defining static menu items that don't correspond to content files. This is useful for:

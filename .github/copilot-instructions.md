@@ -107,4 +107,4 @@ lando rebuild
 
 # The Golden Rules
 - When writing tools, thou shalt use no language other than PHP.
-- Before writing code, read the necessary classes fully before trying to use them. Do not guess at hoe they should work, read the code.
+- Before writing code, read the necessary classes fully before trying to use them. Do not guess and hope they work, read the code.
