@@ -10,6 +10,7 @@ menu: '3.1.10'
 **Events:**
 - `POST_RENDER` (priority 40) - Collects categorized files
 - `POST_LOOP` (priority 90) - Generates RSS XML files
+- `RSS_ITEM_BUILDING` - Fired for each item before adding to feed
 
 **How to use:** Just add a `category` to your frontmatter - RSS feeds are generated automatically!
 

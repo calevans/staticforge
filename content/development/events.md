@@ -497,6 +497,38 @@ public function onMarkdownConverted(Container $container, array $parameters): ar
 
 ---
 
+### RSS_ITEM_BUILDING
+
+**Fired By**: [RSS Feed](../features/rss-feed.html) feature during `POST_LOOP` processing
+**Purpose**: Allow modification of RSS feed items before they are added to the feed
+**Data**:
+```php
+[
+  'item' => EICC\StaticForge\Features\RssFeed\Models\FeedItem, // The feed item object
+  'file' => array // The source file data
+]
+```
+
+**Use Cases**:
+- Add podcast enclosures
+- Add custom RSS namespaces/tags
+- Modify item description or title
+
+**Example**:
+```php
+public function onRssItemBuilding(Container $container, array $parameters): array
+{
+    $item = $parameters['item'];
+    $item->title = "PREFIX: " . $item->title;
+    return $parameters;
+}
+```
+
+**Registered By**: `RssFeed` feature
+**Execution**: Linear, priority-sorted
+
+---
+
 ## Event Priority
 
 Events support priority ordering (0-999):
