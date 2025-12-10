@@ -17,6 +17,12 @@ These features are not included in the core installation to keep the base lightw
 *   **[S3 Media Offload](https://github.com/calevans/StaticForgeS3)** (`calevans/staticforge-s3`)
     Automatically offloads media files (images, audio, video) to an AWS S3 bucket (or compatible service) during the build process. It updates your content to point to the CDN/S3 URLs, keeping your repository small and your site fast.
 
+*   **[Popup Feature](https://github.com/calevans/staticforge-popup)** (`calevans/staticforge-popup`)
+    Adds support for popups on your site.
+
+*   **[Google Analytics](https://github.com/calevans/staticforge-google-analytics)** (`calevans/staticforge-google-analytics`)
+    Adds Google Analytics tracking code to your site.
+
 ## Installing External Features
 
 To install an external feature, follow these steps:
