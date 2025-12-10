@@ -1,4 +1,4 @@
-# StaticForge
+# [StaticForge](https://calevans.com/staticforge)
 
 A PHP-based static site generator that processes content files through an event-driven pipeline to produce deployment-ready static websites.
 
