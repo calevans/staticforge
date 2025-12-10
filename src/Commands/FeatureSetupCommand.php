@@ -43,37 +43,84 @@ class FeatureSetupCommand extends Command
         }
 
         $filesFound = false;
-        $featureName = basename($packageName); // Use the last part of package name as suffix
+        $featureName = basename($packageName);
 
-        // Handle siteconfig.yaml.example
-        if (file_exists($packageDir . '/siteconfig.yaml.example')) {
-            $target = getcwd() . "/siteconfig.yaml.example.{$featureName}";
-            if (copy($packageDir . '/siteconfig.yaml.example', $target)) {
-                $io->success("Copied siteconfig example to: {$target}");
-                $filesFound = true;
-            } else {
-                $io->error("Failed to copy siteconfig.yaml.example");
+        // 1. Handle Single Configuration Files
+        $singleFiles = [
+            'siteconfig.yaml.example' => getcwd() . "/siteconfig.yaml.example.{$featureName}",
+            '.env.example' => getcwd() . "/.env.example.{$featureName}",
+        ];
+
+        foreach ($singleFiles as $sourceFile => $targetPath) {
+            $sourcePath = $packageDir . '/' . $sourceFile;
+            if (file_exists($sourcePath)) {
+                if ($this->copyFile($sourcePath, $targetPath, $io)) {
+                    $filesFound = true;
+                }
             }
         }
 
-        // Handle .env.example
-        if (file_exists($packageDir . '/.env.example')) {
-            $target = getcwd() . "/.env.example.{$featureName}";
-            if (copy($packageDir . '/.env.example', $target)) {
-                $io->success("Copied .env example to: {$target}");
-                $filesFound = true;
-            } else {
-                $io->error("Failed to copy .env.example");
-            }
+        // 2. Handle Twig Template Examples
+        $templateDir = $_ENV['TEMPLATE_DIR'] ?? (getcwd() . '/templates');
+        if (!empty($_ENV['TEMPLATE'])) {
+            $templateDir .= '/' . $_ENV['TEMPLATE'];
+        }
+
+        if ($this->copyRecursive($packageDir, $templateDir, '.html.twig.example', $io)) {
+            $filesFound = true;
+        }
+
+        // 3. Handle CSS Examples
+        $contentDir = $_ENV['SOURCE_DIR'] ?? (getcwd() . '/content');
+        $cssTargetDir = $contentDir . '/assets/css';
+
+        if ($this->copyRecursive($packageDir, $cssTargetDir, '.css.example', $io)) {
+            $filesFound = true;
         }
 
         if (!$filesFound) {
-            $io->warning("No example configuration files (.env.example or siteconfig.yaml.example) found in {$packageName}.");
+            $io->warning("No example configuration files found in {$packageName}.");
             return Command::SUCCESS;
         }
 
-        $io->info("Please merge the contents of these files into your main .env and siteconfig.yaml files.");
+        $io->info("Setup complete. Please review the copied .example files and merge them into your configuration.");
 
         return Command::SUCCESS;
+    }
+
+    private function copyFile(string $source, string $target, SymfonyStyle $io): bool
+    {
+        if (copy($source, $target)) {
+            $io->success("Copied: {$target}");
+            return true;
+        }
+
+        $io->error("Failed to copy: " . basename($source));
+        return false;
+    }
+
+    private function copyRecursive(string $sourceDir, string $targetDir, string $suffix, SymfonyStyle $io): bool
+    {
+        $filesFound = false;
+
+        try {
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDir));
+            foreach ($iterator as $file) {
+                if ($file->isFile() && str_ends_with($file->getFilename(), $suffix)) {
+                    $target = $targetDir . '/' . $file->getFilename();
+                    if ($this->copyFile($file->getPathname(), $target, $io)) {
+                        $filesFound = true;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Log debug info if needed, but don't crash
+        }
+
+        return $filesFound;
     }
 }

@@ -21,3 +21,15 @@
 **Priority:** Medium
 **Why:** Prevent runtime errors due to misconfigurations.
 **Implementation:** Validate that the YAML in a file is valid and will read before trying to load it.
+
+## Feature Scaffolding Command
+**Priority:** High
+**Why:** Simplify the process of creating new features.
+**Implementation:** A console command `feature:create <feature-name>` that generates boilerplate code for a new feature, including:
+- Directory structure
+- Basic class implementing `FeatureInterface`
+- Example event listener registration
+- Sample configuration file
+- Unit test template
+- Documentation stub
+
