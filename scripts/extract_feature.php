@@ -25,7 +25,6 @@ $targetNamespace = trim($argv[4], '\\');
 $sourceDir = __DIR__ . '/../src/Features/' . $featureName;
 // Target is one level up from the project root
 $targetDir = dirname(__DIR__, 2) . '/' . $packageName;
-$vendorDir = __DIR__ . '/../vendor';
 
 // Validation
 if (!is_dir($sourceDir)) {
@@ -47,7 +46,7 @@ echo "Analyzing dependencies...\n";
 
 // 1. Build Package Map from installed.json
 $packageMap = [];
-$installedJsonPath = $vendorDir . '/composer/installed.json';
+$installedJsonPath = __DIR__ . '/../vendor/composer/installed.json';
 if (file_exists($installedJsonPath)) {
     $installedData = json_decode(file_get_contents($installedJsonPath), true);
     $packages = $installedData['packages'] ?? []; // Composer 2 format
@@ -111,9 +110,6 @@ function scanDirectoryForNamespaces(string $dir): array {
     return array_unique($usedNamespaces);
 }
 
-// 2. Scan Feature Code for Usages
-$srcNamespaces = scanDirectoryForNamespaces($sourceDir);
-
 // 3. Match Usages to Packages
 function resolveDependencies(array $namespaces, array $packageMap): array {
     $deps = [];
@@ -130,7 +126,7 @@ function resolveDependencies(array $namespaces, array $packageMap): array {
     return $deps;
 }
 
-$detectedDependencies = resolveDependencies($srcNamespaces, $packageMap);
+$detectedDependencies = resolveDependencies(scanDirectoryForNamespaces($sourceDir), $packageMap);
 
 echo "Detected Dependencies:\n";
 foreach ($detectedDependencies as $name => $ver) {
@@ -144,6 +140,15 @@ if (!mkdir($targetDir, 0755, true)) {
     die("Error: Failed to create target directory.\n");
 }
 mkdir($targetDir . '/src', 0755, true);
+
+// Copy Project Files (LICENSE, CODE_OF_CONDUCT.md)
+foreach (['LICENSE', 'CODE_OF_CONDUCT.md'] as $file) {
+    $sourcePath = __DIR__ . '/../' . $file;
+    if (file_exists($sourcePath)) {
+        copy($sourcePath, $targetDir . '/' . $file);
+        echo "Copied $file\n";
+    }
+}
 
 // Copy files and replace namespace
 $iterator = new RecursiveIteratorIterator(
@@ -417,6 +422,16 @@ if (file_exists($sourceIntegrationTestFile)) {
     }
 }
 
+// Check project files
+foreach (['LICENSE', 'CODE_OF_CONDUCT.md'] as $file) {
+    if (file_exists(__DIR__ . '/../' . $file)) {
+        if (!file_exists($targetDir . '/' . $file)) {
+            echo "Verification Failed: Project file missing: $file\n";
+            $verificationPassed = false;
+        }
+    }
+}
+
 if (!$verificationPassed) {
     die("Extraction verification failed. Source files were NOT deleted.\n");
 }
@@ -425,15 +440,14 @@ echo "Verification successful.\n";
 
 // --- Cleanup Logic ---
 echo "\nCleaning up source files...\n";
-$filesToDelete = [
+
+foreach ([
     $sourceDir,
     $sourceUnitTestDir,
     $sourceUnitTestFile,
     $sourceIntegrationTestDir,
     $sourceIntegrationTestFile
-];
-
-foreach ($filesToDelete as $path) {
+] as $path) {
     if (is_dir($path)) {
         // Recursive delete
         $it = new RecursiveIteratorIterator(
