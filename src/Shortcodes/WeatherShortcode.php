@@ -77,8 +77,8 @@ class WeatherShortcode extends BaseShortcode
                 if (isset($json['places'][0])) {
                     $data = [
                         'lat' => $json['places'][0]['latitude'],
-                        'long' => $json['places'][0]['longitude'],
-                        'place' => $json['places'][0]['place name'] . ', ' . $json['places'][0]['state abbreviation']
+                        'lon' => $json['places'][0]['longitude'],
+                        'name' => $json['places'][0]['place name'] . ', ' . $json['places'][0]['state abbreviation']
                     ];
                     $this->saveToCache($cacheKey, $data);
                 }

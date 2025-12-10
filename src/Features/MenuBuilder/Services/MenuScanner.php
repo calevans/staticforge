@@ -13,7 +13,7 @@ class MenuScanner
 
     /**
      * @param array<int, array{path: string, url: string, metadata: array<string, mixed>}> $discoveredFiles
-     * @return array<int, array<int, array{title: string, url: string, file: string, position: string}>>
+     * @return array<int, array<int|string, mixed>>
      */
     public function scanFilesForMenus(array $discoveredFiles): array
     {
