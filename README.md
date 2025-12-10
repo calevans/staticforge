@@ -2,6 +2,9 @@
 
 A PHP-based static site generator that processes content files through an event-driven pipeline to produce deployment-ready static websites.
 
+Copyright 2025, Cal Evans<br />
+License: MIT<br />
+
 ## Documentation
 
 Full documentation is available at **[https://calevans.com/staticforge](https://calevans.com/staticforge)**.

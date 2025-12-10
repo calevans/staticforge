@@ -99,6 +99,11 @@ forms:
 # social_links:
 #   twitter: https://twitter.com/mysite
 
+# Google Analytics Configuration
+google_analytics:
+  enabled: true
+  # tracking_id is now set in .env as GOOGLE_ANALYTICS_ID
+
 # S3 Media Offload Configuration
 # Offload static assets to AWS S3
 s3_offload:

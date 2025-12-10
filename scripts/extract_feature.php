@@ -21,10 +21,15 @@ $featureName = $argv[1];
 $vendorName = $argv[2];
 $packageName = $argv[3];
 $targetNamespace = trim($argv[4], '\\');
+$customTargetDir = $argv[5] ?? null;
 
 $sourceDir = __DIR__ . '/../src/Features/' . $featureName;
-// Target is one level up from the project root
-$targetDir = dirname(__DIR__, 2) . '/' . $packageName;
+// Target is one level up from the project root, or custom path
+if ($customTargetDir) {
+    $targetDir = $customTargetDir;
+} else {
+    $targetDir = dirname(__DIR__, 2) . '/' . $packageName;
+}
 
 // Validation
 if (!is_dir($sourceDir)) {

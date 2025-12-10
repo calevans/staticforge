@@ -56,3 +56,8 @@ forms:
 # Disabled Features
 disabled_features:
   #- Sitemap
+
+# Google Analytics Configuration
+google_analytics:
+  enabled: true
+  # tracking_id is now set in .env as GOOGLE_ANALYTICS_ID
