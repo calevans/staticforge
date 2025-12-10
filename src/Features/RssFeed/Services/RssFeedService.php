@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\RssFeed\Services;
 
+use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
 use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
 use EICC\StaticForge\Features\RssFeed\Services\Extensions\PodcastExtension;
@@ -13,7 +14,7 @@ use EICC\Utils\Log;
 class RssFeedService
 {
     private Log $logger;
-    private PodcastMediaService $mediaService;
+    private EventManager $eventManager;
 
     /**
      * Files organized by category for RSS feeds
@@ -21,10 +22,10 @@ class RssFeedService
      */
     private array $categoryFiles = [];
 
-    public function __construct(Log $logger, PodcastMediaService $mediaService)
+    public function __construct(Log $logger, EventManager $eventManager)
     {
         $this->logger = $logger;
-        $this->mediaService = $mediaService;
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -207,18 +208,11 @@ class RssFeedService
             $item->content = $file['content'];
             $item->author = $file['metadata']['author'] ?? null;
 
-            // Process Media if Podcast
-            if ($isPodcast) {
-                $mediaData = $this->mediaService->processMedia($file, $sourceDir, $outputDir);
-                if ($mediaData) {
-                    // Ensure URL is absolute if needed, or relative.
-                    // Podcast clients usually need absolute URLs.
-                    if (!preg_match('~^https?://~i', $mediaData['url'])) {
-                        $mediaData['url'] = $siteBaseUrl . ltrim($mediaData['url'], '/');
-                    }
-                    $item->enclosure = $mediaData;
-                }
-            }
+            // Fire event to allow other features (like Podcast) to modify the item
+            $this->eventManager->fire('RSS_ITEM_BUILDING', [
+                'item' => $item,
+                'file' => $file
+            ]);
 
             $feedItems[] = $item;
         }

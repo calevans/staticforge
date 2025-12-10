@@ -7,9 +7,7 @@ namespace EICC\StaticForge\Features\RssFeed;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
-use EICC\StaticForge\Features\RssFeed\Services\PodcastMediaService;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
-use Calevans\StaticForgeMediaInspect\Services\MediaInspector;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -39,9 +37,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger = $container->get('logger');
 
         // Initialize services
-        // MediaInspector is a core service but not in container by default yet
-        $mediaService = new PodcastMediaService(new MediaInspector());
-        $this->service = new RssFeedService($this->logger, $mediaService);
+        $this->service = new RssFeedService($this->logger, $eventManager);
 
         $this->logger->log('INFO', 'RssFeed Feature registered');
     }

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Features\RssFeed;
 
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
-use EICC\StaticForge\Features\RssFeed\Services\PodcastMediaService;
-use Calevans\StaticForgeMediaInspect\Services\MediaInspector;
+use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
 use ReflectionMethod;
@@ -14,14 +13,14 @@ use ReflectionMethod;
 class RssFeedServiceTest extends UnitTestCase
 {
     private RssFeedService $service;
-    private PodcastMediaService $mediaService;
+    private EventManager $eventManager;
 
     protected function setUp(): void
     {
         parent::setUp();
         $logger = $this->createMock(Log::class);
-        $this->mediaService = $this->createMock(PodcastMediaService::class);
-        $this->service = new RssFeedService($logger, $this->mediaService);
+        $this->eventManager = $this->createMock(EventManager::class);
+        $this->service = new RssFeedService($logger, $this->eventManager);
     }
 
     public function testSanitizeCategoryName(): void
