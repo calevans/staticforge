@@ -1,0 +1,28 @@
+<?php
+
+namespace EICC\StaticForge\Features\Deployment;
+
+use EICC\StaticForge\Core\BaseFeature;
+use EICC\StaticForge\Core\FeatureInterface;
+use EICC\StaticForge\Core\EventManager;
+use EICC\Utils\Container;
+use EICC\StaticForge\Features\Deployment\Commands\UploadSiteCommand;
+use Symfony\Component\Console\Application;
+
+class Feature extends BaseFeature implements FeatureInterface
+{
+    protected string $name = 'Deployment';
+
+    protected array $eventListeners = [
+        'CONSOLE_INIT' => ['method' => 'registerCommands', 'priority' => 0]
+    ];
+
+    public function registerCommands(Container $container, array $parameters): array
+    {
+        /** @var Application $application */
+        $application = $parameters['application'];
+        $application->add(new UploadSiteCommand($container));
+
+        return $parameters;
+    }
+}

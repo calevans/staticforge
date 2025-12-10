@@ -1,6 +1,6 @@
 <?php
 
-namespace EICC\StaticForge\Commands;
+namespace EICC\StaticForge\Features\SiteBuilder\Commands;
 
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;

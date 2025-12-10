@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Commands;
 
-use EICC\StaticForge\Commands\UploadSiteCommand;
+use EICC\StaticForge\Features\Deployment\Commands\UploadSiteCommand;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
 class UploadSiteCommandTest extends UnitTestCase

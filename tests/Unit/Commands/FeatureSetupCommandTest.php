@@ -3,7 +3,7 @@
 namespace EICC\StaticForge\Tests\Unit\Commands;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
-use EICC\StaticForge\Commands\FeatureSetupCommand;
+use EICC\StaticForge\Features\FeatureTools\Commands\FeatureSetupCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -90,8 +90,9 @@ class FeatureSetupCommandTest extends UnitTestCase
         ]);
 
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Copied .env example', $output);
-        $this->assertStringContainsString('Copied siteconfig example', $output);
+        $this->assertStringContainsString('Copied:', $output);
+        $this->assertStringContainsString('.env.example.full-package', $output);
+        $this->assertStringContainsString('siteconfig.yaml.example.full-package', $output);
 
         // Verify files were copied to root
         $this->assertFileExists($this->tempRootDir . '/.env.example.full-package');

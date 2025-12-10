@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Commands;
+namespace EICC\StaticForge\Features\FeatureTools\Commands;
 
 use EICC\StaticForge\Core\FeatureManager;
 use Symfony\Component\Console\Command\Command;

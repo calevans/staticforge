@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Commands;
+namespace EICC\StaticForge\Features\Deployment\Commands;
 
 use EICC\StaticForge\Services\Upload\SftpClient;
 use EICC\StaticForge\Services\Upload\SftpConfigLoader;

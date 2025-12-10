@@ -20,3 +20,9 @@
 **Priority:** Medium
 **Why:** Prevent runtime errors due to misconfigurations.
 **Implementation:** Validate that the YAML in a file is valid and will read before trying to load it.
+
+
+## 8. Google Analytics Integration
+**Priority:** Low
+**Why:** Many users want easy integration with Google Analytics.
+**Implementation:** A feature that injects the GA tracking code into the rendered HTML based on a config setting.

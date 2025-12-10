@@ -6,7 +6,7 @@ use EICC\StaticForge\Tests\Integration\IntegrationTestCase;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use EICC\StaticForge\Commands\RenderSiteCommand;
+use EICC\StaticForge\Features\SiteBuilder\Commands\RenderSiteCommand;
 
 /**
  * Integration tests for RenderSiteCommand

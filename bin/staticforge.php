@@ -39,12 +39,6 @@ if (!empty($missingExtensions)) {
 }
 
 use EICC\StaticForge\Commands\InitCommand;
-use EICC\StaticForge\Commands\RenderSiteCommand;
-use EICC\StaticForge\Commands\UploadSiteCommand;
-use EICC\StaticForge\Commands\DevServerCommand;
-use EICC\StaticForge\Commands\ListFeaturesCommand;
-use EICC\StaticForge\Commands\FeatureSetupCommand;
-use EICC\StaticForge\Commands\FeatureCreateCommand;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
 use Symfony\Component\Console\Application;
@@ -62,12 +56,6 @@ $app = new Application('StaticForge', '1.0.0');
 
 // Add commands
 $app->add(new InitCommand());
-$app->add(new RenderSiteCommand($container));
-$app->add(new UploadSiteCommand($container));
-$app->add(new DevServerCommand());
-$app->add(new ListFeaturesCommand($container->get(FeatureManager::class)));
-$app->add(new FeatureSetupCommand());
-$app->add(new FeatureCreateCommand());
 
 // Load features
 $container->get(FeatureManager::class)->loadFeatures();

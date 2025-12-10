@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Commands;
 
-use EICC\StaticForge\Commands\ListFeaturesCommand;
+use EICC\StaticForge\Features\FeatureTools\Commands\ListFeaturesCommand;
 use EICC\StaticForge\Core\FeatureManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
