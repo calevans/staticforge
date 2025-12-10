@@ -11,17 +11,18 @@ These features are not included in the core installation to keep the base lightw
 
 ## Available Packages
 
-*   **[Podcast Feature](https://github.com/calevans/staticforge-podcast)** (`calevans/staticforge-podcast`)
-    Adds full podcasting support to StaticForge. It extends the RSS Feed feature to support iTunes/Apple Podcast tags, manages media file enclosures, and includes tools for inspecting media files.
-
-*   **[S3 Media Offload](https://github.com/calevans/StaticForgeS3)** (`calevans/staticforge-s3`)
-    Automatically offloads media files (images, audio, video) to an AWS S3 bucket (or compatible service) during the build process. It updates your content to point to the CDN/S3 URLs, keeping your repository small and your site fast.
-
-*   **[Popup Feature](https://github.com/calevans/staticforge-popup)** (`calevans/staticforge-popup`)
-    Adds support for popups on your site.
-
-*   **[Google Analytics](https://github.com/calevans/staticforge-google-analytics)** (`calevans/staticforge-google-analytics`)
-    Adds Google Analytics tracking code to your site.
+### **[Google Analytics](https://github.com/calevans/staticforge-google-analytics)**
+(`calevans/staticforge-google-analytics`)<br />
+Adds Google Analytics tracking code to your site.<br /><br />
+### **[Podcast Feature](https://github.com/calevans/staticforge-podcast)**
+(`calevans/staticforge-podcast`)<br />
+Adds full podcasting support to StaticForge. It extends the RSS Feed feature to support iTunes/Apple Podcast tags, manages media file enclosures, and includes tools for inspecting media files.<br /><br />
+### **[Popup Feature](https://github.com/calevans/staticforge-popup)**
+(`calevans/staticforge-popup`)<br />
+Adds support for popups on your site.<br /><br />
+### **[S3 Media Offload](https://github.com/calevans/StaticForgeS3)**
+(`calevans/staticforge-s3`)<br />
+Move media files (images, audio, video) to an AWS S3 bucket. (or compatible service) It updates your content to point to the CDN/S3 URLs, keeping your repository small and your site fast.<br /><br />
 
 ## Installing External Features
 
