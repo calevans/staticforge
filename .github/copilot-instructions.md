@@ -101,6 +101,6 @@ lando rebuild
 # The Golden Rules
 - When writing tools, thou shalt use no language other than PHP.
 - Before writing code, read the necessary classes fully before trying to use them. Do not guess and hope they work, read the code.
-- DO NOT MODIFY FILES IN VENDOR OR OUTSIDE OF YOUR APPLICATION ROOT. EVER. If somethnig needs modifying, give me the instructions to give to the other Skippy.
+- DO NOT MODIFY FILES IN VENDOR OR OUTSIDE OF YOUR APPLICATION ROOT. EVER. If something needs modifying, give me the instructions to give to the other Skippy.
 **Trust these instructions** - they are comprehensive and tested. Only search for additional information if instructions are incomplete or found to be incorrect.
 
