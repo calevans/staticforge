@@ -159,3 +159,9 @@ Want to add your own functionality? See the [Feature Development Guide](../devel
 | **[RSS Feed](rss-feed.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
 | **[Sitemap Generator](sitemap.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
 
+---
+
+## External Features
+
+Looking for more? Check out our [External Features](external-features.html) page for a list of community-maintained packages that extend StaticForge with specialized functionality like Podcasting and Media Inspection.
+
