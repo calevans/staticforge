@@ -86,7 +86,7 @@ class UploadSiteCommand extends Command
             $config = $this->configLoader->load($input, $this->container);
 
             // Handle URL override and re-rendering
-            if ($urlOverride) {
+            if (!empty($urlOverride)) {
                 // Ensure URL ends with a trailing slash
                 $urlOverride = rtrim($urlOverride, '/') . '/';
 

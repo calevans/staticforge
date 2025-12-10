@@ -111,7 +111,10 @@ class WeatherShortcode extends BaseShortcode
         $file = sys_get_temp_dir() . '/staticforge_weather_' . md5($key);
         if (file_exists($file)) {
             if (time() - filemtime($file) < $ttl) {
-                return unserialize(file_get_contents($file));
+                $content = file_get_contents($file);
+                if ($content !== false) {
+                    return unserialize($content);
+                }
             }
             unlink($file);
         }

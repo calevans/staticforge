@@ -133,52 +133,5 @@ class MenuHtmlGenerator
         return $html;
     }
 
-    /**
-     * Compare two menu position strings using version-style comparison
-     *
-     * This ensures that "1.2" comes before "1.10" (not lexicographic sorting)
-     *
-     * @param string|int $a First position (e.g., "1.2", "1.10", 999)
-     * @param string|int $b Second position (e.g., "1.3", "1.2")
-     * @return int -1 if a < b, 0 if equal, 1 if a > b
-     */
-    private function compareMenuPositions($a, $b): int
-    {
-        // Handle numeric positions (used for items without explicit position)
-        if (is_numeric($a) && is_numeric($b)) {
-            return $a <=> $b;
-        }
 
-        // Convert to string if needed
-        $a = (string)$a;
-        $b = (string)$b;
-
-        // If either is empty, handle edge case
-        if ($a === '' && $b === '') {
-            return 0;
-        }
-        if ($a === '') {
-            return -1;
-        }
-        if ($b === '') {
-            return 1;
-        }
-
-        // Split by dots and compare each part numerically
-        $aParts = explode('.', $a);
-        $bParts = explode('.', $b);
-
-        $maxParts = max(count($aParts), count($bParts));
-
-        for ($i = 0; $i < $maxParts; $i++) {
-            $aVal = isset($aParts[$i]) ? (int)$aParts[$i] : 0;
-            $bVal = isset($bParts[$i]) ? (int)$bParts[$i] : 0;
-
-            if ($aVal !== $bVal) {
-                return $aVal <=> $bVal;
-            }
-        }
-
-        return 0;
-    }
 }

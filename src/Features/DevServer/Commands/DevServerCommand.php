@@ -111,7 +111,9 @@ class DevServerCommand extends Command
         $process = popen($command, 'r');
 
         if (!$process) {
-            chdir($oldCwd);
+            if ($oldCwd !== false) {
+                chdir($oldCwd);
+            }
             throw new \RuntimeException("Failed to start PHP server");
         }
 
@@ -131,7 +133,9 @@ class DevServerCommand extends Command
         }
 
         pclose($process);
-        chdir($oldCwd);
+        if ($oldCwd !== false) {
+            chdir($oldCwd);
+        }
     }
 
     private function isPortInUse(string $host, int $port): bool

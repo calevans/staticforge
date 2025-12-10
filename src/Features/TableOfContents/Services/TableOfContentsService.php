@@ -63,7 +63,7 @@ class TableOfContentsService
         $xpath = new DOMXPath($dom);
         $headings = $xpath->query('//h2|//h3');
 
-        if ($headings->length === 0) {
+        if ($headings === false || $headings->length === 0) {
             return '';
         }
 

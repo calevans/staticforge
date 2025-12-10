@@ -111,7 +111,12 @@ class RssBuilder
             $channel->appendChild($item);
         }
 
-        return $dom->saveXML();
+        $xml = $dom->saveXML();
+        if ($xml === false) {
+            throw new \RuntimeException('Failed to generate RSS XML');
+        }
+
+        return $xml;
     }
 
     private function addTextElement(DOMDocument $dom, DOMElement $parent, string $name, string $value): void

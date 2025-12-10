@@ -63,7 +63,10 @@ class SitemapService
                 $lastmod = date('Y-m-d', $timestamp);
             }
         } elseif (isset($parameters['file_path']) && file_exists($parameters['file_path'])) {
-            $lastmod = date('Y-m-d', filemtime($parameters['file_path']));
+            $mtime = filemtime($parameters['file_path']);
+            if ($mtime !== false) {
+                $lastmod = date('Y-m-d', $mtime);
+            }
         }
 
         $this->urls[] = [
