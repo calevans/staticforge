@@ -74,7 +74,12 @@ class SftpClient
             }
 
             $this->logger->log('DEBUG', 'Loading private key...');
-            $key = PublicKeyLoader::load($keyContent, $passphrase ?? false);
+            $key = PublicKeyLoader::load($keyContent, $passphrase ?? '');
+
+            if (!$key instanceof \phpseclib3\Crypt\Common\PrivateKey) {
+                $this->logger->log('ERROR', 'Loaded key is not a private key');
+                return false;
+            }
 
             $this->logger->log('DEBUG', sprintf('Authenticating as user: %s', $username));
 

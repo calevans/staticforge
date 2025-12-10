@@ -62,8 +62,8 @@ class ShortcodeManager
             $fullMatch = $matches[0];
             $escapeOpen = $matches[1];
             $tagName = $matches[2];
-            $attributesStr = $matches[3] ?? '';
-            $innerContent = $matches[4] ?? '';
+            $attributesStr = $matches[3];
+            $innerContent = $matches[4];
             $escapeClose = $matches[5];
 
             // Handle escaping: [[[tag]]] -> [[tag]]
@@ -91,6 +91,8 @@ class ShortcodeManager
     /**
      * Parse attributes string into array
      * e.g. id="123" type="warning" -> ['id' => '123', 'type' => 'warning']
+     *
+     * @return array<string, string>
      */
     private function parseAttributes(string $text): array
     {
@@ -100,11 +102,11 @@ class ShortcodeManager
         if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
                 if (!empty($match[1])) {
-                    $attributes[$match[1]] = $match[2];
+                    $attributes[$match[1]] = $match[2] ?? '';
                 } elseif (!empty($match[3])) {
-                    $attributes[$match[3]] = $match[4];
+                    $attributes[$match[3]] = $match[4] ?? '';
                 } elseif (!empty($match[5])) {
-                    $attributes[$match[5]] = true;
+                    $attributes[$match[5]] = 'true';
                 }
             }
         }

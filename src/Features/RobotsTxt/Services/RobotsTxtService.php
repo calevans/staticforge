@@ -159,7 +159,7 @@ class RobotsTxtService
     /**
      * Calculate the web path for a file (relative URL)
      */
-    private function calculateWebPath(string $filePath, string $sourceDir): ?string
+    private function calculateWebPath(string $filePath, string $sourceDir): string
     {
         // Normalize paths
         $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);

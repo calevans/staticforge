@@ -38,6 +38,9 @@ class MenuService
         return $menuData;
     }
 
+    /**
+     * @param array<int, array<int|string, mixed>> $menuData
+     */
     private function addToMenu(string $position, string $slug, string $title, array &$menuData): void
     {
         $parts = explode('.', $position);

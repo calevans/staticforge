@@ -14,6 +14,9 @@ class Category
     /** @var CategoryFile[] */
     public array $files = [];
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     public function __construct(string $slug, array $metadata)
     {
         $this->slug = $slug;

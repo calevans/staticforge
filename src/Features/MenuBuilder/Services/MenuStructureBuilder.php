@@ -38,8 +38,7 @@ class MenuStructureBuilder
      * @param string $menuPosition Position string (e.g., "1", "1.2", "1.2.3")
      * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
      * @param string $title Title for the menu entry
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
-     *        $menuData Menu data array passed by reference
+     * @param array<int, array<int|string, mixed>> $menuData Menu data array passed by reference
      */
     public function addMenuEntry(string $menuPosition, array $fileData, string $title, array &$menuData): void
     {

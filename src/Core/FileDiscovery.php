@@ -30,6 +30,7 @@ class FileDiscovery
     public function discoverFiles(): void
     {
         $directories = $this->getDirectoriesToScan();
+        /** @var array<array{path: string, url: string, metadata: array<string, mixed>}> $discoveredFiles */
         $discoveredFiles = [];
 
         foreach ($directories as $directory) {

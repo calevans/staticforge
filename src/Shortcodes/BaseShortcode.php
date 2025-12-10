@@ -31,6 +31,8 @@ abstract class BaseShortcode implements ShortcodeInterface
 
     /**
      * Render a template with the given variables
+     *
+     * @param array<string, mixed> $variables
      */
     protected function render(string $template, array $variables = []): string
     {

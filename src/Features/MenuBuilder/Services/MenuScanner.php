@@ -30,8 +30,7 @@ class MenuScanner
      * Process a single file to extract menu entries
      *
      * @param array{path: string, url: string, metadata: array<string, mixed>} $fileData File data from discovery
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>>
-     *        $menuData Menu data structure passed by reference
+     * @param array<int, array<int|string, mixed>> $menuData Menu data structure passed by reference
      */
     private function processFileForMenu(array $fileData, array &$menuData): void
     {

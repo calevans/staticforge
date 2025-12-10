@@ -52,6 +52,10 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'CategoryIndex Feature registered');
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handlePostGlob(Container $container, array $parameters): array
     {
         $this->logger->log('INFO', 'CategoryIndex: Scanning for category files');
@@ -61,6 +65,10 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handleCollectMenuItems(Container $container, array $parameters): array
     {
         $menuData = $parameters['menu_data'] ?? [];
@@ -71,6 +79,10 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handlePreRender(Container $container, array $parameters): array
     {
         if (!empty($parameters['bypass_category_defer'])) {
@@ -93,12 +105,20 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function collectCategoryFiles(Container $container, array $parameters): array
     {
         $this->categoryService->collectFile($container, $parameters);
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function processDeferredCategoryFiles(Container $container, array $parameters): array
     {
         $this->pageService->processDeferredFiles($container);

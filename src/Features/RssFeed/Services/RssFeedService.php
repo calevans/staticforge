@@ -245,6 +245,9 @@ class RssFeedService
         return $sanitized === '' ? 'category' : $sanitized;
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     private function extractDescription(string $html, array $metadata): string
     {
         if (!empty($metadata['description'])) {
@@ -270,6 +273,9 @@ class RssFeedService
         return $text;
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     private function getFileDate(array $metadata, string $filePath): string
     {
         if (!empty($metadata['published_date'])) {

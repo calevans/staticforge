@@ -22,6 +22,9 @@ class CategoryPageService
         $this->categoryService = $categoryService;
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     public function deferFile(string $filePath, array $metadata, Container $container): void
     {
         $slug = pathinfo($filePath, PATHINFO_FILENAME);

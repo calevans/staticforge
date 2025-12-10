@@ -10,6 +10,7 @@ use EICC\Utils\Log;
 class ChapterNavService
 {
     private Log $logger;
+    /** @var array<string, mixed> */
     private array $configuredMenus = [];
     private string $prevSymbol = '←';
     private string $nextSymbol = '→';
@@ -17,10 +18,12 @@ class ChapterNavService
 
     /**
      * Map of file paths to their sequential navigation context
-     * @var array<string, array{
-     *     prev: array{title: string, url: string}|null,
-     *     next: array{title: string, url: string}|null
-     * }>
+     * @var array<string, array<int, array{
+     *     prev: array{title: string, url: string, file: string}|null,
+     *     current: array{title: string, url: string, file: string},
+     *     next: array{title: string, url: string, file: string}|null,
+     *     html: string
+     * }>>
      */
     private array $chapterNavData = [];
 
@@ -32,6 +35,7 @@ class ChapterNavService
     /**
      * Process chapter navigation based on menu configuration
      *
+     * @param array<string, mixed> $parameters
      * @return array<string, mixed> The updated parameters
      */
     public function processChapterNavigation(Container $container, array $parameters): array
@@ -210,5 +214,6 @@ class ChapterNavService
     public function getPrevSymbol(): string { return $this->prevSymbol; }
     public function getNextSymbol(): string { return $this->nextSymbol; }
     public function getSeparator(): string { return $this->separator; }
+    /** @return array<string, mixed> */
     public function getConfiguredMenus(): array { return $this->configuredMenus; }
 }

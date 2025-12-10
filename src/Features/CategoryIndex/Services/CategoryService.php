@@ -24,6 +24,7 @@ class CategoryService
 
     public function scanCategories(Container $container): void
     {
+        /** @var array<int, array{path: string, metadata: array<string, mixed>}> $discoveredFiles */
         $discoveredFiles = $container->getVariable('discovered_files') ?? [];
 
         foreach ($discoveredFiles as $fileData) {
@@ -50,6 +51,9 @@ class CategoryService
         return $this->categories[$slug] ?? null;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     */
     public function collectFile(Container $container, array $parameters): void
     {
         $metadata = $parameters['metadata'] ?? [];
@@ -111,6 +115,9 @@ class CategoryService
         return trim($slug ?? '', '-');
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     private function getFileDate(array $metadata, string $filePath): string
     {
         if (isset($metadata['published_date'])) {

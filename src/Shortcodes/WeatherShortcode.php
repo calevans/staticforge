@@ -27,8 +27,8 @@ class WeatherShortcode extends BaseShortcode
             $coords = $this->getCoordinatesFromZip($zip, $country);
             if ($coords) {
                 $lat = $coords['lat'];
-                $long = $coords['long'];
-                $locationName = $coords['place'];
+                $long = $coords['lon'];
+                $locationName = $coords['name'];
             }
         }
 
@@ -36,7 +36,7 @@ class WeatherShortcode extends BaseShortcode
             return '<!-- Weather shortcode requires lat/long or valid zip -->';
         }
 
-        $weather = $this->getWeather($lat, $long);
+        $weather = $this->getWeather((string)$lat, (string)$long);
 
         if (!$weather) {
             return '<!-- Weather data unavailable -->';
@@ -60,6 +60,9 @@ class WeatherShortcode extends BaseShortcode
         ]);
     }
 
+    /**
+     * @return array{lat: float, lon: float, name: string}|null
+     */
     private function getCoordinatesFromZip(string $zip, string $country): ?array
     {
         $cacheKey = "geo_{$country}_{$zip}";
@@ -85,6 +88,9 @@ class WeatherShortcode extends BaseShortcode
         return $data;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function getWeather(string $lat, string $long): ?array
     {
         $cacheKey = "weather_{$lat}_{$long}";
@@ -106,6 +112,9 @@ class WeatherShortcode extends BaseShortcode
         return $data;
     }
 
+    /**
+     * @return mixed
+     */
     private function getFromCache(string $key, int $ttl = 86400)
     {
         $file = sys_get_temp_dir() . '/staticforge_weather_' . md5($key);
@@ -121,6 +130,9 @@ class WeatherShortcode extends BaseShortcode
         return null;
     }
 
+    /**
+     * @param mixed $data
+     */
     private function saveToCache(string $key, $data): void
     {
         $file = sys_get_temp_dir() . '/staticforge_weather_' . md5($key);

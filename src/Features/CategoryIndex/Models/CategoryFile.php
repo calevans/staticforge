@@ -13,6 +13,9 @@ class CategoryFile
     /** @var array<string, mixed> */
     public array $metadata = [];
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     public function __construct(
         string $title,
         string $url,

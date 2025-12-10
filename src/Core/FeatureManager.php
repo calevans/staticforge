@@ -263,6 +263,8 @@ class FeatureManager
 
     /**
      * Get possible class names for all features (library + user)
+     *
+     * @return array<string>
      */
     private function getPossibleFeatureClasses(string $directoryName): array
     {

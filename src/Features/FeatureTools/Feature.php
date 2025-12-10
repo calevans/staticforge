@@ -19,6 +19,10 @@ class Feature extends BaseFeature implements FeatureInterface
         'CONSOLE_INIT' => ['method' => 'registerCommands', 'priority' => 0]
     ];
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function registerCommands(Container $container, array $parameters): array
     {
         /** @var Application $application */

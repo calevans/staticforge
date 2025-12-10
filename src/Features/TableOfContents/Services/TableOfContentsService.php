@@ -72,9 +72,14 @@ class TableOfContentsService
         $itemsAdded = 0;
 
         foreach ($headings as $heading) {
+            if (!$heading instanceof \DOMElement) {
+                continue;
+            }
+
             $level = (int) substr($heading->nodeName, 1);
 
             // Clone node to manipulate it without affecting the original DOM
+            /** @var \DOMElement $clonedHeading */
             $clonedHeading = $heading->cloneNode(true);
 
             // Find the permalink anchor to get the ID
@@ -82,18 +87,22 @@ class TableOfContentsService
             $permalinks = $xpath->query('.//a[contains(@class, "heading-permalink")]', $clonedHeading);
             $permalinkId = '';
 
-            if ($permalinks->length > 0) {
+            if ($permalinks && $permalinks->length > 0) {
                 $permalink = $permalinks->item(0);
 
-                // Try to get ID from the anchor, or href (stripping #)
-                $permalinkId = $permalink->getAttribute('id');
-                if (empty($permalinkId)) {
-                    $href = $permalink->getAttribute('href');
-                    $permalinkId = ltrim($href, '#');
-                }
+                if ($permalink instanceof \DOMElement) {
+                    // Try to get ID from the anchor, or href (stripping #)
+                    $permalinkId = $permalink->getAttribute('id');
+                    if (empty($permalinkId)) {
+                        $href = $permalink->getAttribute('href');
+                        $permalinkId = ltrim($href, '#');
+                    }
 
-                // Remove the permalink anchor from the text we want to display
-                $permalink->parentNode->removeChild($permalink);
+                    // Remove the permalink anchor from the text we want to display
+                    if ($permalink->parentNode) {
+                        $permalink->parentNode->removeChild($permalink);
+                    }
+                }
             }
 
             // Fallback to heading ID if permalink ID is not found
