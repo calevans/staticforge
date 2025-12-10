@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "calevans/staticforge-s3": "^1.0",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
         "james-heinrich/getid3": "^1.9",
@@ -38,12 +39,7 @@
             "EICC\\StaticForge\\Tests\\": "tests/"
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../staticforge-s3"
-        }
-    ],
+
     "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
