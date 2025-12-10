@@ -100,8 +100,8 @@ For StaticForge development, clone the repository and use:
 ```bash
 git clone https://github.com/calevans/staticforge.git
 cd staticforge
-lando composer install
-lando php bin/console.php --version
+composer install
+php bin/staticforge.php --version
 ```
 
 ## Migration from create-project

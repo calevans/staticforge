@@ -23,7 +23,7 @@
  * 3. Finds relative asset links (starting with assets/, css/, js/, images/, img/) and prepends {{ site_base_url }}.
  *
  * USAGE:
- * lando php migrations/migrate_base_tag.php
+ * php migrations/migrate_base_tag.php
  *
  * WARNING:
  * This script modifies files in place. Ensure you have a backup or clean git state before running.

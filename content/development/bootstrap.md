@@ -91,7 +91,7 @@ The main console script uses bootstrap:
 ```php
 #!/usr/bin/env php
 <?php
-// bin/console.php
+// bin/staticforge.php
 
 // Bootstrap the application
 $container = require_once __DIR__ . '/../src/bootstrap.php';
@@ -99,9 +99,14 @@ $container = require_once __DIR__ . '/../src/bootstrap.php';
 // Create Symfony Console application
 $app = new Symfony\Component\Console\Application('StaticForge', '1.0.0');
 
-// Register commands with container
-$app->add(new EICC\StaticForge\Commands\RenderSiteCommand($container));
-$app->add(new EICC\StaticForge\Commands\UploadSiteCommand($container));
+// Add bootstrap command
+$app->add(new EICC\StaticForge\Commands\InitCommand());
+
+// Load features
+$container->get(EICC\StaticForge\Core\FeatureManager::class)->loadFeatures();
+
+// Dispatch CONSOLE_INIT event to allow features to register commands
+$container->get(EICC\StaticForge\Core\EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
 
 // Run
 $app->run();
@@ -109,8 +114,7 @@ $app->run();
 
 **Key Points:**
 - Bootstrap returns container
-- Container passed to all commands
-- Commands receive dependencies via constructor
+- Features register their own commands via `CONSOLE_INIT` event
 - Single initialization point
 
 ---
@@ -198,7 +202,7 @@ class MyIntegrationTest extends IntegrationTestCase
 
 ## Custom Environment Files
 
-**In Production:** You never need to call bootstrap directly. The console entry point (`bin/console.php`) handles it.
+**In Production:** You never need to call bootstrap directly. The console entry point (`bin/staticforge.php`) handles it.
 
 **In Tests:** Tests use bootstrap with custom environment files:
 
@@ -258,7 +262,7 @@ $siteName = $container->getVariable('SITE_NAME');
 
 ✅ **Good:**
 ```php
-// bin/console.php - ONLY place that bootstraps
+// bin/staticforge.php - ONLY place that bootstraps
 $container = require_once __DIR__ . '/../src/bootstrap.php';
 $app->add(new SomeCommand($container));
 ```
@@ -299,13 +303,13 @@ class SomeCommand {
 
 ✅ **Good:**
 ```php
-// bin/console.php - The ONLY file that should do this
+// bin/staticforge.php - The ONLY file that should do this
 $container = require_once 'src/bootstrap.php';
 ```
 
 **Why `require_once`:** Ensures bootstrap only executes once, preventing duplicate service registration.
 
-**Who calls this:** ONLY `bin/console.php`. Commands, features, and application code receive the container via dependency injection.
+**Who calls this:** ONLY `bin/staticforge.php`. Commands, features, and application code receive the container via dependency injection.
 
 ### DO: Create Logger Only in Bootstrap
 
@@ -338,7 +342,7 @@ $logger = new Log(...); // NO!
 
 **Solution:**
 
-**Rule #1:** NEVER call bootstrap outside of `bin/console.php` or test files.
+**Rule #1:** NEVER call bootstrap outside of `bin/staticforge.php` or test files.
 
 **Rule #2:** NEVER create a logger with `new Log()` - always get it from container:
 
@@ -398,7 +402,7 @@ $container = $bootstrap->initialize();
 
 **New way:**
 ```php
-// In bin/console.php ONLY
+// In bin/staticforge.php ONLY
 $container = require_once 'src/bootstrap.php';
 ```
 
@@ -419,14 +423,14 @@ class MyCommand {
 - Clearer dependency injection
 - Easier testing with custom env files
 - Single point of logger creation
-- **One place to bootstrap:** Only `bin/console.php` in production
+- **One place to bootstrap:** Only `bin/staticforge.php` in production
 
 ---
 
 ## Summary
 
 - **One file:** `src/bootstrap.php` handles all initialization
-- **One caller in production:** ONLY `bin/console.php` calls bootstrap
+- **One caller in production:** ONLY `bin/staticforge.php` calls bootstrap
 - **Tests are different:** Tests call bootstrap in setUp() with custom env files
 - **Returns container:** Pass to commands and services via dependency injection
 - **Singleton logger:** Only created in bootstrap, accessed via `$container->get('logger')`
@@ -434,9 +438,9 @@ class MyCommand {
   - Commands
   - Features
   - Application code
-  - Anywhere except `bin/console.php` and test setUp() methods
+  - Anywhere except `bin/staticforge.php` and test setUp() methods
 
 For implementation examples, see:
-- `bin/console.php` - Console entry point
+- `bin/staticforge.php` - Console entry point
 - `tests/Unit/UnitTestCase.php` - Unit test bootstrap
 - `tests/Integration/IntegrationTestCase.php` - Integration test bootstrap

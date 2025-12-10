@@ -9,7 +9,7 @@ This document summarizes the implementation of the robots.txt creator feature fo
 ### Core Feature Implementation
 - **File**: `src/Features/RobotsTxt/Feature.php`
 - **Purpose**: Automatically generates robots.txt during site build
-- **Events**: 
+- **Events**:
   - POST_GLOB (priority 150): Scans files for robots metadata
   - POST_LOOP (priority 100): Generates robots.txt file
 
@@ -195,7 +195,7 @@ Test content files for manual verification:
 
 ## Next Steps
 
-1. Run site generation: `php bin/console.php render:site`
+1. Run site generation: `php bin/staticforge.php render:site`
 2. Check `output/robots.txt` for generated file
 3. Test with your own content files
 4. Deploy robots.txt with your site

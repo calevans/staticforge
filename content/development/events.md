@@ -46,7 +46,7 @@ StaticForge executes events in a specific order during site generation:
 
 **Example**:
 ```php
-public function registerCommands(array $data): array
+public function registerCommands(Container $container, array $data): array
 {
     $app = $data['application'];
     $app->add(new MyCustomCommand());
@@ -72,7 +72,7 @@ public function registerCommands(array $data): array
 
 **Example**:
 ```php
-public function onCreate(array $data): array
+public function onCreate(Container $container, array $data): array
 {
   $this->processedCount = 0;
   $this->cache = [];

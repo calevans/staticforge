@@ -40,7 +40,7 @@ Your StaticForge installation comes ready to use! Here's how to get started:
 
 3. **Generate your site:**
    ```bash
-   php bin/console.php render:site
+   php bin/staticforge.php site:render
    ```
 
 4. **View your site:**
@@ -51,23 +51,20 @@ Your StaticForge installation comes ready to use! Here's how to get started:
 
 ## Development
 
-### Using Lando (Recommended)
+### Development Commands
 
 ```bash
-# Start development environment
-lando start
-
 # Run tests
-lando phpunit
+phpunit
 
 # Check code style
-lando phpcs src/
+phpcs src/
 
 # Fix code style
-lando phpcbf
+phpcbf
 
 # Run CLI commands
-lando php bin/console.php list
+php bin/staticforge.php list
 ```
 
 ### Requirements

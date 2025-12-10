@@ -17,33 +17,33 @@
 
 ### 1. FeatureTools (Priority: High)
 *Encapsulates tooling for managing features.*
-- [ ] Create `src/Features/FeatureTools/` structure.
-- [ ] Move `FeatureCreateCommand` -> `src/Features/FeatureTools/Commands/FeatureCreateCommand.php`.
-- [ ] Move `FeatureSetupCommand` -> `src/Features/FeatureTools/Commands/FeatureSetupCommand.php`.
-- [ ] Move `ListFeaturesCommand` -> `src/Features/FeatureTools/Commands/ListFeaturesCommand.php`.
-- [ ] Create `FeatureTools/Feature.php` and register commands in `CONSOLE_INIT`.
+- [x] Create `src/Features/FeatureTools/` structure.
+- [x] Move `FeatureCreateCommand` -> `src/Features/FeatureTools/Commands/FeatureCreateCommand.php`.
+- [x] Move `FeatureSetupCommand` -> `src/Features/FeatureTools/Commands/FeatureSetupCommand.php`.
+- [x] Move `ListFeaturesCommand` -> `src/Features/FeatureTools/Commands/ListFeaturesCommand.php`.
+- [x] Create `FeatureTools/Feature.php` and register commands in `CONSOLE_INIT`.
 
 ### 2. SiteBuilder (Priority: Medium)
 *Encapsulates the core build process.*
-- [ ] Create `src/Features/SiteBuilder/` structure.
-- [ ] Move `RenderSiteCommand` -> `src/Features/SiteBuilder/Commands/RenderSiteCommand.php`.
-- [ ] Create `SiteBuilder/Feature.php` and register command.
+- [x] Create `src/Features/SiteBuilder/` structure.
+- [x] Move `RenderSiteCommand` -> `src/Features/SiteBuilder/Commands/RenderSiteCommand.php`.
+- [x] Create `SiteBuilder/Feature.php` and register command.
 
 ### 3. Deployment (Priority: Medium)
 *Encapsulates deployment logic.*
-- [ ] Create `src/Features/Deployment/` structure.
-- [ ] Move `UploadSiteCommand` -> `src/Features/Deployment/Commands/UploadSiteCommand.php`.
-- [ ] Create `Deployment/Feature.php` and register command.
+- [x] Create `src/Features/Deployment/` structure.
+- [x] Move `UploadSiteCommand` -> `src/Features/Deployment/Commands/UploadSiteCommand.php`.
+- [x] Create `Deployment/Feature.php` and register command.
 
 ### 4. DevServer (Priority: Low)
 *Encapsulates the local development server.*
-- [ ] Create `src/Features/DevServer/` structure.
-- [ ] Move `DevServerCommand` -> `src/Features/DevServer/Commands/DevServerCommand.php`.
-- [ ] Create `DevServer/Feature.php` and register command.
+- [x] Create `src/Features/DevServer/` structure.
+- [x] Move `DevServerCommand` -> `src/Features/DevServer/Commands/DevServerCommand.php`.
+- [x] Create `DevServer/Feature.php` and register command.
 
 ### 5. Cleanup & Wiring
-- [ ] Update `bin/staticforge.php`:
-    - [ ] Remove manual `add()` calls for moved commands.
-    - [ ] Ensure `site:init` remains.
-- [ ] Verify all commands appear in `bin/staticforge.php list`.
-- [ ] Verify `disabled_features` in `siteconfig.yaml` can successfully disable these new features.
+- [x] Update `bin/staticforge.php`:
+    - [x] Remove manual `add()` calls for moved commands.
+    - [x] Ensure `site:init` remains.
+- [x] Verify all commands appear in `bin/staticforge.php list`.
+- [x] Verify `disabled_features` in `siteconfig.yaml` can successfully disable these new features.

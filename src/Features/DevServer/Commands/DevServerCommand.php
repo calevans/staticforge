@@ -54,7 +54,7 @@ class DevServerCommand extends Command
         // Check if public directory exists
         if (!is_dir($this->publicDir)) {
             $io->error("Public directory not found: {$this->publicDir}");
-            $io->note('Run "php bin/console.php render:site" first to generate the site.');
+            $io->note('Run "php bin/staticforge.php render:site" first to generate the site.');
             return Command::FAILURE;
         }
 

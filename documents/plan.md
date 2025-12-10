@@ -174,7 +174,7 @@ When marking steps as complete, add ✅ to the step title and mark each individu
 ## Step 8. CLI Interface with Symfony Console ✅
 - ✅ Review `documents/idea.md`, `documents/design.md`, `documents/technical.md`, and `documents/plan.md` completely to understand the plan and scope.
 - ✅ Review all code about to be edited and any related code.
-- ✅ Add Symfony Console dependency and create `bin/console.php` entry point
+- ✅ Add Symfony Console dependency and create `bin/staticforge.php` entry point
 - ✅ Create `RenderSiteCommand` that triggers full site generation
 - ✅ Add command options: `--clean` (remove output directory before generation), `--verbose` for basic control
 - ✅ Implement proper exit codes and error reporting
@@ -598,7 +598,7 @@ This step is no longer needed as logger registration is part of bootstrap.php cr
 - Apply SOLID: Logger factory encapsulated in closure
 
 ### Step 23.2. Update Console Entry Point ✅
-- Modify `bin/console.php`:
+- Modify `bin/staticforge.php`:
   - Remove `require vendor/autoload.php`
   - Add `$container = require __DIR__ . '/../src/bootstrap.php';` at the top
   - Pass container to all command constructors
@@ -669,9 +669,9 @@ This step is no longer needed as logger registration is part of bootstrap.php cr
 
 ### Step 23.8. Verification & Testing
 - Run full test suite - all 196 tests must pass
-- Verify `bin/console.php list` works
-- Verify `bin/console.php site:render` works
-- Verify `bin/console.php site:upload` works
+- Verify `bin/staticforge.php list` works
+- Verify `bin/staticforge.php site:render` works
+- Verify `bin/staticforge.php site:upload` works
 - Test with different .env configurations
 - Apply Quality Gates: All tests passing, system working
 
@@ -684,7 +684,7 @@ This step is no longer needed as logger registration is part of bootstrap.php cr
 
 ### Completion Checklist
 - Create `src/bootstrap.php` with full implementation
-- Update `bin/console.php` to use new bootstrap
+- Update `bin/staticforge.php` to use new bootstrap
 - Update all command constructors to require Container
 - Update Application class if needed
 - Remove `src/Core/Bootstrap.php`
@@ -825,7 +825,7 @@ Create a `site:upload` command that uploads the generated static site to a remot
   - Add "site:upload" section after "site:render"
   - Explain SFTP upload functionality
   - Show configuration examples for both authentication methods
-  - Provide usage examples: `php bin/console.php site:upload`
+  - Provide usage examples: `php bin/staticforge.php site:upload`
   - Document `--input` option usage
   - Explain error handling behavior (continues on errors)
   - Include security best practices (use key-based auth, secure .env file)
@@ -905,12 +905,12 @@ Enable users to install StaticForge via `composer create-project eicc/staticforg
   "post-create-project-cmd": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
       "@php -r \"if (!file_exists('output')) mkdir('output', 0755, true);\"",
-      "@php bin/console.php --version",
+      "@php bin/staticforge.php --version",
       "@php -r \"echo PHP_EOL . '✓ StaticForge installed successfully!' . PHP_EOL;\"",
       "@php -r \"echo '  Next steps:' . PHP_EOL;\"",
       "@php -r \"echo '  1. Edit .env to configure your site' . PHP_EOL;\"",
       "@php -r \"echo '  2. Add content to content/ directory' . PHP_EOL;\"",
-      "@php -r \"echo '  3. Run: php bin/console.php render:site' . PHP_EOL . PHP_EOL;\""
+      "@php -r \"echo '  3. Run: php bin/staticforge.php render:site' . PHP_EOL . PHP_EOL;\""
   ]
   ```
 - ✅ Apply KISS: Simple PHP one-liners, standard Composer script hooks
@@ -991,7 +991,7 @@ Enable users to install StaticForge via `composer create-project eicc/staticforg
   - ✅ Verify `output/` directory created with correct permissions
   - ✅ Verify all templates present and accessible
   - ✅ Verify starter content exists and is valid
-  - ✅ Run `php bin/console.php render:site`
+  - ✅ Run `php bin/staticforge.php render:site`
   - ✅ Verify successful site generation with starter content
   - ✅ Verify all console commands work (`render:site`, `site:upload --help`)
   - ✅ Verify `composer install` works in created project

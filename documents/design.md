@@ -72,7 +72,7 @@ This matters now because power users need a static site generator they can fully
 
 **Scenario 1: Basic Site Generation**
 - User places content files in source directory
-- Runs `render:site` command
+- Runs `site:render` command
 - System discovers files, processes through feature pipeline
 - Outputs complete static site ready for deployment
 

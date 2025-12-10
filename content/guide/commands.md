@@ -11,13 +11,13 @@ menu: '2.1.4'
 
 ```bash
 # Generate site
-php bin/console.php site:render
+php bin/staticforge.php site:render
 
 # With options
-php bin/console.php site:render --template=staticforce --clean
+php bin/staticforge.php site:render --template=staticforce --clean
 
 # List all commands
-php bin/console.php list
+php bin/staticforge.php list
 ```
 
 ### site:page - Render Single Page
@@ -26,10 +26,10 @@ Render a specific page or pattern of pages instead of the entire site.
 
 ```bash
 # Render single page
-php bin/console.php site:page content/about.md
+php bin/staticforge.php site:page content/about.md
 
 # Render pattern
-php bin/console.php site:page "content/blog/*.md"
+php bin/staticforge.php site:page "content/blog/*.md"
 ```
 
 ## Deployment Commands
@@ -75,16 +75,16 @@ The `site:upload` command **always** re-renders your site for production before 
 
 ```bash
 # Upload using UPLOAD_URL from .env (Recommended)
-php bin/console.php site:upload
+php bin/staticforge.php site:upload
 
 # Upload with production URL override (Overrides .env)
-php bin/console.php site:upload --url="https://staging.mysite.com/"
+php bin/staticforge.php site:upload --url="https://staging.mysite.com/"
 
 # Upload from custom directory (Advanced)
-php bin/console.php site:upload --input=/path/to/custom/output
+php bin/staticforge.php site:upload --input=/path/to/custom/output
 
 # Verbose output shows each file uploaded
-php bin/console.php site:upload -v
+php bin/staticforge.php site:upload -v
 ```
 
 #### Typical Workflow
@@ -96,7 +96,7 @@ php bin/console.php site:upload -v
 #   b. Re-render the site to a temporary directory with that URL
 #   c. Upload the generated files via SFTP
 #   d. Clean up the temporary directory
-php bin/console.php site:upload
+php bin/staticforge.php site:upload
 ```
 
 #### How It Works
@@ -152,10 +152,10 @@ List all available features and their current status (enabled/disabled). This is
 
 ```bash
 # List features
-php bin/console.php system:features
+php bin/staticforge.php system:features
 
 # Alias
-php bin/console.php system:plugins
+php bin/staticforge.php system:plugins
 ```
 
 **Example Output:**

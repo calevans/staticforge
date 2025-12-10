@@ -20,7 +20,7 @@
  * - `href="{{ site_base_url }}{{ item.url }}"` -> `href="{{ item.url }}"`
  *
  * USAGE:
- * lando php migrations/fix_double_urls.php
+ * php migrations/fix_double_urls.php
  */
 
 require_once __DIR__ . '/../src/bootstrap.php';

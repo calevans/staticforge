@@ -36,7 +36,7 @@ lando phpcbf
 lando phpunit
 
 # CLI commands (Symfony Console)
-lando php bin/console.php list
+lando php bin/staticforge.php list
 ```
 
 

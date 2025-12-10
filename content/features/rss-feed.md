@@ -41,7 +41,7 @@ This tutorial will teach you the basics of PHP...
 Run the build command:
 
 ```bash
-php bin/console.php site:render
+php bin/staticforge.php site:render
 ```
 
 ### 3. Find Your Feeds
@@ -103,7 +103,7 @@ In your category index or base template:
 
 ## Testing Your RSS Feed
 
-1. Generate your site: `php bin/console.php site:render`
+1. Generate your site: `php bin/staticforge.php site:render`
 2. Check the feed: `cat public/tutorials/rss.xml`
 3. Validate it: Use [W3C Feed Validator](https://validator.w3.org/feed/)
 4. Subscribe in a reader: Try Feedly, NewsBlur, or another RSS reader

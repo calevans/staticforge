@@ -208,18 +208,19 @@ Features are self-contained components that:
 Features can expose data to templates by storing it in the event parameters:
 
 ```php
-public function handlePostGlob(Container $container, array $parameters): array
-{
-    // Process data
-    $menuData = $this->buildMenus();
+    public function handlePostGlob(Container $container, array $parameters): array
+    {
+        // Process data
+        $menuData = $this->buildMenus();
 
-    // Expose to templates
-    $parameters['features'][$this->getName()] = [
-        'files' => $menuData,
-        'html' => $renderedHtml
-    ];
+        // Expose to templates
+        $parameters['features'][$this->getName()] = [
+            'files' => $menuData,
+            'html' => $renderedHtml
+        ];
 
-    return $parameters;
+        return $parameters;
+    }
 }
 ```
 

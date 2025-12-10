@@ -21,7 +21,7 @@ cp docs/examples/blog-post.md content/blog/my-first-post.md
 Then regenerate your site:
 
 ```bash
-lando php bin/console.php render:site
+php bin/staticforge.php site:render
 ```
 
 ## Format Notes

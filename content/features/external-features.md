@@ -30,7 +30,7 @@ To install an external feature, follow these steps:
 2.  **Run Setup Command:**
     Most external features come with example configuration files. Run the setup command to copy them to your project root:
     ```bash
-    php bin/console.php feature:setup vendor/package-name
+    php bin/staticforge.php feature:setup vendor/package-name
     ```
     This will create example files like `.env.example.package-name` or `siteconfig.yaml.example.package-name`.
 

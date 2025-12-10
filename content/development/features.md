@@ -60,7 +60,22 @@ StaticForge supports two types of features with a priority-based loading system:
 
 ## Creating Custom Features
 
-### Project Setup
+### Using the CLI Generator (Recommended)
+
+StaticForge provides a CLI command to scaffold new features quickly. To create a new feature, run:
+
+```bash
+php bin/staticforge.php feature:create MyNewFeature
+```
+
+This will:
+1. Create the directory structure in `src/Features/MyNewFeature`
+2. Generate a `Feature.php` class with basic event registration
+3. Generate a `Services/MyNewFeatureService.php` class for business logic
+
+### Manual Setup
+
+If you prefer to set up manually:
 
 1. **Create features directory**:
    ```bash
@@ -101,7 +116,7 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'MyCustomFeature'; // Unique identifier
 
-    protected array $eventMethods = [
+    protected array $eventListeners = [
         'RENDER' => ['method' => 'handleRender', 'priority' => 10],
     ];
 
@@ -113,10 +128,12 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'MyCustomFeature registered');
     }
 
-    public function handleRender(array $parameters): void
+    public function handleRender(Container $container, array $parameters): array
     {
         // Custom render logic here
         $this->logger->log('INFO', 'MyCustomFeature handling RENDER event');
+
+        return $parameters;
     }
 }
 ```
@@ -138,10 +155,12 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     protected string $name = 'MarkdownRenderer'; // Same name = override
 
     // Your custom implementation
-    public function handleRender(array $parameters): void
+    public function handleRender(Container $container, array $parameters): array
     {
         // Custom markdown rendering logic
         // This will replace the library's MarkdownRenderer
+
+        return $parameters;
     }
 }
 ```
@@ -692,7 +711,7 @@ class Feature extends BaseFeature
 ### Enable Verbose Logging
 
 ```bash
-lando php bin/console.php render:site -v
+php bin/staticforge.php render:site -v
 ```
 
 ### Add Debug Logging

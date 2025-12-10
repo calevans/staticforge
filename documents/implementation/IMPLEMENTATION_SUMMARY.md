@@ -125,7 +125,7 @@ Your content here...
 ### 2. Generate Site
 
 ```bash
-php bin/console.php render:site
+php bin/staticforge.php render:site
 ```
 
 ### 3. Access RSS Feed
@@ -139,8 +139,8 @@ https://yoursite.com/tutorials/rss.xml
 
 ```twig
 {% if category %}
-<link rel="alternate" type="application/rss+xml" 
-      title="RSS Feed for {{ category }}" 
+<link rel="alternate" type="application/rss+xml"
+      title="RSS Feed for {{ category }}"
       href="/{{ category|lower|replace({' ': '-'}) }}/rss.xml" />
 {% endif %}
 ```

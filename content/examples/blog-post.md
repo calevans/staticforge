@@ -80,7 +80,7 @@ This is my first post with StaticForge.
 Run the render command:
 
 ```bash
-php bin/console.php render:site
+php bin/staticforge.php site:render
 ```
 
 Your site is now in the `public/` directory!
