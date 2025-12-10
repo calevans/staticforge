@@ -47,3 +47,4 @@ applyTo: '**/*.php'
 - Cache expensive operations when possible.
 - Document complex business logic with inline comments.
 - Use meaningful commit messages when updating code.
+- If a variable is only going to be used once, don't create a variable, just use the value unless that is not possible.
