@@ -44,6 +44,7 @@ use EICC\StaticForge\Commands\UploadSiteCommand;
 use EICC\StaticForge\Commands\DevServerCommand;
 use EICC\StaticForge\Commands\ListFeaturesCommand;
 use EICC\StaticForge\Commands\FeatureSetupCommand;
+use EICC\StaticForge\Commands\FeatureCreateCommand;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
 use Symfony\Component\Console\Application;
@@ -66,6 +67,7 @@ $app->add(new UploadSiteCommand($container));
 $app->add(new DevServerCommand());
 $app->add(new ListFeaturesCommand($container->get(FeatureManager::class)));
 $app->add(new FeatureSetupCommand());
+$app->add(new FeatureCreateCommand());
 
 // Load features
 $container->get(FeatureManager::class)->loadFeatures();
