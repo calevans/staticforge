@@ -51,6 +51,11 @@ class FeatureManager
      */
     public function loadFeatures(): void
     {
+        // Prevent double loading
+        if (!empty($this->features)) {
+            return;
+        }
+
         // Load disabled features from site config
         $siteConfig = $this->container->getVariable('site_config') ?? [];
         if (isset($siteConfig['disabled_features']) && is_array($siteConfig['disabled_features'])) {
