@@ -13,6 +13,7 @@
 site:
   name: "My Awesome Site"
   tagline: "Built with ❤️ and PHP"
+  template: "sample"
 
 # Static menu definitions
 # These create named menus accessible in templates as {{ menu_name }}

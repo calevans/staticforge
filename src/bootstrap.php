@@ -164,6 +164,12 @@ foreach ($siteConfigPaths as $configPath) {
 // Store site configuration in container
 $container->setVariable('site_config', $siteConfig);
 
+// Override TEMPLATE from siteconfig if present
+if (isset($siteConfig['site']['template'])) {
+    $container->setVariable('TEMPLATE', $siteConfig['site']['template']);
+}
+
+
 
 // Register logger as singleton service (reads from $_ENV directly)
 $container->stuff('logger', function () {

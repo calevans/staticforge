@@ -13,7 +13,7 @@ use Symfony\Component\Console\Helper\Table;
 
 class ListFeaturesCommand extends Command
 {
-    protected static $defaultName = 'system:features';
+    protected static $defaultName = 'feature:list';
     protected static $defaultDescription = 'List all available features and their status';
 
     private FeatureManager $featureManager;

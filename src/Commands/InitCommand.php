@@ -93,6 +93,11 @@ class InitCommand extends Command
         $envPath = '.env';
         $examplePath = '.env.example';
 
+        if (!file_exists($examplePath)) {
+            $packagePath = $this->findVendorPath();
+            $examplePath = $packagePath . '/.env.example';
+        }
+
         if (file_exists($envPath) && !$force) {
             $io->note('.env file already exists. Use --force to overwrite.');
             return;
@@ -102,7 +107,7 @@ class InitCommand extends Command
             copy($examplePath, $envPath);
             $io->success('Created .env configuration file from .env.example');
         } else {
-            $io->warning('.env.example not found. Skipping .env creation.');
+            $io->warning(".env.example not found at {$examplePath}. Skipping .env creation.");
         }
     }
 
@@ -110,6 +115,11 @@ class InitCommand extends Command
     {
         $configPath = 'siteconfig.yaml';
         $examplePath = 'siteconfig.yaml.example';
+
+        if (!file_exists($examplePath)) {
+            $packagePath = $this->findVendorPath();
+            $examplePath = $packagePath . '/siteconfig.yaml.example';
+        }
 
         if (file_exists($configPath) && !$force) {
             $io->note('siteconfig.yaml file already exists. Use --force to overwrite.');
@@ -120,7 +130,7 @@ class InitCommand extends Command
             copy($examplePath, $configPath);
             $io->success('Created siteconfig.yaml configuration file from siteconfig.yaml.example');
         } else {
-            $io->warning('siteconfig.yaml.example not found. Skipping siteconfig.yaml creation.');
+            $io->warning("siteconfig.yaml.example not found at {$examplePath}. Skipping siteconfig.yaml creation.");
         }
     }
 

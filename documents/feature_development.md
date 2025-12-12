@@ -6,6 +6,12 @@ This guide explains how to create a standalone feature package for StaticForge t
 
 StaticForge supports a modular ecosystem where features can be developed as separate Composer packages. These packages are automatically discovered and loaded by the system.
 
+## Principles
+- **KISS**
+- **Zero Config**
+- **Centralized Config**
+- **Safety**
+
 ## Creating a Feature Package
 
 ### 1. Directory Structure
