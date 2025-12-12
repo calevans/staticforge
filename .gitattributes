@@ -11,7 +11,6 @@
 /migrations export-ignore
 
 # Files to exclude
-/.env.example export-ignore
 /.gitignore export-ignore
 /phpunit.xml export-ignore
 /phpstan.neon export-ignore
