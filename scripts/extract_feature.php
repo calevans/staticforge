@@ -443,6 +443,16 @@ if (!$verificationPassed) {
 
 echo "Verification successful.\n";
 
+// Ask for confirmation
+echo "Do you want to delete the source files? (y/N): ";
+$handle = fopen("php://stdin", "r");
+$line = fgets($handle);
+if (trim(strtolower($line)) !== 'y') {
+    echo "Aborting deletion.\n";
+    exit;
+}
+fclose($handle);
+
 // --- Cleanup Logic ---
 echo "\nCleaning up source files...\n";
 
@@ -461,16 +471,26 @@ foreach ([
         );
         foreach ($it as $file) {
             if ($file->isDir()) {
-                rmdir($file->getPathname());
+                if (!rmdir($file->getPathname())) {
+                    echo "Warning: Failed to remove directory " . $file->getPathname() . "\n";
+                }
             } else {
-                unlink($file->getPathname());
+                if (!unlink($file->getPathname())) {
+                    echo "Warning: Failed to delete file " . $file->getPathname() . "\n";
+                }
             }
         }
-        rmdir($path);
-        echo "Deleted directory: $path\n";
+        if (rmdir($path)) {
+            echo "Deleted directory: $path\n";
+        } else {
+            echo "Warning: Failed to remove directory $path\n";
+        }
     } elseif (file_exists($path)) {
-        unlink($path);
-        echo "Deleted file: $path\n";
+        if (unlink($path)) {
+            echo "Deleted file: $path\n";
+        } else {
+            echo "Warning: Failed to delete file $path\n";
+        }
     }
 }
 

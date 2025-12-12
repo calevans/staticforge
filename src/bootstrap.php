@@ -131,6 +131,11 @@ $container->setVariable('app_root', $appRoot);
 // Copy environment variables to container for backward compatibility
 // Components read configuration from container variables
 foreach ($_ENV as $key => $value) {
+    // Skip TEMPLATE if it's in ENV, we will handle it via siteconfig or default later
+    // to avoid collision if siteconfig also defines it.
+    if ($key === 'TEMPLATE') {
+        continue;
+    }
     $container->setVariable($key, $value);
 }
 
@@ -164,10 +169,20 @@ foreach ($siteConfigPaths as $configPath) {
 // Store site configuration in container
 $container->setVariable('site_config', $siteConfig);
 
-// Override TEMPLATE from siteconfig if present
+// Determine TEMPLATE source of truth
+// 1. siteconfig.yaml (Preferred)
+// 2. .env (Deprecated but supported)
+// 3. Default 'staticforce'
+
+$template = 'staticforce'; // Default
+
 if (isset($siteConfig['site']['template'])) {
-    $container->setVariable('TEMPLATE', $siteConfig['site']['template']);
+    $template = $siteConfig['site']['template'];
+} elseif (isset($_ENV['TEMPLATE'])) {
+    $template = $_ENV['TEMPLATE'];
 }
+
+$container->setVariable('TEMPLATE', $template);
 
 
 
