@@ -78,11 +78,21 @@ These come from your `.env` configuration:
 {{ site_tagline }}       {# Your site's tagline (from SITE_TAGLINE) #}
 ```
 
-> **Important Note on URLs:**
-> StaticForge generates fully qualified absolute URLs for all content links (menus, category files, etc.).
-> You should **only** use `{{ site_base_url }}` when linking to static assets like CSS, JS, or images in your template.
+> **CRITICAL: Asset Links Must Be Absolute**
+> Because StaticForge generates static HTML files that may live at different directory depths (e.g., `index.html` vs `blog/post.html`), **you cannot use relative paths** for your assets.
 >
-> **Correct:** `<link href="{{ site_base_url }}assets/css/style.css">`
+> ❌ **BROKEN:** `<link href="/assets/css/style.css">` (Will fail on subpages)
+> ✅ **REQUIRED:** `<link href="{{ site_base_url|trim('/') }}/assets/css/style.css">`
+>
+> **Handling Trailing Slashes:**
+> The `SITE_BASE_URL` in your configuration might or might not have a trailing slash. To ensure consistent URLs and avoid double slashes (e.g., `https://example.com//assets/...`), always use the `trim` filter when constructing paths:
+>
+> **Robust:** `<link href="{{ site_base_url|trim('/') }}/assets/css/style.css">`
+> **Fragile:** `<link href="{{ site_base_url }}/assets/css/style.css">`
+>
+> **Note on Content Links:**
+> StaticForge automatically generates fully qualified absolute URLs for content links (menus, category files, etc.). You do **not** need to prepend `site_base_url` to these.
+>
 > **Correct:** `<a href="{{ item.url }}">Link</a>` (where item.url is already absolute)
 > **Incorrect:** `<a href="{{ site_base_url }}{{ item.url }}">Link</a>` (results in double URL)
 

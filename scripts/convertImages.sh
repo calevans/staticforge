@@ -18,10 +18,18 @@ else
     exit 1
 fi
 
+# Load template from siteconfig.yaml
+if [ -f siteconfig.yaml ]; then
+    TEMPLATE=$(grep "template:" siteconfig.yaml | head -n 1 | awk -F': ' '{print $2}' | tr -d '"' | tr -d "'")
+else
+    echo "siteconfig.yaml not found!"
+    exit 1
+fi
+
 # Check if required variables are set
 if [ -z "$SOURCE_DIR" ] || [ -z "$TEMPLATE_DIR" ] || [ -z "$TEMPLATE" ]; then
-    echo "Error: Missing required configuration in .env"
-    echo "Ensure SOURCE_DIR, TEMPLATE_DIR, and TEMPLATE are set."
+    echo "Error: Missing required configuration."
+    echo "Ensure SOURCE_DIR and TEMPLATE_DIR are set in .env, and template is set in siteconfig.yaml."
     exit 1
 fi
 
