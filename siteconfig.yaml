@@ -15,6 +15,12 @@ menu:
     Terms: terms
     Github: https://github.com/calevans/staticforge
 
+# Chapter Navigation Configuration
+chapter_nav:
+  menus: "2,3"
+  prev_symbol: "←"
+  next_symbol: "→"
+
 # Forms Configuration
 forms:
   contact:

@@ -11,6 +11,9 @@ These features are not included in the core installation to keep the base lightw
 
 ## Available Packages
 
+### **[Chapter Navigation](https://github.com/calevans/staticforge-chapternav)**
+(`calevans/staticforge-chapternav`)<br />
+Automatically generates sequential prev/next navigation links for documentation pages based on menu ordering.<br /><br />
 ### **[Google Analytics](https://github.com/calevans/staticforge-google-analytics)**
 (`calevans/staticforge-google-analytics`)<br />
 Adds Google Analytics tracking code to your site.<br /><br />
