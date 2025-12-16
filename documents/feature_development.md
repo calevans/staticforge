@@ -8,7 +8,9 @@ StaticForge supports a modular ecosystem where features can be developed as sepa
 
 ## Principles
 - **KISS**
-- **Zero Config**
+- **SOLID**
+- **YAGNI**
+- **DRY**
 - **Centralized Config**
 - **Safety**
 

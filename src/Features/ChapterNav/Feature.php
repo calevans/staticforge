@@ -41,6 +41,10 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handlePostGlob(Container $container, array $parameters): array
     {
+        if (!$this->requireFeatures(['MenuBuilder'])) {
+            return $parameters;
+        }
+
         return $this->service->processChapterNavigation($container, $parameters);
     }
 }

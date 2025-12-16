@@ -14,7 +14,6 @@ class ChapterNavService
     private array $configuredMenus = [];
     private string $prevSymbol = '←';
     private string $nextSymbol = '→';
-    private string $separator = '|';
 
     /**
      * Map of file paths to their sequential navigation context
@@ -109,14 +108,12 @@ class ChapterNavService
             $menusConfig = $chapterNavConfig['menus'] ?? '';
             $this->prevSymbol = $chapterNavConfig['prev_symbol'] ?? '←';
             $this->nextSymbol = $chapterNavConfig['next_symbol'] ?? '→';
-            $this->separator = $chapterNavConfig['separator'] ?? '|';
             $this->logger->log('INFO', 'ChapterNav: Configuration loaded from siteconfig.yaml');
         } else {
             // Fallback to environment variables
             $menusConfig = $container->getVariable('CHAPTER_NAV_MENUS') ?? '';
             $this->prevSymbol = $container->getVariable('CHAPTER_NAV_PREV_SYMBOL') ?? '←';
             $this->nextSymbol = $container->getVariable('CHAPTER_NAV_NEXT_SYMBOL') ?? '→';
-            $this->separator = $container->getVariable('CHAPTER_NAV_SEPARATOR') ?? '|';
             $this->logger->log('INFO', 'ChapterNav: Configuration loaded from .env (fallback)');
         }
 
@@ -213,7 +210,6 @@ class ChapterNavService
     // Getters for testing
     public function getPrevSymbol(): string { return $this->prevSymbol; }
     public function getNextSymbol(): string { return $this->nextSymbol; }
-    public function getSeparator(): string { return $this->separator; }
     /** @return array<string, mixed> */
     public function getConfiguredMenus(): array { return $this->configuredMenus; }
 }
