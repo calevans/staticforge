@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "calevans/staticforge-google-analytics": "^1.1",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
         "league/commonmark": "^2.4",
