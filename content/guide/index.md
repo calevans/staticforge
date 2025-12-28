@@ -10,6 +10,7 @@ Welcome to the StaticForge User Guide. Here you will find everything you need to
 ## Contents
 
 *   [Quick Start Guide](quick-start.html) - Get up and running in minutes.
+*   [Frontmatter Guide](frontmatter.html) - Learn how to use metadata in your content.
 *   [Configuration](configuration.html) - Learn about `.env` and environment settings.
 *   [Site Configuration](site-config.html) - Configure menus and site-wide settings.
 *   [Commands](commands.html) - Reference for CLI commands.
