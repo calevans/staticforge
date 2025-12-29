@@ -41,7 +41,7 @@ class TagsFeatureTest extends UnitTestCase
 
         $root = vfsStream::setup('test');
         $file = vfsStream::newFile('test.md')->at($root)->setContent('');
-        
+
         $this->setContainerVariable('discovered_files', [
             ['path' => $file->url(), 'url' => 'test.md', 'metadata' => ['tags' => ['php']]]
         ]);
@@ -61,7 +61,7 @@ class TagsFeatureTest extends UnitTestCase
             'file_path' => $file->url(),
             'metadata' => ['tags' => ['php']]
         ];
-        
+
         $result = $feature->handlePreRender($this->container, $parameters);
         $this->assertArrayHasKey('tag_data', $result);
         $this->assertContains('php', $result['tag_data']['tags']);
