@@ -108,7 +108,6 @@ class RssFeedService
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
         $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? 'https://example.com/';
 
         $siteConfig = $container->getVariable('site_config') ?? [];
@@ -134,7 +133,6 @@ class RssFeedService
                 $categorySlug,
                 $categoryData,
                 $outputDir,
-                $sourceDir,
                 $siteBaseUrl,
                 $siteName,
                 $categoryMetadata
@@ -150,7 +148,6 @@ class RssFeedService
      * @param string $categorySlug Sanitized category name
      * @param array<string, mixed> $categoryData Category data with files
      * @param string $outputDir Output directory
-     * @param string $sourceDir Source directory
      * @param string $siteBaseUrl Base URL for the site
      * @param string $siteName Site name
      * @param array<string, mixed> $categoryMetadata Category definition metadata
@@ -159,7 +156,6 @@ class RssFeedService
         string $categorySlug,
         array $categoryData,
         string $outputDir,
-        string $sourceDir,
         string $siteBaseUrl,
         string $siteName,
         array $categoryMetadata = []

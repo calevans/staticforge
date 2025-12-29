@@ -243,7 +243,9 @@ MD;
 
         // Check no subdirectories created
         $dirs = glob($this->testOutputDir . '/*', GLOB_ONLYDIR);
-        $this->assertEmpty($dirs);
+        // Filter out assets directory if it exists (created by TemplateAssets)
+        $dirs = array_filter($dirs, fn($dir) => basename($dir) !== 'assets');
+        $this->assertEmpty($dirs, 'Unexpected directories found: ' . implode(', ', $dirs));
     }
 
     public function testRssXmlIsValid(): void

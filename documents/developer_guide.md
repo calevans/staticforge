@@ -23,8 +23,8 @@ StaticForge is a PHP-based static site generator designed to bridge the gap betw
 
 When in doubt, look at these examples for the "right way" to do things. Mimic their structure, style, and patterns.
 
-*   **Code / Feature Implementation**: `src/Features/CategoryIndex`
-    *   *Why*: Demonstrates proper event registration, service separation, and container usage.
+*   **Feature Implementation**: `src/Features/RssFeed`
+    *   *Why*: The definitive example. Demonstrates event registration, service separation, container usage, and configuration validation (`ConfigurableFeatureInterface`).
 *   **Documentation**: `content/guide/index.md`
     *   *Why*: Demonstrates the desired tone (conversational, helpful) and structure.
 
@@ -96,3 +96,38 @@ These are "nuggets" from previous planning documents that are not yet implemente
 
 *   **Origin**: Created to give PHP developers a native tool for static sites.
 *   **Evolution**: Started as a simple script, evolved into a Symfony Console application with a robust event system.
+
+## 10. AI Maintenance Prompts
+
+### Updating External Features for Config Validation
+
+Use this prompt when asking an LLM to update an external feature repository to support `ConfigurableFeatureInterface`.
+
+> We need to update this StaticForge feature to support the new configuration validation system.
+>
+> 1.  **Update Dependencies**: In `composer.json`, ensure the requirement for `eicc/staticforge` allows for the latest version (e.g., `>=1.14` or the latest tag) that includes `ConfigurableFeatureInterface`.
+> 2.  **Implement Interface**: Modify the main Feature class (usually in `src/Feature.php`) to implement `EICC\StaticForge\Core\ConfigurableFeatureInterface`.
+> 3.  **Define Requirements**: Implement `getRequiredConfig()` and `getRequiredEnv()`. If no config is required, return `[]`.
+>
+> Here is the interface definition for reference:
+> ```php
+> namespace EICC\StaticForge\Core;
+>
+> interface ConfigurableFeatureInterface
+> {
+>     /**
+>      * Returns an array of required keys for siteconfig.yaml.
+>      * Supports dot notation for nested keys (e.g., 'forms.contact.provider_url').
+>      *
+>      * @return string[]
+>      */
+>     public function getRequiredConfig(): array;
+>
+>     /**
+>      * Returns an array of required environment variable names.
+>      *
+>      * @return string[]
+>      */
+>     public function getRequiredEnv(): array;
+> }
+> ```

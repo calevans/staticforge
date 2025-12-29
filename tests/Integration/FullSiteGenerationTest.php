@@ -285,13 +285,13 @@ More *Markdown*');
         $this->assertDirectoryExists($this->testOutputDir);
         $files = glob($this->testOutputDir . '/*');
 
-      // Filter out robots.txt and sitemap.xml
+      // Filter out robots.txt, sitemap.xml, search.json, and assets directory
         $contentFiles = array_filter($files, function ($file) {
             $basename = basename($file);
-            return $basename !== 'robots.txt' && $basename !== 'sitemap.xml';
+            return !in_array($basename, ['robots.txt', 'sitemap.xml', 'search.json', 'assets']);
         });
 
-        $this->assertEmpty($contentFiles, 'Output directory should be empty of content when no content exists');
+        $this->assertEmpty($contentFiles, 'Output directory should be empty of content when no content exists. Found: ' . implode(', ', $contentFiles));
     }
 
     public function testPreservesMetadataAcrossRenderers(): void

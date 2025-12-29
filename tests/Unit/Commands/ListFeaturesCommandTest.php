@@ -38,7 +38,7 @@ class ListFeaturesCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new ListFeaturesCommand($featureManager));
-        $command = $application->find('system:features');
+        $command = $application->find('feature:list');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);
@@ -64,7 +64,7 @@ class ListFeaturesCommandTest extends TestCase
 
         $application = new Application();
         $application->add(new ListFeaturesCommand($featureManager));
-        $command = $application->find('system:features');
+        $command = $application->find('feature:list');
         $commandTester = new CommandTester($command);
 
         $commandTester->execute([]);

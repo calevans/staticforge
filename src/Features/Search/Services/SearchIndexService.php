@@ -49,12 +49,17 @@ class SearchIndexService
         $textContent = trim($textContent);
 
         // 4. Create document
+        $tags = $metadata['tags'] ?? [];
+        if (is_string($tags)) {
+            $tags = array_map('trim', explode(',', $tags));
+        }
+
         $doc = [
             'id' => $this->idCounter++,
             'title' => $metadata['title'] ?? 'Untitled',
             'text' => mb_substr($textContent, 0, 5000), // Limit text length to keep index size sane
             'url' => $url,
-            'tags' => implode(' ', $metadata['tags'] ?? []),
+            'tags' => implode(' ', $tags),
             'category' => $metadata['category'] ?? '',
         ];
 

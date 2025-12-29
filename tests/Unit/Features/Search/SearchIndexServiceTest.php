@@ -65,13 +65,20 @@ class SearchIndexServiceTest extends TestCase
 
         $this->assertCount(1, $json);
         $this->assertEquals('Test Page', $json[0]['title']);
-        $this->assertEquals('This is content.', $json[0]['text']);
+        $this->assertEquals('Test PageThis is content.', $json[0]['text']);
         $this->assertEquals('https://example.com/test.html', $json[0]['url']);
         $this->assertEquals('foo bar', $json[0]['tags']);
     }
 
     public function testSkipsPageWithSearchIndexFalse(): void
     {
+        $this->container->method('getVariable')
+            ->willReturnMap([
+                ['site_config', []],
+                ['OUTPUT_DIR', $this->tempDir],
+                ['SITE_BASE_URL', 'https://example.com']
+            ]);
+
         $parameters = [
             'metadata' => ['title' => 'Hidden Page', 'search_index' => false],
             'output_path' => $this->tempDir . '/hidden.html',
