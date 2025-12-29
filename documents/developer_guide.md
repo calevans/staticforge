@@ -59,6 +59,7 @@ The `site:render` command executes this specific sequence of events. Features ho
 Features are the primary way to extend StaticForge.
 
 *   **Interface**: Must implement `EICC\StaticForge\Core\FeatureInterface`.
+*   **Configuration Validation**: Implement `EICC\StaticForge\Core\ConfigurableFeatureInterface` to define required `siteconfig.yaml` keys and `.env` variables.
 *   **Registration**: Registered via `composer.json` `extra.staticforge` key (for external packages) or internal wiring.
 *   **Configuration**:
     *   **Secrets**: Use `.env` (accessed via Container).
@@ -90,7 +91,6 @@ These are "nuggets" from previous planning documents that are not yet implemente
 *   **Image Optimization**: A pipeline to resize/crop images and convert to WebP/AVIF automatically.
 *   **Asset Minification**: Minify CSS/JS in `public/` after the build.
 *   **Data Directory**: Break `siteconfig.yaml` into multiple files in a `data/` directory for better organization.
-*   **Config Validation**: Schema validation for `siteconfig.yaml` to prevent runtime errors.
 
 ## 9. Historical Context
 

@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Features\MenuBuilder;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
+use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuBuilderService;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuHtmlGenerator;
@@ -13,7 +14,7 @@ use EICC\StaticForge\Features\MenuBuilder\Services\StaticMenuProcessor;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
-class Feature extends BaseFeature implements FeatureInterface
+class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatureInterface
 {
     protected string $name = 'MenuBuilder';
     private Log $logger;
@@ -25,6 +26,16 @@ class Feature extends BaseFeature implements FeatureInterface
     protected array $eventListeners = [
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 100]
     ];
+
+    public function getRequiredConfig(): array
+    {
+        return ['menu'];
+    }
+
+    public function getRequiredEnv(): array
+    {
+        return [];
+    }
 
     public function register(EventManager $eventManager, Container $container): void
     {

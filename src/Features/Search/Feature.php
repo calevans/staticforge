@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\Search;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
+use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
 use EICC\StaticForge\Features\Search\Services\SearchAssetService;
@@ -16,7 +17,7 @@ use EICC\Utils\Log;
  * Search Feature - generates search.json and assets
  * Listens to POST_RENDER to collect page data, then POST_LOOP to generate the index
  */
-class Feature extends BaseFeature implements FeatureInterface
+class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatureInterface
 {
     protected string $name = 'Search';
     protected Log $logger;
@@ -30,6 +31,16 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100],
         'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
     ];
+
+    public function getRequiredConfig(): array
+    {
+        return ['search'];
+    }
+
+    public function getRequiredEnv(): array
+    {
+        return [];
+    }
 
     public function register(EventManager $eventManager, Container $container): void
     {

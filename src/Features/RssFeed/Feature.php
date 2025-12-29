@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\RssFeed;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
+use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
 use EICC\Utils\Container;
@@ -15,7 +16,7 @@ use EICC\Utils\Log;
  * RSS Feed Feature - generates category-based RSS feed files
  * Listens to POST_RENDER to collect category files, then POST_LOOP to generate feeds
  */
-class Feature extends BaseFeature implements FeatureInterface
+class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatureInterface
 {
     protected string $name = 'RssFeed';
     protected Log $logger;
@@ -28,6 +29,16 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 110],
         'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 90]
     ];
+
+    public function getRequiredConfig(): array
+    {
+        return ['site.name'];
+    }
+
+    public function getRequiredEnv(): array
+    {
+        return ['SITE_BASE_URL'];
+    }
 
     public function register(EventManager $eventManager, Container $container): void
     {
