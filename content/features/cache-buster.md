@@ -1,7 +1,7 @@
 ---
 title: 'Cache Buster'
 template: docs
-menu: '3.1.1'
+menu: '3.1.2'
 ---
 # Cache Buster
 

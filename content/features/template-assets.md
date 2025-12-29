@@ -1,7 +1,7 @@
 ---
 title: 'Assets Management'
 template: docs
-menu: '3.1.14'
+menu: '3.1.1'
 ---
 # Assets Management
 

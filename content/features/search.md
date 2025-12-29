@@ -1,7 +1,7 @@
 ---
 title: Search
 template: docs
-menu: '3.1.6'
+menu: '3.1.11'
 tags:
   - search
   - feature
