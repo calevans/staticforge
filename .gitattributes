@@ -19,3 +19,7 @@
 /package.json export-ignore
 /package-lock.json export-ignore
 /bin/release.php export-ignore
+/.lando.yml export-ignore
+/.lando.local.yml export-ignore
+/.phpunit.result.cache export-ignore
+/composer.lock export-ignore
