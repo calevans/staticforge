@@ -109,13 +109,13 @@ features:
 public function doSomethingCool(Container $container, array $data): array
 {
     // Get the config
-    $config = $this->getConfig(); 
+    $config = $this->getConfig();
 
     if ($config['show_author']) {
         $prefix = $config['prefix'] ?? 'By: ';
         // ...
     }
-    
+
     return $data;
 }
 ```

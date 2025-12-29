@@ -206,7 +206,7 @@ class MyCommand {
 class MyCommand {
     public function __construct() {
         // BAD! This creates a whole new universe!
-        $this->container = require 'src/bootstrap.php'; 
+        $this->container = require 'src/bootstrap.php';
     }
 }
 ```
@@ -222,7 +222,7 @@ $logger = $container->get('logger');
 **❌ NOT This:**
 ```php
 // BAD! Now you have two loggers fighting over the file.
-$logger = new Log(...); 
+$logger = new Log(...);
 ```
 
 ---

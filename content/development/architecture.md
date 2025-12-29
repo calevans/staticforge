@@ -175,7 +175,7 @@ class MyFeature extends BaseFeature
         foreach ($discoveredFiles as $fileData) {
             // Look at the metadata
             $metadata = $fileData['metadata'];
-            
+
             // Do something useful!
         }
 
