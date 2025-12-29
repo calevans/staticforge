@@ -100,6 +100,17 @@ forms:
 # social_links:
 #   twitter: https://twitter.com/mysite
 
+# Search Configuration
+# Controls the native client-side search feature
+search:
+  enabled: true
+  # Paths to exclude from the search index (e.g., list pages)
+  exclude_paths:
+    - /tags/
+    - /categories/
+  # Content directories to exclude entirely (e.g., private docs)
+  exclude_content_in: []
+
 # Google Analytics Configuration
 google_analytics:
   enabled: true

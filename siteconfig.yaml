@@ -60,3 +60,11 @@ disabled_features:
 google_analytics:
   enabled: true
   # tracking_id is now set in .env as GOOGLE_ANALYTICS_ID
+
+# Search Configuration
+search:
+  enabled: true
+  exclude_paths:
+    - /tags/
+    - /categories/
+  exclude_content_in: []

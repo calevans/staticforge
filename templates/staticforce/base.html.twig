@@ -37,6 +37,13 @@
                 {{ menu_top|raw }}
             </div>
             {% endif %}
+
+            {% block search_bar %}
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="Search docs...">
+                <div id="search-results" class="search-results"></div>
+            </div>
+            {% endblock %}
         </div>
     </nav>
 
@@ -60,6 +67,19 @@
     {% include 'staticforce/_footer.html.twig' %}
 
     <script src="{{ site_base_url }}assets/js/main.js"></script>
+    {% block search_scripts %}
+    <script src="{{ site_base_url }}assets/js/search.js"></script>
+    <script>
+        if (window.StaticForgeSearch) {
+            window.StaticForgeSearch.init({
+                inputSelector: '#search-input',
+                resultsSelector: '#search-results',
+                minisearchPath: '{{ site_base_url }}assets/js/minisearch.min.js',
+                indexPath: '{{ site_base_url }}search.json'
+            });
+        }
+    </script>
+    {% endblock %}
     {% block scripts %}{% endblock %}
 </body>
 </html>
