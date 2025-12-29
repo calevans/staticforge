@@ -75,13 +75,30 @@ class CheckCommand extends Command
             }
         }
 
+        $totalFeatures = count($features);
+        $failedFeaturesCount = count(array_unique(array_column($errors, 'feature')));
+        $passedFeatures = $checkedFeatures - $failedFeaturesCount;
+
+        $io->section('Validation Summary');
+        $io->text([
+            sprintf('Total Features Scanned:       %d', $totalFeatures),
+            sprintf('Features Requiring Config:    %d', $checkedFeatures),
+            sprintf('Features Passed Validation:   %d', $passedFeatures),
+        ]);
+
+        if ($failedFeaturesCount > 0) {
+            $io->text(sprintf('<error>Features Failed Validation:   %d</error>', $failedFeaturesCount));
+        }
+
+        $io->newLine();
+
         if (empty($errors)) {
-            $io->success("Configuration valid! Checked {$checkedFeatures} features.");
+            $io->success("All checks passed!");
             return Command::SUCCESS;
         }
 
         $io->error("Found " . count($errors) . " configuration errors.");
-        
+
         $tableRows = [];
         foreach ($errors as $error) {
             $tableRows[] = [$error['feature'], $error['type'], $error['key'], $error['message']];

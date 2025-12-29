@@ -70,16 +70,38 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
 }
 ```
 
-3.  **Release**: Tag a new version of the external feature.
-
 ## AI Agent Prompt Template
-Use this prompt when asking an LLM to update an external feature repository:
+Use this prompt when asking an LLM to update an external feature repository. It includes the interface definition so the AI knows exactly what to implement, even if it can't inspect the core library.
 
 > We need to update this StaticForge feature to support the new configuration validation system.
 >
 > 1.  **Update Dependencies**: In `composer.json`, ensure the requirement for `eicc/staticforge` allows for the latest version (e.g., `dev-main` or the latest tag) that includes `ConfigurableFeatureInterface`.
 > 2.  **Implement Interface**: Modify the main Feature class (usually in `src/Feature.php`) to implement `EICC\StaticForge\Core\ConfigurableFeatureInterface`.
+>
+> Here is the interface definition for reference:
+> ```php
+> namespace EICC\StaticForge\Core;
+>
+> interface ConfigurableFeatureInterface
+> {
+>     /**
+>      * Returns an array of required keys for siteconfig.yaml.
+>      * Supports dot notation for nested keys (e.g., 'forms.contact.provider_url').
+>      *
+>      * @return string[]
+>      */
+>     public function getRequiredConfig(): array;
+>
+>     /**
+>      * Returns an array of required environment variable names.
+>      *
+>      * @return string[]
+>      */
+>     public function getRequiredEnv(): array;
+> }
+> ```
+>
 > 3.  **Define Requirements**:
->     *   Implement `getRequiredConfig(): array`: Return a list of dot-notation keys that MUST exist in `siteconfig.yaml` (e.g., `['google_analytics.id']`). Look at the code to see what config values are accessed.
->     *   Implement `getRequiredEnv(): array`: Return a list of environment variables that MUST exist in `.env` (e.g., `['GA_API_SECRET']`).
+>     *   Implement `getRequiredConfig(): array`: Return a list of dot-notation keys that MUST exist in `siteconfig.yaml` (e.g., `['google_analytics.id']`). Look at the code to see what config values are accessed. If no config is required, return `[]`.
+>     *   Implement `getRequiredEnv(): array`: Return a list of environment variables that MUST exist in `.env` (e.g., `['GA_API_SECRET']`). If no env vars are required, return `[]`.
 > 4.  **Verify**: Ensure the code is syntactically correct and follows PSR-12.
