@@ -1,422 +1,151 @@
 ---
 menu: '4.1.5'
-name: 'Template Development'
+title: 'The Face of the Operation: Templates'
 template: docs
 ---
-# Template Development
+# The Face of the Operation: Templates
 
-Learn how to create and customize templates for your StaticForge site. Templates control how your content looks when rendered to HTML.
+If Features are the brains of StaticForge, **Templates** are the face. They determine what your users actually see.
 
-## Available Themes
-
-StaticForge comes with four built-in themes:
-
-- **`sample/`** - Clean, modern design (default)
-- **`terminal/`** - Retro terminal-style theme
-- **`vaulttech/`** - Vintage tech aesthetic
-- **`staticforce/`** - Documentation-focused theme
-
-You can switch themes by changing the `TEMPLATE` setting in your `.env` file. You can also override the value in the .env by specifying the `--template` option when running the `render:site` command.
+We use **Twig**, a powerful templating engine for PHP. If you know HTML, you already know 90% of Twig. The other 10% is just "filling in the blanks."
 
 ---
 
-## Template Structure
+## The "Master Slide" Concept (Inheritance)
 
-Every theme lives in the `templates/` directory. Here's what a typical theme looks like:
+The most powerful feature of Twig is **Inheritance**.
 
-```
-templates/
-├── sample/                      # Theme name
-│   ├── base.html.twig          # Main layout (required)
-│   ├── index.html.twig         # Homepage (optional)
-│   ├── category-index.html.twig # Category pages (optional)
-│   ├── menu1.html.twig         # Primary menu (optional)
-│   ├── menu2.html.twig         # Footer menu (optional)
-│   ├── placeholder.jpg         # Default image (optional)
-│   └── partials/               # Reusable components (optional)
-│       └── category-file-item.html.twig
-└── custom/                      # Your custom theme
-    ├── base.html.twig
-    └── ...
-```
+Think of it like a PowerPoint "Master Slide." You define the layout (Header, Footer, Sidebar) in *one place*, and every other page just fills in the content area.
 
-### Required Files
+### 1. The Master Layout (`base.html.twig`)
 
-**`base.html.twig`** - This is the main layout template. Every theme must have this file. It's used by default when you don't specify a template in your content file's frontmatter.
-
-### Optional Files
-
-- **`index.html.twig`** - Special template for your homepage
-- **`category-index.html.twig`** - Template for category listing pages
-- **`menu1.html.twig`** - Override how the primary menu is rendered
-- **`menu2.html.twig`** - Override how the secondary/footer menu is rendered
-- **`placeholder.jpg`** - Default image (recommended size: 1200×630px)
-
-### Creating Custom Templates
-
-You can create as many template files as you need! For example, if you want a special landing page design:
-
-1. Create `templates/yourtheme/landing.html.twig`
-2. In your content file's frontmatter, add: `template = "landing"`
-3. StaticForge will use `landing.html.twig` instead of `base.html.twig`
-
-In most cases, `base.html.twig` has all of the basic parts you need. It is then extended by different templates for specific purposes.
-
----
-
-## Template Variables
-
-Your templates have access to lots of variables. Here's what's available:
-
-### Site-Wide Variables
-
-These come from your `.env` configuration:
+This file contains the HTML skeleton that is shared by every page on your site.
 
 ```twig
-{{ site_name }}          {# Your site's name (from SITE_NAME) #}
-{{ site_base_url }}      {# Your site's URL (from SITE_BASE_URL) #}
-{{ site_tagline }}       {# Your site's tagline (from SITE_TAGLINE) #}
-```
-
-> **CRITICAL: Asset Links Must Be Absolute**
-> Because StaticForge generates static HTML files that may live at different directory depths (e.g., `index.html` vs `blog/post.html`), **you cannot use relative paths** for your assets.
->
-> ❌ **BROKEN:** `<link href="/assets/css/style.css">` (Will fail on subpages)
-> ✅ **REQUIRED:** `<link href="{{ site_base_url|trim('/') }}/assets/css/style.css">`
->
-> **Handling Trailing Slashes:**
-> The `SITE_BASE_URL` in your configuration might or might not have a trailing slash. To ensure consistent URLs and avoid double slashes (e.g., `https://example.com//assets/...`), always use the `trim` filter when constructing paths:
->
-> **Robust:** `<link href="{{ site_base_url|trim('/') }}/assets/css/style.css">`
-> **Fragile:** `<link href="{{ site_base_url }}/assets/css/style.css">`
->
-> **Note on Content Links:**
-> StaticForge automatically generates fully qualified absolute URLs for content links (menus, category files, etc.). You do **not** need to prepend `site_base_url` to these.
->
-> **Correct:** `<a href="{{ item.url }}">Link</a>` (where item.url is already absolute)
-> **Incorrect:** `<a href="{{ site_base_url }}{{ item.url }}">Link</a>` (results in double URL)
-
-### Page Content Variables
-
-These are available on every page:
-
-```twig
-{{ title }}              {# The page title #}
-{{ content }}            {# The rendered HTML content #}
-```
-
-### Metadata Variables
-
-These come from your content file's frontmatter (if defined):
-
-```twig
-{{ description }}        {# Meta description for SEO #}
-{{ author }}             {# Page author #}
-{{ date }}               {# Publication date #}
-{{ category }}           {# Page category #}
-{{ tags }}               {# Array of tags #}
-```
-
-### Feature Data Variables
-
-Features expose their data through the `features` object:
-
-```twig
-{# MenuBuilder - Pre-rendered menu HTML #}
-{{ features.MenuBuilder.html.1|raw }}   {# Primary menu HTML #}
-{{ features.MenuBuilder.html.2|raw }}   {# Secondary menu HTML #}
-
-{# MenuBuilder - Raw menu data for custom rendering #}
-{% if features.MenuBuilder.files[1] is defined %}
-  <ul class="my-menu">
-    {% for item in features.MenuBuilder.files[1] %}
-      <li><a href="{{ item.url }}">{{ item.title }}</a></li>
-    {% endfor %}
-  </ul>
-{% endif %}
-
-{# ChapterNav - Previous/Next navigation #}
-{% if features.ChapterNav is defined %}
-  {{ features.ChapterNav.html|raw }}
-{% endif %}
-```
-
-**Note:** The `|raw` filter tells Twig not to escape the HTML.
-
-### Menu Data Structure
-
-When using `features.MenuBuilder.files[X]`, each menu item contains:
-
-- `title` - Page title
-- `url` - Full URL with category prefix
-- `file` - Source file path
-- `position` - Menu position (e.g., "1.2")
-
-Items are automatically sorted by position.
-
-### Category Index Variables
-
-On category listing pages (like `category-index.html.twig`), you get these extra variables:
-
-```twig
-{{ category }}           {# Category name #}
-{{ total_files }}        {# How many files are in this category #}
-{{ files }}              {# Array of file objects in this category #}
-```
-
-Each file object in the `files` array has:
-
-```twig
-{% for file in files %}
-  {{ file.title }}       {# File's title #}
-  {{ file.url }}         {# Link to the file #}
-  {{ file.image }}       {# Hero/featured image URL #}
-  {{ file.date }}        {# File's date #}
-  {{ file.metadata }}    {# All metadata from the file #}
-{% endfor %}
-```
-
----
-
-## Feature Data Reference
-
-StaticForge features expose their data to templates through the `features` object. Here's what's available:
-
-### MenuBuilder
-
-```twig
-{# Option 1: Pre-rendered HTML #}
-{{ features.MenuBuilder.html.1|raw }}
-{{ features.MenuBuilder.html.2|raw }}
-
-{# Option 2: Raw data for custom markup #}
-{% for item in features.MenuBuilder.files[1] %}
-  <a href="{{ item.url }}">{{ item.title }}</a>
-{% endfor %}
-```
-
-### ChapterNav
-
-```twig
-{# Previous/Next navigation #}
-{{ features.ChapterNav.html|raw }}
-```
-
-### Tags
-
-```twig
-{# Tag cloud or list #}
-{% if features.Tags is defined %}
-  {% for tag, count in features.Tags.tags %}
-    <a href="/tags/{{ tag }}.html">{{ tag }} ({{ count }})</a>
-  {% endfor %}
-{% endif %}
-```
-
----
-
-## Example: Creating a Basic Template
-
-Here's a simple but complete template to get you started:
-
-```twig
-{# templates/custom/base.html.twig #}
+{# templates/mytheme/base.html.twig #}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  {# Page title with site name #}
-  <title>{{ title|default('Untitled Page') }} - {{ site_name }}</title>
-
-  {# SEO meta tags #}
-  {% if description %}
-    <meta name="description" content="{{ description }}">
-  {% endif %}
-
-  {# Keywords from tags #}
-  {% if tags is iterable and tags|length > 0 %}
-    <meta name="keywords" content="{{ tags|join(', ') }}">
-  {% endif %}
-
-  {# Use site_base_url for assets #}
-  <link rel="stylesheet" href="{{ site_base_url }}assets/css/style.css">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <link rel="stylesheet" href="{{ site_base_url }}/assets/css/style.css">
 </head>
 <body>
-  <header>
-    <h1>{{ site_name }}</h1>
-    <p>{{ site_tagline }}</p>
-
     <nav>
-      {# Primary menu #}
-      {{ features.MenuBuilder.html.1|raw }}
+        <!-- Menu goes here -->
     </nav>
-  </header>
 
-  <main>
-    {# This is where your page content appears #}
-    {{ content|raw }}
+    <main>
+        {# This is the "Slot" where child templates will inject content #}
+        {% block body %}
+        {% endblock %}
+    </main>
 
-    {# Chapter navigation if available #}
-    {% if features.ChapterNav is defined %}
-      {{ features.ChapterNav.html|raw }}
-    {% endif %}
-  </main>
-
-  <footer>
-    <p>&copy; 2025 {{ site_name }}. {{ site_tagline }}</p>
-
-    {# Secondary menu in footer #}
-    {{ features.MenuBuilder.html.2|raw }}
-  </footer>
+    <footer>
+        &copy; {{ "now"|date("Y") }} {{ site_name }}
+    </footer>
 </body>
 </html>
 ```
 
-### Key Points:
+### 2. The Child Page (`standard_page.html.twig`)
 
-- Use `|default('fallback')` to provide fallback values
-- Use `|raw` when outputting HTML content
-- Use `{% if variable %}` to check if something exists
-- Check `features.FeatureName is defined` before accessing feature data
-- Use `{% include 'filename.twig' %}` to include other template files
-
----
-
-## Example: Customizing Menu Display
-
-The menu templates receive pre-built HTML from the MenuBuilder feature. Here's how to display it:
+This file doesn't need to rewrite the `<html>` or `<body>` tags. It just says, "I want to use the Master Layout, and here is my content."
 
 ```twig
-{# templates/custom/menu1.html.twig #}
+{# templates/mytheme/standard_page.html.twig #}
+{% extends 'base.html.twig' %}
 
-{# Check if menu exists before displaying #}
-{% if features.MenuBuilder.html.1 is defined %}
-  {# Output the menu HTML #}
-  {{ features.MenuBuilder.html.1|raw }}
-{% endif %}
-```
+{% block title %}{{ title }} - {{ site_name }}{% endblock %}
 
-The MenuBuilder automatically creates structured HTML menus from your content files' `menu` frontmatter values.
-
----
-
-## Example: Category Index Page
-
-Here's how to create a custom category listing page:
-
-```twig
-{# templates/custom/category-index.html.twig #}
-{% extends "base.html.twig" %}
-
-{% block content %}
-<div class="category-page">
-  <h1>{{ category }}</h1>
-  <p>{{ total_files }} {{ total_files == 1 ? 'article' : 'articles' }} in this category</p>
-
-  <div class="file-grid">
-    {% for file in files %}
-      <article class="file-card">
-        {% if file.image %}
-          <img src="{{ file.image }}" alt="{{ file.title }}">
-        {% endif %}
-
-        <h2><a href="{{ file.url }}">{{ file.title }}</a></h2>
-
-        {% if file.metadata.description %}
-          <p>{{ file.metadata.description }}</p>
-        {% endif %}
-
-        {% if file.date %}
-          <time>{{ file.date }}</time>
-        {% endif %}
-      </article>
-    {% endfor %}
-  </div>
-</div>
+{% block body %}
+    <h1>{{ title }}</h1>
+    <div class="content">
+        {{ content|raw }}
+    </div>
 {% endblock %}
 ```
 
 ---
 
-## Using Template Blocks
+## Variables: Filling in the Blanks
 
-Twig's `{% block %}` feature lets you create flexible templates:
+StaticForge passes a lot of data to your templates. You access it using double curly braces: `{{ variable_name }}`.
 
-**Base template:**
+### The Essentials
+
+*   `{{ content }}`: The HTML content of your Markdown file.
+*   `{{ title }}`: The title from your Frontmatter.
+*   `{{ site_base_url }}`: The URL of your site (e.g., `https://mysite.com`). **Always use this for assets!**
+*   `{{ site_name }}`: The name of your site.
+
+### The "Features" Array
+
+Remember how features can expose data? It all lives in the `features` array.
+
+*   `{{ features.MenuBuilder.html.1 }}`: The main menu HTML.
+*   `{{ features.Tags.cloud }}`: The tag cloud HTML.
+
+---
+
+## Control Structures: Logic in HTML
+
+Sometimes you need to show things only if they exist, or loop through a list.
+
+### The `if` Statement
+
 ```twig
-{# base.html.twig #}
-<body>
-  <header>
-    {% block header %}
-      <h1>{{ site_name }}</h1>
-    {% endblock %}
-  </header>
-
-  <main>
-    {% block content %}
-      {{ content|raw }}
-    {% endblock %}
-  </main>
-</body>
+{% if image %}
+    <img src="{{ site_base_url }}/assets/images/{{ image }}" alt="{{ title }}">
+{% endif %}
 ```
 
-**Child template that extends it:**
+### The `for` Loop
+
 ```twig
-{# landing.html.twig #}
-{% extends "base.html.twig" %}
-
-{% block header %}
-  {# This replaces the header block #}
-  <div class="hero">
-    <h1>Welcome!</h1>
-  </div>
-{% endblock %}
-
-{# Content block uses the default from base.html.twig #}
+<ul>
+{% for tag in tags %}
+    <li><a href="{{ site_base_url }}/tags/{{ tag }}.html">{{ tag }}</a></li>
+{% endfor %}
+</ul>
 ```
 
 ---
 
-## Tips and Best Practices
+## The "Asset Trap" (Critical Warning)
 
-### Always Use Filters Appropriately
+This is the #1 mistake people make.
 
-- **`|raw`** - Use for HTML content that should NOT be escaped
-- **`|escape`** - Use for user input (Twig does this automatically)
-- **`|default('fallback')`** - Provide fallback values
-- **`|join(', ')`** - Convert arrays to comma-separated strings
+Because StaticForge generates static HTML files that live in different folders (e.g., `/index.html` vs `/blog/my-post.html`), **relative paths do not work**.
 
-### Check Before Using
+❌ **WRONG:**
+```html
+<link rel="stylesheet" href="css/style.css">
+```
+*   Works on homepage.
+*   Breaks on `/blog/post.html` (looks for `/blog/css/style.css`).
 
-Always check if a variable exists before using it:
-
+✅ **RIGHT:**
 ```twig
-{% if description %}
-  <meta name="description" content="{{ description }}">
-{% endif %}
+<link rel="stylesheet" href="{{ site_base_url }}/assets/css/style.css">
+```
+*   Always points to the root.
+
+---
+
+## Built-in Themes
+
+We include a few themes to get you started. You can find them in `templates/`.
+
+*   **`sample`**: A clean, modern default.
+*   **`terminal`**: A retro, hacker-style theme.
+*   **`staticforce`**: The documentation theme you are reading right now.
+
+To switch themes, just change the `TEMPLATE` variable in your `.env` file.
+
+```dotenv
+TEMPLATE="terminal"
 ```
 
-### Handle Arrays Safely
+---
 
-Check if something is an array before looping:
-
-```twig
-{% if tags is iterable and tags|length > 0 %}
-  {% for tag in tags %}
-    <span>{{ tag }}</span>
-  {% endfor %}
-{% endif %}
-```
-
-### Organizing Large Templates
-
-For complex templates, use partials:
-
-```twig
-{# base.html.twig #}
-<header>
-  {% include 'partials/navigation.html.twig' %}
-</header>
-```
+[← Back to Documentation](index.html)

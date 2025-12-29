@@ -1,73 +1,61 @@
 ---
-title: 'Bootstrap & Initialization'
+title: 'The Ignition Sequence: Bootstrapping'
 template: docs
 menu: '4.1.2'
 ---
-# Bootstrap & Initialization
+# The Ignition Sequence: Bootstrapping
 
-StaticForge uses a procedural bootstrap file for application initialization. This document explains how the bootstrap process works and how to use it in different contexts.
+Before StaticForge can build a single page, it has to wake up, stretch, and get its tools ready. We call this the **Bootstrap Process**.
 
----
-
-## Overview
-
-The bootstrap process handles:
-- Composer autoloading
-- Environment variable loading
-- Container initialization
-- Logger configuration
-- Application-wide service registration
-
-All of this is done in a single file: `src/bootstrap.php`
+It's not magic; it's just a single file (`src/bootstrap.php`) that sets the stage for everything else.
 
 ---
 
-## Bootstrap File Location
+## What Happens When You Hit Enter?
 
-```
-src/bootstrap.php
-```
+When you run a command like `site:render`, the system doesn't just start processing files immediately. First, it has to "pack its bags."
 
-This is a **procedural script**, not a class. It accepts parameters and returns a configured container.
+Here is the checklist it runs through:
+
+1.  **Autoloading**: "Where are all my classes?" (Thanks, Composer!)
+2.  **Environment Loading**: "What are the secrets?" (Reads `.env`)
+3.  **Container Creation**: "I need a bag to hold my tools." (Creates the Dependency Injection Container)
+4.  **Logger Setup**: "I need a notebook to write down what happens." (Sets up Logging)
+
+Once this checklist is complete, the system hands you a fully loaded **Container** and says, "I'm ready."
 
 ---
 
-## How Bootstrap Works
+## The Bootstrap File (`src/bootstrap.php`)
 
-### Basic Flow
+This file is unique. It's not a class; it's a procedural script. You give it an environment file, and it gives you back a Container.
 
-1. **Autoloading**: Requires Composer's autoloader
-2. **Environment Loading**: Loads `.env` file using Dotenv
-3. **Container Creation**: Creates EICC\Utils\Container instance
-4. **Logger Registration**: Registers logger as singleton service
-5. **Return**: Returns fully configured container
-
-### Code Structure
+### The Code Explained
 
 ```php
 <?php
-// Accept optional environment file path
+// 1. Allow overriding the environment file (useful for testing)
 $envPath = $envPath ?? '.env';
 
-// Load Composer autoloader
+// 2. Load Composer's Autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables
+// 3. Load Environment Variables
 $dotenv = Dotenv\Dotenv::createUnsafeImmutable(
     dirname($envPath),
     basename($envPath)
 );
 $dotenv->load();
 
-// Create container
+// 4. Create the Container (The "Bag of Tools")
 $container = new EICC\Utils\Container();
 
-// Copy environment variables to container for backward compatibility
+// 5. Copy .env vars into the Container
 foreach ($_ENV as $key => $value) {
     $container->setVariable($key, $value);
 }
 
-// Register logger as singleton
+// 6. Register the Logger
 $container->stuff('logger', function() {
     return new EICC\Utils\Log(
         'staticforge',
@@ -76,27 +64,27 @@ $container->stuff('logger', function() {
     );
 });
 
-// Return configured container
+// 7. Return the ready-to-use Container
 return $container;
 ```
 
 ---
 
-## Using Bootstrap in Entry Points
+## Starting the Engine (Console Usage)
 
-### Console Entry Point
+The most common way to start StaticForge is via the command line. The `bin/staticforge.php` script is the key.
 
-The main console script uses bootstrap:
+It simply requires the bootstrap file and then hands the container to the application.
 
 ```php
 #!/usr/bin/env php
 <?php
 // bin/staticforge.php
 
-// Bootstrap the application
+// 1. Run the Ignition Sequence
 $container = require_once __DIR__ . '/../src/bootstrap.php';
 
-// Create Symfony Console application
+// 2. Create the Console Application
 $app = new Symfony\Component\Console\Application('StaticForge', '1.0.0');
 
 // Add bootstrap command
@@ -162,285 +150,93 @@ class MyFeatureTest extends UnitTestCase
 }
 ```
 
-### Integration Tests
-
-Integration tests extend `IntegrationTestCase`:
-
-```php
-<?php
-class IntegrationTestCase extends TestCase
-{
-    /**
-     * Create a container using custom env file
-     */
-    protected function createContainer(string $envPath): Container
-    {
-        return require __DIR__ . '/../../src/bootstrap.php';
-    }
-}
-```
-
-**Usage:**
-```php
-class MyIntegrationTest extends IntegrationTestCase
-{
-    public function testFullWorkflow(): void
-    {
-        $envPath = $this->createTestEnv([
-            'SITE_NAME' => 'Integration Test',
-            'OUTPUT_DIR' => '/tmp/test-output'
-        ]);
-
-        $container = $this->createContainer($envPath);
-        $app = new Application($container);
-        $app->generate();
-    }
-}
-```
-
 ---
 
-## Custom Environment Files
+## The Toolbox (Container Services)
 
-**In Production:** You never need to call bootstrap directly. The console entry point (`bin/staticforge.php`) handles it.
+Once the bootstrap is done, the **Container** is your toolbox. It holds everything you need.
 
-**In Tests:** Tests use bootstrap with custom environment files:
+### The Logger
 
-```php
-// In test setUp() - use 'include' to allow per-test bootstrapping
-$envPath = __DIR__ . '/../.env.testing';
-$container = include __DIR__ . '/../../src/bootstrap.php';
-```
-
-**Why tests are different:**
-- Each test needs fresh container state
-- Tests use `.env.testing` instead of `.env`
-- `include` (not `include_once`) allows re-bootstrapping per test
-
----
-
-## Container Services
-
-### Logger Service
-
-The logger is registered as a singleton:
+We use a singleton logger so we don't have 50 different log files open.
 
 ```php
-// In any code with access to container
+// Get the logger from the toolbox
 $logger = $container->get('logger');
-$logger->info('Processing started');
+
+// Write to it
+$logger->info('Engine started successfully.');
 ```
-
-**Configuration** (from `.env`):
-- `LOG_FILE` - Path to log file (default: `logs/staticforge.log`)
-- `LOG_LEVEL` - Log level (default: `INFO`)
-
-**Log Levels:**
-- `DEBUG` - Detailed debugging information
-- `INFO` - Informational messages
-- `WARNING` - Warning messages
-- `ERROR` - Error messages
-- `CRITICAL` - Critical errors
 
 ### Environment Variables
 
-All environment variables are accessible:
+Need to know the site name? It's in the container too.
 
 ```php
-// Direct access via $_ENV
-$siteName = $_ENV['SITE_NAME'];
-
-// Or via container (for backward compatibility)
 $siteName = $container->getVariable('SITE_NAME');
 ```
 
 ---
 
-## Best Practices
+## The Golden Rules of Bootstrapping
 
-### DO: Use Bootstrap Once Per Entry Point
+Follow these rules to keep your code clean and your sanity intact.
 
-✅ **Good:**
+### Rule #1: Only Bootstrap Once
+In production code, `src/bootstrap.php` should be called exactly **one time**: inside `bin/staticforge.php`.
+
+*   **NEVER** call it inside a Command.
+*   **NEVER** call it inside a Feature.
+*   **NEVER** call it inside a Helper class.
+
+### Rule #2: Pass the Container
+If your class needs the container, ask for it in the constructor. Don't try to build a new one.
+
+**✅ Do This:**
 ```php
-// bin/staticforge.php - ONLY place that bootstraps
-$container = require_once __DIR__ . '/../src/bootstrap.php';
-$app->add(new SomeCommand($container));
-```
-
-❌ **Bad:**
-```php
-// NEVER bootstrap in commands, features, or other code
-class SomeCommand {
-    public function __construct() {
-        $container = require_once 'src/bootstrap.php'; // NO! NEVER DO THIS!
-    }
-}
-```
-
-**Rule:** If you're not writing a test or the console entry point, you should NEVER call bootstrap.
-
-### DO: Pass Container via Dependency Injection
-
-✅ **Good:**
-```php
-class SomeCommand {
+class MyCommand {
     public function __construct(Container $container) {
         $this->container = $container;
     }
 }
 ```
 
-❌ **Bad:**
+**❌ NOT This:**
 ```php
-class SomeCommand {
+class MyCommand {
     public function __construct() {
-        $this->container = new Container(); // NO!
+        // BAD! This creates a whole new universe!
+        $this->container = require 'src/bootstrap.php'; 
     }
 }
 ```
 
-### DO: Use require_once for Console Entry Point
+### Rule #3: Don't Create Loggers
+The bootstrap file already made a logger for you. Use it.
 
-✅ **Good:**
+**✅ Do This:**
 ```php
-// bin/staticforge.php - The ONLY file that should do this
-$container = require_once 'src/bootstrap.php';
-```
-
-**Why `require_once`:** Ensures bootstrap only executes once, preventing duplicate service registration.
-
-**Who calls this:** ONLY `bin/staticforge.php`. Commands, features, and application code receive the container via dependency injection.
-
-### DO: Create Logger Only in Bootstrap
-
-✅ **Good:**
-```php
-// In bootstrap.php
-$container->stuff('logger', function() {
-    return new Log(...);
-});
-
-// Everywhere else
 $logger = $container->get('logger');
 ```
 
-❌ **Bad:**
+**❌ NOT This:**
 ```php
-// Don't create loggers elsewhere
-$logger = new Log(...); // NO!
+// BAD! Now you have two loggers fighting over the file.
+$logger = new Log(...); 
 ```
 
 ---
 
 ## Troubleshooting
 
-### Container Already Has Logger
+### "Service 'logger' already exists"
+**Cause:** You (or some code) called bootstrap twice.
+**Fix:** Find the extra `require 'src/bootstrap.php'` and delete it.
 
-**Problem:** "Service 'logger' already exists in container"
-
-**Cause:** Someone called bootstrap more than once (or tried to register logger manually)
-
-**Solution:**
-
-**Rule #1:** NEVER call bootstrap outside of `bin/staticforge.php` or test files.
-
-**Rule #2:** NEVER create a logger with `new Log()` - always get it from container:
-
-```php
-// Good - get logger from container
-$logger = $container->get('logger');
-
-// Bad - never create your own
-$logger = new Log(...); // NO!
-```
-
-If you see this error in production code, someone violated Rule #1.
-
-### Environment Variables Not Loading
-
-**Problem:** `$_ENV['SITE_NAME']` is null
-
-**Cause:**
-- `.env` file doesn't exist
-- Wrong path to `.env` file
-- Syntax error in `.env` file
-
-**Solution:**
-```php
-// Check environment file exists
-if (!file_exists('.env')) {
-    throw new Exception('.env file not found');
-}
-```
-
-**Note:** You should never need to manually set `$envPath` or call bootstrap in production code. The console does this automatically.
-
-### Autoloader Not Found
-
-**Problem:** "vendor/autoload.php not found"
-
-**Cause:** Composer dependencies not installed
-
-**Solution:**
-```bash
-composer install
-```
+### "vendor/autoload.php not found"
+**Cause:** You haven't installed dependencies.
+**Fix:** Run `lando composer install`.
 
 ---
 
-## Migration from Old Bootstrap Class
-
-If you're upgrading from an older version that used `Core\Bootstrap` class:
-
-**Old way:**
-```php
-use EICC\StaticForge\Core\Bootstrap;
-
-$bootstrap = new Bootstrap();
-$container = $bootstrap->initialize();
-```
-
-**New way:**
-```php
-// In bin/staticforge.php ONLY
-$container = require_once 'src/bootstrap.php';
-```
-
-**In your code:**
-```php
-// Receive container via dependency injection
-class MyCommand {
-    public function __construct(Container $container) {
-        $this->container = $container;
-        $this->logger = $container->get('logger');
-    }
-}
-```
-
-**Benefits:**
-- Simpler procedural approach
-- No class overhead
-- Clearer dependency injection
-- Easier testing with custom env files
-- Single point of logger creation
-- **One place to bootstrap:** Only `bin/staticforge.php` in production
-
----
-
-## Summary
-
-- **One file:** `src/bootstrap.php` handles all initialization
-- **One caller in production:** ONLY `bin/staticforge.php` calls bootstrap
-- **Tests are different:** Tests call bootstrap in setUp() with custom env files
-- **Returns container:** Pass to commands and services via dependency injection
-- **Singleton logger:** Only created in bootstrap, accessed via `$container->get('logger')`
-- **Never bootstrap in:**
-  - Commands
-  - Features
-  - Application code
-  - Anywhere except `bin/staticforge.php` and test setUp() methods
-
-For implementation examples, see:
-- `bin/staticforge.php` - Console entry point
-- `tests/Unit/UnitTestCase.php` - Unit test bootstrap
-- `tests/Integration/IntegrationTestCase.php` - Integration test bootstrap
+[← Back to Documentation](index.html)

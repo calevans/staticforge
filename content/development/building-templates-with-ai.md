@@ -1,69 +1,94 @@
 ---
 menu: '4.1.6'
-name: 'Building Templates with AI'
+title: 'AI-Assisted Design'
 template: docs
 ---
 
-# Building Templates with AI
+# AI-Assisted Design: Building Templates with a Co-Pilot
 
-Creating a custom template for StaticForge is a straightforward process, especially when you leverage the power of AI tools like GitHub Copilot. Because StaticForge uses standard technologies—PHP, Twig, and raw CSS—AI assistants are particularly good at generating high-quality themes for it.
+So, you want to build a custom theme for StaticForge, but you don't want to write every single `<div>` and CSS class by hand.
 
-This guide outlines a proven workflow for using AI to build your templates. The key is not to ask the AI to "make a website," but to give it a specific structural reference and a clear visual goal.
+Good news: StaticForge speaks the same language as your AI assistant. Because we use standard, boring technologies—PHP, Twig, and raw CSS—tools like GitHub Copilot and ChatGPT are surprisingly good at generating high-quality themes for us.
 
-## The Strategy
+This guide isn't just a tutorial; it's a "cheat code" for building themes fast.
 
-The most effective way to build a StaticForge template with AI is to use the **Reference Implementation Strategy**. Instead of explaining every rule of the StaticForge templating engine to the AI, you simply point it to an existing, well-structured theme and say, "Do it like that, but look like this."
+---
 
-We use the `staticforce` theme as our "Gold Standard" reference. It demonstrates:
-- Proper Twig inheritance (`extends 'base.html.twig'`)
-- Correct block usage (`{% block body %}`)
-- Asset organization
-- Menu implementation
+## The "Copycat" Strategy
 
-## Step-by-Step Workflow
+The biggest mistake people make with AI is asking it to "make a website." That's too vague. The AI will hallucinate a bunch of complex frameworks you don't need.
 
-### 1. Set the Context
+The secret is the **Reference Implementation Strategy**.
 
-Start by telling the AI exactly what you are trying to achieve. Be specific about the type of site and the tools involved.
+Instead of teaching the AI how StaticForge works from scratch, you simply point it to our "Gold Standard" theme (`staticforce`) and say:
 
-> "I am building a new theme for a StaticForge site. This is a static site generator that uses Twig for templating. I want to create a theme named 'my-new-theme'."
+> *"See this? Do it exactly like that, but make it look like [Your Vision]."*
 
-### 2. Establish the Reference
+---
 
-This is the most critical step. You must ground the AI in the existing codebase so it understands the *structure* before it starts writing the *style*.
+## The Workflow: From Zero to Hero
 
-> "Before writing any code, I want you to examine the `templates/staticforce` directory. This is the reference implementation. Study how `base.html.twig` sets up the HTML shell and how other files like `standard_page.html.twig` extend it. Note how assets are linked and how the menus are rendered. Use this structure as the blueprint for my new theme."
+Here is the exact workflow we use to build themes in minutes, not days.
 
-### 3. Define the Visuals
+### Step 1: The Briefing (Set the Context)
 
-Now that the AI understands *how* to build the code, tell it *what* to build. Since we avoid CSS frameworks to keep things lightweight and clean, you need to describe the visual style clearly.
+First, you need to orient the AI. Tell it what tools we are using so it doesn't try to give you React or Vue code.
 
-> "I want the visual style to be [describe your style].
-> - **Layout**: A clean, single-column layout for blog posts, but a two-column layout for documentation.
-> - **Colors**: Dark mode by default, using deep blues and slate grays.
-> - **Typography**: Large, readable serif fonts for headings and a clean sans-serif for body text.
-> - **Constraints**: Do not use any CSS frameworks like Bootstrap or Tailwind. Write plain, efficient CSS. Use CSS Grid and Flexbox for layout."
+**The Prompt:**
+> "I am building a new theme for a static site generator. We are using **Twig** for templating and **Raw CSS** (no frameworks). I want to create a theme named 'my-new-theme'."
 
-### 4. Iterative Building
+### Step 2: The Blueprint (Grounding)
 
-Don't ask for the entire theme at once. Build it piece by piece.
+This is the most critical step. You must force the AI to look at the existing code structure.
 
-**Phase 1: The Base**
-Ask the AI to create the `base.html.twig` file first. This ensures the foundation is correct.
-> "Start by creating the `base.html.twig` for my new theme. It should include the HTML skeleton, the main navigation bar, and the footer. Ensure it defines the necessary blocks for child templates to fill in."
+**The Prompt:**
+> "Before writing any code, I want you to examine the `templates/staticforce` directory. This is the reference implementation.
+>
+> Study how `base.html.twig` sets up the HTML shell. Note how `standard_page.html.twig` extends it. Look at how the assets are linked using `{{ site_base_url }}`.
+>
+> Use this structure as the blueprint for my new theme."
 
-**Phase 2: The Homepage**
-Once the base is ready, ask for the homepage.
-> "Now create `index.html.twig`. It should extend `base.html.twig`. I want a large hero section at the top with a call to action, followed by a grid of recent features."
+### Step 3: The Vision (Style)
 
-**Phase 3: Inner Pages**
-Finally, create the generic page template.
-> "Create `standard_page.html.twig` for handling regular content pages. It should also extend `base.html.twig` but keep the layout simple and focused on readability."
+Now that the AI knows *how* to code it, tell it *what* to design. Be descriptive.
 
-## Tips for Success
+**The Prompt:**
+> "I want the visual style to be **Cyberpunk Minimalist**.
+> *   **Colors**: Dark background (#0a0a0a), Neon Green accents.
+> *   **Layout**: Single column, very wide margins.
+> *   **Typography**: Monospace fonts for everything.
+> *   **Constraint**: Do NOT use Bootstrap or Tailwind. Write plain, efficient CSS using Grid and Flexbox."
 
-*   **CSS Organization**: Ask the AI to organize CSS logically. For example, "Put all layout styles in `layout.css` and all component styles in `components.css`," or simply "Keep all CSS in `style.css` but use comments to section it clearly."
-*   **Mobile Responsiveness**: Explicitly remind the AI to make it responsive. "Ensure the navigation collapses into a hamburger menu on mobile devices."
-*   **Asset Paths**: If the AI gets confused about linking assets, remind it: "Remember to use the `site_base_url` variable for all CSS and image links, just like in the `staticforce` reference."
+---
 
-By following this narrative approach, you allow the AI to handle the heavy lifting of coding while you act as the architect, ensuring the final result is structurally sound and visually unique.
+## Step 4: The Construction (One Brick at a Time)
+
+Don't ask for the whole site at once. The AI will get overwhelmed and give you garbage. Build it piece by piece.
+
+### Phase 1: The Skeleton (`base.html.twig`)
+
+This is your master template. Get this right first.
+
+> "Start by creating the `base.html.twig`. It needs:
+> 1. The HTML5 boilerplate.
+> 2. A sticky navigation bar.
+> 3. A footer with copyright info.
+> 4. The `{% block body %}` where content will go."
+
+### Phase 2: The Homepage (`index.html.twig`)
+
+> "Now create `index.html.twig`. It should extend `base.html.twig`. Give me a big Hero section with a 'Get Started' button, and a grid of 3 feature boxes below it."
+
+### Phase 3: The Content (`standard_page.html.twig`)
+
+> "Create `standard_page.html.twig` for my blog posts. It should extend `base.html.twig`. Keep it simple: just a title (`<h1>`) and the content block."
+
+---
+
+## Pro Tips for Smooth Sailing
+
+*   **The "No Framework" Rule**: AI loves Tailwind. If you don't want a 5MB CSS file, explicitly tell it: *"Write raw CSS only."*
+*   **Asset Paths**: AI often forgets our specific variable names. If links break, remind it: *"Use `{{ site_base_url }}` for all links and images."*
+*   **Mobile First**: Remind it to make things responsive. *"Make sure the nav bar turns into a hamburger menu on mobile."*
+
+By following this script, you act as the **Architect**, and the AI acts as the **Bricklayer**. You provide the vision and the blueprints; it does the heavy lifting.
