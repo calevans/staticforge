@@ -12,12 +12,10 @@ use org\bovigo\vfs\vfsStream;
 class TagsFeatureTest extends UnitTestCase
 {
     private EventManager $eventManager;
-    private Log $logger;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->logger = $this->container->get('logger');
         $this->eventManager = new EventManager($this->container);
     }
 

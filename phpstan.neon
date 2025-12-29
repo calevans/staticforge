@@ -12,7 +12,7 @@ parameters:
   ignoreErrors:
     # Event handlers are called dynamically via EventManager
     # Methods registered in $eventListeners arrays are dispatched at runtime
-    - message: '#Unused.*::(handlePostGlob|handlePreRender|handlePostRender|handleRender|collectCategoryFiles|processDeferredCategoryFiles)#'
+    - message: '#Unused.*::(handlePostGlob|handlePreRender|handlePostRender|handleRender|collectCategoryFiles|processDeferredCategoryFiles|handlePostLoop|registerCommands|handleCollectMenuItems|handleTestEvent|handleAnotherEvent)#'
       identifier: shipmonk.deadMethod
 
     # @phpstan-used is documentation for event handlers, not a standard PHPStan tag

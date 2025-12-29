@@ -8,12 +8,15 @@ use EICC\StaticForge\Services\Upload\SiteUploader;
 use EICC\StaticForge\Services\Upload\SftpClient;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class SiteUploaderTest extends UnitTestCase
 {
     private SiteUploader $uploader;
+    /** @var SftpClient&MockObject */
     private SftpClient $mockClient;
+    /** @var Log&MockObject */
     private Log $mockLogger;
 
     protected function setUp(): void

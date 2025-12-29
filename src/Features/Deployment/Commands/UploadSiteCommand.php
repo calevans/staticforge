@@ -86,14 +86,13 @@ class UploadSiteCommand extends Command
             $config = $this->configLoader->load($input, $this->container);
 
             // Handle URL override and re-rendering
-            if (!empty($urlOverride)) {
-                // Ensure URL ends with a trailing slash
-                $urlOverride = rtrim($urlOverride, '/') . '/';
+            // Ensure URL ends with a trailing slash
+            $urlOverride = rtrim($urlOverride, '/') . '/';
 
-                $output->writeln("<info>URL override detected: {$urlOverride}</info>");
-                $output->writeln('<info>Re-rendering site for production...</info>');
+            $output->writeln("<info>URL override detected: {$urlOverride}</info>");
+            $output->writeln('<info>Re-rendering site for production...</info>');
 
-                // Create temporary directory
+            // Create temporary directory
                 $baseTmpDir = $this->container->getVariable('TMP_DIR') ?? sys_get_temp_dir();
                 $tempDir = $baseTmpDir . '/staticforge_build_' . uniqid();
 
@@ -115,7 +114,6 @@ class UploadSiteCommand extends Command
 
                 // Update config to point to the temp directory for upload
                 $config['input_dir'] = $tempDir;
-            }
 
             if ($isTest) {
                 $output->writeln('<info>Running in TEST mode (Dry Run)</info>');

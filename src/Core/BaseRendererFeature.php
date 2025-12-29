@@ -17,44 +17,6 @@ abstract class BaseRendererFeature extends BaseFeature
     private string $defaultTemplate = 'base';
 
     /**
-     * Beautify HTML content using Dindent
-     *
-     * @param string $html Raw HTML content
-     * @return string Beautified HTML content
-     */
-    protected function beautifyHtml(string $html): string
-    {
-        $originalHtml = $html;
-
-        // Protect <pre> and <textarea> tags from whitespace collapsing
-        $protectedBlocks = [];
-        $html = preg_replace_callback(
-            '/<(pre|textarea)\b[^>]*>([\s\S]*?)<\/\1>/im',
-            function ($matches) use (&$protectedBlocks) {
-                $placeholder = '<!--PROTECTED_BLOCK_' . count($protectedBlocks) . '-->';
-                $protectedBlocks[$placeholder] = $matches[0];
-                return $placeholder;
-            },
-            $html
-        );
-
-        try {
-            $indenter = new Indenter();
-            $html = $indenter->indent($html);
-        } catch (\Exception $e) {
-            // If beautification fails, return original HTML
-            return $originalHtml;
-        }
-
-        // Restore protected blocks
-        if (!empty($protectedBlocks)) {
-            $html = str_replace(array_keys($protectedBlocks), array_values($protectedBlocks), $html);
-        }
-
-        return $html;
-    }
-
-    /**
    * Apply default metadata values, merging with provided metadata
    * Ensures consistent defaults across all renderer types
    *

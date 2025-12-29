@@ -154,7 +154,7 @@ class MarkdownRendererService extends BaseRendererService
             }
 
             $parent = $anchor->parentNode;
-            if ($parent && preg_match('/^h[1-6]$/i', $parent->nodeName)) {
+            if ($parent instanceof \DOMElement && preg_match('/^h[1-6]$/i', $parent->nodeName)) {
                 // Move ID to parent
                 $parent->setAttribute('id', $id);
                 // Remove ID from anchor
@@ -164,10 +164,13 @@ class MarkdownRendererService extends BaseRendererService
         }
 
         if ($modified) {
-            $html = $dom->saveHTML();
+            $result = $dom->saveHTML();
+            if ($result === false) {
+                return $html;
+            }
             // Remove the XML declaration added by the UTF-8 hack
-            $html = str_replace('<?xml encoding="utf-8" ?>', '', $html);
-            return $html;
+            $result = str_replace('<?xml encoding="utf-8" ?>', '', $result);
+            return $result;
         }
 
         return $html;

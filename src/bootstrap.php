@@ -178,7 +178,7 @@ $template = 'staticforce'; // Default
 
 if (isset($siteConfig['site']['template'])) {
     $template = $siteConfig['site']['template'];
-} elseif (isset($_ENV['TEMPLATE'])) {
+} elseif (!empty($_ENV['TEMPLATE'])) {
     $template = $_ENV['TEMPLATE'];
 }
 
