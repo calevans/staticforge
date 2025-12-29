@@ -1,5 +1,6 @@
 {
     "name": "eicc/staticforge",
+    "version": "1.14.0",
     "description": "Static site generator built in PHP with extensible feature system",
     "type": "library",
     "license": "MIT",
@@ -21,7 +22,7 @@
         "vlucas/phpdotenv": "^5.5"
     },
     "require-dev": {
-        "calevans/staticforge-chapternav": "^1.0",
+        "calevans/staticforge-chapternav": "1.1.2",
         "calevans/staticforge-google-analytics": "^1.1",
         "mikey179/vfsstream": "^1.6",
         "phpstan/phpstan": "^2.1",
