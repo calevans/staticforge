@@ -5,11 +5,11 @@ hero: assets/images/sf_quickstart_hero.jpg
 ---
 # Quick Start Guide
 
-Get your static site up and running in minutes! This guide will walk you through installing StaticForge and creating your first page.
+Ready to build something fast? You're in the right place. This guide will take you from zero to a fully functional static site in just a few minutes.
 
 ## What You'll Need
 
-Before you start, make sure you have:
+Just a few things before we start:
 
 - **PHP 8.4 or higher** installed on your system
 - **Composer** (PHP's package manager)
@@ -22,9 +22,9 @@ Before you start, make sure you have:
 
 ## Installation
 
-### Step 1: Install StaticForge
+### Step 1: Get the Files
 
-Create a new directory for your project and install StaticForge:
+First, let's create a home for your new project and pull in StaticForge via Composer.
 
 ```bash
 mkdir my-static-site
@@ -34,21 +34,21 @@ composer require eicc/staticforge
 
 ### Step 2: Initialize Your Project
 
-Run the initialization command to set up the directory structure, configuration, and templates:
+Now, let's set the stage. Run the initialization command to set up your directory structure, configuration, and templates:
 
 ```bash
 php vendor/bin/staticforge.php site:init
 ```
 
-This command will:
-- Create necessary directories (`content/`, `templates/`, `public/`, etc.)
-- Copy example configuration files (`.env.example` to `.env`, `siteconfig.yaml.example` to `siteconfig.yaml`)
-- Install bundled templates
-- Create a sample homepage
+This command does the heavy lifting for you:
+- Creates the necessary directories (`content/`, `templates/`, `public/`, etc.)
+- Copies example configuration files (`.env.example` to `.env`, `siteconfig.yaml.example` to `siteconfig.yaml`)
+- Installs bundled templates
+- Creates a sample homepage so you're not starting with a blank screen
 
 ### Step 3: Configure Your Site (Optional)
 
-The `init` command created a `.env` file with default settings that work out of the box. You can edit it to customize your site:
+The `init` command created a `.env` file with default settings that work out of the box. You can edit it to customize your site's identity:
 
 ```bash
 SITE_NAME="My Static Site"
@@ -64,17 +64,17 @@ TEMPLATE="staticforce"
 
 ### Step 4: Generate Your Site
 
-Build your static site using the render command:
+This is the moment of truth. Build your static site using the render command:
 
 ```bash
 php vendor/bin/staticforge.php site:render
 ```
 
-You'll see output confirming the generation. Your site is now in the `public/` directory!
+You'll see output confirming the generation. Your site is now ready in the `public/` directory!
 
-### Step 5: View Your Site
+### Step 5: See It Live
 
-Start the built-in development server to preview your site:
+Let's take a look at what you built. Start the built-in development server:
 
 ```bash
 php vendor/bin/staticforge.php site:devserver
@@ -86,7 +86,7 @@ Open your browser to `http://localhost:8000` to see your new site!
 
 ## Creating Your First Page
 
-StaticForge includes a starter homepage (`content/index.md`), but let's create a new page to see how it works.
+StaticForge includes a starter homepage (`content/index.md`), but let's make your mark by creating a new page.
 
 ### Step 1: Create a Content File
 
@@ -114,7 +114,7 @@ Pretty cool, right?
 
 **Understanding the Structure:**
 
-- **Lines 1-4** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` YAML format.
+- **Lines 1-5** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` YAML format.
 - **Everything after** - This is your content, written in Markdown.
 
 ### Step 2: Regenerate Your Site
@@ -122,7 +122,7 @@ Pretty cool, right?
 Now tell StaticForge to regenerate your site with the new page:
 
 ```bash
-php bin/staticforge.php site:render
+php vendor/bin/staticforge.php site:render
 ```
 
 You'll see:
@@ -136,23 +136,23 @@ StaticForge just:
 1. Read your content files
 2. Converted the Markdown to HTML
 3. Applied your chosen template
-4. Saved them in the `output/` directory
+4. Saved them in the `public/` directory
 
 ### Step 3: View Your Page
 
-If you started the local server in Step 4:
+If you started the local server in Step 5:
 
 1. Open your browser
 2. Go to `http://localhost:8000/hello.html`
 3. See your beautiful new page! 🎉
 
-**Not using the local server?** Just open `output/hello.html` directly in your browser.
+**Not using the local server?** Just open `public/hello.html` directly in your browser.
 
 ---
 
 ## Try Different Content Formats
 
-StaticForge supports both Markdown and HTML. Let's try an HTML page.
+StaticForge supports both Markdown and HTML. Let's try an HTML page for when you need more control.
 
 Create `content/about.html`:
 
@@ -181,7 +181,7 @@ description = "Learn more about me"
 Generate your site again:
 
 ```bash
-php bin/staticforge.php site:render
+php vendor/bin/staticforge.php site:render
 ```
 
 Now visit `http://localhost:8000/about.html` to see it!
@@ -204,7 +204,7 @@ You can add images, custom CSS, or JavaScript to your site by placing them in th
    ![My Photo](/assets/images/my-photo.jpg)
    ```
 
-StaticForge will automatically copy everything from `content/assets` to `output/assets` when you build your site.
+StaticForge will automatically copy everything from `content/assets` to `public/assets` when you build your site.
 
 ---
 
@@ -261,7 +261,7 @@ This is a blog post about StaticForge!
 
 StaticForge automatically:
 - Creates a `blog/` directory
-- Moves the page to `output/blog/my-first-blog-post.html`
+- Moves the page to `public/blog/my-first-blog-post.html`
 - Groups all blog posts together
 
 ---
@@ -273,7 +273,7 @@ StaticForge automatically:
 
 ### Quick Tips
 
-**Regenerate after every change:** StaticForge doesn't watch for changes. Run `php bin/staticforge.php site:render` after editing content or templates.
+**Regenerate after every change:** StaticForge doesn't watch for changes. Run `php vendor/bin/staticforge.php site:render` after editing content or templates.
 
 **Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default), sample, terminal, or vaulttech.
 

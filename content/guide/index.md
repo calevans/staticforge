@@ -2,6 +2,7 @@
 title: User Guide
 template: docs
 menu: '2.1'
+hero: assets/images/user-guide-hero.jpg
 ---
 # User Guide
 

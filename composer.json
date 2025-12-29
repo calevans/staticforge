@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
         "league/commonmark": "^2.4",
