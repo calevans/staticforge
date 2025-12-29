@@ -18,3 +18,4 @@
 /reproduce_issue.php export-ignore
 /package.json export-ignore
 /package-lock.json export-ignore
+/bin/release.php export-ignore
