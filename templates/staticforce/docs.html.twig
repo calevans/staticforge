@@ -24,17 +24,17 @@
         <!-- Left Sidebar -->
         <aside class="sidebar">
             {% if menu2 is defined %}
-                <div class="menu-section-title">User Guide</div>
+                <div class="menu-section-title"><a href="{{ site_base_url }}guide/">User Guide</a></div>
                 {{ menu2|raw }}
             {% endif %}
 
             {% if menu3 is defined %}
-                <div class="menu-section-title">Features</div>
+                <div class="menu-section-title"><a href="{{ site_base_url }}features/">Features</a></div>
                 {{ menu3|raw }}
             {% endif %}
 
             {% if menu4 is defined %}
-                <div class="menu-section-title">Development</div>
+                <div class="menu-section-title"><a href="{{ site_base_url }}development/">Development</a></div>
                 {{ menu4|raw }}
             {% endif %}
         </aside>        <!-- Main Content -->

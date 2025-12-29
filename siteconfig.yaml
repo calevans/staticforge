@@ -8,8 +8,8 @@ site:
 # Static Menu Definitions
 menu:
   top:
-    Home:
-    Contact Us: contact-us.html
+    Home: /guide/
+    Contact Us: /contact-us.html
   footer:
     Privacy: privacy
     Terms: terms
