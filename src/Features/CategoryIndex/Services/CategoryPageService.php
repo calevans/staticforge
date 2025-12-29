@@ -96,7 +96,6 @@ class CategoryPageService
 
         try {
             $application->renderSingleFile($filePath, [
-                'file_content' => "<!-- Category file listing -->",
                 'file_metadata' => $enrichedMetadata,
                 'output_path' => $fileData['output_path'],
                 'bypass_category_defer' => true

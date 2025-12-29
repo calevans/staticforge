@@ -4,7 +4,6 @@ type: category
 template: category
 menu: '1.9, 2.9'
 ---
-# Examples
 
 Welcome to the showroom. While the documentation tells you how the engine works, sometimes you just want to see the car drive.
 
