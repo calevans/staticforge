@@ -129,7 +129,7 @@ class SearchIndexService
                 // Start new section
                 $headerText = trim($node->textContent);
                 $anchor = $node->getAttribute('id');
-                
+
                 $currentSection = [
                     'title' => $headerText ?: $defaultTitle,
                     'anchor' => $anchor,
