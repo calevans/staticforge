@@ -46,6 +46,12 @@ Embed contact forms and other input forms using simple shortcodes. Supports conf
 
 [Read more about Forms →](forms.html)
 
+### [Search](search.html)
+
+Adds full-text search capability to your site using MiniSearch. Generates a client-side index and provides a fast, static search experience.
+
+[Read more about Search →](search.html)
+
 ---
 
 ## Organization Features
@@ -158,6 +164,7 @@ Want to add your own functionality? See the [Feature Development Guide](../devel
 | **[Robots.txt Generator](robots-txt.html)** | `robots` in frontmatter | robots.txt file | SEO, search engine control |
 | **[RSS Feed](rss-feed.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
 | **[Sitemap Generator](sitemap.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
+| **[Search](search.html)** | Content files | `search.json` & assets | Client-side full-text search |
 
 ---
 

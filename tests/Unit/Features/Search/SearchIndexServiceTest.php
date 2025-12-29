@@ -21,7 +21,7 @@ class SearchIndexServiceTest extends TestCase
         $this->logger = $this->createMock(Log::class);
         $this->container = $this->createMock(Container::class);
         $this->service = new SearchIndexService($this->logger);
-        
+
         $this->tempDir = sys_get_temp_dir() . '/staticforge_search_test_' . uniqid();
         mkdir($this->tempDir);
     }
@@ -48,7 +48,7 @@ class SearchIndexServiceTest extends TestCase
             ->willReturnMap([
                 ['site_config', []],
                 ['OUTPUT_DIR', $this->tempDir],
-                ['SITE_URL', 'https://example.com']
+                ['SITE_BASE_URL', 'https://example.com']
             ]);
 
         $parameters = [
@@ -62,7 +62,7 @@ class SearchIndexServiceTest extends TestCase
 
         $this->assertFileExists($this->tempDir . '/search.json');
         $json = json_decode(file_get_contents($this->tempDir . '/search.json'), true);
-        
+
         $this->assertCount(1, $json);
         $this->assertEquals('Test Page', $json[0]['title']);
         $this->assertEquals('This is content.', $json[0]['text']);
@@ -83,7 +83,7 @@ class SearchIndexServiceTest extends TestCase
 
         $this->assertFileExists($this->tempDir . '/search.json');
         $json = json_decode(file_get_contents($this->tempDir . '/search.json'), true);
-        
+
         $this->assertCount(0, $json);
     }
 
@@ -93,7 +93,7 @@ class SearchIndexServiceTest extends TestCase
             ->willReturnMap([
                 ['site_config', ['search' => ['exclude_paths' => ['/tags/']]]],
                 ['OUTPUT_DIR', $this->tempDir],
-                ['SITE_URL', 'https://example.com']
+                ['SITE_BASE_URL', 'https://example.com']
             ]);
 
         $parameters = [

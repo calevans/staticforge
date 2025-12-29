@@ -43,7 +43,7 @@ class SearchIndexService
         // Strip HTML tags to get raw text
         // We decode entities to make "StaticForge &amp; Friends" searchable as "StaticForge & Friends"
         $textContent = html_entity_decode(strip_tags($content));
-        
+
         // Normalize whitespace
         $textContent = preg_replace('/\s+/', ' ', $textContent);
         $textContent = trim($textContent);
@@ -92,9 +92,6 @@ class SearchIndexService
             $this->logger->log('ERROR', "Failed to write search index to {$indexPath}");
         }
 
-        // Copy assets (minisearch.js and search.js)
-        $this->copyAssets($container, $outputDir);
-
         return $parameters;
     }
 
@@ -136,28 +133,10 @@ class SearchIndexService
 
     private function calculateUrl(Container $container, string $outputPath): string
     {
-        $siteUrl = rtrim($container->getVariable('SITE_URL') ?? '', '/');
+        $siteUrl = rtrim($container->getVariable('SITE_BASE_URL') ?? '', '/');
         $outputDir = $container->getVariable('OUTPUT_DIR');
         $relativePath = str_replace($outputDir, '', $outputPath);
-        
+
         return $siteUrl . $relativePath;
-    }
-
-    private function copyAssets(Container $container, string $outputDir): void
-    {
-        $sourceDir = dirname(__DIR__) . '/assets/js';
-        $destDir = $outputDir . '/assets/js';
-
-        if (!is_dir($destDir)) {
-            mkdir($destDir, 0755, true);
-        }
-
-        // Copy minisearch.min.js
-        copy($sourceDir . '/minisearch.min.js', $destDir . '/minisearch.min.js');
-
-        // Copy search.js (wrapper)
-        if (file_exists($sourceDir . '/search.js')) {
-            copy($sourceDir . '/search.js', $destDir . '/search.js');
-        }
     }
 }

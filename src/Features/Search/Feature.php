@@ -8,6 +8,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
+use EICC\StaticForge\Features\Search\Services\SearchAssetService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -20,6 +21,7 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'Search';
     protected Log $logger;
     private SearchIndexService $service;
+    private SearchAssetService $assetService;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -34,6 +36,7 @@ class Feature extends BaseFeature implements FeatureInterface
         parent::register($eventManager, $container);
         $this->logger = $container->get('logger');
         $this->service = new SearchIndexService($this->logger);
+        $this->assetService = new SearchAssetService($this->logger);
         $this->logger->log('INFO', 'Search Feature registered');
     }
 
@@ -58,6 +61,7 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     public function handlePostLoop(Container $container, array $parameters): array
     {
+        $this->assetService->copyAssets($container);
         return $this->service->buildIndex($container, $parameters);
     }
 }
