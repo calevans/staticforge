@@ -39,33 +39,121 @@ class SearchIndexService
         // 2. Calculate URL
         $url = $this->calculateUrl($container, $outputPath);
 
-        // 3. Extract text content
-        // Strip HTML tags to get raw text
-        // We decode entities to make "StaticForge &amp; Friends" searchable as "StaticForge & Friends"
-        $textContent = html_entity_decode(strip_tags($content));
+        // 3. Parse content into sections
+        $pageTitle = $metadata['title'] ?? 'Untitled';
+        $sections = $this->parseHtmlSections($content, $pageTitle);
 
-        // Normalize whitespace
-        $textContent = preg_replace('/\s+/', ' ', $textContent);
-        $textContent = trim($textContent);
-
-        // 4. Create document
+        // 4. Create documents
         $tags = $metadata['tags'] ?? [];
         if (is_string($tags)) {
             $tags = array_map('trim', explode(',', $tags));
         }
+        $tagsString = implode(' ', $tags);
+        $category = $metadata['category'] ?? '';
 
-        $doc = [
-            'id' => $this->idCounter++,
-            'title' => $metadata['title'] ?? 'Untitled',
-            'text' => mb_substr($textContent, 0, 5000), // Limit text length to keep index size sane
-            'url' => $url,
-            'tags' => implode(' ', $tags),
-            'category' => $metadata['category'] ?? '',
-        ];
+        foreach ($sections as $section) {
+            // Skip empty sections
+            if (empty(trim($section['text']))) {
+                continue;
+            }
 
-        $this->documents[] = $doc;
+            $sectionUrl = $url;
+            if (!empty($section['anchor'])) {
+                $sectionUrl .= '#' . $section['anchor'];
+            }
+
+            $doc = [
+                'id' => $this->idCounter++,
+                'title' => $section['title'],
+                'text' => mb_substr(trim($section['text']), 0, 5000),
+                'url' => $sectionUrl,
+                'tags' => $tagsString,
+                'category' => $category,
+            ];
+
+            $this->documents[] = $doc;
+        }
 
         return $parameters;
+    }
+
+    /**
+     * Parse HTML content into sections based on headers
+     *
+     * @param string $html
+     * @param string $defaultTitle
+     * @return array<array{title: string, anchor: string, text: string}>
+     */
+    private function parseHtmlSections(string $html, string $defaultTitle): array
+    {
+        if (empty($html)) {
+            return [];
+        }
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        // Hack for UTF-8
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $xpath = new \DOMXPath($dom);
+
+        // Remove script, style, head
+        $nodesToRemove = $xpath->query('//script | //style | //head');
+        foreach ($nodesToRemove as $node) {
+            if ($node->parentNode) {
+                $node->parentNode->removeChild($node);
+            }
+        }
+
+        // Find all headers and text nodes
+        // We select h1-h6 and text nodes
+        $query = '//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6] | //text()';
+        $nodes = $xpath->query($query);
+
+        $sections = [];
+        $currentSection = [
+            'title' => $defaultTitle,
+            'anchor' => '',
+            'text' => ''
+        ];
+
+        foreach ($nodes as $node) {
+            if ($node instanceof \DOMElement) {
+                // It's a header
+                // Save previous section if it has content
+                if (!empty(trim($currentSection['text']))) {
+                    $sections[] = $currentSection;
+                }
+
+                // Start new section
+                $headerText = trim($node->textContent);
+                $anchor = $node->getAttribute('id');
+                
+                $currentSection = [
+                    'title' => $headerText ?: $defaultTitle,
+                    'anchor' => $anchor,
+                    'text' => ''
+                ];
+            } elseif ($node instanceof \DOMText) {
+                // It's text
+                // If the parent of this text node is a header, we skip it because we used it for the title.
+                $parent = $node->parentNode;
+                if ($parent && preg_match('/^h[1-6]$/i', $parent->nodeName)) {
+                    continue;
+                }
+
+                $text = preg_replace('/\s+/', ' ', $node->textContent);
+                $currentSection['text'] .= ' ' . $text;
+            }
+        }
+
+        // Add last section
+        if (!empty(trim($currentSection['text']))) {
+            $sections[] = $currentSection;
+        }
+
+        return $sections;
     }
 
     /**

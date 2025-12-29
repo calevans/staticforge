@@ -354,10 +354,11 @@ MD;
         $this->assertStringContainsString('integration', $complexHtml);
 
       // Check Markdown rendering
-        $this->assertMatchesRegularExpression('/<h1>\s*Complex Content/', $complexHtml);
+        // Updated regexes to handle attributes on headers
+        $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Complex Content/', $complexHtml);
         $this->assertStringContainsString('<strong>Menu</strong>', $complexHtml);
         $this->assertStringContainsString('<em>Category</em>', $complexHtml);
-        $this->assertMatchesRegularExpression('/<h2>\s*More Content/', $complexHtml);
+        $this->assertMatchesRegularExpression('/<h2[^>]*>\s*More Content/', $complexHtml);
     }
 
     public function testEventPipelineOrder(): void

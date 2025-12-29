@@ -65,7 +65,7 @@ class SearchIndexServiceTest extends TestCase
 
         $this->assertCount(1, $json);
         $this->assertEquals('Test Page', $json[0]['title']);
-        $this->assertEquals('Test PageThis is content.', $json[0]['text']);
+        $this->assertEquals('This is content.', $json[0]['text']);
         $this->assertEquals('https://example.com/test.html', $json[0]['url']);
         $this->assertEquals('foo bar', $json[0]['tags']);
     }

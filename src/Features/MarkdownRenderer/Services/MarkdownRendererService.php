@@ -70,6 +70,9 @@ class MarkdownRendererService extends BaseRendererService
             // Convert Markdown to HTML
             $htmlContent = $this->markdownProcessor->convert($markdownContent);
 
+            // Fix heading IDs (move from anchor to header)
+            $htmlContent = $this->fixHeadingIds($htmlContent);
+
             // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
             $eventManager = $container->get(EventManager::class);
             $eventResult = $eventManager->fire('MARKDOWN_CONVERTED', [
@@ -115,5 +118,58 @@ class MarkdownRendererService extends BaseRendererService
         }
 
         return $parameters;
+    }
+
+    /**
+     * Move IDs from permalink anchors to the parent heading elements
+     */
+    private function fixHeadingIds(string $html): string
+    {
+        if (empty($html)) {
+            return '';
+        }
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        // Hack for UTF-8
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $xpath = new \DOMXPath($dom);
+        $anchors = $xpath->query('//a[contains(@class, "heading-permalink")]');
+
+        if ($anchors === false || $anchors->length === 0) {
+            return $html;
+        }
+
+        $modified = false;
+        foreach ($anchors as $anchor) {
+            if (!$anchor instanceof \DOMElement) {
+                continue;
+            }
+
+            $id = $anchor->getAttribute('id');
+            if (empty($id)) {
+                continue;
+            }
+
+            $parent = $anchor->parentNode;
+            if ($parent && preg_match('/^h[1-6]$/i', $parent->nodeName)) {
+                // Move ID to parent
+                $parent->setAttribute('id', $id);
+                // Remove ID from anchor
+                $anchor->removeAttribute('id');
+                $modified = true;
+            }
+        }
+
+        if ($modified) {
+            $html = $dom->saveHTML();
+            // Remove the XML declaration added by the UTF-8 hack
+            $html = str_replace('<?xml encoding="utf-8" ?>', '', $html);
+            return $html;
+        }
+
+        return $html;
     }
 }

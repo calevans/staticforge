@@ -340,8 +340,10 @@ MD;
 
       // Verify unicode preserved
         $output = file_get_contents($this->testOutputDir . '/unicode.html');
-        $this->assertStringContainsString('Привет мир', $output);
-        $this->assertStringContainsString('你好世界', $output);
-        $this->assertStringContainsString('🚀', $output);
+        // DOMDocument may encode unicode characters as HTML entities
+        $decodedOutput = html_entity_decode($output, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
+        $this->assertStringContainsString('Привет мир', $decodedOutput);
+        $this->assertStringContainsString('你好世界', $decodedOutput);
+        $this->assertStringContainsString('🚀', $decodedOutput);
     }
 }

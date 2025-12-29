@@ -84,7 +84,8 @@ class FeatureTest extends UnitTestCase
         $this->assertArrayHasKey('output_path', $result);
 
         $outputContent = $result['rendered_content'];
-        $this->assertMatchesRegularExpression('/<h1>\s*Test Heading/', $outputContent);
+        // Updated regex to handle attributes on h1 (e.g. id)
+        $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Test Heading/', $outputContent);
         $this->assertStringContainsString('<strong>bold</strong>', $outputContent);
         $this->assertStringContainsString('<em>italic</em>', $outputContent);
         $this->assertStringContainsString('Test Site', $outputContent);
@@ -134,7 +135,8 @@ MD;
         $this->assertStringContainsString('<title>Custom Title | Test Site</title>', $outputContent);
         $this->assertStringContainsString('This is a test page description', $outputContent);
         $this->assertStringContainsString('Test Author', $outputContent);
-        $this->assertMatchesRegularExpression('/<h1>\s*Heading from Content/', $outputContent);
+        // Updated regex to handle attributes on h1
+        $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Heading from Content/', $outputContent);
     }
 
     /**
@@ -256,8 +258,9 @@ MD;
         $this->assertArrayHasKey('metadata', $result);
 
         $outputContent = $result['rendered_content'];
-        $this->assertMatchesRegularExpression('/<h1>\s*Main Title/', $outputContent);
-        $this->assertMatchesRegularExpression('/<h2>\s*Subtitle/', $outputContent);
+        // Updated regexes to handle attributes on headers
+        $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Main Title/', $outputContent);
+        $this->assertMatchesRegularExpression('/<h2[^>]*>\s*Subtitle/', $outputContent);
         $this->assertStringContainsString('<a href="https://example.com">link</a>', $outputContent);
         $this->assertStringContainsString('<code>inline code</code>', $outputContent);
         $this->assertStringContainsString('<ul>', $outputContent);
