@@ -11,6 +11,22 @@ declare(strict_types=1);
  */
 
 if ($argc !== 2) {
+    // Get tags
+    exec('git tag -l', $tags);
+
+    // Sort tags numerically
+    usort($tags, function ($a, $b) {
+        return version_compare($a, $b);
+    });
+
+    if (count($tags) > 0) {
+        echo "Existing tags:\n";
+        foreach ($tags as $tag) {
+            echo " - $tag\n";
+        }
+        echo "\n";
+    }
+
     echo "Usage: lando php bin/release.php <version>\n";
     exit(1);
 }
