@@ -88,35 +88,6 @@ if ($previousTag) {
 $commits = [];
 exec("git log $range --pretty=format:\"- %s (%an)\" --no-merges", $commits);
 
-// 4. Write to CHANGELOG.md
-if (!empty($commits)) {
-    $changelogFile = __DIR__ . '/../CHANGELOG.md';
-    $date = date('Y-m-d');
-    
-    // Create the new entry
-    $newEntry = "## [$version] - $date\n\n" . implode("\n", $commits) . "\n\n";
-    
-    // Read existing content or start fresh
-    if (file_exists($changelogFile)) {
-        $currentContent = file_get_contents($changelogFile);
-        
-        // If file has a title, try to insert after it
-        if (str_contains($currentContent, '# Changelog')) {
-            $newContent = preg_replace('/(# Changelog\s+)/', "$1$newEntry", $currentContent, 1);
-        } else {
-            // Just prepend if no standard header found
-            $newContent = $newEntry . $currentContent;
-        }
-    } else {
-        $newContent = "# Changelog\n\n" . $newEntry;
-    }
-
-    file_put_contents($changelogFile, $newContent);
-    echo "✅ Updated CHANGELOG.md\n";
-} else {
-    echo "ℹ️  No new commits found to document.\n";
-}
-
 // Helper to run commands
 function runCommand(string $cmd): void {
     echo "> $cmd\n";
@@ -130,7 +101,7 @@ function runCommand(string $cmd): void {
 echo "\nStarting git operations...\n";
 
 // 1. Add the file
-runCommand("git add composer.json CHANGELOG.md");
+runCommand("git add composer.json");
 
 // 2. Commit (only if there are changes)
 exec("git diff --cached --quiet", $output, $diffStatus);
@@ -145,7 +116,15 @@ exec("git tag -l {$version}", $tags);
 if (in_array($version, $tags)) {
     echo "ℹ️  Tag $version already exists.\n";
 } else {
-    runCommand("git tag {$version}");
+    // Create annotated tag with commit messages
+    $tagMessage = "Release $version\n\n" . implode("\n", $commits);
+    $tempMsgFile = tempnam(sys_get_temp_dir(), 'sf_release');
+    file_put_contents($tempMsgFile, $tagMessage);
+    
+    runCommand("git tag -a {$version} -F {$tempMsgFile}");
+    
+    unlink($tempMsgFile);
+    echo "✅ Created annotated tag {$version}\n";
 }
 
 // 4. Push
