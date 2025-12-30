@@ -48,6 +48,13 @@ chapter_nav:
   # Symbol for "next" link (default: →)
   next_symbol: "→"
 
+# Search Configuration
+search:
+  # Search engine to use: 'minisearch' (default) or 'fuse'
+  # minisearch: Faster for exact matches and prefix search
+  # fuse: Better fuzzy matching (typo tolerance)
+  engine: minisearch
+
   # Separator between navigation elements (default: |)
   separator: "|"
 

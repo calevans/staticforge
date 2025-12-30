@@ -8,7 +8,7 @@ tags:
 ---
 # Search
 
-**What it does:** Adds full-text search capability to your static site using MiniSearch.
+**What it does:** Adds full-text search capability to your static site using [MiniSearch](https://github.com/lucaong/minisearch) or [Fuse.js](https://github.com/krisk/fuse).
 
 **Events:** `POST_RENDER` (priority 100), `POST_LOOP` (priority 100)
 
@@ -18,9 +18,25 @@ tags:
 
 ## Overview
 
-The Search feature brings powerful, client-side search functionality to your static site without requiring a backend server or database. It works by generating a comprehensive JSON index of your content during the build process and using the lightweight [MiniSearch](https://github.com/lucaong/minisearch) library to perform searches directly in the user's browser.
+The Search feature brings powerful, client-side search functionality to your static site without requiring a backend server or database. It works by generating a comprehensive JSON index of your content during the build process and using a lightweight JavaScript library ([MiniSearch](https://github.com/lucaong/minisearch) or [Fuse.js](https://github.com/krisk/fuse)) to perform searches directly in the user's browser.
 
 This approach ensures your site remains fast and completely static while still offering a dynamic search experience.
+
+---
+
+## Search Engines
+
+StaticForge supports two search engines:
+
+1.  **[MiniSearch](https://github.com/lucaong/minisearch) (Default):** Best for exact matches, prefix search ("stat" finds "static"), and performance on larger sites.
+2.  **[Fuse.js](https://github.com/krisk/fuse):** Best for fuzzy matching (finding "static" even if you type "sttaic").
+
+You can switch engines in your `siteconfig.yaml`:
+
+```yaml
+search:
+  engine: fuse # or 'minisearch'
+```
 
 ---
 
@@ -29,7 +45,7 @@ This approach ensures your site remains fast and completely static while still o
 When you build your site, the Search feature performs two main tasks:
 
 1.  **Indexing:** As each page is rendered, the feature collects its title, content, tags, and category. It strips out HTML tags to create a clean text representation of your content.
-2.  **Generation:** After all pages are processed, it compiles this data into a `search.json` file and copies the necessary JavaScript libraries (`minisearch.min.js` and `search.js`) to your output directory.
+2.  **Generation:** After all pages are processed, it compiles this data into a `search.json` file and copies the necessary JavaScript libraries to your output directory.
 
 ---
 

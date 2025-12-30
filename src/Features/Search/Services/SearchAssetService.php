@@ -34,11 +34,23 @@ class SearchAssetService
             }
         }
 
-        // Copy minisearch.min.js
-        $this->copyFile($sourceDir . '/minisearch.min.js', $destDir . '/minisearch.min.js');
-
         // Copy search.js (wrapper)
-        $this->copyFile($sourceDir . '/search.js', $destDir . '/search.js');
+        $config = $container->getVariable('site_config');
+        $searchEngine = $config['search']['engine'] ?? 'minisearch';
+
+        if ($searchEngine === 'fuse') {
+            // Copy fuse.basic.min.js
+            $this->copyFile($sourceDir . '/fuse.basic.min.js', $destDir . '/fuse.basic.min.js');
+            // Copy search-fuse.js as search.js
+            $this->copyFile($sourceDir . '/search-fuse.js', $destDir . '/search.js');
+            $this->logger->log('INFO', 'Using Fuse.js for search');
+        } else {
+            // Copy minisearch.min.js
+            $this->copyFile($sourceDir . '/minisearch.min.js', $destDir . '/minisearch.min.js');
+            // Copy search.js (wrapper)
+            $this->copyFile($sourceDir . '/search.js', $destDir . '/search.js');
+            $this->logger->log('INFO', 'Using MiniSearch for search');
+        }
     }
 
     private function copyFile(string $source, string $dest): void

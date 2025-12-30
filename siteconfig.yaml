@@ -68,3 +68,4 @@ search:
     - /tags/
     - /categories/
   exclude_content_in: []
+  engine: fuse

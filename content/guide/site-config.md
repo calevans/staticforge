@@ -352,6 +352,22 @@ Template using multiple named menus:
 </html>
 ```
 
+### Search Configuration
+
+Configure the search engine and behavior.
+
+```yaml
+search:
+  # Search engine to use: 'minisearch' (default) or 'fuse'
+  engine: minisearch
+  
+  # Paths to exclude from search index
+  exclude_paths:
+    - /tags/
+    - /categories/
+    - /404.html
+```
+
 ## Version Control
 
 **DO commit `siteconfig.yaml` to version control** - it contains no sensitive information.
