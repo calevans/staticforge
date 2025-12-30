@@ -3,7 +3,14 @@
 # Site Information
 site:
   name: "StaticForge"
+  title: "StaticForge Documentation"
+  description: "The PHP Static Site Generator for Developers"
   tagline: "Built with ❤️ and PHP"
+
+# Social Metadata Defaults
+social:
+  twitter_handle: "@calevans"
+#  default_image: "/assets/images/social-share.jpg"
 
 # Static Menu Definitions
 menu:

@@ -15,6 +15,12 @@ site:
   tagline: "Built with ❤️ and PHP"
   template: "sample"
 
+# Social Metadata Defaults
+# Used by the SocialMetadata feature to generate Open Graph and Twitter cards
+social:
+  twitter_handle: "@yourhandle"
+  default_image: "/assets/images/default-social.jpg"
+
 # Static menu definitions
 # These create named menus accessible in templates as {{ menu_name }}
 menu:
