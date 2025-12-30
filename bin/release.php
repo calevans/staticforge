@@ -65,6 +65,58 @@ if ($oldVersion === $version) {
     echo "✅ Updated composer.json version from {$oldVersion} to {$version}\n";
 }
 
+// --- Changelog Generation ---
+echo "📝 Generating changelog...\n";
+
+// 1. Find the previous tag
+// 'git describe' finds the most recent tag reachable from HEAD
+$previousTag = trim(shell_exec("git describe --tags --abbrev=0 2>/dev/null") ?? '');
+
+// 2. Determine the git log range
+if ($previousTag) {
+    // From previous tag to current HEAD
+    $range = "$previousTag..HEAD";
+    echo "   Collecting commits from $previousTag to HEAD...\n";
+} else {
+    // No tags exist yet, log everything
+    $range = "HEAD";
+    echo "   First release! Collecting all commits...\n";
+}
+
+// 3. Get the commits
+// Format: "- Commit message (Author Name)"
+$commits = [];
+exec("git log $range --pretty=format:\"- %s (%an)\" --no-merges", $commits);
+
+// 4. Write to CHANGELOG.md
+if (!empty($commits)) {
+    $changelogFile = __DIR__ . '/../CHANGELOG.md';
+    $date = date('Y-m-d');
+    
+    // Create the new entry
+    $newEntry = "## [$version] - $date\n\n" . implode("\n", $commits) . "\n\n";
+    
+    // Read existing content or start fresh
+    if (file_exists($changelogFile)) {
+        $currentContent = file_get_contents($changelogFile);
+        
+        // If file has a title, try to insert after it
+        if (str_contains($currentContent, '# Changelog')) {
+            $newContent = preg_replace('/(# Changelog\s+)/', "$1$newEntry", $currentContent, 1);
+        } else {
+            // Just prepend if no standard header found
+            $newContent = $newEntry . $currentContent;
+        }
+    } else {
+        $newContent = "# Changelog\n\n" . $newEntry;
+    }
+
+    file_put_contents($changelogFile, $newContent);
+    echo "✅ Updated CHANGELOG.md\n";
+} else {
+    echo "ℹ️  No new commits found to document.\n";
+}
+
 // Helper to run commands
 function runCommand(string $cmd): void {
     echo "> $cmd\n";
@@ -78,7 +130,7 @@ function runCommand(string $cmd): void {
 echo "\nStarting git operations...\n";
 
 // 1. Add the file
-runCommand("git add composer.json");
+runCommand("git add composer.json CHANGELOG.md");
 
 // 2. Commit (only if there are changes)
 exec("git diff --cached --quiet", $output, $diffStatus);
