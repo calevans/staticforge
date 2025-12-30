@@ -10,12 +10,7 @@
             "email": "cal@calevans.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../staticforge-social-metadata"
-        }
-    ],
+
     "require": {
         "php": "^8.4",
         "eicc/utils": "^1.0",
