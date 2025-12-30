@@ -25,6 +25,7 @@
     "require-dev": {
         "calevans/staticforge-chapternav": "1.1.2",
         "calevans/staticforge-google-analytics": "^1.1",
+        "calevans/staticforge-social-metadata": "^1.0",
         "mikey179/vfsstream": "^1.6",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.5",

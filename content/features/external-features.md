@@ -26,6 +26,9 @@ Adds support for popups on your site.<br /><br />
 ### **[S3 Media Offload](https://github.com/calevans/StaticForgeS3)**
 (`calevans/staticforge-s3`)<br />
 Move media files (images, audio, video) to an AWS S3 bucket. (or compatible service) It updates your content to point to the CDN/S3 URLs, keeping your repository small and your site fast.<br /><br />
+### **[Social Metadata](https://github.com/calevans/staticforge-social-metadata)**
+(`calevans/staticforge-social-metadata`)<br />
+Automatically generates Open Graph and Twitter Card metadata tags for your pages. It supports site-wide defaults and per-page overrides via frontmatter to ensure your content looks great when shared on social media.<br /><br />
 
 ## Installing External Features
 
