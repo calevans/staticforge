@@ -26,6 +26,9 @@ class MenuBuilderStaticMenusTest extends TestCase
 
         $this->menuBuilder = new Feature();
         $this->menuBuilder->register($this->eventManager, $this->container);
+        
+        // Set default SITE_BASE_URL for tests
+        $this->container->setVariable('SITE_BASE_URL', '/');
     }
 
     public function testStaticMenusFromSiteConfig(): void

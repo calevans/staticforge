@@ -226,7 +226,11 @@ class SearchIndexService
 
     private function calculateUrl(Container $container, string $outputPath): string
     {
-        $siteUrl = rtrim($container->getVariable('SITE_BASE_URL') ?? '', '/');
+        $siteUrl = $container->getVariable('SITE_BASE_URL');
+        if ($siteUrl === null) {
+            throw new \RuntimeException('SITE_BASE_URL not set in container');
+        }
+        $siteUrl = rtrim($siteUrl, '/');
         $outputDir = $container->getVariable('OUTPUT_DIR');
         $relativePath = str_replace($outputDir, '', $outputPath);
 

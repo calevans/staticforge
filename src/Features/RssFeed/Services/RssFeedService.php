@@ -108,7 +108,10 @@ class RssFeedService
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? 'https://example.com/';
+        $siteBaseUrl = $container->getVariable('SITE_BASE_URL');
+        if ($siteBaseUrl === null) {
+            throw new \RuntimeException('SITE_BASE_URL not set in container');
+        }
 
         $siteConfig = $container->getVariable('site_config') ?? [];
         $siteInfo = $siteConfig['site'] ?? [];

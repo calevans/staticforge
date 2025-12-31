@@ -149,7 +149,10 @@ class TemplateRenderer
         $siteInfo = $siteConfig['site'] ?? [];
 
         $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'Static Site';
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
+        $siteBaseUrl = $container->getVariable('SITE_BASE_URL');
+        if ($siteBaseUrl === null) {
+            throw new \RuntimeException('SITE_BASE_URL not set in container');
+        }
 
         $template = $this->getBasicTemplate();
 

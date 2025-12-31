@@ -26,6 +26,19 @@ class StaticMenuProcessor
     public function processStaticMenus(Container $container): void
     {
         $siteConfig = $container->getVariable('site_config');
+        
+        $baseUrl = null;
+        // Prefer SITE_BASE_URL (uppercase) as it is the standard env var name
+        // and what UploadSiteCommand sets.
+        if ($container->hasVariable('SITE_BASE_URL')) {
+            $baseUrl = $container->getVariable('SITE_BASE_URL');
+        } elseif ($container->hasVariable('site_base_url')) {
+            $baseUrl = $container->getVariable('site_base_url');
+        }
+
+        if ($baseUrl === null) {
+            throw new \RuntimeException('SITE_BASE_URL not set in container');
+        }
 
         // Check if we have menu configuration
         if (!is_array($siteConfig) || !isset($siteConfig['menu']) || !is_array($siteConfig['menu'])) {
@@ -44,10 +57,23 @@ class StaticMenuProcessor
             // Using 'direct' key format expected by generateMenuHtml()
             $items = ['direct' => []];
             foreach ($menuItems as $title => $url) {
+                $url = (string)$url;
+
+                // Prepend base URL if it's a relative path (starts with /) and not an absolute URL
+                // Also check if it doesn't already start with the base URL to avoid double prefixing
+                if ($baseUrl && str_starts_with($url, '/') && !str_starts_with($url, '//')) {
+                    $cleanBaseUrl = rtrim($baseUrl, '/');
+                    // Only prepend if the URL doesn't already start with the base URL path
+                    // This prevents issues if someone manually added the base path in config
+                    if ($cleanBaseUrl !== '' && !str_starts_with($url, $cleanBaseUrl . '/')) {
+                        $url = $cleanBaseUrl . $url;
+                    }
+                }
+
                 $items['direct'][] = [
                     'title' => (string)$title,
                     // Do not strip leading slash - allow absolute paths like "/"
-                    'url' => (string)$url,
+                    'url' => $url,
                     'file' => '', // Static menu items have no associated file
                     'position' => '' // Position is determined by YAML order
                 ];

@@ -73,7 +73,10 @@ class RobotsTxtService
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL') ?? '';
+        $siteBaseUrl = $container->getVariable('SITE_BASE_URL');
+        if ($siteBaseUrl === null) {
+            throw new \RuntimeException('SITE_BASE_URL not set in container');
+        }
 
         $this->logger->log('INFO', 'RobotsTxt: Generating robots.txt file');
 

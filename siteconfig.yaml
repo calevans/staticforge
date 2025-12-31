@@ -15,7 +15,7 @@ social:
 # Static Menu Definitions
 menu:
   top:
-    Home: /guide/
+    Home: /guide/index.html
     Contact Us: /contact-us.html
   footer:
     Privacy: privacy
