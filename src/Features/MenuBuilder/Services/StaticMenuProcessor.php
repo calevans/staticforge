@@ -26,7 +26,7 @@ class StaticMenuProcessor
     public function processStaticMenus(Container $container): void
     {
         $siteConfig = $container->getVariable('site_config');
-        
+
         $baseUrl = null;
         // Prefer SITE_BASE_URL (uppercase) as it is the standard env var name
         // and what UploadSiteCommand sets.

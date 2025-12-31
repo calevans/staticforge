@@ -240,7 +240,7 @@ class FileDiscovery
 
         // Get Base URL
         $baseUrl = $this->container->getVariable('SITE_BASE_URL');
-        
+
         if ($baseUrl === null) {
             throw new \RuntimeException('SITE_BASE_URL not set in container');
         }
