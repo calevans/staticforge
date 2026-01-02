@@ -82,6 +82,9 @@ class CategoryPageService
             }
         }
 
+        // Sort files based on frontmatter settings
+        $filesArray = $this->sortFiles($filesArray, $fileData['metadata']);
+
         $enrichedMetadata = array_merge($fileData['metadata'], [
             'category_files_count' => count($filesArray),
             'category_files' => $filesArray,
@@ -103,5 +106,54 @@ class CategoryPageService
         } catch (\Exception $e) {
             $this->logger->log('ERROR', "Failed to render category page {$filePath}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $files
+     * @param array<string, mixed> $metadata
+     * @return array<int, array<string, mixed>>
+     */
+    private function sortFiles(array $files, array $metadata): array
+    {
+        // If any file has a 'menu' property, do not sort (preserve order or let menu builder handle it)
+        foreach ($files as $file) {
+            if (isset($file['metadata']['menu'])) {
+                return $files;
+            }
+        }
+
+        $sortBy = $metadata['sort_by'] ?? 'published_date';
+        $sortDirection = $metadata['sort_direction'] ?? null;
+
+        // Determine default direction if not specified
+        if ($sortDirection === null) {
+            $sortDirection = ($sortBy === 'published_date') ? 'desc' : 'asc';
+        }
+
+        $sortDirection = strtolower($sortDirection);
+
+        if ($sortBy === 'random' || $sortDirection === 'random') {
+            shuffle($files);
+            return $files;
+        }
+
+        usort($files, function ($a, $b) use ($sortBy, $sortDirection) {
+            $valA = $a[$sortBy === 'published_date' ? 'date' : 'title'] ?? '';
+            $valB = $b[$sortBy === 'published_date' ? 'date' : 'title'] ?? '';
+
+            if ($sortBy === 'published_date') {
+                // Date comparison
+                $timeA = strtotime($valA) ?: 0;
+                $timeB = strtotime($valB) ?: 0;
+                $result = $timeA <=> $timeB;
+            } else {
+                // String comparison (title)
+                $result = strnatcasecmp($valA, $valB);
+            }
+
+            return ($sortDirection === 'desc') ? -$result : $result;
+        });
+
+        return $files;
     }
 }

@@ -24,10 +24,32 @@ title = "Tutorials"
 description = "Learn with our step-by-step guides"
 template = "category-index"
 menu = 1.3
+sort_by = "published_date"
+sort_direction = "desc"
 ---
 
 Browse all our tutorials below. This text will be replaced with the file listing.
 ```
+
+## Sorting Options
+
+You can control the order of files in the category index using the `sort_by` and `sort_direction` frontmatter keys.
+
+**`sort_by` options:**
+- `published_date` (Default)
+- `title`
+- `random`
+
+**`sort_direction` options:**
+- `asc` (Ascending)
+- `desc` (Descending)
+- `random`
+
+**Defaults:**
+- If `sort_by` is `published_date`, default direction is `desc` (Newest first).
+- If `sort_by` is `title`, default direction is `asc` (A-Z).
+
+**Note:** If any file within the category has a `menu` property in its frontmatter, the sorting settings will be ignored to preserve the menu structure order.
 
 ## What You Get
 
