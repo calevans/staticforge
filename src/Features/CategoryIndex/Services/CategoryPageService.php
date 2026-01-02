@@ -82,29 +82,34 @@ class CategoryPageService
             }
         }
 
-        // Sort files based on frontmatter settings
-        $filesArray = $this->sortFiles($filesArray, $fileData['metadata']);
-
-        $enrichedMetadata = array_merge($fileData['metadata'], [
-            'category_files_count' => count($filesArray),
-            'category_files' => $filesArray,
-            'total_files' => count($filesArray),
-        ]);
-        unset($enrichedMetadata['type']);
-
         // Update global features context for template
         $features = $container->getVariable('features') ?? [];
         $features['CategoryIndex']['category_files'] = $filesArray;
         $container->updateVariable('features', $features);
 
         try {
+            // Sort files based on frontmatter settings
+            $filesArray = $this->sortFiles($filesArray, $fileData['metadata']);
+
+            $enrichedMetadata = array_merge($fileData['metadata'], [
+                'category_files_count' => count($filesArray),
+                'category_files' => $filesArray,
+                'total_files' => count($filesArray),
+            ]);
+            unset($enrichedMetadata['type']);
+
+            // Also update the global context with sorted files
+            $features['CategoryIndex']['category_files'] = $filesArray;
+            $container->updateVariable('features', $features);
+
             $application->renderSingleFile($filePath, [
                 'file_metadata' => $enrichedMetadata,
                 'output_path' => $fileData['output_path'],
                 'bypass_category_defer' => true
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->log('ERROR', "Failed to render category page {$filePath}: " . $e->getMessage());
+            $this->logger->log('ERROR', $e->getTraceAsString());
         }
     }
 
@@ -115,6 +120,10 @@ class CategoryPageService
      */
     private function sortFiles(array $files, array $metadata): array
     {
+        if (empty($files)) {
+            return $files;
+        }
+
         // If any file has a 'menu' property, do not sort (preserve order or let menu builder handle it)
         foreach ($files as $file) {
             if (isset($file['metadata']['menu'])) {
@@ -137,22 +146,29 @@ class CategoryPageService
             return $files;
         }
 
-        usort($files, function ($a, $b) use ($sortBy, $sortDirection) {
-            $valA = $a[$sortBy === 'published_date' ? 'date' : 'title'] ?? '';
-            $valB = $b[$sortBy === 'published_date' ? 'date' : 'title'] ?? '';
+        try {
+            usort($files, function ($a, $b) use ($sortBy, $sortDirection) {
+                $key = ($sortBy === 'published_date' || $sortBy === 'date') ? 'date' : 'title';
 
-            if ($sortBy === 'published_date') {
-                // Date comparison
-                $timeA = strtotime($valA) ?: 0;
-                $timeB = strtotime($valB) ?: 0;
-                $result = $timeA <=> $timeB;
-            } else {
-                // String comparison (title)
-                $result = strnatcasecmp($valA, $valB);
-            }
+                $valA = $a[$key] ?? '';
+                $valB = $b[$key] ?? '';
 
-            return ($sortDirection === 'desc') ? -$result : $result;
-        });
+                if ($key === 'date') {
+                    // Date comparison
+                    $timeA = strtotime((string)$valA) ?: 0;
+                    $timeB = strtotime((string)$valB) ?: 0;
+                    $result = $timeA <=> $timeB;
+                } else {
+                    // String comparison (title)
+                    $result = strnatcasecmp((string)$valA, (string)$valB);
+                }
+
+                return ($sortDirection === 'desc') ? -$result : $result;
+            });
+        } catch (\Throwable $e) {
+            $this->logger->log('ERROR', "Sorting failed: " . $e->getMessage());
+            return $files;
+        }
 
         return $files;
     }
