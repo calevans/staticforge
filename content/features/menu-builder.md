@@ -39,8 +39,8 @@ The `menu` value uses a dot-notation system: `menu.position.dropdown-position`
 
 ```markdown
 ---
-title = "Home"
-menu = 1.1
+title: "Home"
+menu: 1.1
 ---
 ```
 Creates: First item in menu 1
@@ -51,49 +51,49 @@ Want a page to appear in multiple menus? Just list the positions separated by co
 
 ```markdown
 ---
-title = "Privacy Policy"
-menu = 1.5, 2.1
+title: "Privacy Policy"
+menu: 1.5, 2.1
 ---
 ```
 Creates: Item appears in menu 1 at position 5 AND menu 2 at position 1
 
 ```markdown
 ---
-title = "Contact Us"
-menu = 1.6, 2.3, 3.1
+title: "Contact Us"
+menu: 1.6, 2.3, 3.1
 ---
 ```
 Creates: Item appears in three different menus
 
 ### Format Options
 ```markdown
-menu = 1.2, 2.3         # Recommended - simple and clean
-menu = [1.2, 2.3]       # Also works - brackets optional
-menu = ["1.2", "2.3"]   # Also works - quotes optional
+menu: 1.2, 2.3         # Recommended - simple and clean
+menu: [1.2, 2.3]       # Also works - brackets optional
+menu: ["1.2", "2.3"]   # Also works - quotes optional
 ```
 
 ## More Examples
 
 ```markdown
 ---
-title = "About"
-menu = 1.2
+title: "About"
+menu: 1.2
 ---
 ```
 Creates: Second item in menu 1
 
 ```markdown
 ---
-title = "Services"
-menu = 1.3.0
+title: "Services"
+menu: 1.3.0
 ---
 ```
 Creates: Dropdown title at position 3 in menu 1 (`.0` means it's the dropdown label)
 
 ```markdown
 ---
-title = "Web Development"
-menu = 1.3.1
+title: "Web Development"
+menu: 1.3.1
 ---
 ```
 Creates: First item inside the "Services" dropdown

@@ -19,13 +19,13 @@ menu: '3.1.4'
 
 ```markdown
 ---
-type = "category"
-title = "Tutorials"
-description = "Learn with our step-by-step guides"
-template = "category-index"
-menu = 1.3
-sort_by = "published_date"
-sort_direction = "desc"
+type: category
+title: Tutorials
+description: Learn with our step-by-step guides
+template: category-index
+menu: 1.3
+sort_by: published_date
+sort_direction: desc
 ---
 
 Browse all our tutorials below. This text will be replaced with the file listing.

@@ -69,10 +69,10 @@ Learn PHP from scratch!
 
 ```markdown
 # Array format (recommended)
-tags = ["php", "tutorial", "beginner"]
+tags: ["php", "tutorial", "beginner"]
 
 # Comma-separated string (also works)
-tags = "php, tutorial, beginner"
+tags: "php, tutorial, beginner"
 ```
 
 ## Why Use Tags

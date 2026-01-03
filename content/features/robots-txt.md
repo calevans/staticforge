@@ -28,8 +28,8 @@ Add `robots` field to any content file's frontmatter:
 
 ```markdown
 ---
-title = "Private Page"
-robots = "no"
+title: "Private Page"
+robots: "no"
 ---
 
 # This page won't be crawled by search engines
@@ -41,8 +41,8 @@ This content is hidden from search engines via robots.txt.
 
 ```markdown
 ---
-title = "Public Page"
-robots = "yes"
+title: "Public Page"
+robots: "yes"
 ---
 
 # This page is visible to search engines
@@ -56,10 +56,10 @@ Create a category definition file with `type=category` and `robots=no`:
 
 ```markdown
 ---
-type = "category"
-category = "private"
-title = "Private Category"
-robots = "no"
+type: category
+category: private
+title: "Private Category"
+robots: "no"
 ---
 
 # Private Category

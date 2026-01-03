@@ -19,8 +19,8 @@ Add a `category` field to your content frontmatter:
 
 ```markdown
 ---
-title = "Learning PHP Basics"
-category = "tutorials"
+title: "Learning PHP Basics"
+category: "tutorials"
 ---
 
 # Learning PHP Basics
@@ -38,12 +38,12 @@ Create a category definition file to specify templates for all content in that c
 
 ```markdown
 ---
-type = "category"
-template = "tutorial"
+type: category
+template: tutorial
 ---
 ```
 
-Now all files with `category = "tutorials"` will automatically use the `tutorial.html.twig` template.
+Now all files with `category: "tutorials"` will automatically use the `tutorial.html.twig` template.
 
 ---
 

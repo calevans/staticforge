@@ -65,9 +65,9 @@ Create your first content file at `content/hello.md`:
 
 ```markdown
 ---
-title = "Hello World"
-description = "My first post"
-tags = [hello, first-post]
+title: "Hello World"
+description: "My first post"
+tags: [hello, first-post]
 ---
 
 # Hello World!

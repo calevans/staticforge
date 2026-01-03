@@ -157,9 +157,11 @@ StaticForge supports both Markdown and HTML. Let's try an HTML page for when you
 Create `content/about.html`:
 
 ```html
-<!-- INI
-title = "About Me"
-description = "Learn more about me"
+<!--
+---
+title: "About Me"
+description: "Learn more about me"
+---
 -->
 
 <h1>About Me</h1>
@@ -175,7 +177,7 @@ description = "Learn more about me"
 ```
 
 **Notice the difference:**
-- HTML files use `<!-- INI ... -->` for frontmatter (inside an HTML comment)
+- HTML files use `<!-- ... -->` for frontmatter (inside an HTML comment)
 - The content is plain HTML instead of Markdown
 
 Generate your site again:
@@ -214,8 +216,8 @@ Want your pages to show up in the navigation menu? Add a `menu` value to the fro
 
 ```markdown
 ---
-title = "Blog"
-menu = 1.1
+title: "Blog"
+menu: 1.1
 ---
 
 # My Blog
@@ -233,8 +235,8 @@ Check out my latest posts!
 
 ```markdown
 ---
-title = "Contact"
-menu = 1.5, 2.3
+title: "Contact"
+menu: 1.5, 2.3
 ---
 ```
 
@@ -250,8 +252,8 @@ Keep related content together using categories:
 
 ```markdown
 ---
-title = "My First Blog Post"
-category = "blog"
+title: "My First Blog Post"
+category: "blog"
 ---
 
 # My First Blog Post
