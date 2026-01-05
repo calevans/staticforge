@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Services;
 
+use EICC\StaticForge\Core\AssetManager;
 use EICC\Utils\Container;
 
 class TemplateVariableBuilder
@@ -69,6 +70,16 @@ class TemplateVariableBuilder
         // Merge file metadata (description, tags, etc. - these override as well)
         if (isset($parsedContent['metadata']) && is_array($parsedContent['metadata'])) {
             $templateVars = array_merge($templateVars, $parsedContent['metadata']);
+        }
+
+        // Inject AssetManager variables
+        try {
+            $assetManager = $container->get(AssetManager::class);
+            $templateVars['scripts'] = $assetManager->getScripts(true); // Footer scripts
+            $templateVars['head_scripts'] = $assetManager->getScripts(false); // Head scripts
+            $templateVars['styles'] = $assetManager->getStyles();
+        } catch (\Exception $e) {
+            // AssetManager not available, ignore
         }
 
         return $templateVars;

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title | default('Untitled Page') }}{% if site_name %} | {{ site_name }}{% endif %}{% endblock %}</title>
-    
+
     {% if description %}
     <meta name="description" content="{{ description }}">
     {% endif %}
@@ -18,6 +18,11 @@
     <meta name="keywords" content="{{ tags }}">
 {% endif %}
 {% endif %}
+
+    {# Inject Head Scripts and Styles #}
+    {% if styles %}{{ styles | raw }}{% endif %}
+    {% if head_scripts %}{{ head_scripts | raw }}{% endif %}
+
     <style>
         * {
             margin: 0;
@@ -371,5 +376,8 @@
     </div>
 
     {% block scripts %}{% endblock %}
+
+    {# Inject Footer Scripts #}
+    {% if scripts %}{{ scripts | raw }}{% endif %}
 </body>
 </html>

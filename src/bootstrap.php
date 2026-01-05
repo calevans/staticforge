@@ -53,6 +53,7 @@ use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\FileProcessor;
+use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Core\ErrorHandler;
 use Twig\Loader\FilesystemLoader;
 
@@ -233,6 +234,9 @@ $container->stuff('twig', function () use ($container) {
 // Register Core Services
 $eventManager = new EventManager($container);
 $container->add(EventManager::class, $eventManager);
+
+$assetManager = new AssetManager();
+$container->add(AssetManager::class, $assetManager);
 
 $featureManager = new FeatureManager($container, $eventManager);
 $container->add(FeatureManager::class, $featureManager);

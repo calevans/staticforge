@@ -10,6 +10,7 @@ Welcome to the StaticForge Developer Guide. This section is for developers who w
 ## Contents
 
 *   [Architecture](architecture.html) - High-level overview of the system.
+*   [Asset Manager](asset-manager.html) - Managing CSS and JS assets.
 *   [Bootstrap](bootstrap.html) - How the application initializes.
 *   [Events](events.html) - The core event-driven architecture.
 *   [Feature Development](features.html) - How to build custom features.
