@@ -223,10 +223,10 @@ HTML;
             // A better approach is to check if the AssetManager's output is present.
             // However, since we pass the strings to the template, we can't know for sure.
             // Strategy: Look for </head>. If found, inject styles and head scripts before it.
-            
+
             $styles = $this->assetManager->getStyles();
             $headScripts = $this->assetManager->getScripts(false);
-            
+
             if ($styles || $headScripts) {
                 $injection = $styles . $headScripts;
                 // Only inject if not already present (simple check)
@@ -234,22 +234,22 @@ HTML;
                 // We assume if the user added {{ styles }}, the content is there.
                 // But since we generate the content fresh, we can't compare easily.
                 // Let's rely on a marker or just inject if missing.
-                
+
                 // Actually, TemplateVariableBuilder passes the strings.
                 // If the template didn't output them, they are missing.
                 // We can try to detect if the specific asset strings are in the HTML.
                 // But that's expensive.
-                
+
                 // Let's just look for </head> and inject.
                 // To avoid duplication, we could wrap the output in a comment marker in AssetManager,
                 // but AssetManager returns raw HTML strings.
-                
+
                 // For now, we will just inject before </head> and </body>.
                 // Users should use the variables for control. This is a fallback.
-                
+
                 // Simple heuristic: If the HTML doesn't contain the exact string returned by getStyles(), inject it.
                 // This works because getStyles() returns a deterministic string for the current state.
-                
+
                 if ($styles && strpos($html, $styles) === false) {
                     $html = str_replace('</head>', $styles . '</head>', $html);
                 }
