@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Features\MarkdownRenderer\Services\MarkdownRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
@@ -39,9 +40,17 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         // Initialize dependencies
         $markdownProcessor = new MarkdownProcessor();
         $contentExtractor = new ContentExtractor();
+
+        // Get AssetManager (optional)
+        $assetManager = null;
+        if ($container->has(AssetManager::class)) {
+            $assetManager = $container->get(AssetManager::class);
+        }
+
         $templateRenderer = new TemplateRenderer(
             new TemplateVariableBuilder(),
-            $this->logger
+            $this->logger,
+            $assetManager
         );
 
         // Initialize service

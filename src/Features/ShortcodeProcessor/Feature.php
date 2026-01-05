@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\ShortcodeProcessor;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Features\ShortcodeProcessor\Services\ShortcodeProcessorService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Shortcodes\ShortcodeManager;
@@ -39,9 +40,15 @@ class Feature extends BaseFeature implements FeatureInterface
         // MarkdownRenderer creates its own.
         // We should probably create one.
 
+        // Get AssetManager (optional)
+        $assetManager = null;
+        if ($container->has(AssetManager::class)) {
+            $assetManager = $container->get(AssetManager::class);
+        }
+
         // We need TemplateVariableBuilder too.
         $templateVariableBuilder = new \EICC\StaticForge\Services\TemplateVariableBuilder();
-        $templateRenderer = new TemplateRenderer($templateVariableBuilder, $this->logger);
+        $templateRenderer = new TemplateRenderer($templateVariableBuilder, $this->logger, $assetManager);
 
         $shortcodeManager = new ShortcodeManager($container, $templateRenderer);
 

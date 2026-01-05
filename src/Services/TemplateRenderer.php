@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Services;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use EICC\StaticForge\Core\AssetManager;
 use Exception;
 use Twig\Environment as TwigEnvironment;
 use Twig\Loader\FilesystemLoader;
@@ -14,11 +15,13 @@ class TemplateRenderer
 {
     private TemplateVariableBuilder $variableBuilder;
     private Log $logger;
+    private ?AssetManager $assetManager;
 
-    public function __construct(TemplateVariableBuilder $variableBuilder, Log $logger)
+    public function __construct(TemplateVariableBuilder $variableBuilder, Log $logger, ?AssetManager $assetManager = null)
     {
         $this->variableBuilder = $variableBuilder;
         $this->logger = $logger;
+        $this->assetManager = $assetManager;
     }
 
     /**
@@ -84,7 +87,14 @@ class TemplateRenderer
             $templateVars = $this->variableBuilder->build($parsedContent, $container, $sourceFile);
 
             // Render template
-            return $twig->render($templatePath, $templateVars);
+            $html = $twig->render($templatePath, $templateVars);
+
+            // Auto-inject assets if AssetManager is available
+            if ($this->assetManager) {
+                $html = $this->injectAssets($html);
+            }
+
+            return $html;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
 
@@ -200,6 +210,61 @@ class TemplateRenderer
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Inject assets into HTML if they haven't been rendered by the template
+     */
+    private function injectAssets(string $html): string
+    {
+        // Check if styles were rendered
+        if (strpos($html, '<!-- ASSETS:STYLES -->') === false && strpos($html, '<link rel="stylesheet"') === false) {
+            // We can't easily know if specific styles were rendered, but we can check if the variable was used.
+            // A better approach is to check if the AssetManager's output is present.
+            // However, since we pass the strings to the template, we can't know for sure.
+            // Strategy: Look for </head>. If found, inject styles and head scripts before it.
+            
+            $styles = $this->assetManager->getStyles();
+            $headScripts = $this->assetManager->getScripts(false);
+            
+            if ($styles || $headScripts) {
+                $injection = $styles . $headScripts;
+                // Only inject if not already present (simple check)
+                // This is imperfect but handles the "forgot to add {{ styles }}" case.
+                // We assume if the user added {{ styles }}, the content is there.
+                // But since we generate the content fresh, we can't compare easily.
+                // Let's rely on a marker or just inject if missing.
+                
+                // Actually, TemplateVariableBuilder passes the strings.
+                // If the template didn't output them, they are missing.
+                // We can try to detect if the specific asset strings are in the HTML.
+                // But that's expensive.
+                
+                // Let's just look for </head> and inject.
+                // To avoid duplication, we could wrap the output in a comment marker in AssetManager,
+                // but AssetManager returns raw HTML strings.
+                
+                // For now, we will just inject before </head> and </body>.
+                // Users should use the variables for control. This is a fallback.
+                
+                // Simple heuristic: If the HTML doesn't contain the exact string returned by getStyles(), inject it.
+                // This works because getStyles() returns a deterministic string for the current state.
+                
+                if ($styles && strpos($html, $styles) === false) {
+                    $html = str_replace('</head>', $styles . '</head>', $html);
+                }
+                if ($headScripts && strpos($html, $headScripts) === false) {
+                    $html = str_replace('</head>', $headScripts . '</head>', $html);
+                }
+            }
+        }
+
+        $scripts = $this->assetManager->getScripts(true);
+        if ($scripts && strpos($html, $scripts) === false) {
+            $html = str_replace('</body>', $scripts . '</body>', $html);
+        }
+
+        return $html;
     }
 
     /**

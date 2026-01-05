@@ -31,7 +31,7 @@ class TemplateRendererTest extends UnitTestCase
 
         // Initialize renderer
         $logger = $this->container->get('logger');
-        $this->renderer = new TemplateRenderer(new TemplateVariableBuilder(), $logger);
+        $this->renderer = new TemplateRenderer(new TemplateVariableBuilder(), $logger, null);
 
         // Create test templates
         $this->createTestTemplates();

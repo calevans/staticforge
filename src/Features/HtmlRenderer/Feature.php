@@ -6,6 +6,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
+use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Features\HtmlRenderer\Services\HtmlRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
@@ -36,10 +37,17 @@ class Feature extends BaseFeature implements FeatureInterface
         // Get logger from container
         $this->logger = $container->get('logger');
 
+        // Get AssetManager (optional)
+        $assetManager = null;
+        if ($container->has(AssetManager::class)) {
+            $assetManager = $container->get(AssetManager::class);
+        }
+
         // Initialize helpers
         $templateRenderer = new TemplateRenderer(
             new TemplateVariableBuilder(),
-            $this->logger
+            $this->logger,
+            $assetManager
         );
 
         $this->service = new HtmlRendererService($this->logger, $templateRenderer);
