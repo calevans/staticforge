@@ -111,6 +111,45 @@ Sometimes you need to show things only if they exist, or loop through a list.
 
 ---
 
+## Asset Management (CSS & JS)
+
+StaticForge includes an `AssetManager` that allows features (like Photo Galleries) to automatically inject the CSS and JavaScript they need.
+
+To support this, your `base.html.twig` should include the following variables:
+
+*   `{{ styles }}`: Outputs `<link>` tags for all registered stylesheets. Place this in `<head>`.
+*   `{{ head_scripts }}`: Outputs `<script>` tags that must run in the head. Place this in `<head>`.
+*   `{{ scripts }}`: Outputs `<script>` tags for the footer. Place this before `</body>`.
+
+**Example `base.html.twig`:**
+
+```twig
+<head>
+    ...
+    {# Your main styles #}
+    <link rel="stylesheet" href="{{ site_base_url }}/assets/css/style.css">
+
+    {# Feature styles (e.g. Gallery CSS) #}
+    {% if styles %}{{ styles|raw }}{% endif %}
+    {% if head_scripts %}{{ head_scripts|raw }}{% endif %}
+</head>
+<body>
+    ...
+    {# Feature scripts (e.g. jQuery, Gallery JS) #}
+    {% if scripts %}{{ scripts|raw }}{% endif %}
+</body>
+```
+
+### Automatic Injection
+
+If you forget to include these variables, StaticForge attempts to **automatically inject** them for you:
+*   Styles and Head Scripts are injected before the closing `</head>` tag.
+*   Footer Scripts are injected before the closing `</body>` tag.
+
+*Note: While automatic injection works, it is recommended to explicitly place the variables in your template for better control over load order.*
+
+---
+
 ## The "Asset Trap" (Critical Warning)
 
 This is the #1 mistake people make.
