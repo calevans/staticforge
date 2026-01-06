@@ -42,7 +42,9 @@ use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\Audit\ConfigCommand;
 use EICC\StaticForge\Commands\Audit\ContentCommand;
 use EICC\StaticForge\Commands\Audit\LinksCommand;
+use EICC\StaticForge\Commands\Audit\LiveCommand;
 use EICC\StaticForge\Commands\Audit\SeoCommand;
+use EICC\StaticForge\Commands\Make\HtaccessCommand;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
 use Symfony\Component\Console\Application;
@@ -63,7 +65,9 @@ $app->add(new InitCommand());
 $app->add(new ConfigCommand($container));
 $app->add(new ContentCommand($container));
 $app->add(new LinksCommand($container));
+$app->add(new LiveCommand($container));
 $app->add(new SeoCommand($container));
+$app->add(new HtaccessCommand($container));
 
 // Load features
 $container->get(FeatureManager::class)->loadFeatures();

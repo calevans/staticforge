@@ -13,6 +13,7 @@ composer.lock
 .env
 *.log
 .lando.local.yml
+htaccess.txt
 
 
 # Development router (created by site:devserver command)
