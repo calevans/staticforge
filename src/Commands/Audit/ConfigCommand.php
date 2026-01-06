@@ -73,12 +73,12 @@ class ConfigCommand extends Command
         // Assuming default structure if not configured: content/, templates/, public/
         // If config overrides them, we check those.
         // For now, let's check standard paths relative to project root.
-        
+
         $projectRoot = getcwd();
         $pathsToCheck = [
             'content/' => 'Content Directory',
             'templates/' => 'Templates Directory',
-            // 'public/' => 'Output Directory (will be created if missing, but good to check permissions if it exists)' 
+            // 'public/' => 'Output Directory (will be created if missing, but good to check permissions if it exists)'
         ];
 
         foreach ($pathsToCheck as $path => $label) {
@@ -91,7 +91,7 @@ class ConfigCommand extends Command
                 ];
             }
         }
-        
+
         // --- 2. Environment Checks ---
         $io->section('Environment');
         if (!file_exists($projectRoot . '/.env')) {
@@ -106,10 +106,10 @@ class ConfigCommand extends Command
 
         // --- 3. Feature Configuration Checks ---
         $io->section('Feature Configuration');
-        
+
         $featureManager = $this->container->get(FeatureManager::class);
         $features = $featureManager->getFeatures();
-        
+
         $checkedFeatures = 0;
         $featureErrors = 0;
 
@@ -146,7 +146,7 @@ class ConfigCommand extends Command
                     $thisFeatureHasError = true;
                 }
             }
-            
+
             if ($thisFeatureHasError) {
                 $featureErrors++;
             }
