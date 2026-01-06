@@ -18,13 +18,13 @@ foreach ($groups as $dir => $urlPrefix) {
             if (strpos($frontmatter, 'url:') !== false) {
                 continue;
             }
-            
+
             $filename = basename($file, '.md');
             $url = "{$baseUrl}/{$urlPrefix}/{$filename}.html";
-            
+
             $newFrontmatter = $frontmatter . "\nurl: \"{$url}\"";
             $newContent = str_replace($matches[1], $newFrontmatter, $content);
-            
+
             file_put_contents($file, $newContent);
             echo "Updated $file\n";
         }
