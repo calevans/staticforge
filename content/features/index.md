@@ -64,11 +64,11 @@ Automatically creates navigation menus from your content using a simple dot-nota
 
 [Read more about Menu Builder →](menu-builder.html)
 
-### [Chapter Navigation](chapter-nav.html)
+### [Chapter Navigation](https://github.com/calevans/staticforge-chapternav)
 
 Generates sequential prev/next navigation links for documentation pages. Perfect for tutorials, guides, and any content that follows a specific order.
 
-[Read more about Chapter Navigation →](chapter-nav.html)
+[Read more about Chapter Navigation →](https://github.com/calevans/staticforge-chapternav)
 
 ### [Categories](categories.html)
 
@@ -157,7 +157,7 @@ Want to add your own functionality? See the [Feature Development Guide](../devel
 | **[Markdown Renderer](markdown-renderer.html)** | `.md` files | HTML files | Writing content in Markdown |
 | **[HTML Renderer](html-renderer.html)** | `.html` files | HTML files | Custom layouts, precise HTML control |
 | **[Menu Builder](menu-builder.html)** | `menu` in frontmatter | Navigation HTML | Automatic menu generation |
-| **[Chapter Navigation](chapter-nav.html)** | `menu` in frontmatter | Prev/Next links | Sequential page navigation |
+| **[Chapter Navigation](https://github.com/calevans/staticforge-chapternav)** | `menu` in frontmatter | Prev/Next links | Sequential page navigation |
 | **[Categories](categories.html)** | `category` in frontmatter | Subdirectories | Organizing content into sections |
 | **[Category Index](category-index.html)** | Category `.md` file | Index page | Listing all category files |
 | **[Tags](tags.html)** | `tags` in frontmatter | Meta tags, tag data | SEO, tag clouds, related content |

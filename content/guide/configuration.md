@@ -272,7 +272,7 @@ SFTP_USERNAME="deploy"
 SFTP_REMOTE_PATH="/var/www/html"
 ```
 
-See the [Deployment Guide](deployment.html) for more details on setting up SFTP.
+See the [Deployment Commands](commands.html#content-deployment-commands) section for more details on setting up SFTP.
 
 **Example:**
 ```bash

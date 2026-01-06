@@ -1,7 +1,7 @@
 ---
 title: Examples
 type: category
-template: category
+template: category-index
 menu: '1.9, 2.9'
 ---
 

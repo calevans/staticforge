@@ -17,6 +17,9 @@
         "league/commonmark": "^2.4",
         "phpseclib/phpseclib": "^3.0",
         "symfony/console": "^6.0",
+        "symfony/css-selector": "^8.0",
+        "symfony/dom-crawler": "^8.0",
+        "symfony/http-client": "^8.0",
         "symfony/yaml": "^6.0",
         "twig/twig": "^3.0",
         "vlucas/phpdotenv": "^5.5"

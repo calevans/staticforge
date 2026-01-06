@@ -52,7 +52,7 @@ When you run `site:upload`, phpseclib handles the secure connection. It provides
 **The HTML Formatter**
 We believe generated code should be beautiful too. Dindent takes the raw HTML output and formats it with proper indentation, making it clean and readable for debugging.
 
-### [EICC Utils](https://github.com/eicc/utils)
+### EICC Utils
 **The Utility Belt**
 A collection of battle-tested utility classes used across our projects. It handles logging, container management, and other low-level tasks so we don't have to reinvent the wheel.
 
@@ -88,6 +88,6 @@ Code is read much more often than it is written. We use PHP_CodeSniffer to enfor
 **The Virtual File System**
 StaticForge does a lot of file manipulation. Testing this on a real hard drive is slow and messy. vfsStream allows us to mock the file system in memory during our tests. This makes our test suite fast, reliable, and clean—no leftover files cluttering up your drive.
 
-### [Dead Code Detector](https://github.com/shipmonk/php-dead-code-detector)
+### Dead Code Detector
 **The Cleanup Crew**
 As projects grow, it's easy to leave behind unused functions or classes. We use ShipMonk's Dead Code Detector to scan our codebase and identify code that is no longer being used, keeping the project lean and efficient.

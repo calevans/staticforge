@@ -126,13 +126,13 @@ Errors are returned in JSON format:
 
 ## Next Steps
 
-- [API Reference](api-reference.html)
-- [Code Examples](examples.html)
-- [Webhooks Guide](webhooks.html)
+- API Reference
+- [Code Examples](/examples.html)
+- Webhooks Guide
 
 ## Support
 
 Need help? Contact our support team:
 
 - **Email**: api-support@example.com
-- **Docs**: [Full documentation](https://docs.example.com)
+- **Docs**: Full documentation

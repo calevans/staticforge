@@ -192,16 +192,16 @@ We implemented a modern layered architecture:
 
 ## Links
 
-- **Live Site**: [retailco.example.com](https://retailco.example.com)
-- **Case Study**: [Download PDF](files/retailco-case-study.pdf)
+- **Live Site**: retailco.example.com
+- **Case Study**: Download PDF
 - **GitHub**: Private repository (NDA protected)
 
 ## Related Projects
 
-- [SaaS Dashboard Redesign](/portfolio/saas-dashboard.html)
-- [Mobile App Development](/portfolio/mobile-app.html)
-- [API Integration Platform](/portfolio/api-platform.html)
+- SaaS Dashboard Redesign
+- Mobile App Development
+- API Integration Platform
 
 ---
 
-**Interested in a similar project?** [Contact us](/contact.html) to discuss your needs.
+**Interested in a similar project?** [Contact us](/contact-us.html) to discuss your needs.
