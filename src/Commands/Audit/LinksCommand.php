@@ -26,7 +26,7 @@ class LinksCommand extends Command
     protected HttpClientInterface $httpClient;
     protected string $outputDir;
     protected SymfonyStyle $io;
-    
+
     protected ?string $targetBaseUrl = null;
     protected ?string $transportUrl = null;
 
@@ -51,7 +51,7 @@ class LinksCommand extends Command
         $this->io->title('Link Audit');
 
         $this->outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';
-        
+
         // 1. Determine Target Base URL (The "Official" URL)
         $cliUrl = $input->getOption('url');
         if ($cliUrl) {
@@ -74,7 +74,7 @@ class LinksCommand extends Command
                 $this->io->note("Checking links against configured base URL: {$this->targetBaseUrl}");
             }
         }
-        
+
         // Ensure absolute path
         if (!str_starts_with($this->outputDir, '/')) {
             $this->outputDir = (string)realpath($this->outputDir);
@@ -88,12 +88,12 @@ class LinksCommand extends Command
 
         $checkInternal = $input->getOption('internal');
         $checkExternal = $input->getOption('external');
-        
+
         if (!$checkInternal && !$checkExternal) {
             $checkInternal = true;
             $checkExternal = true;
         }
-        
+
         $allErrors = [];
 
         // 1. Scan for HTML files
@@ -118,7 +118,7 @@ class LinksCommand extends Command
             if ($baseNode->count() > 0) {
                 $baseHref = $baseNode->attr('href');
             }
-            
+
             $links = $crawler->filter('a')->extract(['href']);
 
             foreach ($links as $href) {
@@ -148,10 +148,10 @@ class LinksCommand extends Command
         // 2. Validate Internal Links
         if ($checkInternal && !empty($internalChecks)) {
             $this->io->section('Checking Internal Links');
-            
+
             $internalErrors = $this->validateInternalLinks($internalChecks);
             $allErrors = array_merge($allErrors, $internalErrors);
-            
+
             if (empty($internalErrors)) {
                 $this->io->success("Internal links valid.");
             } else {
@@ -163,7 +163,7 @@ class LinksCommand extends Command
         if ($checkExternal && !empty($externalUrls)) {
             $this->io->section(sprintf('Checking %d unique external links', count($externalUrls)));
             $concurrency = (int)$input->getOption('concurrency');
-            
+
             $externalErrors = $this->validateExternalLinks(array_keys($externalUrls), $concurrency, $externalUrls);
             $allErrors = array_merge($allErrors, $externalErrors);
 
@@ -246,11 +246,11 @@ class LinksCommand extends Command
             $sourceFile = $item['file'];
             $href = $item['href'];
             $baseParams = $item['base'] ?? null;
-            
+
             // Resolve full URL (Target)
             $targetUrl = '';
             $relativePath = str_replace($this->outputDir, '', $sourceFile);
-            
+
             // Use base tag if present
             if ($baseParams) {
                 if (str_starts_with($href, '/')) {
@@ -269,10 +269,10 @@ class LinksCommand extends Command
                     $targetUrl = $this->targetBaseUrl . $dir . '/' . $href;
                 }
             }
-            
+
             // Map Target URL to Transport URL
             $transportRequestUrl = $targetUrl;
-            
+
             if ($this->transportUrl && $this->transportUrl !== $this->targetBaseUrl) {
                 if (str_starts_with($targetUrl, $this->targetBaseUrl)) {
                     $path = substr($targetUrl, strlen($this->targetBaseUrl));
@@ -286,14 +286,14 @@ class LinksCommand extends Command
             }
             $urlMap[$targetUrl][] = ['source' => $sourceFile, 'link' => $href];
         }
-        
+
         $urlsToRequest = array_keys($transportMap);
-        
+
         $responses = [];
         foreach ($urlsToRequest as $reqUrl) {
             $responses[$reqUrl] = $this->httpClient->request('GET', $reqUrl);
         }
-        
+
         foreach ($this->httpClient->stream($responses) as $response => $chunk) {
             try {
                 if ($chunk->isFirst()) {
@@ -327,7 +327,7 @@ class LinksCommand extends Command
                  }
             }
         }
-        
+
         $progressBar->finish();
         $this->io->newLine();
         return $errors;
@@ -381,7 +381,7 @@ class LinksCommand extends Command
                  $progressBar->advance();
             }
         }
-        
+
         $progressBar->finish();
         $this->io->newLine();
         return $errors;
