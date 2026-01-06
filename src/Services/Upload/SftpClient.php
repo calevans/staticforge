@@ -170,6 +170,52 @@ class SftpClient
     }
 
     /**
+     * Read file content from remote
+     */
+    public function readFile(string $remotePath): ?string
+    {
+        try {
+            if (!$this->sftp->file_exists($remotePath)) {
+                return null;
+            }
+            $content = $this->sftp->get($remotePath);
+            return $content === false ? null : (string)$content;
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Failed to read file', ['path' => $remotePath, 'error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    /**
+     * Delete file from remote
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        try {
+            if (!$this->sftp->file_exists($remotePath)) {
+                return true; // Already gone
+            }
+            return $this->sftp->delete($remotePath);
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Failed to delete file', ['path' => $remotePath, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * Write string content directly to remote file
+     */
+    public function putContent(string $remotePath, string $content): bool
+    {
+        try {
+            return $this->sftp->put($remotePath, $content);
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Failed to write content', ['path' => $remotePath, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
      * Close SFTP connection cleanly
      */
     public function disconnect(): void

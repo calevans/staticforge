@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SiteUploader
 {
+    private const MANIFEST_FILENAME = 'staticforge-manifest.json';
+
     private SftpClient $client;
     private Log $logger;
     private int $uploadedCount = 0;
@@ -47,22 +49,31 @@ class SiteUploader
             return 0;
         }
 
+        // Calculate relative paths for manifest logic
+        $localManifest = [];
+        $normalizedInputDir = rtrim($inputDir, '/\\');
+        
+        foreach ($files as $file) {
+            $localManifest[] = substr($file, strlen($normalizedInputDir) + 1);
+        }
+
         if ($isDryRun) {
             $output->writeln(sprintf('<info>Found %d files to upload:</info>', count($files)));
-            foreach ($files as $localPath) {
-                $relativePath = substr($localPath, strlen($inputDir) + 1);
+            foreach ($localManifest as $relativePath) {
                 $targetPath = $remotePath . '/' . $relativePath;
                 $output->writeln(sprintf('  [DRY RUN] Would upload: %s -> %s', $relativePath, $targetPath));
             }
+            $this->processManifestCleanup($remotePath, $localManifest, $output, true);
             return 0;
         }
+
+        // Cleanup stale files based on manifest
+        $this->processManifestCleanup($remotePath, $localManifest, $output, false);
 
         $output->writeln(sprintf('<info>Uploading %d files...</info>', count($files)));
 
         // Upload files
         foreach ($files as $localPath) {
-            // Ensure inputDir does not have a trailing slash for correct substring calculation
-            $normalizedInputDir = rtrim($inputDir, '/\\');
             $relativePath = substr($localPath, strlen($normalizedInputDir) + 1);
             $targetPath = $remotePath . '/' . $relativePath;
 
@@ -79,6 +90,9 @@ class SiteUploader
             }
         }
 
+        // Update manifest
+        $this->updateRemoteManifest($remotePath, $localManifest, $output);
+
         $output->writeln('');
         $output->writeln(sprintf(
             '<info>Upload complete: %d files uploaded, %d errors</info>',
@@ -94,6 +108,62 @@ class SiteUploader
         }
 
         return $this->errorCount;
+    }
+
+    private function processManifestCleanup(string $remotePath, array $localFiles, OutputInterface $output, bool $isDryRun): void
+    {
+        $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
+        $content = $this->client->readFile($manifestPath);
+
+        if ($content === null) {
+            if ($output->isVerbose()) {
+                $output->writeln('<comment>No existing manifest found. Skipping cleanup.</comment>');
+            }
+            return;
+        }
+
+        $remoteFiles = json_decode($content, true);
+        if (!is_array($remoteFiles)) {
+            $output->writeln('<error>Invalid manifest format. Skipping cleanup.</error>');
+            return;
+        }
+
+        $filesToDelete = array_diff($remoteFiles, $localFiles);
+        if (empty($filesToDelete)) {
+            return;
+        }
+
+        $output->writeln(sprintf('<info>Cleaning up %d stale files...</info>', count($filesToDelete)));
+
+        foreach ($filesToDelete as $file) {
+            if ($isDryRun) {
+                $output->writeln(sprintf('  [DRY RUN] Would delete: %s', $file));
+                continue;
+            }
+
+            $fullPath = $remotePath . '/' . $file;
+            if ($this->client->deleteFile($fullPath)) {
+                if ($output->isVerbose()) {
+                    $output->writeln(sprintf('  Deleted: %s', $file));
+                }
+            } else {
+                $output->writeln(sprintf('  <error>Failed to delete: %s</error>', $file));
+            }
+        }
+    }
+
+    private function updateRemoteManifest(string $remotePath, array $localFiles, OutputInterface $output): void
+    {
+        $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
+        $content = json_encode($localFiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($this->client->putContent($manifestPath, $content)) {
+            if ($output->isVerbose()) {
+                $output->writeln('<info>Manifest updated.</info>');
+            }
+        } else {
+            $output->writeln('<error>Failed to update manifest file.</error>');
+        }
     }
 
     /**
