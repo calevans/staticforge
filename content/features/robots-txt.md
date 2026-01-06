@@ -4,6 +4,7 @@ description: 'Documentation for the Robots.txt Generator feature, configuring se
 template: docs
 menu: '3.1.9'
 url: "https://calevans.com/staticforge/features/robots-txt.html"
+og_image: "Cute robot traffic cop stopping traffic with a hand signal, no entry sign for bots, digital barrier, neon lights, --ar 16:9"
 ---
 # Robots.txt Generator
 

@@ -8,6 +8,7 @@ tags:
   - security
   - developers
 url: "https://calevans.com/staticforge/examples/documentation/documentation-page.html"
+og_image: "Technical documentation manual, clean layout, structured api reference on a tablet, glasses, coffee, --ar 16:9"
 ---
 # API Authentication
 

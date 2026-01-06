@@ -2,6 +2,7 @@
 title: 'About Us'
 description: 'Discover the story behind our company, meet our passionate team of developers, and learn about our mission to simplify web development.'
 url: "https://calevans.com/staticforge/examples/simple-page.html"
+og_image: "Zen garden of white space, clean minimalist web page, simple text layout, peace, tranquility, --ar 16:9"
 ---
 # About Us
 

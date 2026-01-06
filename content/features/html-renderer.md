@@ -4,6 +4,7 @@ description: 'Documentation for the HTML Renderer, which processes raw HTML file
 template: docs
 menu: '3.1.6'
 url: "https://calevans.com/staticforge/features/html-renderer.html"
+og_image: "HTML5 logo composed of intricate metallic gears, rendering engine mechanism, code transforming into visual web page, steampunk digital style, --ar 16:9"
 ---
 # HTML Renderer
 

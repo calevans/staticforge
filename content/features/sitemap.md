@@ -4,6 +4,7 @@ description: 'How the Sitemap Generator feature creates XML sitemaps for SEO and
 template: docs
 menu: '3.1.12'
 url: "https://calevans.com/staticforge/features/sitemap.html"
+og_image: "Network topology map, sitemap structure, interconnected nodes, complexity, blueprint of a site structure, --ar 16:9"
 ---
 # Sitemap Generator
 

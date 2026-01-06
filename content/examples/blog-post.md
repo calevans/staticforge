@@ -10,6 +10,7 @@ tags:
   - beginner
   - php
 url: "https://calevans.com/staticforge/examples/tutorials/blog-post.html"
+og_image: "Cozy writing desk with coffee and laptop, warm lighting, blog post creation, storytelling atmosphere, evening, --ar 16:9"
 ---
 # Getting Started with StaticForge
 

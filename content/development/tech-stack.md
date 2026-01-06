@@ -4,6 +4,7 @@ description: 'Overview of the technologies, libraries, and tools that power the 
 template: docs
 menu: '4.1.7'
 url: "https://calevans.com/staticforge/development/tech-stack.html"
+og_image: "Modern technology stack layers, isometric server rack, PHP logo, database icons, glass morphism style, sleek data center background, --ar 16:9"
 ---
 
 # Technology Stack

@@ -4,6 +4,7 @@ description: 'How to implement custom SEO checks using the SEO_AUDIT_PAGE event.
 template: docs
 menu: '4.1.8'
 url: "https://calevans.com/staticforge/development/extending-seo-audit.html"
+og_image: "Robotic auditor holding a clipboard checking a website, magnifying glass over HTML code, SEO verification, 3d render, clean style, --ar 16:9"
 ---
 
 # Extending the SEO Audit

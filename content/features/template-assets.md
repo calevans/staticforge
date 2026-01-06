@@ -4,6 +4,7 @@ description: 'Documentation for the Template Assets feature, handling static fil
 template: docs
 menu: '3.1.1'
 url: "https://calevans.com/staticforge/features/template-assets.html"
+og_image: "Artist toolkit for web design, color palette swatches, font styles, paint brushes, design assets, creative workspace, --ar 16:9"
 ---
 # Assets Management
 

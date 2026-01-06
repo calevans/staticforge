@@ -4,6 +4,7 @@ description: 'Deep dive into StaticForge internal architecture, data flow pipeli
 template: docs
 menu: '4.1.1'
 url: "https://calevans.com/staticforge/development/architecture.html"
+og_image: "Isometric 3D diagram of a complex server architecture, glowing blue data streams, white clean background, high tech visualization of software design, unreal engine render, --ar 16:9"
 ---
 
 # Under the Hood: Architecture & Data Flow

@@ -12,6 +12,7 @@ client: 'RetailCo Inc.'
 year: '2024'
 role: 'Lead Developer'
 url: "https://calevans.com/staticforge/examples/portfolio/portfolio-item.html"
+og_image: "Art gallery spotlight on a single item, portfolio piece, showcase frame, dramatic lighting, masterpiece usage, --ar 16:9"
 ---
 # E-Commerce Platform Redesign
 

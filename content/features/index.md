@@ -4,6 +4,7 @@ description: 'Overview of all built-in features in StaticForge, including render
 template: docs
 menu: '3.1'
 url: "https://calevans.com/staticforge/features/index.html"
+og_image: "App store display wall, marketplace of features, grid of colorful glossy icons, digital showroom, futuristic screen, --ar 16:9"
 ---
 # Built-in Features
 

@@ -4,6 +4,7 @@ description: 'Understanding the StaticForge bootstrap process, dependency inject
 template: docs
 menu: '4.1.2'
 url: "https://calevans.com/staticforge/development/bootstrap.html"
+og_image: "Rocket engine ignition sequence close up, digital sparks, code compiling in background, startup sequence, matrix style green binary rain, --ar 16:9"
 ---
 
 # The Ignition Sequence: Bootstrapping

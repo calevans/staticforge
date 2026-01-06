@@ -5,6 +5,7 @@ template: docs
 menu: '2.1'
 hero: assets/images/user-guide-hero.jpg
 url: "https://calevans.com/staticforge/guide/index.html"
+og_image: "Open glowing user manual, guide book leading the way, path to knowledge, library background, --ar 16:9"
 ---
 # User Guide
 

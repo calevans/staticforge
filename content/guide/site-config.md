@@ -4,6 +4,7 @@ description: 'Reference for siteconfig.yaml, the primary configuration file for 
 template: docs
 menu: '2.1.3'
 url: "https://calevans.com/staticforge/guide/site-config.html"
+og_image: "Master control center, mainframes, global settings, mission control room, screens showing system status, --ar 16:9"
 ---
 # Site Configuration (siteconfig.yaml)
 

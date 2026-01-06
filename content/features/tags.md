@@ -4,6 +4,7 @@ description: 'How to use Tags in StaticForge frontmatter to organize, group, and
 template: docs
 menu: '3.1.14'
 url: "https://calevans.com/staticforge/features/tags.html"
+og_image: "Cloud of colorful tags hanging from strings, labels, categorization keywords, sticky notes, organized chaos, --ar 16:9"
 ---
 # Tags
 

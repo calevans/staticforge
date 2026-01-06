@@ -4,6 +4,7 @@ description: 'Catalog of external, community, and official add-on features avail
 template: docs
 menu: '3.2'
 url: "https://calevans.com/staticforge/features/external-features.html"
+og_image: "Bridge connecting two digital islands, plug connecting into a socket, data integration, seamless connection, glowing energy flow, --ar 16:9"
 ---
 # External Features
 

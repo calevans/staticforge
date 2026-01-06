@@ -4,6 +4,7 @@ description: 'Documentation for the Cache Buster feature, providing automated as
 template: docs
 menu: '3.1.2'
 url: "https://calevans.com/staticforge/features/cache-buster.html"
+og_image: "Breaking a metal chain link, cache refresh icon, speed motion blur, high velocity digital data stream, freeze frame action, --ar 16:9"
 ---
 # Cache Buster
 

@@ -7,6 +7,7 @@ tags:
   - search
   - feature
 url: "https://calevans.com/staticforge/features/search.html"
+og_image: "Search bar utilizing a spotlight in a dark room of data, finding the needle in a haystack, magnifying glass, search algorithm visual, --ar 16:9"
 ---
 # Search
 

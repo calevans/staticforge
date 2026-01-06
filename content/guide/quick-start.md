@@ -5,6 +5,7 @@ template: docs
 menu: '2.1.1'
 hero: assets/images/sf_quickstart_hero.jpg
 url: "https://calevans.com/staticforge/guide/quick-start.html"
+og_image: "Sprinter at starting block ready to run, stopwatch, fast forward icon, motion blur, speed lines, getting started concept, --ar 16:9"
 ---
 # Quick Start Guide
 
