@@ -42,7 +42,7 @@ public function auditPage(Container $container, array $params): array
 
     // Example: Check for a custom meta tag
     $customMeta = $crawler->filter('meta[name="my-custom-meta"]');
-    
+
     if ($customMeta->count() === 0) {
         $issues[] = [
             'file' => $filename,

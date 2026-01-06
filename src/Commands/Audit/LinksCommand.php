@@ -181,7 +181,7 @@ class LinksCommand extends Command
         }
 
         $this->io->section('Broken Links Report');
-        
+
         $groupedErrors = [];
         foreach ($allErrors as $error) {
             $source = str_replace($this->outputDir . '/', '', $error['source']);
@@ -197,7 +197,7 @@ class LinksCommand extends Command
                 $this->io->writeln("  <fg=red>[ERROR]</> Link: {$error['link']}");
                 $this->io->writeln("          Reason: {$error['reason']}");
             }
-            $this->io->writeln(""); 
+            $this->io->writeln("");
         }
 
         return Command::FAILURE;

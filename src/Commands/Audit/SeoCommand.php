@@ -296,7 +296,7 @@ class SeoCommand extends Command
             /** @var EventManager $eventManager */
             $eventManager = $this->container->get(EventManager::class);
             $result = $eventManager->fire('SEO_AUDIT_PAGE', $eventData);
-            
+
             if (isset($result['issues']) && is_array($result['issues'])) {
                 $issues = $result['issues'];
             }

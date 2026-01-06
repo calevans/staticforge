@@ -361,7 +361,7 @@ Configure the search engine and behavior.
 search:
   # Search engine to use: 'minisearch' (default) or 'fuse'
   engine: minisearch
-  
+
   # Paths to exclude from search index
   exclude_paths:
     - /tags/
