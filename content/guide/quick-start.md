@@ -4,6 +4,7 @@ description: 'Get up and running with StaticForge in minutes. Installation, proj
 template: docs
 menu: '2.1.1'
 hero: assets/images/sf_quickstart_hero.jpg
+url: "https://calevans.com/staticforge/guide/quick-start.html"
 ---
 # Quick Start Guide
 

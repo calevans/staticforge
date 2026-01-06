@@ -3,7 +3,9 @@ title: 'Architecture & Data Flow'
 description: 'Deep dive into StaticForge internal architecture, data flow pipeline, and core design principles.'
 template: docs
 menu: '4.1.1'
+url: "https://calevans.com/staticforge/development/architecture.html"
 ---
+
 # Under the Hood: Architecture & Data Flow
 
 Welcome to the engine room. If you're looking to understand how StaticForge actually *works*—how it takes a pile of Markdown files and turns them into a polished website—you're in the right place.

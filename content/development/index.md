@@ -3,7 +3,9 @@ title: Developer Guide
 description: 'Landing page for the StaticForge Developer Guide, covering architecture, events, features, and customization.'
 template: docs
 menu: '4.1'
+url: "https://calevans.com/staticforge/development/index.html"
 ---
+
 # Developer Guide
 
 Welcome to the StaticForge Developer Guide. This section is for developers who want to extend StaticForge or understand its internal architecture.

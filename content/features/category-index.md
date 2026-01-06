@@ -3,6 +3,7 @@ title: 'Category Index Pages'
 description: 'Documentation for the Category Index feature which auto-generates listing pages for content categories.'
 template: docs
 menu: '3.1.4'
+url: "https://calevans.com/staticforge/features/category-index.html"
 ---
 # Category Index Pages
 

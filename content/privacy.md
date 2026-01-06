@@ -2,6 +2,7 @@
 title: "Privacy Policy"
 description: "Our commitment to your privacy. Learn how we collect, use, and protect your personal data when you use our services."
 template: "standard_page"
+url: "https://calevans.com/staticforge/privacy.html"
 ---
 
 # Privacy Policy

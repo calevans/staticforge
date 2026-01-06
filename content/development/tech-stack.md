@@ -3,7 +3,9 @@ title: 'Technology Stack'
 description: 'Overview of the technologies, libraries, and tools that power the StaticForge generator.'
 template: docs
 menu: '4.1.7'
+url: "https://calevans.com/staticforge/development/tech-stack.html"
 ---
+
 # Technology Stack
 
 StaticForge is built on the shoulders of giants. We believe in using the best tools for the job, which is why we've chosen a robust stack of open-source technologies to power our generator.

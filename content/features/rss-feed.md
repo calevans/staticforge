@@ -3,6 +3,7 @@ title: 'RSS Feed'
 description: 'How to use the RSS Feed feature to syndicate content and generate category-based feeds.'
 template: docs
 menu: '3.1.10'
+url: "https://calevans.com/staticforge/features/rss-feed.html"
 ---
 # RSS Feed
 

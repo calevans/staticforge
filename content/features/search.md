@@ -6,6 +6,7 @@ menu: '3.1.11'
 tags:
   - search
   - feature
+url: "https://calevans.com/staticforge/features/search.html"
 ---
 # Search
 

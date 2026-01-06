@@ -3,7 +3,9 @@ title: 'The Ignition Sequence: Bootstrapping'
 description: 'Understanding the StaticForge bootstrap process, dependency injection container, and application initialization.'
 template: docs
 menu: '4.1.2'
+url: "https://calevans.com/staticforge/development/bootstrap.html"
 ---
+
 # The Ignition Sequence: Bootstrapping
 
 Before StaticForge can build a single page, it has to wake up, stretch, and get its tools ready. We call this the **Bootstrap Process**.

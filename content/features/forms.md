@@ -6,6 +6,7 @@ menu: '3.1.5'
 tags:
   - forms
   - feature
+url: "https://calevans.com/staticforge/features/forms.html"
 ---
 # Forms Feature
 

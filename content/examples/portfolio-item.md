@@ -11,6 +11,7 @@ tags:
 client: 'RetailCo Inc.'
 year: '2024'
 role: 'Lead Developer'
+url: "https://calevans.com/staticforge/examples/portfolio/portfolio-item.html"
 ---
 # E-Commerce Platform Redesign
 

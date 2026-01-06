@@ -3,6 +3,7 @@ title: 'HTML Renderer'
 description: 'Documentation for the HTML Renderer, which processes raw HTML files and wraps them in Twig templates.'
 template: docs
 menu: '3.1.6'
+url: "https://calevans.com/staticforge/features/html-renderer.html"
 ---
 # HTML Renderer
 

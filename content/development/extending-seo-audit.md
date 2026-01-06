@@ -3,7 +3,9 @@ title: 'Extending SEO Audit'
 description: 'How to implement custom SEO checks using the SEO_AUDIT_PAGE event.'
 template: docs
 menu: '4.1.8'
+url: "https://calevans.com/staticforge/development/extending-seo-audit.html"
 ---
+
 # Extending the SEO Audit
 
 The `audit:seo` command provides a core set of SEO and metadata checks (Title, Description, Canonical URL). However, extensions and features often inject specialized metadata (e.g., Open Graph, Twitter Cards, Schema.org) that should also be validated.
@@ -18,6 +20,7 @@ The event passes an array with the following keys:
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
+
 | `crawler` | `Symfony\Component\DomCrawler\Crawler` | The DOM crawler instance for the page being audited. Use this to inspect the HTML. |
 | `filename` | `string` | The relative path of the file being audited (e.g. `index.html`, `blog/post.html`). |
 | `issues` | `array` | An array of issues found so far. You should append your findings to this array. |

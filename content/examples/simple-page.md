@@ -1,6 +1,7 @@
 ---
 title: 'About Us'
 description: 'Discover the story behind our company, meet our passionate team of developers, and learn about our mission to simplify web development.'
+url: "https://calevans.com/staticforge/examples/simple-page.html"
 ---
 # About Us
 

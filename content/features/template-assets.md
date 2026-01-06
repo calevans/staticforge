@@ -3,6 +3,7 @@ title: 'Assets Management'
 description: 'Documentation for the Template Assets feature, handling static file copying and public directory management.'
 template: docs
 menu: '3.1.1'
+url: "https://calevans.com/staticforge/features/template-assets.html"
 ---
 # Assets Management
 

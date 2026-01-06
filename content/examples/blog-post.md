@@ -9,6 +9,7 @@ tags:
   - tutorial
   - beginner
   - php
+url: "https://calevans.com/staticforge/examples/tutorials/blog-post.html"
 ---
 # Getting Started with StaticForge
 

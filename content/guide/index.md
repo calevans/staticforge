@@ -4,6 +4,7 @@ description: 'Landing page for the StaticForge User Guide. Tutorials and referen
 template: docs
 menu: '2.1'
 hero: assets/images/user-guide-hero.jpg
+url: "https://calevans.com/staticforge/guide/index.html"
 ---
 # User Guide
 

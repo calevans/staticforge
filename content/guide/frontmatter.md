@@ -3,6 +3,7 @@ title: 'Frontmatter Guide'
 description: 'How to use YAML frontmatter in StaticForge to define metadata, templates, and variables for your content.'
 template: docs
 menu: '2.1.5'
+url: "https://calevans.com/staticforge/guide/frontmatter.html"
 ---
 # Frontmatter Guide
 

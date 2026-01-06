@@ -3,6 +3,7 @@ title: 'Site Configuration (siteconfig.yaml)'
 description: 'Reference for siteconfig.yaml, the primary configuration file for StaticForge site settings and menus.'
 template: docs
 menu: '2.1.3'
+url: "https://calevans.com/staticforge/guide/site-config.html"
 ---
 # Site Configuration (siteconfig.yaml)
 

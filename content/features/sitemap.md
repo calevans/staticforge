@@ -3,6 +3,7 @@ title: 'Sitemap Generator'
 description: 'How the Sitemap Generator feature creates XML sitemaps for SEO and search engine discovery.'
 template: docs
 menu: '3.1.12'
+url: "https://calevans.com/staticforge/features/sitemap.html"
 ---
 # Sitemap Generator
 

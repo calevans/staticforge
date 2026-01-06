@@ -3,7 +3,9 @@ menu: '4.1.5'
 title: 'The Face of the Operation: Templates'
 description: 'Comprehensive guide to the Twig templating system in StaticForge, variables, inheritance, and layout design.'
 template: docs
+url: "https://calevans.com/staticforge/development/templates.html"
 ---
+
 # The Face of the Operation: Templates
 
 If Features are the brains of StaticForge, **Templates** are the face. They determine what your users actually see.

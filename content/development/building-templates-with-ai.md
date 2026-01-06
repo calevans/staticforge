@@ -3,6 +3,7 @@ menu: '4.1.6'
 title: 'AI-Assisted Design'
 description: 'Guide to creating custom StaticForge themes and templates using AI assistance and Copilot.'
 template: docs
+url: "https://calevans.com/staticforge/development/building-templates-with-ai.html"
 ---
 
 # AI-Assisted Design: Building Templates with a Co-Pilot

@@ -2,6 +2,7 @@
 title: "Examples Directory Readme"
 description: "Overview of example content files provided with StaticForge to demonstrate features like blog posts, landing pages, and documentation."
 template: "doc"
+url: "https://calevans.com/staticforge/examples/README.html"
 ---
 # Content Examples
 

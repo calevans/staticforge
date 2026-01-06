@@ -3,7 +3,9 @@ template: docs
 menu: '4.1.4'
 title: 'The Plugin System: Features'
 description: 'How to build, register, and manage Features (plugins) to extend StaticForge functionality.'
+url: "https://calevans.com/staticforge/development/features.html"
 ---
+
 # The Plugin System: Features
 
 If StaticForge is the operating system, **Features** are the apps.

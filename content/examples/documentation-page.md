@@ -7,6 +7,7 @@ tags:
   - authentication
   - security
   - developers
+url: "https://calevans.com/staticforge/examples/documentation/documentation-page.html"
 ---
 # API Authentication
 

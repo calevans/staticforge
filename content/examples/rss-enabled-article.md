@@ -9,6 +9,7 @@ tags:
   - api
   - rest
   - tutorial
+url: "https://calevans.com/staticforge/examples/tutorials/rss-enabled-article.html"
 ---
 # Building a REST API with PHP
 

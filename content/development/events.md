@@ -3,7 +3,9 @@ menu: '4.1.3'
 title: 'The Nervous System: Events'
 description: 'Reference for the Event Manager system, available hooks, and the event-driven architecture of StaticForge.'
 template: docs
+url: "https://calevans.com/staticforge/development/events.html"
 ---
+
 # The Nervous System: Events
 
 If the Container is the "Toolbox" of StaticForge, the **Event Manager** is its nervous system. It sends signals throughout the application, telling different parts of the system when to wake up and do their job.

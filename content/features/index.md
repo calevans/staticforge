@@ -3,6 +3,7 @@ title: 'Built-in Features'
 description: 'Overview of all built-in features in StaticForge, including renderers, builders, and utilities.'
 template: docs
 menu: '3.1'
+url: "https://calevans.com/staticforge/features/index.html"
 ---
 # Built-in Features
 
