@@ -1,5 +1,6 @@
 ---
 title: 'Additional Commands'
+description: 'Reference guide for StaticForge CLI commands, including rendering, uploading, and auditing.'
 template: docs
 menu: '2.1.4'
 ---

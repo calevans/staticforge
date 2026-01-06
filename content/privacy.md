@@ -1,6 +1,6 @@
 ---
 title: "Privacy Policy"
-description: "How we handle your data"
+description: "Our commitment to your privacy. Learn how we collect, use, and protect your personal data when you use our services."
 template: "standard_page"
 ---
 

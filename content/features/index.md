@@ -1,5 +1,6 @@
 ---
 title: 'Built-in Features'
+description: 'Overview of all built-in features in StaticForge, including renderers, builders, and utilities.'
 template: docs
 menu: '3.1'
 ---

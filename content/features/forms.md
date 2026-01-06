@@ -1,5 +1,6 @@
 ---
 title: 'Forms'
+description: 'Documentation for the Forms feature: processing form submissions in a static site environment.'
 template: docs
 menu: '3.1.5'
 tags:

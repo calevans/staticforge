@@ -1,6 +1,6 @@
 ---
 title: 'Getting Started with StaticForge'
-description: 'Learn how to build static sites with StaticForge'
+description: 'Step-by-step tutorial on building your first static website using StaticForge. Covers installation, configuration, and creating content.'
 author: 'Your Name'
 date: '2024-01-15'
 category: tutorials

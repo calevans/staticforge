@@ -1,5 +1,6 @@
 ---
 title: 'Robots.txt Generator'
+description: 'Documentation for the Robots.txt Generator feature, configuring search engine crawling rules.'
 template: docs
 menu: '3.1.9'
 ---

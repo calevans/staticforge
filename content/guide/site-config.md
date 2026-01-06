@@ -1,5 +1,6 @@
 ---
 title: 'Site Configuration (siteconfig.yaml)'
+description: 'Reference for siteconfig.yaml, the primary configuration file for StaticForge site settings and menus.'
 template: docs
 menu: '2.1.3'
 ---

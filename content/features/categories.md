@@ -1,5 +1,6 @@
 ---
 title: Categories
+description: 'How to use the Categories feature to organize content, apply directory-specific templates, and structure your site.'
 template: docs
 menu: '3.1.3'
 ---

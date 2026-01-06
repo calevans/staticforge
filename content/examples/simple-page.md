@@ -1,6 +1,6 @@
 ---
 title: 'About Us'
-description: 'Learn about our company and team'
+description: 'Discover the story behind our company, meet our passionate team of developers, and learn about our mission to simplify web development.'
 ---
 # About Us
 

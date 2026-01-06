@@ -1,3 +1,8 @@
+---
+title: "Examples Directory Readme"
+description: "Overview of example content files provided with StaticForge to demonstrate features like blog posts, landing pages, and documentation."
+template: "doc"
+---
 # Content Examples
 
 This directory contains example content files demonstrating StaticForge features.

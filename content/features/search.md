@@ -1,5 +1,6 @@
 ---
 title: Search
+description: 'Documentation for the built-in Search feature, including index generation and client-side implementation.'
 template: docs
 menu: '3.1.11'
 tags:

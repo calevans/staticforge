@@ -164,15 +164,22 @@ class ConfigCommand extends Command
 
         $io->error(sprintf("Found %d configuration errors.", count($errors)));
 
-        $tableRows = [];
+        $groupedErrors = [];
         foreach ($errors as $error) {
-            $tableRows[] = [$error['scope'], $error['type'], $error['message']];
+            $groupedErrors[$error['scope']][] = $error;
         }
+        ksort($groupedErrors);
 
-        $io->table(
-            ['Scope', 'Type', 'Message'],
-            $tableRows
-        );
+        foreach ($groupedErrors as $scope => $scopeErrors) {
+            $io->writeln("<fg=cyan;options=bold>{$scope}</>");
+            foreach ($scopeErrors as $error) {
+                // Config command doesn't seem to distinct error/warning in the array, using [ERROR]
+                // but we can check if 'type' is useful.
+                $typeLabel = strtoupper($error['type']);
+                $io->writeln("  <fg=red>[{$typeLabel}]</> {$error['message']}");
+            }
+            $io->writeln("");
+        }
 
         return Command::FAILURE;
     }

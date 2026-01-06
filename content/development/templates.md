@@ -1,6 +1,7 @@
 ---
 menu: '4.1.5'
 title: 'The Face of the Operation: Templates'
+description: 'Comprehensive guide to the Twig templating system in StaticForge, variables, inheritance, and layout design.'
 template: docs
 ---
 # The Face of the Operation: Templates

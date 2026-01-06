@@ -1,5 +1,6 @@
 ---
 title: 'Configuration Guide'
+description: 'Detailed configuration options for StaticForge, covering environment variables, feature settings, and project structure.'
 template: docs
 menu: '2.1.2'
 ---

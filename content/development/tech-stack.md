@@ -1,5 +1,6 @@
 ---
 title: 'Technology Stack'
+description: 'Overview of the technologies, libraries, and tools that power the StaticForge generator.'
 template: docs
 menu: '4.1.7'
 ---

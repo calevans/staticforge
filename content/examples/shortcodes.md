@@ -2,6 +2,7 @@
 title: Shortcode Demo
 layout: page
 category: docs/examples
+description: "Demonstration of StaticForge's powerful Shortcode system, showing how to easily embed dynamic content like YouTube videos and more."
 ---
 
 This page demonstrates the new Shortcode system.

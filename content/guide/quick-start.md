@@ -1,4 +1,6 @@
 ---
+title: 'Quick Start Guide'
+description: 'Get up and running with StaticForge in minutes. Installation, project creation, and basic usage.'
 template: docs
 menu: '2.1.1'
 hero: assets/images/sf_quickstart_hero.jpg

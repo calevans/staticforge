@@ -1,5 +1,6 @@
 ---
 title: 'Cache Buster'
+description: 'Documentation for the Cache Buster feature, providing automated asset versioning for cache invalidation.'
 template: docs
 menu: '3.1.2'
 ---

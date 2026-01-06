@@ -1,6 +1,6 @@
 ---
 title: 'E-Commerce Platform Redesign'
-description: 'Complete overhaul of a legacy e-commerce system'
+description: 'A detailed case study of how we modernized a legacy e-commerce platform, improving performance, security, and user experience.'
 category: portfolio
 tags:
   - web-development

@@ -1,5 +1,6 @@
 ---
 title: User Guide
+description: 'Landing page for the StaticForge User Guide. Tutorials and reference material for building static sites.'
 template: docs
 menu: '2.1'
 hero: assets/images/user-guide-hero.jpg

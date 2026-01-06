@@ -1,5 +1,6 @@
 ---
 title: 'The Ignition Sequence: Bootstrapping'
+description: 'Understanding the StaticForge bootstrap process, dependency injection container, and application initialization.'
 template: docs
 menu: '4.1.2'
 ---

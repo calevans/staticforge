@@ -2,6 +2,7 @@
 template: docs
 menu: '4.1.4'
 title: 'The Plugin System: Features'
+description: 'How to build, register, and manage Features (plugins) to extend StaticForge functionality.'
 ---
 # The Plugin System: Features
 

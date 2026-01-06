@@ -181,16 +181,24 @@ class LinksCommand extends Command
         }
 
         $this->io->section('Broken Links Report');
-        $tableRows = [];
+        
+        $groupedErrors = [];
         foreach ($allErrors as $error) {
-            $source = str_replace($this->outputDir, '', $error['source']);
-            $tableRows[] = [$source, $error['link'], $error['reason']];
+            $source = str_replace($this->outputDir . '/', '', $error['source']);
+            $groupedErrors[$source][] = $error;
         }
+        ksort($groupedErrors);
 
-        $this->io->table(
-            ['Source File', 'Broken Link', 'Reason'],
-            $tableRows
-        );
+        foreach ($groupedErrors as $context => $errors) {
+            $this->io->writeln("<fg=cyan;options=bold>{$context}</>");
+            foreach ($errors as $error) {
+                // Link errors are typically strictly errors, so we'll use red/ERROR style
+                // or we could inspect logic. For now, links command mostly reports failures.
+                $this->io->writeln("  <fg=red>[ERROR]</> Link: {$error['link']}");
+                $this->io->writeln("          Reason: {$error['reason']}");
+            }
+            $this->io->writeln(""); 
+        }
 
         return Command::FAILURE;
     }

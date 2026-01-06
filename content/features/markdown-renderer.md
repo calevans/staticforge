@@ -1,5 +1,6 @@
 ---
 title: 'Markdown Renderer'
+description: 'Documentation for the Markdown Renderer, converting .md files to HTML using built-in CommonMark support.'
 template: docs
 menu: '3.1.7'
 ---

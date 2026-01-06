@@ -1,5 +1,6 @@
 ---
 title: 'External Features'
+description: 'Catalog of external, community, and official add-on features available via Composer for StaticForge.'
 template: docs
 menu: '3.2'
 ---

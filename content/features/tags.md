@@ -1,5 +1,6 @@
 ---
 title: Tags
+description: 'How to use Tags in StaticForge frontmatter to organize, group, and display related content.'
 template: docs
 menu: '3.1.14'
 ---

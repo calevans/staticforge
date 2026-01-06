@@ -1,3 +1,9 @@
+---
+title: 'Asset Manager'
+description: 'Documentation for the StaticForge AssetManager service, handling JS/CSS dependency resolution and injection.'
+template: docs
+menu: '4.1.6'
+---
 # Asset Manager
 
 The `AssetManager` is a core service in StaticForge that handles the registration and dependency resolution of JavaScript and CSS assets. It allows features and shortcodes to inject assets into the page without worrying about duplicates or load order.

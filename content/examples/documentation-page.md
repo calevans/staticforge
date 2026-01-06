@@ -1,6 +1,6 @@
 ---
 title: 'API Documentation - Authentication'
-description: 'Learn how to authenticate with our API'
+description: 'Comprehensive guide to authenticating with our API securely. Learn about tokens, OAuth flows, and best practices for securing your integration.'
 category: documentation
 tags:
   - api

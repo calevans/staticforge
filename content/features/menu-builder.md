@@ -1,5 +1,6 @@
 ---
 title: 'Menu Builder'
+description: 'How to use the Menu Builder feature to automatically generate navigation menus from content frontmatter.'
 template: docs
 menu: '3.1.8'
 ---

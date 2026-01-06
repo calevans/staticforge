@@ -1,5 +1,6 @@
 ---
 title: 'Table of Contents'
+description: 'Documentation for the Table of Contents feature, auto-generating navigational links from page headings.'
 template: docs
 menu: '3.1.13'
 ---

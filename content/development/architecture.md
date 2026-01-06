@@ -1,5 +1,6 @@
 ---
 title: 'Architecture & Data Flow'
+description: 'Deep dive into StaticForge internal architecture, data flow pipeline, and core design principles.'
 template: docs
 menu: '4.1.1'
 ---
