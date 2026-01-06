@@ -105,16 +105,21 @@ php bin/staticforge.php site:upload
 2. **Production Build (Optional)**: If `--url` is provided, re-renders the site to a temporary directory using that URL
 3. **Establishes Connection**: Connects to remote server and authenticates
 4. **Creates Directory Structure**: Recursively creates any missing directories on remote server
-5. **Uploads All Files**: Uploads every file from output directory (HTML, CSS, JS, images, PDFs, etc.)
-6. **Cleanup**: Removes temporary build directory if one was created
-7. **Error Handling**: Logs errors but continues uploading remaining files
-6. **Reports Results**: Shows summary of files uploaded and any errors encountered
+5. **Smart Sync**:
+   - Compares local files against the remote `staticforge-manifest.json`
+   - Uploads new or changed files
+   - Removes stale files that were present in the previous build but removed from the current one
+   - Updates the remote manifest
+6. **Security Check**: automatically configures `.htaccess` to prevent public access to the manifest file
+7. **Cleanup**: Removes temporary build directory if one was created
+8. **Error Handling**: Logs errors but continues uploading remaining files
+9. **Reports Results**: Shows summary of files uploaded and any errors encountered
 
 #### Important Notes
 
-- **Overwrites Files**: Upload always replaces existing remote files
-- **Preserves Remote Files**: Does NOT delete files on server (preserves `.htaccess`, etc.)
-- **Full Upload**: Uploads ALL files every time (no incremental/diff logic)
+- **Smart Cleanup**: StaticForge tracks the files it uploads. It will cleanly remove old files from previous builds (like renamed assets or deleted posts).
+- **Non-Destructive**: Files *not* in the manifest (like your `.htaccess` or other subdirectories you created manually) are completely ignored and safe.
+- **Overwrites Files**: Upload always replaces existing remote files with the same name.
 - **Continues on Error**: If a file fails to upload, remaining files continue
 - **Security**: Never commit `.env` file to git - keep credentials secure
 - **Private Keys**: SSH key files should have restrictive permissions (`chmod 600 ~/.ssh/id_rsa`)

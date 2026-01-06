@@ -50,7 +50,7 @@ class MenuService
 
         $entry = [
             'title' => $title,
-            'url' => $slug . '.html',
+            'url' => '/' . $slug . '.html',
             'file' => 'category:' . $slug,
             'position' => $position
         ];

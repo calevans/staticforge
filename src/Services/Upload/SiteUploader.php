@@ -179,7 +179,7 @@ class SiteUploader
         // Check existence first to prevent accidental overwrites
         if ($this->client->fileExists($htaccessPath)) {
             $content = $this->client->readFile($htaccessPath);
-            
+
             if ($content === null) {
                 // File exists but we cannot read it. ABORT to be safe.
                 $output->writeln('<error>Warning: .htaccess exists but cannot be read. Skipping security update to prevent data loss.</error>');
