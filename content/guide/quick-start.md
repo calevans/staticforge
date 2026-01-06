@@ -207,7 +207,7 @@ You can add images, custom CSS, or JavaScript to your site by placing them in th
 
 3. Reference it in your content:
    ```markdown
-   ![My Photo](/assets/images/my-photo.jpg)
+   ![My Photo](/assets/images/sf_quickstart_hero.jpg)
    ```
 
 StaticForge will automatically copy everything from `content/assets` to `public/assets` when you build your site.

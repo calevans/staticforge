@@ -40,6 +40,7 @@ if (!empty($missingExtensions)) {
 
 use EICC\StaticForge\Commands\InitCommand;
 use EICC\StaticForge\Commands\Audit\ConfigCommand;
+use EICC\StaticForge\Commands\Audit\ContentCommand;
 use EICC\StaticForge\Commands\Audit\LinksCommand;
 use EICC\StaticForge\Commands\Audit\SeoCommand;
 use EICC\StaticForge\Core\FeatureManager;
@@ -60,6 +61,7 @@ $app = new Application('StaticForge', '1.0.0');
 // Add commands
 $app->add(new InitCommand());
 $app->add(new ConfigCommand($container));
+$app->add(new ContentCommand($container));
 $app->add(new LinksCommand($container));
 $app->add(new SeoCommand($container));
 
