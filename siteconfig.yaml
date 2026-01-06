@@ -18,8 +18,7 @@ menu:
     Home: /guide/index.html
     Contact Us: /contact-us.html
   footer:
-    Privacy: privacy
-    Terms: terms
+    Privacy: /privacy.html
     Github: https://github.com/calevans/staticforge
 
 # Chapter Navigation Configuration
