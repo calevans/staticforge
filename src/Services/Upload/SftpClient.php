@@ -170,6 +170,19 @@ class SftpClient
     }
 
     /**
+     * Check if file exists on remote
+     */
+    public function fileExists(string $remotePath): bool
+    {
+        try {
+            return $this->sftp->file_exists($remotePath);
+        } catch (\Exception $e) {
+            $this->logger->log('ERROR', 'Failed to check file existence', ['path' => $remotePath, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
      * Read file content from remote
      */
     public function readFile(string $remotePath): ?string

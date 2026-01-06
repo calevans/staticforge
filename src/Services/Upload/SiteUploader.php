@@ -52,7 +52,7 @@ class SiteUploader
         // Calculate relative paths for manifest logic
         $localManifest = [];
         $normalizedInputDir = rtrim($inputDir, '/\\');
-        
+
         foreach ($files as $file) {
             $localManifest[] = substr($file, strlen($normalizedInputDir) + 1);
         }
@@ -92,6 +92,11 @@ class SiteUploader
 
         // Update manifest
         $this->updateRemoteManifest($remotePath, $localManifest, $output);
+
+        // Secure manifest
+        if (!$isDryRun) {
+            $this->secureRemoteManifest($remotePath, $output);
+        }
 
         $output->writeln('');
         $output->writeln(sprintf(
@@ -163,6 +168,40 @@ class SiteUploader
             }
         } else {
             $output->writeln('<error>Failed to update manifest file.</error>');
+        }
+    }
+
+    private function secureRemoteManifest(string $remotePath, OutputInterface $output): void
+    {
+        $htaccessPath = $remotePath . '/.htaccess';
+        $block = "\n<Files \"" . self::MANIFEST_FILENAME . "\">\n    Require all denied\n</Files>\n";
+
+        // Check existence first to prevent accidental overwrites
+        if ($this->client->fileExists($htaccessPath)) {
+            $content = $this->client->readFile($htaccessPath);
+            
+            if ($content === null) {
+                // File exists but we cannot read it. ABORT to be safe.
+                $output->writeln('<error>Warning: .htaccess exists but cannot be read. Skipping security update to prevent data loss.</error>');
+                return;
+            }
+
+            if (strpos($content, self::MANIFEST_FILENAME) === false) {
+                if ($output->isVerbose()) {
+                    $output->writeln('<info>Securing manifest in existing .htaccess...</info>');
+                }
+                if (!$this->client->putContent($htaccessPath, $content . $block)) {
+                    $output->writeln('<error>Failed to update .htaccess</error>');
+                }
+            }
+        } else {
+            // File does not exist, safe to create
+            if ($output->isVerbose()) {
+                $output->writeln('<info>Creating .htaccess to secure manifest...</info>');
+            }
+            if (!$this->client->putContent($htaccessPath, ltrim($block))) {
+                $output->writeln('<error>Failed to create .htaccess</error>');
+            }
         }
     }
 
