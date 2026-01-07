@@ -9,46 +9,16 @@ og_image: "Open glowing user manual, guide book leading the way, path to knowled
 ---
 # User Guide
 
-Welcome to the StaticForge User Guide! We're excited to help you build something awesome. Whether you're crafting a personal blog, a portfolio, or a full-blown documentation site, you're in the right place. This guide is designed to take you from "Hello World" to a fully deployed site, step by step.
+Welcome to the StaticForge User Guide. This section will walk you through everything from installation to deployment.
 
----
+## Contents
 
-## Core Concepts
-
-Before we jump into the commands, let's take a quick look at how StaticForge thinks. It's actually pretty simple:
-
-1.  **You Write Content**: You create Markdown (`.md`) files in the `content/` directory. This is where your words live.
-2.  **You Configure**: You tweak the look and feel in `siteconfig.yaml` and handle local settings in `.env`.
-3.  **We Build**: You run `site:render`, and StaticForge combines your content with templates.
-4.  **We Publish**: The result is a complete, static HTML website in the `public/` directory, ready to be hosted anywhere.
-
----
-
-## Getting Started
-
-New here? No problem. Here is the best path to get up and running quickly:
-
-### 1. [Quick Start Guide](quick-start.html)
-**Start here.** We'll walk you through installation, project initialization, and building your first page in under 5 minutes. It's easier than you think.
-
-### 2. [Configuration](configuration.html)
-Once you're up and running, learn how to set up your local environment. We'll cover the `.env` file, which handles the sensitive stuff like API keys and local paths.
-
-### 3. [Site Configuration](site-config.html)
-Now, let's give your site some personality. The `siteconfig.yaml` file is where you define your site's identity, set up navigation menus, and tweak feature settings.
-
----
-
-## Creating Content
-
-This is where the magic happens. Once your site is set up, you'll spend most of your time here.
-
-### [Frontmatter Guide](frontmatter.html)
-Every content file in StaticForge starts with a metadata block called "Frontmatter". It might sound technical, but it's just a way to tell StaticForge about your page. We'll show you how to:
-*   Set page titles and descriptions
-*   Choose specific templates
-*   Organize pages into categories and tags
-*   Control exactly where your page appears in the menu
+*   [Quick Start](quick-start.html) - Installation and building your first page.
+*   [Local Configuration](configuration.html) - Setting up your environment (`.env`).
+*   [Site Configuration](site-config.html) - Configuring your site (`siteconfig.yaml`).
+*   [System Commands](commands.html) - Utility and reference commands.
+*   [Frontmatter Guide](frontmatter.html) - How to add metadata to your content.
+*   [CLI Commands](cli-commands.html) - Reference for rendering, auditing, and system commands.*   Control exactly where your page appears in the menu
 
 ---
 
