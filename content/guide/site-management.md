@@ -5,6 +5,7 @@ template: docs
 menu: '2.2.1'
 url: "https://calevans.com/staticforge/guide/site-management.html"
 og_image: "Digital construction site, futuristic scaffolding around a glowing website hologram, easy deployment button, tech blue theme, --ar 16:9"
+hero: assets/images/site-management-hero.jpg
 ---
 
 # Site Management & Deployment

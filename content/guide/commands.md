@@ -5,6 +5,7 @@ template: docs
 menu: '2.2.3'
 url: "https://calevans.com/staticforge/guide/commands.html"
 og_image: "Hacker terminal screen with green command line interface, typing fast, system control, matrix background, code flowing, --ar 16:9"
+hero: assets/images/system-commands-hero.jpg
 ---
 
 # System Commands

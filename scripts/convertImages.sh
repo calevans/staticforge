@@ -18,12 +18,18 @@ else
     exit 1
 fi
 
-# Load template from siteconfig.yaml
-if [ -f siteconfig.yaml ]; then
-    TEMPLATE=$(grep "template:" siteconfig.yaml | head -n 1 | awk -F': ' '{print $2}' | tr -d '"' | tr -d "'")
-else
-    echo "siteconfig.yaml not found!"
-    exit 1
+# Load template from siteconfig.yaml if not in .env
+if [ -z "$TEMPLATE" ]; then
+    if [ -f siteconfig.yaml ]; then
+        # Only look for top-level key to avoid matching nested keys (like in forms)
+        TEMPLATE=$(grep "^template:" siteconfig.yaml | head -n 1 | awk -F': ' '{print $2}' | tr -d '"' | tr -d "'")
+    fi
+
+    # Fallback if still empty
+    if [ -z "$TEMPLATE" ]; then
+        # Default to staticforce if no other template is specified
+        TEMPLATE="staticforce"
+    fi
 fi
 
 # Check if required variables are set
