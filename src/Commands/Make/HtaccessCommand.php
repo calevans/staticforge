@@ -59,9 +59,6 @@ class HtaccessCommand extends Command
 
     # Prevent Clickjacking
     Header always set X-Frame-Options "SAMEORIGIN"
-
-    # Content Security Policy (CSP)
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
 </IfModule>
 
 # ----------------------------------------------------------------------

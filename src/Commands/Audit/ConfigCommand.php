@@ -125,10 +125,19 @@ class ConfigCommand extends Command
             // Check siteconfig.yaml requirements
             foreach ($feature->getRequiredConfig() as $key) {
                 if (!$this->hasConfigKey($siteConfig, $key)) {
+                    $message = "Missing key in siteconfig.yaml: {$key}";
+
+                    if (method_exists($feature, 'getConfigHelp')) {
+                        $help = $feature->getConfigHelp($key);
+                        if ($help) {
+                            $message .= "\n<comment>Example Configuration:</comment>\n" . $help;
+                        }
+                    }
+
                     $errors[] = [
                         'scope' => "Feature: {$featureName}",
                         'type' => 'Config',
-                        'message' => "Missing key in siteconfig.yaml: {$key}"
+                        'message' => $message
                     ];
                     $thisFeatureHasError = true;
                 }

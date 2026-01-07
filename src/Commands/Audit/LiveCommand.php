@@ -299,12 +299,6 @@ class LiveCommand extends Command
             $issues[] = ['type' => 'success', 'scope' => 'Security', 'message' => "'X-Frame-Options' header found."];
         }
 
-        // 4. CSP (Existence check only)
-        if (!isset($headers['content-security-policy'])) {
-             $issues[] = ['type' => 'warning', 'scope' => 'Security', 'message' => "Missing 'Content-Security-Policy' header."];
-        } else {
-            $issues[] = ['type' => 'success', 'scope' => 'Security', 'message' => "'Content-Security-Policy' header found."];
-        }
 
         return $issues;
     }

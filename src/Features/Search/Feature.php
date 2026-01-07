@@ -42,6 +42,18 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
+    public function getConfigHelp(string $key): ?string
+    {
+        if ($key === 'search') {
+            return <<<YAML
+search:
+  # 'minisearch' (default) or 'fuse'
+  engine: minisearch
+YAML;
+        }
+        return null;
+    }
+
     public function register(EventManager $eventManager, Container $container): void
     {
         parent::register($eventManager, $container);
