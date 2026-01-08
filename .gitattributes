@@ -8,16 +8,12 @@
 /.github export-ignore
 /logs export-ignore
 /public export-ignore
-#/migrations export-ignore
 
 # Files to exclude
 /.gitignore export-ignore
 /phpunit.xml export-ignore
 /phpstan.neon export-ignore
 /debug_*.php export-ignore
-/reproduce_issue.php export-ignore
-/package.json export-ignore
-/package-lock.json export-ignore
 /bin/release.php export-ignore
 /.lando.yml export-ignore
 /.lando.local.yml export-ignore
