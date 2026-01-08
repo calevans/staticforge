@@ -50,6 +50,16 @@ Here is the sequence of signals that go out every time you build your site.
 *   **POST_LOOP**: "All files are done." (Used to generate RSS feeds or search indexes)
 *   **DESTROY**: "Shutting down." (Used to close connections or write logs)
 
+### 5. The Deployment Phase
+*   **UPLOAD_CHECK_FILE**: "Checking a specific file before upload."
+    *   **Triggered By**: `site:upload` command.
+    *   **Purpose**: Allows external tools (like S3 offloaders) to intercept the upload.
+    *   **Data**: Contains `local_path`, `target_path`, `current_hash`, `remote_hash`, and `should_upload`.
+    *   **Action**:
+        *   Set `'handled' => true` if you uploaded it yourself (e.g., to S3).
+        *   Set `'skip_upload' => true` to ignore the file entirely.
+        *   Set `'should_upload' => true` to force a standard SFTP upload even if hashes match.
+
 ---
 
 ## Deep Dive: Common Events

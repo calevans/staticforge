@@ -48,6 +48,54 @@ The `site:render` command executes this specific sequence of events. Features ho
 5.  **`POST_GLOB`**: Hooks after files are found but before processing.
 6.  **`PRE_LOOP`**: Setup before the main processing loop.
 7.  **The Loop** (For each file):
+    *   **`PRE_RENDER`**: Modification of raw content/metadata.
+    *   **`RENDER`**: Transformation (Markdown -> HTML, Twig).
+    *   **`POST_RENDER`**: Final touches on HTML output.
+
+### The Deployment Pipeline
+
+The `site:upload` command manages incremental deployment with extensibility for cloud storage.
+
+1.  **Bootstrap**: Load SFTP configuration and `siteconfig.yaml`.
+2.  **Manifest Synchronization**: Fetch `staticforge-manifest.json` from the remote server.
+3.  **The Upload Loop** (For each file):
+    *   **Hash Calculation**:
+        *   Text files (HTML/CSS/JS): `sfcb` timestamps are stripped/normalized to prevent false positives.
+        *   Binary files: Standard MD5.
+    *   **`UPLOAD_CHECK_FILE`**:
+        *   Fires for *every* file, allowing plugins to intervene.
+        *   **Context**: `current_hash`, `remote_hash`, `should_upload`.
+        *   **Capabilities**: Plugins can set `handled` (e.g., "I uploaded to S3") or `skip_upload`.
+    *   **Upload**: Standard SFTP upload if the file changed and was not handled/skipped.
+4.  **Manifest Update**: A new map of `{ path: hash }` is uploaded to the server.
+5.  **Security**: `.htaccess` is updated to protect the manifest.
+### Implementation Guide: S3 Offloader
+
+To build a feature that offloads assets to S3 instead of SFTP, hook into `UPLOAD_CHECK_FILE`.
+
+```php
+public function checkUpload(Container $container, array $data): array
+{
+    // 1. Check if S3 is enabled
+    if (!$this->isS3Enabled()) {
+        return $data;
+    }
+
+    // 2. Upload to S3
+    $s3->putObject([
+        'Bucket' => $bucket,
+        'Key'    => $data['path'], // e.g., 'assets/images/logo.png'
+        'SourceFile' => $data['local_path']
+    ]);
+
+    // 3. Tell StaticForge "I got this"
+    $data['handled'] = true;
+
+    return $data;
+}
+```
+## 5. Adding New Features
+
     *   **`PRE_RENDER`**: Prepare the file (e.g., parse frontmatter).
     *   **`RENDER`**: Convert content to HTML (e.g., Markdown -> HTML).
     *   **`POST_RENDER`**: Modify the HTML (e.g., inject scripts, collect sitemap URLs).

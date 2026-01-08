@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Services\Upload;
 
+use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -12,18 +13,33 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SiteUploader
 {
     private const MANIFEST_FILENAME = 'staticforge-manifest.json';
+    public const EVENT_UPLOAD_CHECK_FILE = 'UPLOAD_CHECK_FILE';
 
     private SftpClient $client;
     private Log $logger;
+    private UploadCheckService $checkService;
+    private EventManager $eventManager;
+
     private int $uploadedCount = 0;
     private int $errorCount = 0;
     /** @var array<int, string> */
     private array $errors = [];
 
-    public function __construct(SftpClient $client, Log $logger)
-    {
+    /**
+     * @var array<string, ?string> Path => Hash
+     */
+    private array $newManifest = [];
+
+    public function __construct(
+        SftpClient $client,
+        Log $logger,
+        UploadCheckService $checkService,
+        EventManager $eventManager
+    ) {
         $this->client = $client;
         $this->logger = $logger;
+        $this->checkService = $checkService;
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -40,6 +56,7 @@ class SiteUploader
         $this->uploadedCount = 0;
         $this->errorCount = 0;
         $this->errors = [];
+        $this->newManifest = [];
 
         // Get files to upload
         $files = $this->getFilesToUpload($inputDir);
@@ -49,52 +66,96 @@ class SiteUploader
             return 0;
         }
 
-        // Calculate relative paths for manifest logic
-        $localManifest = [];
+        // Initialize manifest
         $normalizedInputDir = rtrim($inputDir, '/\\');
 
-        foreach ($files as $file) {
-            $localManifest[] = substr($file, strlen($normalizedInputDir) + 1);
-        }
+        // Load existing manifest from remote
+        $remoteManifest = $this->loadRemoteManifest($remotePath, $output);
 
-        if ($isDryRun) {
-            $output->writeln(sprintf('<info>Found %d files to upload:</info>', count($files)));
-            foreach ($localManifest as $relativePath) {
-                $targetPath = $remotePath . '/' . $relativePath;
-                $output->writeln(sprintf('  [DRY RUN] Would upload: %s -> %s', $relativePath, $targetPath));
-            }
-            $this->processManifestCleanup($remotePath, $localManifest, $output, true);
-            return 0;
-        }
+        $output->writeln(sprintf('<info>Processing %d files...</info>', count($files)));
 
-        // Cleanup stale files based on manifest
-        $this->processManifestCleanup($remotePath, $localManifest, $output, false);
-
-        $output->writeln(sprintf('<info>Uploading %d files...</info>', count($files)));
-
-        // Upload files
+        // Process files
         foreach ($files as $localPath) {
             $relativePath = substr($localPath, strlen($normalizedInputDir) + 1);
             $targetPath = $remotePath . '/' . $relativePath;
 
-            if ($this->client->uploadFile($localPath, $targetPath)) {
-                $this->uploadedCount++;
+            // Calculate hash (normalized for text files)
+            $currentHash = $this->checkService->calculateHash($localPath);
+            $remoteHash = $remoteManifest[$relativePath] ?? null;
+
+            // Determine if upload is needed
+            // If remoteHash is null (new file or legacy manifest), we upload.
+            // If hashes differ, we upload.
+            $shouldUpload = ($remoteHash === null) || ($currentHash !== $remoteHash);
+
+            // Prepare event context
+            $eventData = [
+                'path' => $relativePath,
+                'local_path' => $localPath,
+                'target_path' => $targetPath,
+                'current_hash' => $currentHash,
+                'remote_hash' => $remoteHash,
+                'should_upload' => $shouldUpload,
+                // Plugins can set these:
+                'skip_upload' => false,
+                'handled' => false
+            ];
+
+            // Fire event to allow plugins (like S3) to intervene
+            $eventData = $this->eventManager->fire(self::EVENT_UPLOAD_CHECK_FILE, $eventData);
+
+            // If plugin handled the upload (e.g. S3), just record the hash
+            if (!empty($eventData['handled'])) {
+                $this->newManifest[$relativePath] = $currentHash;
+                continue;
+            }
+
+            // If plugin says skip, we obey
+            if (!empty($eventData['skip_upload'])) {
+                $this->newManifest[$relativePath] = $remoteHash ?? $currentHash;
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('  Uploaded: %s', $relativePath));
+                    $output->writeln(sprintf('  Skipped by plugin: %s', $relativePath));
+                }
+                continue;
+            }
+
+            // Check if we should upload
+            if ($eventData['should_upload']) {
+                if ($isDryRun) {
+                    $output->writeln(sprintf('  [DRY RUN] Would upload: %s', $relativePath));
+                    // In dry run, we assume success for manifest generation check
+                    $this->newManifest[$relativePath] = $currentHash;
+                } else {
+                    if ($this->client->uploadFile($localPath, $targetPath)) {
+                        $this->uploadedCount++;
+                        $this->newManifest[$relativePath] = $currentHash;
+                        if ($output->isVerbose()) {
+                             $output->writeln(sprintf('  Uploaded: %s', $relativePath));
+                        }
+                    } else {
+                        $this->errorCount++;
+                        // Record error but don't stop everything?
+                        $errorMsg = sprintf('Failed to upload: %s', $relativePath);
+                        $this->errors[] = $errorMsg;
+                        $output->writeln(sprintf('  <error>%s</error>', $errorMsg));
+                        // Do not addToManifest if failed, so it attempts next time
+                    }
                 }
             } else {
-                $this->errorCount++;
-                $errorMsg = sprintf('Failed to upload: %s', $relativePath);
-                $this->errors[] = $errorMsg;
-                $output->writeln(sprintf('  <error>%s</error>', $errorMsg));
+                // File unchanged
+                $this->newManifest[$relativePath] = $currentHash;
+                if ($output->isVerbose()) {
+                    $output->writeln(sprintf('  Skipping (unchanged): %s', $relativePath));
+                }
             }
         }
 
-        // Update manifest
-        $this->updateRemoteManifest($remotePath, $localManifest, $output);
+        // Handle Cleanup (Files in old manifest but not in new manifest)
+        $this->processManifestCleanup($remotePath, $remoteManifest, $this->newManifest, $output, $isDryRun);
 
-        // Secure manifest
-        if (!$isDryRun) {
+        // Update manifest
+        if (!$isDryRun && $this->errorCount === 0) {
+            $this->updateRemoteManifest($remotePath, $this->newManifest, $output);
             $this->secureRemoteManifest($remotePath, $output);
         }
 
@@ -115,25 +176,53 @@ class SiteUploader
         return $this->errorCount;
     }
 
-    private function processManifestCleanup(string $remotePath, array $localFiles, OutputInterface $output, bool $isDryRun): void
+    private function loadRemoteManifest(string $remotePath, OutputInterface $output): array
     {
         $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
+
+        // Suppress simple errors if file doesn't exist
         $content = $this->client->readFile($manifestPath);
 
         if ($content === null) {
             if ($output->isVerbose()) {
-                $output->writeln('<comment>No existing manifest found. Skipping cleanup.</comment>');
+                $output->writeln('<comment>No existing manifest found (or read failed).</comment>');
             }
-            return;
+            return [];
         }
 
-        $remoteFiles = json_decode($content, true);
-        if (!is_array($remoteFiles)) {
-            $output->writeln('<error>Invalid manifest format. Skipping cleanup.</error>');
-            return;
+        $data = json_decode($content, true);
+        if (!is_array($data)) {
+            $output->writeln('<error>Invalid manifest format.</error>');
+            return [];
         }
 
-        $filesToDelete = array_diff($remoteFiles, $localFiles);
+        // Handle migration from List (old format) to Map (new format)
+        if (array_is_list($data)) {
+            if ($output->isVerbose()) {
+                 $output->writeln('<info>Upgrading manifest from legacy list format.</info>');
+            }
+            // Convert list [path1, path2] to map [path1 => null, path2 => null]
+            // This forces re-upload/check but ensures structure is correct
+            return array_fill_keys($data, null);
+        }
+
+        return $data;
+    }
+
+    private function processManifestCleanup(
+        string $remotePath,
+        array $oldManifest,
+        array $newManifest,
+        OutputInterface $output,
+        bool $isDryRun
+    ): void {
+        // Files in old manifest that are NOT in new manifest (i.e. deleted locally)
+        // Check keys which are paths
+        $oldFiles = array_keys($oldManifest);
+        $newFiles = array_keys($newManifest);
+
+        $filesToDelete = array_diff($oldFiles, $newFiles);
+
         if (empty($filesToDelete)) {
             return;
         }
@@ -157,10 +246,10 @@ class SiteUploader
         }
     }
 
-    private function updateRemoteManifest(string $remotePath, array $localFiles, OutputInterface $output): void
+    private function updateRemoteManifest(string $remotePath, array $manifestData, OutputInterface $output): void
     {
         $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
-        $content = json_encode($localFiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $content = json_encode($manifestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         if ($this->client->putContent($manifestPath, $content)) {
             if ($output->isVerbose()) {
@@ -181,8 +270,7 @@ class SiteUploader
             $content = $this->client->readFile($htaccessPath);
 
             if ($content === null) {
-                // File exists but we cannot read it. ABORT to be safe.
-                $output->writeln('<error>Warning: .htaccess exists but cannot be read. Skipping security update to prevent data loss.</error>');
+                $output->writeln('<error>Warning: .htaccess exists but cannot be read. Skipping security update.</error>');
                 return;
             }
 
@@ -195,7 +283,6 @@ class SiteUploader
                 }
             }
         } else {
-            // File does not exist, safe to create
             if ($output->isVerbose()) {
                 $output->writeln('<info>Creating .htaccess to secure manifest...</info>');
             }

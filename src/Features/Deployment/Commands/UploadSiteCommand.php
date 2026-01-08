@@ -34,7 +34,11 @@ class UploadSiteCommand extends Command
         // Initialize helpers
         $this->configLoader = new SftpConfigLoader();
         $this->sftpClient = new SftpClient($this->logger);
-        $this->siteUploader = new SiteUploader($this->sftpClient, $this->logger);
+
+        $checkService = new \EICC\StaticForge\Services\Upload\UploadCheckService();
+        $eventManager = $this->container->get(\EICC\StaticForge\Core\EventManager::class);
+
+        $this->siteUploader = new SiteUploader($this->sftpClient, $this->logger, $checkService, $eventManager);
     }
 
     protected function configure(): void
