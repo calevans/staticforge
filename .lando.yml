@@ -42,3 +42,13 @@ tooling:
   phpunit:
     service: appserver
     cmd: vendor/bin/phpunit
+
+  release:
+    service: appserver
+    description: Create a new release build
+    cmd: php /app/bin/release.php
+
+  staticforge:
+    service: appserver
+    description: Run StaticForge commands
+    cmd: /app/bin/staticforge.php
