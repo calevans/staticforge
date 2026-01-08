@@ -8,7 +8,7 @@
 /.github export-ignore
 /logs export-ignore
 /public export-ignore
-/migrations export-ignore
+#/migrations export-ignore
 
 # Files to exclude
 /.gitignore export-ignore

@@ -39,6 +39,11 @@ class RenderSiteCommandTest extends IntegrationTestCase
       // Load testing environment
         $this->container = $this->createContainer(__DIR__ . '/../../.env.testing');
 
+        // Force container to use the test directories (overriding .env.testing)
+        $this->container->updateVariable('SOURCE_DIR', $this->testContentDir);
+        $this->container->updateVariable('OUTPUT_DIR', $this->testOutputDir);
+        $this->container->updateVariable('TEMPLATE_DIR', $this->testTemplateDir);
+
       // Create test template
         $baseTemplate = '<!DOCTYPE html>
 <html>

@@ -69,6 +69,33 @@ TWIG;
         );
     }
 
+    private function configureContainer(\EICC\Utils\Container $container): void
+    {
+        $vars = [
+            'SOURCE_DIR' => $this->testContentDir,
+            'OUTPUT_DIR' => $this->testOutputDir,
+            'PUBLIC_DIR' => $this->testOutputDir,
+            'TEMPLATE_DIR' => $this->testTemplateDir,
+            'TEMPLATE' => 'sample'
+        ];
+
+        foreach ($vars as $key => $value) {
+            if (!$container->hasVariable($key)) {
+                $container->setVariable($key, $value);
+            } else {
+                $container->updateVariable($key, $value);
+            }
+        }
+
+        // Override site_config to ensure SITE_NAME is used or matches
+        $config = ['site' => ['name' => 'Test Site']];
+        if ($container->hasVariable('site_config')) {
+            $container->updateVariable('site_config', $config);
+        } else {
+            $container->setVariable('site_config', $config);
+        }
+    }
+
     public function testGeneratesRssFeedForCategory(): void
     {
         // Create test content files with categories
@@ -99,21 +126,7 @@ MD;
         // Run the application
         $container = $this->createContainer(__DIR__ . '/../.env.testing');
 
-        // Ensure PUBLIC_DIR is set correctly in container
-        if (!$container->hasVariable('PUBLIC_DIR')) {
-            $container->setVariable('PUBLIC_DIR', $this->testOutputDir);
-        } else {
-            $container->updateVariable('PUBLIC_DIR', $this->testOutputDir);
-        }
-
-        $this->assertEquals($this->testOutputDir, $container->getVariable('PUBLIC_DIR'), 'PUBLIC_DIR should be set in container');
-
-        // Override site_config to ensure SITE_NAME is used or matches
-        if ($container->hasVariable('site_config')) {
-            $container->updateVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        } else {
-            $container->setVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        }
+        $this->configureContainer($container);
 
         $application = new Application($container);
         $application->generate();
@@ -132,7 +145,7 @@ MD;
 
         // Check channel info
         $this->assertStringContainsString('<title>Test Site - Technology</title>', $xml);
-        $this->assertStringContainsString('<link>https://example.com/technology/</link>', $xml);
+        $this->assertStringContainsString('<link>https://test.example.com/technology/</link>', $xml);
         $this->assertStringContainsString('xmlns:atom="http://www.w3.org/2005/Atom"', $xml);
 
         // Check articles are included
@@ -179,21 +192,7 @@ MD;
         // Run application
         $container = $this->createContainer(__DIR__ . '/../.env.testing');
 
-        // Ensure PUBLIC_DIR is set correctly in container
-        if (!$container->hasVariable('PUBLIC_DIR')) {
-            $container->setVariable('PUBLIC_DIR', $this->testOutputDir);
-        } else {
-            $container->updateVariable('PUBLIC_DIR', $this->testOutputDir);
-        }
-
-        $this->assertEquals($this->testOutputDir, $container->getVariable('PUBLIC_DIR'), 'PUBLIC_DIR should be set in container');
-
-        // Override site_config to ensure SITE_NAME is used or matches
-        if ($container->hasVariable('site_config')) {
-            $container->updateVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        } else {
-            $container->setVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        }
+        $this->configureContainer($container);
 
         $application = new Application($container);
         $application->generate();
@@ -219,21 +218,7 @@ MD;
         // Run application
         $container = $this->createContainer(__DIR__ . '/../.env.testing');
 
-        // Ensure PUBLIC_DIR is set correctly in container
-        if (!$container->hasVariable('PUBLIC_DIR')) {
-            $container->setVariable('PUBLIC_DIR', $this->testOutputDir);
-        } else {
-            $container->updateVariable('PUBLIC_DIR', $this->testOutputDir);
-        }
-
-        $this->assertEquals($this->testOutputDir, $container->getVariable('PUBLIC_DIR'), 'PUBLIC_DIR should be set in container');
-
-        // Override site_config to ensure SITE_NAME is used or matches
-        if ($container->hasVariable('site_config')) {
-            $container->updateVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        } else {
-            $container->setVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        }
+        $this->configureContainer($container);
 
         $application = new Application($container);
         $application->generate();
@@ -266,21 +251,7 @@ MD;
         // Run application
         $container = $this->createContainer(__DIR__ . '/../.env.testing');
 
-        // Ensure PUBLIC_DIR is set correctly in container
-        if (!$container->hasVariable('PUBLIC_DIR')) {
-            $container->setVariable('PUBLIC_DIR', $this->testOutputDir);
-        } else {
-            $container->updateVariable('PUBLIC_DIR', $this->testOutputDir);
-        }
-
-        $this->assertEquals($this->testOutputDir, $container->getVariable('PUBLIC_DIR'), 'PUBLIC_DIR should be set in container');
-
-        // Override site_config to ensure SITE_NAME is used or matches
-        if ($container->hasVariable('site_config')) {
-            $container->updateVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        } else {
-            $container->setVariable('site_config', ['site' => ['name' => 'Test Site']]);
-        }
+        $this->configureContainer($container);
 
         $application = new Application($container);
         $application->generate();

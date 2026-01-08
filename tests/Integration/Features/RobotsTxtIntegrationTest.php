@@ -102,7 +102,7 @@ MD;
         $robotsTxtContent = file_get_contents($robotsTxtPath);
         $this->assertStringContainsString('User-agent: *', $robotsTxtContent);
         $this->assertStringContainsString('Disallow:', $robotsTxtContent);
-        $this->assertStringContainsString('Sitemap: https://example.com/sitemap.xml', $robotsTxtContent);
+        $this->assertStringContainsString('Sitemap: https://test.example.com/sitemap.xml', $robotsTxtContent);
 
       // Should not contain any specific disallow paths for allowed pages
         $this->assertStringNotContainsString('Disallow: /public.html', $robotsTxtContent);

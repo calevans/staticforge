@@ -14,15 +14,15 @@ og_image: "Breaking a metal chain link, cache refresh icon, speed motion blur, h
 
 **How it works:**
 1. During the `CREATE` event, the feature generates a unique `build_id` based on the current timestamp.
-2. This `build_id` is stored in the container.
-3. In your Twig templates, you can append `?v={{ build_id }}` to your asset URLs.
+2. This `build_id` is stored in the container, along with a `cache_buster` variable (formatted as `sfcb=TIMESTAMP`).
+3. In your Twig templates, you can append `?{{ cache_buster }}` to your asset URLs.
 
 **Example Usage:**
 
 In your `base.html.twig`:
 
 ```twig
-<link rel="stylesheet" href="assets/css/main.css?v={{ build_id }}">
+<link rel="stylesheet" href="assets/css/main.css?{{ cache_buster }}">
 ```
 
 **Result:**
@@ -30,7 +30,7 @@ In your `base.html.twig`:
 The rendered HTML will look like:
 
 ```html
-<link rel="stylesheet" href="assets/css/main.css?v=1732134567">
+<link rel="stylesheet" href="assets/css/main.css?sfcb=1732134567">
 ```
 
 This forces the browser to treat the file as a new resource whenever you rebuild your site, preventing stale cache issues.

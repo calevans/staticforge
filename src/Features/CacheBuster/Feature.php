@@ -46,6 +46,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Set in container
         $container->setVariable('build_id', $buildId);
+        $container->setVariable('cache_buster', 'sfcb=' . $buildId);
 
         return $parameters;
     }

@@ -43,5 +43,10 @@ class CacheBusterFeatureTest extends UnitTestCase
         // Should be a timestamp
         $this->assertTrue(is_numeric($buildId));
         $this->assertGreaterThan(0, (int)$buildId);
+
+        $cacheBuster = $this->container->getVariable('cache_buster');
+        $this->assertNotNull($cacheBuster);
+        $this->assertIsString($cacheBuster);
+        $this->assertEquals("sfcb={$buildId}", $cacheBuster);
     }
 }

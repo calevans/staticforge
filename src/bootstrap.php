@@ -69,7 +69,7 @@ $possibleEnvPaths = [
 $envLoaded = false;
 foreach ($possibleEnvPaths as $path) {
     if (file_exists($path)) {
-        $dotenv = Dotenv::createUnsafeImmutable(dirname($path), basename($path));
+        $dotenv = Dotenv::createUnsafeMutable(dirname($path), basename($path));
         $dotenv->load();
         $envLoaded = true;
         break;
