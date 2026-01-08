@@ -54,13 +54,13 @@ class Feature extends BaseFeature
 
 ### The Easy Way (CLI)
 
-We have a command that builds the skeleton for you.
+Don't write boilerplate. Let the robot do it.
 
 ```bash
-lando php bin/staticforge.php feature:create MyNewFeature
+lando php vendor/bin/staticforge.php feature:create MyNewFeature
 ```
 
-This creates `src/Features/MyNewFeature/Feature.php` ready for you to edit.
+Boom. You have a new feature structure in `src/Features/MyNewFeature/`. Go fill in the blanks.
 
 ### The Manual Way
 

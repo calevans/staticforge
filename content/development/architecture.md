@@ -75,10 +75,10 @@ CREATE
 PRE_GLOB (prepare for discovery)
   ↓
 POST_GLOB (The Planning Stage)
+  ├─ CategoryIndex (priority 50) - Generates index pages so they can be in menus
   ├─ MenuBuilder (priority 100)
-  ├─ ChapterNav (priority 150)
   ├─ Tags (priority 150)
-  ├─ CategoryIndex (priority 200)
+  ├─ RobotsTxt (priority 150)
   └─ Categories (priority 250) - Applies category templates
   ↓
 PRE_RENDER (before each file)
@@ -91,21 +91,44 @@ POST_RENDER (after each file)
   └─ Categories - Moves files to category directories
   ↓
 POST_LOOP (The Wrap Up)
-  ├─ RSSFeed (priority 90)
+  ├─ RSSFeed (priority 90) - Only needs rendered content
   ├─ RobotsTxt (priority 100)
   └─ TemplateAssets (priority 100)
+  ↓
+UPLOAD_CHECK_FILE (Deployment)
+  └─ S3 Offloader / Incremental Logic
   ↓
 DESTROY (cleanup)
 ```
 
 ### The Priority System
 
-You'll notice "Priority" numbers above. These determine who goes first. Higher numbers run **later**.
+StaticForge uses a simple numeric priority system to decide who goes first. We sort **ascending**, so lower numbers run first.
 
-*   **Priority 100**: Runs early (e.g., MenuBuilder).
-*   **Priority 250**: Runs late (e.g., Categories applying templates).
+*   **Priority 50**: Runs very early (First Responders).
+*   **Priority 100**: The Standard (Most features).
+*   **Priority 250**: Runs late (Final Polish).
 
-This ensures that when the Categories feature runs, it already knows about the Menus and Tags.
+This ensures, for example, that `CategoryIndex` runs at **50** (creating pages) so that `MenuBuilder` at **100** can see them and add them to the navigation.
+
+---
+
+## Phase 3: The Deployment Phase (Going Live)
+
+Once the site is built, we have to get it to the world. Deployment isn't just "copy/paste"; it's an intelligent pipeline of its own.
+
+### The Upload Pipeline
+
+When you run `site:upload`, we enter the Deployment Phase.
+
+1.  **Manifest Sync**: We download the `staticforge-manifest.json` from the server to see what's already there.
+2.  **Hashing**: We calculate the hash of every local file.
+    *   **Smart Hashing**: For text files, we strip out timestamp parameters (`?sfcb=...`) so we don't re-upload files just because the cache buster changed.
+3.  **The Hook (`UPLOAD_CHECK_FILE`)**:
+    This is where plugins can intervene. Before any file is uploaded via SFTP, we fire this event.
+    *   **Data**: You get the local path, remote path, and hashes.
+    *   **Power**: You can say "I handled this" (e.g., uploaded to S3) or "Skip this".
+4.  **Upload/Cleanup**: If no plugin objects, we upload changed files via SFTP and delete old ones.
 
 ---
 

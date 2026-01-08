@@ -34,39 +34,39 @@ Once this checklist is complete, the system hands you a fully loaded **Container
 
 This file is unique. It's not a class; it's a procedural script. You give it an environment file, and it gives you back a Container.
 
-### The Code Explained
+### The Code Explained (Simplified)
 
 ```php
 <?php
-// 1. Allow overriding the environment file (useful for testing)
-$envPath = $envPath ?? '.env';
+// src/bootstrap.php
 
-// 2. Load Composer's Autoloader
-require_once __DIR__ . '/../vendor/autoload.php';
+// 1. Find and Load the Autoloader
+// We check common paths (vendor/autoload.php) to find where Composer put the classes.
 
-// 3. Load Environment Variables
-$dotenv = Dotenv\Dotenv::createUnsafeImmutable(
-    dirname($envPath),
-    basename($envPath)
-);
+// 2. Load Environment Variables (.env)
+// We look for .env in your current folder.
+$dotenv = Dotenv\Dotenv::createUnsafeMutable(dirname($path), basename($path));
 $dotenv->load();
 
-// 4. Create the Container (The "Bag of Tools")
+// 3. Normalize Paths
+// We turn relative paths like 'content/' into absolute paths like '/var/www/site/content/'
+// so the system never gets lost.
+$_ENV['SOURCE_DIR'] = $normalizePath($_ENV['SOURCE_DIR'] ?? 'content');
+
+// 4. Create the Container
 $container = new EICC\Utils\Container();
 
-// 5. Copy .env vars into the Container
-foreach ($_ENV as $key => $value) {
-    $container->setVariable($key, $value);
-}
+// 5. Load siteconfig.yaml
+// This is your main configuration file (menus, site title).
+// We load it and store it in the container for features to use.
+$siteConfig = Yaml::parseFile('siteconfig.yaml');
+$container->setVariable('site_config', $siteConfig);
 
-// 6. Register the Logger
-$container->stuff('logger', function() {
-    return new EICC\Utils\Log(
-        'staticforge',
-        $_ENV['LOG_FILE'] ?? 'logs/staticforge.log',
-        $_ENV['LOG_LEVEL'] ?? 'INFO'
-    );
-});
+// 6. Register Core Services
+// We fire up the big engines:
+$container->add(EventManager::class, new EventManager($container));
+$container->add(AssetManager::class, new AssetManager());
+// ... and others (FeatureManager, fileDiscovery, etc.)
 
 // 7. Return the ready-to-use Container
 return $container;
@@ -91,13 +91,14 @@ $container = require_once __DIR__ . '/../src/bootstrap.php';
 // 2. Create the Console Application
 $app = new Symfony\Component\Console\Application('StaticForge', '1.0.0');
 
-// Add bootstrap command
+// 3. Register Commands
+// We register the core commands. Features will register their own commands later.
 $app->add(new EICC\StaticForge\Commands\InitCommand());
+// ...
 
-// Load features
-$container->get(EICC\StaticForge\Core\FeatureManager::class)->loadFeatures();
-
-// Dispatch CONSOLE_INIT event to allow features to register commands
+// 4. Run the App
+$app->run();
+```
 $container->get(EICC\StaticForge\Core\EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
 
 // Run

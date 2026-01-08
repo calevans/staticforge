@@ -30,7 +30,7 @@ These are the libraries that do the heavy lifting every time you run a command.
 
 ### [Symfony Console](https://symfony.com/doc/current/components/console.html)
 **The CLI Experience**
-When you run `bin/staticforge.php`, you're interacting with Symfony Console. It handles the commands, the colorful output, and the interactive prompts. It's the industry standard for PHP CLIs for a reason.
+When you run `lando php vendor/bin/staticforge.php`, you're talking to Symfony Console. It handles the commands, the colorful output, and the interactive prompts. It's the industry standard for PHP CLIs for a reason.
 
 ### [Twig](https://twig.symfony.com/)
 **The Template Engine**

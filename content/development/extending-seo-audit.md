@@ -7,62 +7,85 @@ url: "https://calevans.com/staticforge/development/extending-seo-audit.html"
 og_image: "Robotic auditor holding a clipboard checking a website, magnifying glass over HTML code, SEO verification, 3d render, clean style, --ar 16:9"
 ---
 
-# Extending the SEO Audit
+# Extending the SEO Audit (For Type A Personalities)
 
-The `audit:seo` command provides a core set of SEO and metadata checks (Title, Description, Canonical URL). However, extensions and features often inject specialized metadata (e.g., Open Graph, Twitter Cards, Schema.org) that should also be validated.
+The `audit:seo` command is great. It catches the basics like missing titles and overly verbose descriptions. But if you have specific requirements—like checking for Open Graph tags, verifying Twitter Cards, or ensuring specialized Schema.org data—you need more power.
 
-StaticForge provides the `SEO_AUDIT_PAGE` event to allow Features to hook into the audit process and report their own issues.
+StaticForge has you covered with the `SEO_AUDIT_PAGE` event.
 
-## Event Name
-`SEO_AUDIT_PAGE`
+## The Hook: `SEO_AUDIT_PAGE`
 
-## Event Parameters
-The event passes an array with the following keys:
+This event fires for **every single HTML file** during an audit. It hands you the DOM and asks, "Do you have any complaints?"
+
+### The Data payload
+
+You receive an array with three keys:
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
+| `crawler` | `Symfony\Component\DomCrawler\Crawler` | The DOM crawler instance. This is your scalpel. Use it to inspect the HTML. |
+| `filename` | `string` | The path of the file you are looking at (e.g., `blog/my-post.html`). |
+| `issues` | `array` | The list of problems found so far. Your job is to add to this list. |
 
-| `crawler` | `Symfony\Component\DomCrawler\Crawler` | The DOM crawler instance for the page being audited. Use this to inspect the HTML. |
-| `filename` | `string` | The relative path of the file being audited (e.g. `index.html`, `blog/post.html`). |
-| `issues` | `array` | An array of issues found so far. You should append your findings to this array. |
+---
 
-## Implementing a Listener
+## How to Implement a Custom Check
 
-To add custom checks, register a listener for `SEO_AUDIT_PAGE` in your Feature class.
+Let's say you want to enforce a rule that every page must have a strict Content Security Policy (CSP) meta tag.
+
+### Step 1: Register the Listener
+
+In your Feature class, tell the EventManager you want to help with the audit.
 
 ```php
-// In YourFeature::register()
-$eventManager->registerListener('SEO_AUDIT_PAGE', [$this, 'auditPage']);
+// src/Features/SecurityAudit/Feature.php
+
+public function register(EventManager $eventManager, Container $container): void
+{
+    $eventManager->registerListener('SEO_AUDIT_PAGE', [$this, 'auditSecurityHeaders']);
+}
 ```
 
-Then, implement the callback method:
+### Step 2: Write the Logic
+
+Now, implement the method. It receives the data, checks the DOM, and reports any failures.
 
 ```php
-public function auditPage(Container $container, array $params): array
+public function auditSecurityHeaders(Container $container, array $params): array
 {
+    // Unpack the tools
     $crawler = $params['crawler'];
     $filename = $params['filename'];
     $issues = $params['issues'];
 
-    // Example: Check for a custom meta tag
-    $customMeta = $crawler->filter('meta[name="my-custom-meta"]');
+    // Check for the meta tag
+    $csp = $crawler->filter('meta[http-equiv="Content-Security-Policy"]');
 
-    if ($customMeta->count() === 0) {
+    if ($csp->count() === 0) {
+        // REPORT THE CRIME!
         $issues[] = [
             'file' => $filename,
-            'type' => 'warning', // 'warning' or 'error'
-            'message' => 'Missing <meta name="my-custom-meta"> tag'
+            'type' => 'error', // Use 'error' to fail the build, 'warning' to just yell.
+            'message' => 'Missing Content-Security-Policy meta tag.'
         ];
     }
 
-    // Always return the modified params
+    // Pack it back up and return it
     $params['issues'] = $issues;
     return $params;
 }
 ```
 
-## Issue Structure
-Each issue pushed to the `$issues` array must be an associative array with:
-*   `file`: The filename (passed in params).
-*   `type`: String `'error'` (fails build) or `'warning'` (just notifies).
-*   `message`: A concise description of the problem.
+---
+
+## The Issue Structure
+
+When you report an issue, follow this format strictly:
+
+*   **`file`**: The filename (passed in params).
+*   **`type`**:
+    *   `'error'`: Critical failure. If the build server sees this, it should fail.
+    *   `'warning'`: Something to fix, but not a showstopper.
+*   **`message`**: A concise, helpful description of what went wrong.
+
+> **Pro Tip:** Don't be annoying with your warnings. If you flag every single page for a minor issue, users will just ignore all your warnings. Be precise.

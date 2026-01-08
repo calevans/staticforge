@@ -183,10 +183,11 @@ We include a few themes to get you started. You can find them in `templates/`.
 *   **`terminal`**: A retro, hacker-style theme.
 *   **`staticforce`**: The documentation theme you are reading right now.
 
-To switch themes, just change the `TEMPLATE` variable in your `.env` file.
+To switch themes, just change the `site.template` setting in your `siteconfig.yaml` file.
 
-```dotenv
-TEMPLATE="terminal"
+```yaml
+site:
+  template: "terminal"
 ```
 
 ---

@@ -33,8 +33,7 @@ This architecture allows you to add new functionality without ever touching the 
 Here is the sequence of signals that go out every time you build your site.
 
 ### 1. The Setup Phase
-*   **CONSOLE_INIT**: "We are booting up the command line." (Used to add new commands like `site:deploy`)
-*   **CREATE**: "The application is alive." (Used to set up initial variables)
+*   **CREATE**: "The application is alive." (Used to set up initial variables and feature defaults)
 
 ### 2. The Discovery Phase
 *   **PRE_GLOB**: "We are about to look for files."
@@ -53,7 +52,7 @@ Here is the sequence of signals that go out every time you build your site.
 ### 5. The Deployment Phase
 *   **UPLOAD_CHECK_FILE**: "Checking a specific file before upload."
     *   **Triggered By**: `site:upload` command.
-    *   **Purpose**: Allows external tools (like S3 offloaders) to intercept the upload.
+    *   **Purpose**: Allows external tools to control the upload process.
     *   **Data**: Contains `local_path`, `target_path`, `current_hash`, `remote_hash`, and `should_upload`.
     *   **Action**:
         *   Set `'handled' => true` if you uploaded it yourself (e.g., to S3).

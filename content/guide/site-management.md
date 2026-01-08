@@ -24,35 +24,21 @@ When you're ready to see your whole site, this is the command you'll reach for. 
 
 ```bash
 # Build everything
-php bin/staticforge.php site:render
+php vendor/bin/staticforge.php site:render
 ```
 
 **Need a fresh start?**
 Sometimes caches get stale or old files linger. Use the `--clean` flag to wipe the slate clean before rebuilding. This is especially useful for production builds.
 
 ```bash
-php bin/staticforge.php site:render --clean
+php vendor/bin/staticforge.php site:render --clean
 ```
 
 **Testing a new look?**
 If you're experimenting with different themes, you can switch them on the fly without changing your configuration files.
 
 ```bash
-php bin/staticforge.php site:render --template=experimental-theme
-```
-
-### The Surgical Tool: `site:page`
-
-Waiting for the whole site to build when you just fixed a typo in one file is painful. The `site:page` command lets you render just what you're working on.
-
-This is perfect for rapid development loops.
-
-```bash
-# Fix that typo in about.md
-php bin/staticforge.php site:page content/about.md
-
-# Update all your blog posts at once
-php bin/staticforge.php site:page "content/blog/*.md"
+php vendor/bin/staticforge.php site:render --template=experimental-theme
 ```
 
 ---
@@ -97,13 +83,13 @@ SFTP_PRIVATE_KEY_PATH="/home/user/.ssh/id_rsa"
 Once configured, going live is a single command.
 
 ```bash
-php bin/staticforge.php site:upload
+php vendor/bin/staticforge.php site:upload
 ```
 
 If you need to deploy to a staging server first, you can override the URL on the fly:
 
 ```bash
-php bin/staticforge.php site:upload --url="https://staging.mysite.com"
+php vendor/bin/staticforge.php site:upload --url="https://staging.mysite.com"
 ```
 
 > **Note:** The first time you run this, it will upload everything. Subsequent runs will only upload changes, making updates lightning fast.

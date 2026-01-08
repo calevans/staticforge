@@ -66,7 +66,7 @@ Now that the AI knows *how* to code it, tell it *what* to design. Be descriptive
 
 ## Step 4: The Construction (One Brick at a Time)
 
-Don't ask for the whole site at once. The AI will get overwhelmed and give you garbage. Build it piece by piece.
+Don't ask for the whole site at once. The AI will get overwhelmed and give you trash. Build it piece by piece.
 
 ### Phase 1: The Skeleton (`base.html.twig`)
 
@@ -75,12 +75,13 @@ This is your master template. Get this right first.
 > "Start by creating the `base.html.twig`. It needs:
 > 1. The HTML5 boilerplate.
 > 2. A sticky navigation bar.
-> 3. A footer with copyright info.
-> 4. The `{% block body %}` where content will go."
+> 3. A footer with copyright info using `{{ site_name }} {{ "now"|date("Y") }}`.
+> 4. The `{% block body %}` where content will go.
+> 5. Use `{{ styles|raw }}` in the head and `{{ scripts|raw }}` in the footer."
 
 ### Phase 2: The Homepage (`index.html.twig`)
 
-> "Now create `index.html.twig`. It should extend `base.html.twig`. Give me a big Hero section with a 'Get Started' button, and a grid of 3 feature boxes below it."
+> "Now create `index.html.twig`. It should extend `base.html.twig`. Give me a big Hero section with the `{{ site_tagline }}` and a 'Get Started' button."
 
 ### Phase 3: The Content (`standard_page.html.twig`)
 
@@ -90,8 +91,9 @@ This is your master template. Get this right first.
 
 ## Pro Tips for Smooth Sailing
 
-*   **The "No Framework" Rule**: AI loves Tailwind. If you don't want a 5MB CSS file, explicitly tell it: *"Write raw CSS only."*
+*   **The "No Framework" Rule**: AI loves Tailwind and Bootstrap. If you don't want a massive dependency chain, explicitly tell it: *"Write raw CSS only. Do not use classes I haven't defined."*
 *   **Asset Paths**: AI often forgets our specific variable names. If links break, remind it: *"Use `{{ site_base_url }}` for all links and images."*
+*   **Magic Variables**: Remind it that `{{ styles }}` and `{{ scripts }}` are handled by the Asset Manager, so it doesn't need to manually link CSS files.
 *   **Mobile First**: Remind it to make things responsive. *"Make sure the nav bar turns into a hamburger menu on mobile."*
 
 By following this script, you act as the **Architect**, and the AI acts as the **Bricklayer**. You provide the vision and the blueprints; it does the heavy lifting.

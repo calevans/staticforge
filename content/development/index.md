@@ -9,15 +9,38 @@ og_image: "Developer guide book glowing on a dark desk, digital compass, map of 
 
 # Developer Guide
 
-Welcome to the StaticForge Developer Guide. This section is for developers who want to extend StaticForge or understand its internal architecture.
+So, you want to see how the sausage is made? You've come to the right place.
 
-## Contents
+This isn't the "How do I write a blog post?" section. This is the **"How do I bend StaticForge to my will?"** section. Here, we pop the hood, void the warranty, and show you exactly how this machine works.
 
-*   [Architecture](architecture.html) - High-level overview of the system.
-*   [Asset Manager](asset-manager.html) - Managing CSS and JS assets.
-*   [Bootstrap](bootstrap.html) - How the application initializes.
-*   [Events](events.html) - The core event-driven architecture.
-*   [Feature Development](features.html) - How to build custom features.
-*   [Template Development](templates.html) - Creating custom themes and templates.
-*   [Building Templates with AI](building-templates-with-ai.html) - Using AI to accelerate template creation.
-*   [Technology Stack](tech-stack.html) - The libraries and tools that power StaticForge.
+## The Blueprint
+
+If you want to hack on the core or build your own plugins (Features), start here.
+
+*   **[Architecture](architecture.html)**
+    The big picture. How does a request become a static HTML file? It's not magic; it's a pipeline.
+
+*   **[The Technology Stack](tech-stack.html)**
+    The giants whose shoulders we stand on. PHP 8.4, Symfony Console, Twig, and more.
+
+*   **[Bootstrap & Initialization](bootstrap.html)**
+    The "Ignition Sequence." What actually happens when you type `bin/staticforge`?
+
+*   **[Events](events.html)**
+    The nervous system of StaticForge. If you want to change behavior, you need to know which synapse to zap.
+
+## Extending the System
+
+*   **[Feature Development](features.html)**
+    Don't fork the core. Build a Feature. It's the plugin system that powers everything.
+
+*   **[Asset Manager](asset-manager.html)**
+    The "Traffic Cop" for your CSS and JS. Stop worrying about dependency order.
+
+## The Frontend
+
+*   **[Template Development](templates.html)**
+    How to make it pretty. Twig, inheritance, and the "Master Slide" concept.
+
+*   **[Building Templates with AI](building-templates-with-ai.html)**
+    Because writing HTML by hand is *so* 2010. Let the robots do the heavy lifting.
