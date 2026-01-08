@@ -1,6 +1,6 @@
 {
     "name": "eicc/staticforge",
-    "version": "1.17.0",
+    "version": "1.17.1",
     "description": "Static site generator built in PHP with extensible feature system",
     "type": "library",
     "license": "MIT",
