@@ -54,12 +54,6 @@
             "eicc/staticforge-installer": true
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/staticforge-installer"
-        }
-    ],
     "bin": [
         "bin/staticforge.php"
     ]
