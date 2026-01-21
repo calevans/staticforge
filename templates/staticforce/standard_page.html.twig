@@ -1,3 +1,13 @@
+{#
+    Template: Standard Page
+    =======================
+    A simplified single-column layout for general content pages
+    that do not require the complex documentation sidebar structure.
+
+    Overrides:
+    - body: Removes the sidebars defined in base.html.twig and centers content.
+    - extra_head: Adds docs.css and inline styles for centering.
+#}
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}

@@ -1,12 +1,17 @@
 {#
-  Chapter Navigation Snippet
+  Partial: Chapter Navigation
+  ===========================
+  Renders sequential prev/next navigation links at the bottom of documentation pages.
+  This snippet checks if the "ChapterNav" feature has calculated navigation data for
+  the current file.
 
-  Renders sequential prev/next navigation for documentation pages.
-  Uses ChapterNav feature data to display navigation based on menu ordering.
+  Dependencies:
+  - Requires the 'ChapterNav' feature to be active given it relies on
+    `features.ChapterNav`.
 
-  Variables expected:
-  - source_file: The current file path
-  - features.ChapterNav.pages: Chapter navigation data
+  Variables:
+  - source_file: (string) The relative path of the current content file (e.g. "guide/index.md")
+  - features.ChapterNav.pages: (array) Global lookup table for navigation data.
 #}
 
 {% if features.ChapterNav.pages[source_file] is defined %}

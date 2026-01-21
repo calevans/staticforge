@@ -1,3 +1,25 @@
+{#
+    Template: Documentation Page
+    ============================
+    The primary template for documentation content.
+    It introduces a 3-column layout (Sidebar, Content, Table of Contents).
+
+    Variables:
+    - hero: (string/optional) Path to hero image.
+
+    Feature-Dependent Variables:
+    - menu2, menu3, menu4: (html) Sidebar menus corresponding to content marked
+      with menu: 2.x, 3.x, 4.x.
+      [REQUIRED FEATURE: MenuBuilder]
+    - toc: (html) Table of Contents HTML.
+      [REQUIRED FEATURE: TableOfContents]
+    - features.ChapterNav: (data) Used by _chapter_nav.html.twig partial.
+      [REQUIRED FEATURE: ChapterNav]
+
+    Overrides:
+    - extra_head: INCLUDES specific CSS for docs (docs.css, toc.css).
+    - body: Implements the documentation layout.
+#}
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}

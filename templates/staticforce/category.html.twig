@@ -1,3 +1,26 @@
+{#
+    Template: Category Index
+    ========================
+    Used for pages that list content within a specific category (e.g., /blog/index.html).
+
+    Behavior:
+    - Displays the page title and content (usually intro text).
+    - Lists all files belonging to the category.
+    - Demonstrates MANUAL menu iteration using `features.MenuBuilder.files[1]`
+      instead of utilizing the pre-rendered `menu1` variable. This serves as
+      a reference implementation for developers wanting total control over menu HTML.
+
+    Variables:
+    - category_files: (array) List of file objects in this category. Each object has:
+      - url: Link to the page
+      - title: Page title
+      - date: (optional) Published date
+      - metadata.description: (optional)
+
+    Feature-Dependent Variables:
+    - features.MenuBuilder.files[1]: (array) Raw menu data for manual iteration.
+      [REQUIRED FEATURE: MenuBuilder]
+#}
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}

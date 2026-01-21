@@ -1,4 +1,23 @@
-{# templates/staticforce/_form.html.twig #}
+{#
+    Partial: Form Component
+    =======================
+    Renders a dynamic HTML form based on configuration.
+    Typical usage is via the [form] shortcode which the FormsFeature processes.
+
+    Variables:
+    - endpoint: (string) URL to POST data to.
+    - success_message: (string) Message to show on success.
+    - error_message: (string) Message to show on failure.
+    - submit_text: (string) Button text.
+    - challenge_url: (string/optional) URL for Altcha spam protection.
+    - fields: (array) List of field definitions. Each field has:
+        - name: (string) input name attribute
+        - label: (string) input label
+        - type: (string) text, email, textarea, etc.
+        - required: (bool)
+        - placeholder: (string)
+        - maxlength: (int)
+#}
 <div class="sf-form-wrapper">
 <div class="sf-form-message" style="display:none;"></div>
 <form action="{{ endpoint }}" method="POST" class="sf-form" data-success-message="{{ success_message }}" data-error-message="{{ error_message }}">

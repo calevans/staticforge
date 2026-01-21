@@ -1,3 +1,41 @@
+{#
+    StaticForge "StaticForce" Theme - Base Layout
+    =============================================
+    This is the master layout file that all other templates should extend.
+    It defines the global HTML structure, including the head, navigation,
+    main content wrapper, sidebar structure, and footer.
+
+    Variables Available:
+    -------------------
+    Global Variables (available in all templates):
+    - site_name: (string) The name of the site (from .env or siteconfig.yaml)
+    - site_base_url: (string) The full base URL with trailing slash
+    - title: (string) Page title
+    - description: (string) Page meta description
+
+    Feature-Dependent Variables:
+    - cache_buster: (string) A unique hash for cache busting assets.
+                    [REQUIRED FEATURE: CacheBusterFeature]
+    - tags: (string|array) Page keywords/tags.
+            [REQUIRED FEATURE: TagsFeature]
+    - search_json: (implied) The search.json file referenced in scripts.
+                   [REQUIRED FEATURE: Search (SearchIndexService)]
+
+    Menu Variables:
+    [REQUIRED FEATURE: MenuBuilder]
+    - menu_top: (html) The top navigation menu (if defined in siteconfig.yaml > menu > top)
+    - menu1: (html) The primary sidebar menu (generated from content with menu: 1.x)
+
+    Blocks:
+    -------
+    - title: Page title tag content
+    - extra_head: Additional tags for <head> (CSS, JS, meta)
+    - search_bar: Search input container
+    - body: The entire body content. Override this to change the main layout structure (e.g. remove sidebars).
+    - content: The main content area where {{ content }} is injected.
+    - search_scripts: Javascript for search functionality.
+    - scripts: Additional footer scripts.
+#}
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,3 +1,19 @@
+{#
+    Template: Home Page
+    ===================
+    Specialized template for the landing page.
+    It extends base.html.twig but performs significant overrides to create a
+    cleaner landing experience.
+
+    Overrides:
+    - search_bar: Block is emptied (removes global search from header on this page).
+    - search_scripts: Block is emptied.
+    - extra_head: Adds 'home.css' for unique landing page styling.
+    - body: Overrides the standard sidebar/content layout with a full-width
+            container that simply outputs {{ content }}. This implies the
+            homepage content (index.md) provides its own structural HTML
+            or uses specific classes defined in home.css.
+#}
 {% extends 'base.html.twig' %}
 
 {% block search_bar %}{% endblock %}
