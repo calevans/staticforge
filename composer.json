@@ -12,6 +12,7 @@
     ],
     "require": {
         "php": "^8.4",
+        "eicc/staticforge-installer": "dev-master",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
         "league/commonmark": "^2.4",
@@ -48,8 +49,17 @@
     "prefer-stable": true,
     "config": {
         "optimize-autoloader": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "eicc/staticforge-installer": true
+        }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./packages/staticforge-installer"
+        }
+    ],
     "bin": [
         "bin/staticforge.php"
     ]

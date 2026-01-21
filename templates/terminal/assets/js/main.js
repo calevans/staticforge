@@ -1,1 +1,0 @@
-console.log('Terminal Theme JS Loaded');
