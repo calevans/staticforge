@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title | default('Untitled Page') }}{% if site_name %} | {{ site_name }}{% endif %}{% endblock %}</title>
-    
+
     {% if description %}
     <meta name="description" content="{{ description }}">
     {% endif %}
