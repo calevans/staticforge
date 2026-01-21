@@ -64,7 +64,7 @@ TEMPLATE="staticforce"
 **Key Settings:**
 - **SITE_NAME**: Your site's name
 - **SITE_BASE_URL**: Your site's URL (use `http://localhost:8000` for local development)
-- **TEMPLATE**: The theme to use (`staticforce`, `sample`, `terminal`, or `vaulttech`)
+- **TEMPLATE**: The theme to use (`staticforce` or `sample`)
 
 ### Step 4: Generate Your Site
 
@@ -281,7 +281,7 @@ StaticForge automatically:
 
 **Regenerate after every change:** StaticForge doesn't watch for changes. Run `php vendor/bin/staticforge.php site:render` after editing content or templates.
 
-**Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default), sample, terminal, or vaulttech.
+**Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default) or sample.
 
 **Keep frontmatter simple:** Only add metadata you actually need. At minimum, just set a `title`.
 

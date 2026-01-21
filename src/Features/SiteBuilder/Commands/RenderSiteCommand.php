@@ -39,7 +39,7 @@ class RenderSiteCommand extends Command
                  'template',
                  't',
                  InputOption::VALUE_REQUIRED,
-                 'Override the template theme (e.g., sample, terminal)'
+                 'Override the template theme (e.g., sample, staticforce)'
              )
              ->addOption(
                  'input',

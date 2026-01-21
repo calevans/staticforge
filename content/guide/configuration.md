@@ -142,8 +142,6 @@ TEMPLATE_DIR="templates"
 ```
 templates/
 ├── sample/          # Each subdirectory is a theme
-├── terminal/
-├── vaulttech/
 └── staticforce/
 ```
 
@@ -159,13 +157,11 @@ You typically won't change this unless you have a custom project structure.
 
 **Built-in options:**
 - `sample` - Clean, modern design
-- `terminal` - Retro terminal aesthetic
-- `vaulttech` - Vintage tech theme
 - `staticforce` - Documentation-focused
 
 **Example:**
 ```bash
-TEMPLATE="terminal"
+TEMPLATE="staticforce"
 ```
 
 **How it works:** StaticForge looks for `templates/{TEMPLATE}/base.html.twig`

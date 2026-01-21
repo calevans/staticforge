@@ -180,14 +180,13 @@ Because StaticForge generates static HTML files that live in different folders (
 We include a few themes to get you started. You can find them in `templates/`.
 
 *   **`sample`**: A clean, modern default.
-*   **`terminal`**: A retro, hacker-style theme.
 *   **`staticforce`**: The documentation theme you are reading right now.
 
-To switch themes, just change the `site.template` setting in your `siteconfig.yaml` file.
+To switch themes, just change the `TEMPLATE` setting in your `.env` file or `site.template` setting in your `siteconfig.yaml` file.
 
 ```yaml
 site:
-  template: "terminal"
+  template: "staticforce"
 ```
 
 ---

@@ -152,17 +152,17 @@ title: "Test Page"
      */
     public function testRenderSiteCommandWithTemplateOverride(): void
     {
-        // Create terminal template for override test
-        mkdir($this->testTemplateDir . '/terminal', 0755, true);
-        $terminalTemplate = '<!DOCTYPE html>
+        // Create custom_theme template for override test
+        mkdir($this->testTemplateDir . '/custom_theme', 0755, true);
+        $customTemplate = '<!DOCTYPE html>
 <html>
-<head><title>{{ title | default("Terminal Site") }}</title></head>
-<body style="background: black; color: green;">
-    <h1>{{ title | default("Terminal Site") }}</h1>
+<head><title>{{ title | default("Custom Site") }}</title></head>
+<body style="background: white; color: black;">
+    <h1>{{ title | default("Custom Site") }}</h1>
     <main>{{ content | raw }}</main>
 </body>
 </html>';
-        file_put_contents($this->testTemplateDir . '/terminal/base.html.twig', $terminalTemplate);
+        file_put_contents($this->testTemplateDir . '/custom_theme/base.html.twig', $customTemplate);
 
         $application = new Application();
         $container = $this->container;
@@ -173,12 +173,12 @@ title: "Test Page"
 
         $result = $commandTester->execute([
             'command' => $command->getName(),
-            '--template' => 'terminal',
+            '--template' => 'custom_theme',
         ]);
 
         $this->assertEquals(0, $result);
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Using template override: terminal', $output);
+        $this->assertStringContainsString('Using template override: custom_theme', $output);
         $this->assertStringContainsString('Site generation completed successfully', $output);
     }
 
@@ -229,7 +229,7 @@ title: "Test Page"
         $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
 
         $templateOption = $definition->getOption('template');
-        $this->assertEquals('Override the template theme (e.g., sample, terminal)', $templateOption->getDescription());
+        $this->assertEquals('Override the template theme (e.g., sample, staticforce)', $templateOption->getDescription());
 
         $inputOption = $definition->getOption('input');
         $this->assertEquals('Override input/content directory path', $inputOption->getDescription());

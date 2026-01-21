@@ -30,7 +30,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
         $this->setContainerVariable('CATEGORY_PAGINATION', 5);
         $this->setContainerVariable('TEMPLATE_DIR', 'templates');
-        $this->setContainerVariable('TEMPLATE', 'terminal');
+        $this->setContainerVariable('TEMPLATE', 'sample');
         $this->setContainerVariable('features', []); // Initialize features array
 
         $this->eventManager = new EventManager($this->container);
