@@ -15,7 +15,7 @@ applyTo: '**'
 - Favor interfaces over concrete classes
 
 # Infrastructure and Environment
-- We use twig and tailwinds
+- We use twig
 - We use lando
 - DB creds are in the .env file
 - We use EiccUtils for logging

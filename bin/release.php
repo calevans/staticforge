@@ -10,6 +10,34 @@ declare(strict_types=1);
  * Usage: lando php bin/release.php <version>
  */
 
+
+$currentDir = getcwd();
+
+// Validate Git Repository
+if (!is_dir($currentDir . '/.git')) {
+    echo "Error: Current directory is not a git repository.\n";
+    exit(1);
+}
+
+$composerFile = $currentDir . '/composer.json';
+
+// Validate composer.json exists
+if (!file_exists($composerFile)) {
+    echo "Error: composer.json not found in current directory.\n";
+    exit(1);
+}
+
+// Update composer.json
+$content = file_get_contents($composerFile);
+$json = json_decode($content, true);
+
+// Validate Vendor
+$packageName = $json['name'] ?? '';
+if (!str_starts_with($packageName, 'eicc/') && !str_starts_with($packageName, 'calevans/')) {
+    echo "Error: This script is restricted to 'eicc' or 'calevans' packages.\n";
+    exit(1);
+}
+
 if ($argc !== 2) {
     // Get tags
     exec('git tag -l', $tags);
@@ -19,14 +47,17 @@ if ($argc !== 2) {
         return version_compare($a, $b);
     });
 
+    $latestTag = '0.0.0';
     if (count($tags) > 0) {
         echo "Existing tags:\n";
         foreach ($tags as $tag) {
             echo " - $tag\n";
         }
+        $latestTag = end($tags);
         echo "\n";
     }
 
+    echo "{$packageName} {$latestTag}\n";
     echo "Usage: lando php bin/release.php <version>\n";
     exit(1);
 }
@@ -39,15 +70,7 @@ if (!preg_match('/^\d+\.\d+\.\d+$/', $version)) {
     exit(1);
 }
 
-$composerFile = __DIR__ . '/../composer.json';
-if (!file_exists($composerFile)) {
-    echo "Error: composer.json not found\n";
-    exit(1);
-}
 
-// Update composer.json
-$content = file_get_contents($composerFile);
-$json = json_decode($content, true);
 $oldVersion = $json['version'] ?? 'unknown';
 
 if ($oldVersion === $version) {
@@ -120,9 +143,9 @@ if (in_array($version, $tags)) {
     $tagMessage = "Release $version\n\n" . implode("\n", $commits);
     $tempMsgFile = tempnam(sys_get_temp_dir(), 'sf_release');
     file_put_contents($tempMsgFile, $tagMessage);
-    
+
     runCommand("git tag -a {$version} -F {$tempMsgFile}");
-    
+
     unlink($tempMsgFile);
     echo "✅ Created annotated tag {$version}\n";
 }
