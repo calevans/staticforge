@@ -28,18 +28,10 @@ menu:
   # Accessible in templates as {{ menu_top }}
   top:
     Home: /
-    About: /about
-    Products: /products
-    Shop: /shop
-    Contact: /contact
 
   # Footer navigation
   # Accessible in templates as {{ menu_footer }}
   footer:
-    Privacy Policy: /privacy
-    Terms of Service: /terms
-    Contact Us: /contact
-    Sitemap: /sitemap
 
 # Chapter navigation configuration
 # Controls sequential navigation links (prev/next) within menu sections
@@ -63,6 +55,14 @@ search:
 
   # Separator between navigation elements (default: |)
   separator: "|"
+
+  enabled: true
+  # Paths to exclude from the search index (e.g., list pages)
+  exclude_paths:
+    - /tags/
+    - /categories/
+  # Content directories to exclude entirely (e.g., private docs)
+  exclude_content_in: []
 
 # Forms Configuration
 # Define forms that can be embedded using {{ form('name') }}
@@ -113,16 +113,7 @@ forms:
 # social_links:
 #   twitter: https://twitter.com/mysite
 
-# Search Configuration
-# Controls the native client-side search feature
-search:
-  enabled: true
-  # Paths to exclude from the search index (e.g., list pages)
-  exclude_paths:
-    - /tags/
-    - /categories/
-  # Content directories to exclude entirely (e.g., private docs)
-  exclude_content_in: []
+
 
 # Google Analytics Configuration
 google_analytics:
