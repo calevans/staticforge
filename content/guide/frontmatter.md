@@ -27,7 +27,7 @@ template: "standard_page"
 While you can put anything you want in your frontmatter, there are a few fields that StaticForge looks for:
 
 *   **`title`**: The title of your page. This is usually used in the `<title>` tag and `<h1>` of your template.
-*   **`template`**: (Optional) The name of the Twig template to use (without `.html.twig`). If omitted, it defaults to `base` or whatever your theme uses as default.
+*   **`template`**: (Optional) The name of the Twig template to use (without `.html.twig`). If omitted, it defaults to `base` or whatever your template uses as default.
 *   **`menu`**: (Optional) If you want this page to appear in a menu, specify the position here (e.g., `'1.0'`, `'2.1'`).
 
 ## It's Just Data

@@ -218,9 +218,9 @@ $container->stuff('twig', function () use ($container) {
     $loader = new FilesystemLoader($templateDir);
 
     // Add the active template directory if set
-    $templateTheme = $container->getVariable('TEMPLATE');
-    if (is_dir($templateDir . '/' . $templateTheme)) {
-        $loader->addPath($templateDir . '/' . $templateTheme);
+    $activeTemplate = $container->getVariable('TEMPLATE');
+    if (is_dir($templateDir . '/' . $activeTemplate)) {
+        $loader->addPath($templateDir . '/' . $activeTemplate);
     }
 
     return new Environment($loader, [

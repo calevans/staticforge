@@ -50,7 +50,7 @@ class ConfigCommand extends Command
             ];
         }
 
-        // Check for Template/Theme (Expected in siteconfig or ENV)
+        // Check for Template (Expected in siteconfig or ENV)
         $template = $this->container->getVariable('TEMPLATE');
         if (empty($template)) {
              $errors[] = [

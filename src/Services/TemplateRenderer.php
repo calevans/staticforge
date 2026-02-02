@@ -37,7 +37,7 @@ class TemplateRenderer
             if (!$templateDir) {
                 throw new \RuntimeException('TEMPLATE_DIR not set in container');
             }
-            $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
+            $activeTemplate = $container->getVariable('TEMPLATE') ?? 'sample';
 
             // Determine template: frontmatter > category > .env default
             $templateName = 'base'; // Ultimate fallback
@@ -68,14 +68,14 @@ class TemplateRenderer
             $templateName .= '.html.twig';
 
             // Full template path
-            $templatePath = $templateTheme . '/' . $templateName;
+            $templatePath = $activeTemplate . '/' . $templateName;
 
             $this->logger->log('INFO', "Using template: {$templatePath}");
 
             // Set up Twig with security enabled
             $loader = new FilesystemLoader($templateDir);
-            // Add the specific template theme directory so includes work
-            $loader->addPath($templateDir . '/' . $templateTheme);
+            // Add the active template directory so includes work
+            $loader->addPath($templateDir . '/' . $activeTemplate);
             $twig = new TwigEnvironment($loader, [
                 'debug' => true,
                 'strict_variables' => false,
@@ -119,15 +119,15 @@ class TemplateRenderer
             if (!$templateDir) {
                 throw new \RuntimeException('TEMPLATE_DIR not set in container');
             }
-            $templateTheme = $container->getVariable('TEMPLATE') ?? 'sample';
+            $activeTemplate = $container->getVariable('TEMPLATE') ?? 'sample';
 
             // Set up Twig
             $loader = new FilesystemLoader($templateDir);
-            // Add the specific template theme directory so includes work
-            $loader->addPath($templateDir . '/' . $templateTheme);
+            // Add the active template directory so includes work
+            $loader->addPath($templateDir . '/' . $activeTemplate);
 
             // Also add the root templates directory to find shared templates like shortcodes
-            // if they are not in the theme
+            // if they are not in the active template
 
             $twig = new TwigEnvironment($loader, [
                 'debug' => true,

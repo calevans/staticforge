@@ -1,7 +1,7 @@
 {
     "name": "eicc/staticforge-installer",
     "type": "composer-plugin",
-    "description": "Composer installer for StaticForge themes",
+    "description": "Composer installer for StaticForge templates",
     "license": "MIT",
     "require": {
         "php": "^8.0",

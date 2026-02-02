@@ -1,7 +1,7 @@
 ---
 menu: '4.1.6'
 title: 'AI-Assisted Design'
-description: 'Guide to creating custom StaticForge themes and templates using AI assistance and Copilot.'
+description: 'Guide to creating custom StaticForge templates using AI assistance and Copilot.'
 template: docs
 url: "https://calevans.com/staticforge/development/building-templates-with-ai.html"
 og_image: "Robot arm painting a website layout on a digital canvas, AI assistant collaboration, futuristic minimalist design studio, soft lighting, 8k, --ar 16:9"
@@ -9,11 +9,11 @@ og_image: "Robot arm painting a website layout on a digital canvas, AI assistant
 
 # AI-Assisted Design: Building Templates with a Co-Pilot
 
-So, you want to build a custom theme for StaticForge, but you don't want to write every single `<div>` and CSS class by hand.
+So, you want to build a custom template for StaticForge, but you don't want to write every single `<div>` and CSS class by hand.
 
-Good news: StaticForge speaks the same language as your AI assistant. Because we use standard, boring technologies—PHP, Twig, and raw CSS—tools like GitHub Copilot and ChatGPT are surprisingly good at generating high-quality themes for us.
+Good news: StaticForge speaks the same language as your AI assistant. Because we use standard, boring technologies—PHP, Twig, and raw CSS—tools like GitHub Copilot and ChatGPT are surprisingly good at generating high-quality templates for us.
 
-This guide isn't just a tutorial; it's a "cheat code" for building themes fast.
+This guide isn't just a tutorial; it's a "cheat code" for building templates fast.
 
 ---
 
@@ -23,7 +23,7 @@ The biggest mistake people make with AI is asking it to "make a website." That's
 
 The secret is the **Reference Implementation Strategy**.
 
-Instead of teaching the AI how StaticForge works from scratch, you simply point it to our "Gold Standard" theme (`staticforce`) and say:
+Instead of teaching the AI how StaticForge works from scratch, you simply point it to our "Gold Standard" template (`staticforce`) and say:
 
 > *"See this? Do it exactly like that, but make it look like [Your Vision]."*
 
@@ -31,14 +31,14 @@ Instead of teaching the AI how StaticForge works from scratch, you simply point 
 
 ## The Workflow: From Zero to Hero
 
-Here is the exact workflow we use to build themes in minutes, not days.
+Here is the exact workflow we use to build templates in minutes, not days.
 
 ### Step 1: The Briefing (Set the Context)
 
 First, you need to orient the AI. Tell it what tools we are using so it doesn't try to give you React or Vue code.
 
 **The Prompt:**
-> "I am building a new theme for a static site generator. We are using **Twig** for templating and **Raw CSS** (no frameworks). I want to create a theme named 'my-new-theme'."
+> "I am building a new template for a static site generator. We are using **Twig** for templating and **Raw CSS** (no frameworks). I want to create a template named 'my-new-template'."
 
 ### Step 2: The Blueprint (Grounding)
 
@@ -49,7 +49,7 @@ This is the most critical step. You must force the AI to look at the existing co
 >
 > Study how `base.html.twig` sets up the HTML shell. Note how `standard_page.html.twig` extends it. Look at how the assets are linked using `{{ site_base_url }}`.
 >
-> Use this structure as the blueprint for my new theme."
+> Use this structure as the blueprint for my new template."
 
 ### Step 3: The Vision (Style)
 

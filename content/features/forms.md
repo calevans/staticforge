@@ -56,7 +56,7 @@ forms:
 | `provider_url` | The base URL of your form processing service. |
 | `form_id` | The unique ID for this specific form. Appended to `provider_url`. |
 | `challenge_url` | (Optional) The URL for the Altcha challenge service. If provided, an Altcha widget will be added to the form. |
-| `template` | (Optional) The name of a custom template to use for this form (e.g., `contact_us` for `templates/active_theme/contact_us.html.twig`). |
+| `template` | (Optional) The name of a custom template to use for this form (e.g., `contact_us` for `templates/active_template/contact_us.html.twig`). |
 | `submit_text` | The text to display on the submit button. Default: "Submit". |
 | `success_message` | The message to display when the form is successfully submitted. |
 | `error_message` | The message to display if submission fails. |
@@ -89,7 +89,7 @@ Have questions? Fill out the form below!
 
 You can customize the look and feel of your forms by creating a custom Twig template.
 
-1.  Create a new template file in your active theme directory (e.g., `templates/staticforce/contact_us.html.twig`).
+1.  Create a new template file in your active template directory (e.g., `templates/staticforce/contact_us.html.twig`).
 2.  In your `siteconfig.yaml`, add the `template` option to your form configuration:
 
     ```yaml
@@ -99,7 +99,7 @@ You can customize the look and feel of your forms by creating a custom Twig temp
         # ... other options
     ```
 
-The system will look for `templates/YOUR_THEME/contact_us.html.twig`. If it doesn't exist, it will fall back to the default form template.
+The system will look for `templates/YOUR_TEMPLATE/contact_us.html.twig`. If it doesn't exist, it will fall back to the default form template.
 
 Your custom template will receive the following variables:
 - `endpoint`: The submission URL.

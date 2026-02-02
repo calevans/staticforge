@@ -152,8 +152,8 @@ title: "Test Page"
      */
     public function testRenderSiteCommandWithTemplateOverride(): void
     {
-        // Create custom_theme template for override test
-        mkdir($this->testTemplateDir . '/custom_theme', 0755, true);
+        // Create custom_template template for override test
+        mkdir($this->testTemplateDir . '/custom_template', 0755, true);
         $customTemplate = '<!DOCTYPE html>
 <html>
 <head><title>{{ title | default("Custom Site") }}</title></head>
@@ -162,7 +162,7 @@ title: "Test Page"
     <main>{{ content | raw }}</main>
 </body>
 </html>';
-        file_put_contents($this->testTemplateDir . '/custom_theme/base.html.twig', $customTemplate);
+        file_put_contents($this->testTemplateDir . '/custom_template/base.html.twig', $customTemplate);
 
         $application = new Application();
         $container = $this->container;
@@ -173,12 +173,12 @@ title: "Test Page"
 
         $result = $commandTester->execute([
             'command' => $command->getName(),
-            '--template' => 'custom_theme',
+            '--template' => 'custom_template',
         ]);
 
         $this->assertEquals(0, $result);
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Using template override: custom_theme', $output);
+        $this->assertStringContainsString('Using template override: custom_template', $output);
         $this->assertStringContainsString('Site generation completed successfully', $output);
     }
 
@@ -229,7 +229,7 @@ title: "Test Page"
         $this->assertEquals('Clean output directory before generation', $cleanOption->getDescription());
 
         $templateOption = $definition->getOption('template');
-        $this->assertEquals('Override the template theme (e.g., sample, staticforce)', $templateOption->getDescription());
+        $this->assertEquals('Override the site template (e.g., sample, staticforce)', $templateOption->getDescription());
 
         $inputOption = $definition->getOption('input');
         $this->assertEquals('Override input/content directory path', $inputOption->getDescription());

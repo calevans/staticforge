@@ -141,7 +141,7 @@ TEMPLATE_DIR="templates"
 **Directory structure:**
 ```
 templates/
-├── sample/          # Each subdirectory is a theme
+├── sample/          # Each subdirectory is a template
 └── staticforce/
 ```
 
@@ -151,7 +151,7 @@ You typically won't change this unless you have a custom project structure.
 
 ### TEMPLATE
 
-**What it does:** Which theme to use from your TEMPLATE_DIR
+**What it does:** Which template to use from your TEMPLATE_DIR
 
 **Default:** `sample`
 

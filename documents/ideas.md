@@ -1,7 +1,7 @@
 # Feature Idea: Estimated Reading Time Plugin
 
 ## Overview
-A standalone external plugin for StaticForge that calculates the estimated reading time for content files (Markdown/HTML) and exposes this data to Twig templates. This allows theme developers to display "5 min read" on blog posts or documentation pages.
+A standalone external plugin for StaticForge that calculates the estimated reading time for content files (Markdown/HTML) and exposes this data to Twig templates. This allows template developers to display "5 min read" on blog posts or documentation pages.
 
 ## Technical Specification
 

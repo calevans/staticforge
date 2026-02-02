@@ -35,10 +35,10 @@ php vendor/bin/staticforge.php site:render --clean
 ```
 
 **Testing a new look?**
-If you're experimenting with different themes, you can switch them on the fly without changing your configuration files.
+If you're experimenting with different templates, you can switch them on the fly without changing your configuration files.
 
 ```bash
-php vendor/bin/staticforge.php site:render --template=experimental-theme
+php vendor/bin/staticforge.php site:render --template=experimental-template
 ```
 
 ---

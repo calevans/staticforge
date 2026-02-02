@@ -68,7 +68,7 @@ search:
 # Define forms that can be embedded using {{ form('name') }}
 forms:
   contact:
-    # Optional: Use a custom template (e.g., templates/active_theme/contact_us.html.twig)
+    # Optional: Use a custom template (e.g., templates/active_template/contact_us.html.twig)
     # template: contact_us
 
     # Base URL for form submission

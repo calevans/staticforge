@@ -38,18 +38,23 @@ Your StaticForge installation comes ready to use! Here's how to get started:
 1. **Edit your site configuration:**
    Open `.env` and customize your site name, tagline, and other settings.
 
-2. **Optional: Create `siteconfig.yaml`:**
+2. **Optional: Install additional templates:**
+   ```bash
+   composer require vendor/template-name
+   ```
+
+3. **Optional: Create `siteconfig.yaml`:**
    For static menus and site-wide settings.
 
-3. **Generate your site:**
+4. **Generate your site:**
    ```bash
    php bin/staticforge.php site:render
    ```
 
-4. **View your site:**
-   Open `output/index.html` in your browser.
+5. **View your site:**
+   Open `public/index.html` in your browser.
 
-5. **Add more content:**
+6. **Add more content:**
    Create `.md` or `.html` files in the `content/` directory and regenerate.
 
 ## Development

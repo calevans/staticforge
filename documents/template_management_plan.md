@@ -1,21 +1,21 @@
-# Theme Management Implementation Plan (Separate Installer Package)
+# Template Management Implementation Plan (Separate Installer Package)
 
 ## Overview
-We will implement the theme installation logic in a separate package (`eicc/staticforge-installer`). This ensures the main framework (`eicc/staticforge`) remains clean and avoids dependency conflicts with Composer.
+We will implement the template installation logic in a separate package (`eicc/staticforge-installer`). This ensures the main framework (`eicc/staticforge`) remains clean and avoids dependency conflicts with Composer.
 
 ## Architecture
 
 1.  **New Package**: `eicc/staticforge-installer`
     *   **Type**: `composer-plugin`
     *   **Dependencies**: Only `composer-plugin-api`.
-    *   **Responsibility**: Hooks into Composer events to copy theme files.
+    *   **Responsibility**: Hooks into Composer events to copy template files.
 
 2.  **Main Framework**: `eicc/staticforge`
     *   **Type**: Remains `library`.
     *   **Dependency**: Adds `require: { "eicc/staticforge-installer": "^1.0" }`.
 
-3.  **Theme Packages**:
-    *   **Type**: `staticforge-theme` (Custom type supported by the installer).
+3.  **Template Packages**:
+    *   **Type**: `staticforge-template` (Custom type supported by the installer).
     *   **Structure**: Contains template files.
 
 ## Development Workflow (Mocking the Separate Repo)
@@ -43,7 +43,7 @@ Since we are currently working inside the `staticforge` mono-repo context, we ca
     ```
 3.  Create `packages/staticforge-installer/src/Plugin.php`:
     *   Implement the `install` / `uninstall` logic (copying `templates/` folders).
-    *   It listens for packages of type `staticforge-theme`.
+    *   It listens for packages of type `staticforge-template`.
 
 ### Phase 2: Link Installer to Main Project
 1.  Modify the root `composer.json` of `staticforge`:
@@ -59,8 +59,8 @@ Since we are currently working inside the `staticforge` mono-repo context, we ca
     *   Require the package: `"eicc/staticforge-installer": "*@dev"`.
 
 ### Phase 3: Testing
-1.  Create a dummy theme in `packages/dummy-theme`.
-2.  Run `composer require packages/dummy-theme`.
+1.  Create a dummy template in `packages/dummy-template`.
+2.  Run `composer require packages/dummy-template`.
 3.  Verify the installer plugin triggers and copies files.
 
 ## Outcome

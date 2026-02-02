@@ -1,10 +1,10 @@
-# StaticForge Theme Ideas & Agent Specifications
+# StaticForge Template Ideas & Agent Specifications
 
 ## General StaticForge Developer Guide
-*(COPY THIS SECTION TO EVERY THEME AGENT)*
+*(COPY THIS SECTION TO EVERY TEMPLATE AGENT)*
 
 **System Overview:**
-You are building a theme for **StaticForge**, a PHP 8.4+ static site generator. The template engine is **Twig**.
+You are building a template for **StaticForge**, a PHP 8.4+ static site generator. The template engine is **Twig**.
 
 **Technical Constraints (Non-Negotiable):**
 1.  **No CSS Frameworks:** Do NOT use Tailwind, Bootstrap, or any externally hosted CSS framework. You must write Vanilla CSS (Modern CSS3+ with Variables/Custom Properties).
@@ -12,10 +12,10 @@ You are building a theme for **StaticForge**, a PHP 8.4+ static site generator. 
 3.  **Responsive:** Mobile-first approach.
 
 **Directory Structure:**
-All files must govern the specific theme directory: `templates/{theme_name}/`.
+All files must govern the specific template directory: `templates/{template_name}/`.
 Typical required file structure:
 ```
-templates/{theme_name}/
+templates/{template_name}/
 ├── assets/
 │   ├── css/
 │   │   └── main.css       # Primary stylesheet
@@ -64,7 +64,7 @@ templates/{theme_name}/
 ## 1. The "Aperture" (Photographer Portfolio)
 
 ### Agent Brief
-**Objective:** Build a visual-first "canvas" theme for photographers. No scroll fatigue, immersive.
+**Objective:** Build a visual-first "canvas" template for photographers. No scroll fatigue, immersive.
 **Target Audience:** Photographers, Visual Artists.
 
 ### Design Specifications
@@ -82,14 +82,14 @@ templates/{theme_name}/
 ### Required Files
 1.  `templates/aperture/base.html.twig`: The dark canvas wrapper.
 2.  `templates/aperture/index.html.twig`: The masonry grid. Assume a variable `files` or `category_files` is passed.
-3.  `templates/aperture/assets/css/main.css`: The dark theme styles.
+3.  `templates/aperture/assets/css/main.css`: The dark template styles.
 
 ---
 
 ## 2. The "Fanzine" (Brutalist / Punk)
 
 ### Agent Brief
-**Objective:** A rebellious, "anti-design" blog theme. Loud, raw, and high contrast.
+**Objective:** A rebellious, "anti-design" blog template. Loud, raw, and high contrast.
 **Target Audience:** Personal bloggers, Music reviewers, Artists.
 
 ### Design Specifications
@@ -115,7 +115,7 @@ templates/{theme_name}/
 ## 3. The "Horizon" (Horizontal Scrolling)
 
 ### Agent Brief
-**Objective:** A horizontal-scroll narrative theme. Ideally suited for storytelling or timelines.
+**Objective:** A horizontal-scroll narrative template. Ideally suited for storytelling or timelines.
 **Target Audience:** Writers, Travel Blogs.
 
 ### Design Specifications
@@ -145,7 +145,7 @@ templates/{theme_name}/
 **Target Audience:** Tech bloggers, Code tutorial sites.
 
 ### Design Specifications
-*   **Colors:** "Dracula" Theme. BG: `#282a36`, Sidebar: `#21222c`, Text: `#f8f8f2`, Pink: `#ff79c6`.
+*   **Colors:** "Dracula" Template. BG: `#282a36`, Sidebar: `#21222c`, Text: `#f8f8f2`, Pink: `#ff79c6`.
 *   **Typography:** [Google Fonts] 'Fira Code' or 'JetBrains Mono' for EVERYTHING.
 *   **Layout:**
     *   **Activity Bar (Left):** 50px wide, icons only.

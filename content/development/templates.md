@@ -26,7 +26,7 @@ Think of it like a PowerPoint "Master Slide." You define the layout (Header, Foo
 This file contains the HTML skeleton that is shared by every page on your site.
 
 ```twig
-{# templates/mytheme/base.html.twig #}
+{# templates/mytemplate/base.html.twig #}
 <!DOCTYPE html>
 <html>
 <head>
@@ -56,7 +56,7 @@ This file contains the HTML skeleton that is shared by every page on your site.
 This file doesn't need to rewrite the `<html>` or `<body>` tags. It just says, "I want to use the Master Layout, and here is my content."
 
 ```twig
-{# templates/mytheme/standard_page.html.twig #}
+{# templates/mytemplate/standard_page.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ title }} - {{ site_name }}{% endblock %}
@@ -175,19 +175,94 @@ Because StaticForge generates static HTML files that live in different folders (
 
 ---
 
-## Built-in Themes
+## Templates
 
-We include a few themes to get you started. You can find them in `templates/`.
+StaticForge uses the term **Templates** to refer to the collection of Twig files that define your site's look and feel.
+
+### Built-in Templates
+
+We include a few templates to get you started. You can find them in the `templates/` directory.
 
 *   **`sample`**: A clean, modern default.
-*   **`staticforce`**: The documentation theme you are reading right now.
+*   **`staticforce`**: The documentation template you are reading right now.
 
-To switch themes, just change the `TEMPLATE` setting in your `.env` file or `site.template` setting in your `siteconfig.yaml` file.
+To switch templates, change the `template` setting in your `siteconfig.yaml` file (or `TEMPLATE` in `.env`).
 
 ```yaml
 site:
   template: "staticforce"
 ```
+
+### Installing Templates
+
+You can find more StaticForge templates on Packagist. Installing them is as easy as running a composer command:
+
+```bash
+composer require vendor/template-name
+```
+
+**How it works:**
+1.  Composer installs the package to your `vendor/` directory.
+2.  The **StaticForge Installer** automatically copies the template files from `vendor/` to your `templates/` directory (e.g., `templates/template-name/`).
+3.  **Safety First**: If a directory with that name already exists in `templates/`, the installer will **NOT** overwrite it.
+
+**Why copy?**
+We copy the files so you can customize them! Once a template is in your `templates/` directory, it is yours. You can edit the Twig files, CSS, and JS to your heart's content.
+
+**Uninstalling:**
+If you remove the package (`composer remove vendor/template-name`), the files in `vendor/` are removed, but your copy in `templates/` **remains**. This ensures you never lose your customizations.
+
+### Developing & Distributing Templates
+
+Want to share your design with the world? Creating a distributable StaticForge template is simple.
+
+#### 1. Package Structure
+A standard template package looks like this:
+
+```text
+my-template/
+├── composer.json
+└── templates/          # Contains your template files
+    ├── assets/
+    ├── base.html.twig
+    ├── index.html.twig
+    └── ...
+```
+
+#### 2. `composer.json` Configuration
+To tell StaticForge this is a template, you must set the `type` to `staticforge-template`.
+
+```json
+{
+    "name": "my-vendor/my-template",
+    "description": "A beautiful template for StaticForge",
+    "type": "staticforge-template",
+    "license": "MIT",
+    "require": {
+        "eicc/staticforge-installer": "^1.0"
+    }
+}
+```
+
+**Advanced Configuration:**
+If you need to store your templates in a different directory (not `templates/`), you can specify it in `extra`:
+
+```json
+{
+    ...
+    "extra": {
+        "staticforge": {
+            "template": {
+                "name": "custom-template-name",  // Directory name in user's templates/ folder
+                "source": "src/template-files"   // Source directory in your package
+            }
+        }
+    }
+}
+```
+
+#### 3. Publish
+Submit your package to [Packagist.org](https://packagist.org). Use the keyword `staticforge-template` to help users find it!
 
 ---
 

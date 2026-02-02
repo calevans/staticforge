@@ -1,7 +1,7 @@
-# Architecture Decision: Theme Installer
+# Architecture Decision: Template Installer
 
 ## The Core Question
-Should `eicc/staticforge` (the main framework) be converted to `type: composer-plugin` to handle theme installation, or should we create a separate `eicc/staticforge-installer` package?
+Should `eicc/staticforge` (the main framework) be converted to `type: composer-plugin` to handle template installation, or should we create a separate `eicc/staticforge-installer` package?
 
 ## Option A: Single Package (Convert Framework to Plugin)
 We change `composer.json` in `eicc/staticforge` to `type: composer-plugin`.

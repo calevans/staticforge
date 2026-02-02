@@ -64,9 +64,19 @@ TEMPLATE="staticforce"
 **Key Settings:**
 - **SITE_NAME**: Your site's name
 - **SITE_BASE_URL**: Your site's URL (use `http://localhost:8000` for local development)
-- **TEMPLATE**: The theme to use (`staticforce` or `sample`)
+- **TEMPLATE**: The template to use (`staticforce` or `sample`)
 
-### Step 4: Generate Your Site
+### Step 4: Install a Template (Optional)
+
+Want a different look? You can install new templates via Composer:
+
+```bash
+composer require vendor/template-name
+```
+
+StaticForge automatically copies the new template into your `templates/` directory. You can then activate it by setting `TEMPLATE="template-name"` in your `.env` file.
+
+### Step 5: Generate Your Site
 
 This is the moment of truth. Build your static site using the render command:
 
@@ -76,7 +86,7 @@ php vendor/bin/staticforge.php site:render
 
 You'll see output confirming the generation. Your site is now ready in the `public/` directory!
 
-### Step 5: See It Live
+### Step 6: See It Live
 
 Let's take a look at what you built. Start the built-in development server:
 
@@ -281,7 +291,7 @@ StaticForge automatically:
 
 **Regenerate after every change:** StaticForge doesn't watch for changes. Run `php vendor/bin/staticforge.php site:render` after editing content or templates.
 
-**Try different templates:** Change `TEMPLATE` in `.env` to try out different themes - staticforce (default) or sample.
+**Try different templates:** Change `TEMPLATE` in `.env` to try out different templates - staticforce (default) or sample.
 
 **Keep frontmatter simple:** Only add metadata you actually need. At minimum, just set a `title`.
 
