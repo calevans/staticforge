@@ -58,6 +58,13 @@ forms:
         required: true
         maxlength: 2048
 
+# Calendar Configuration
+calendars:
+  example_events:
+    view: month
+    start: today
+    end: "+2 years"
+
 # Disabled Features
 disabled_features:
   #- Sitemap

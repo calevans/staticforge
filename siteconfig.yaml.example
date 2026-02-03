@@ -131,3 +131,19 @@ s3_offload:
   # key: "YOUR_AWS_ACCESS_KEY"
   # secret: "YOUR_AWS_SECRET_KEY"
 #   github: https://github.com/mysite
+
+# Calendars Configuration
+# Define named calendars to be used with the [[calendar name="work"]] shortcode
+calendars:
+  work:
+    # Default view: month (default), week, or year
+    view: month
+    # Date limits relative to current build date
+    start: "today"
+    end: "+1 year"
+    # Template to use (optional, defaults to calendar-wrapper)
+    template: default
+  community:
+    view: week
+    start: "-1 month"
+
