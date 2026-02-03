@@ -87,4 +87,44 @@ We are building new features with the explicit goal of extracting them into stan
 
 -   **Paths**: Always use **absolute paths**. Use `$container->getVariable('app_root')` as the base.
 -   **Output**: Never write directly to `public/` manually inside the loop unless strictly necessary. Let the renderer handle standard file output.
--   **State**: The container is shared. Be careful not to overwrite global keys like `twig` or `logger`.
+## 8. Agent Workflows
+**CRITICAL**: The user mandates a strict, multi-agent validation process.
+
+### A. New Feature / Architecture Workflow
+**Trigger**: Creating new features, commands, or complex refactoring.
+
+1.  **Plan (Architect Agent)**:
+    -   **MANDATORY**: Use the `ARCHITECT_AGENT` to research and draft a detailed plan in `documents/plan_{feature}.md`.
+    -   The plan must define: Data structures, Configuration, Class structure, and Security implications.
+    -   Wait for user approval of the plan (implicit or explicit).
+
+2.  **Implement (Developer)**:
+    -   Write the code following the approved plan and "Feature Development Standards" (Section 4).
+
+3.  **Review (Code Reviewer Agent)**:
+    -   **MANDATORY**: Use the `code-reviewer` agent.
+    -   Action: Fix *all* issues.
+
+4.  **Audit (Security Auditor Agent)**:
+    -   **MANDATORY**: Use the `security-auditor` agent.
+    -   Action: Fix *all* security issues.
+
+5.  **Verify (QA)**:
+    -   **MANDATORY**: Run `lando php bin/staticforge.php site:render` and tests.
+
+### B. Bug Fix / Maintenance Workflow
+**Trigger**: Debugging, bug fixes, or minor tweaks.
+
+1.  **Analyze & Fix (Developer)**:
+    -   Locate the issue and apply the fix.
+    -   (Planning agent is optional/skipped for speed).
+
+2.  **Review (Code Reviewer Agent)**:
+    -   **MANDATORY**: Use the `code-reviewer` agent.
+
+3.  **Audit (Security Auditor Agent)**:
+    -   **MANDATORY**: Use the `security-auditor` agent.
+
+4.  **Verify (QA)**:
+
+
