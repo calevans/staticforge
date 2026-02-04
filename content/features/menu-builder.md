@@ -156,7 +156,7 @@ Access the raw menu data to build custom markup:
 
 Each menu item in `features.MenuBuilder.files[X]` contains:
 
-- `title` - Page title
+- `title` - Page title (falls back to H1 or filename if not set)
 - `url` - Generated URL (includes category prefix if applicable)
 - `file` - Source file path
 - `position` - Menu position string (e.g., "1.2")

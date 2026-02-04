@@ -312,19 +312,14 @@ class FeatureManager
 
         $installedData = json_decode($content, true);
         if (!is_array($installedData)) {
-            echo "Installed data is not an array\n";
             return;
         }
 
         // Handle Composer 2.0 structure
         $packages = $installedData['packages'] ?? $installedData;
 
-        echo "Found " . count($packages) . " packages in installed.json\n";
-
         foreach ($packages as $package) {
-            echo "Checking package: " . $package['name'] . "\n";
             if (isset($package['extra']['staticforge']['feature'])) {
-                echo "Found feature in " . $package['name'] . "\n";
                 $featureClass = $package['extra']['staticforge']['feature'];
                 $this->loadComposerFeature($featureClass, $package['name']);
             }
@@ -336,9 +331,7 @@ class FeatureManager
      */
     private function loadComposerFeature(string $className, string $packageName): void
     {
-        echo "Loading composer feature: $className from $packageName\n";
         if (!class_exists($className)) {
-            echo "WARNING: Class $className not found!\n";
             $this->logger->log('WARNING', "Feature class {$className} from package {$packageName} not found.");
             return;
         }
@@ -346,14 +339,12 @@ class FeatureManager
         try {
             $feature = new $className();
             if (!$feature instanceof FeatureInterface) {
-                 echo "WARNING: Class $className does not implement FeatureInterface\n";
                  $this->logger->log('WARNING', "Class {$className} from package {$packageName} does not implement FeatureInterface.");
                  return;
             }
 
             // Check disabled
             if ($this->isFeatureDisabled($feature->getName())) {
-                echo "Skipping disabled feature: " . $feature->getName() . "\n";
                 $this->featureStatuses[$feature->getName()] = 'disabled';
                 $this->logger->log('INFO', "Skipping disabled composer feature: {$feature->getName()}");
                 return;
@@ -361,12 +352,10 @@ class FeatureManager
 
             // Check duplicate (Local wins)
             if (isset($this->features[$feature->getName()])) {
-                echo "Skipping duplicate feature: " . $feature->getName() . "\n";
                 $this->logger->log('INFO', "Skipping duplicate feature (already loaded): {$feature->getName()}");
                 return;
             }
 
-            echo "Registering feature: " . $feature->getName() . "\n";
             // Register
             $feature->register($this->eventManager, $this->container);
             $this->features[$feature->getName()] = $feature;

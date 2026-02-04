@@ -7,7 +7,6 @@ namespace EICC\StaticForge\Features\RssFeed\Services;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
 use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
-use EICC\StaticForge\Features\RssFeed\Services\Extensions\PodcastExtension;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -173,13 +172,15 @@ class RssFeedService
 
         // Ensure base URL has trailing slash
         $siteBaseUrl = rtrim($siteBaseUrl, '/') . '/';
-        $isPodcast = ($categoryMetadata['rss_type'] ?? '') === 'podcast';
 
         // Prepare Builder
         $builder = new RssBuilder();
-        if ($isPodcast) {
-            $builder->addExtension(new PodcastExtension());
-        }
+
+        // Fire event to allow features (like Podcast) to configure the builder
+        $this->eventManager->fire('RSS_BUILDER_INIT', [
+            'builder' => $builder,
+            'category_metadata' => $categoryMetadata
+        ]);
 
         // Create Channel Model
         $channel = new FeedChannel(

@@ -16,7 +16,7 @@ og_image: "HTML5 logo composed of intricate metallic gears, rendering engine mec
 
 **How it works:**
 
-1. Reads frontmatter from `<!-- INI ... -->` comment block
+1. Reads frontmatter from `<!-- ... -->` comment block (YAML)
 2. Extracts the HTML content
 3. Applies your chosen Twig template
 4. Outputs the final HTML file

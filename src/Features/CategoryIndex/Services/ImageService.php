@@ -18,29 +18,53 @@ class ImageService
         $this->logger = $logger;
     }
 
-    public function extractHeroImage(string $html, string $sourcePath, Container $container): string
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    public function extractHeroImage(string $html, array $metadata, string $sourcePath, Container $container): ?string
     {
+        // 1. Check Frontmatter for explicit image reference
+        // Check 'hero' key
+        if (!empty($metadata['hero']) && is_string($metadata['hero'])) {
+            return $metadata['hero'];
+        }
+
+        // Check 'social.image' key (nested)
+        if (isset($metadata['social']['image']) && is_string($metadata['social']['image'])) {
+            return $metadata['social']['image'];
+        }
+
+        // Check generic 'image' key as fallback
+        if (!empty($metadata['image']) && is_string($metadata['image'])) {
+            return $metadata['image'];
+        }
+
+        // 2. Fallback: Scrape first image from HTML content
         if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $html, $matches)) {
             $src = $matches[1];
 
             if (preg_match('/^https?:\/\//i', $src)) {
-                // TODO: Implement download logic if needed, for now return as is or placeholder
-                // The original code had download logic, let's keep it simple for now or implement if critical
+                // Return remote URLs as is
                 return $src;
             }
 
             $outputDir = $container->getVariable('OUTPUT_DIR');
-            if (!$outputDir) {
-                throw new RuntimeException('OUTPUT_DIR not set');
+            if ($outputDir) {
+                $imagePath = $outputDir . $src;
+                if (file_exists($imagePath)) {
+                    return $this->generateThumbnail($imagePath, $sourcePath, $container);
+                }
             }
-
-            $imagePath = $outputDir . $src;
-            if (file_exists($imagePath)) {
-                return $this->generateThumbnail($imagePath, $sourcePath, $container);
-            }
+            // If local file doesn't exist or OUTPUT_DIR not set, return src anyway?
+            // Or maybe fail? Original code returned it if file exists.
+            // If file doesn't exist, we probably shouldn't use it as a thumbnail.
+            // But if it's just a broken link, maybe we accept it?
+            // Let's stick closer to previous logic: attempt thumbnail, else return src.
+             return $src;
         }
 
-        return $this->getPlaceholder($container);
+        // 3. No image found
+        return null;
     }
 
     private function generateThumbnail(string $imagePath, string $contentPath, Container $container): string
@@ -75,12 +99,13 @@ class ImageService
             $this->logger->log('ERROR', "Thumbnail generation failed: " . $e->getMessage());
         }
 
-        return $this->getPlaceholder($container);
-    }
+        // Fallback if thumbnail generation fails: return original image URL relative to site root?
+        // We need to convert absolute file path back to URL.
+        // Assuming $imagePath starts with $outputDir.
+        if (str_starts_with($imagePath, $outputDir)) {
+             return substr($imagePath, strlen($outputDir));
+        }
 
-    private function getPlaceholder(Container $container): string
-    {
-        // Simplified placeholder logic
-        return '/assets/images/placeholder.jpg';
+        return ''; // Should not happen if logic is correct
     }
 }

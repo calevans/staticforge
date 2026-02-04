@@ -40,7 +40,7 @@ class SitemapService
         }
 
         // Get site URL from config or default to /
-        $siteUrl = rtrim($container->getVariable('SITE_URL') ?? '', '/');
+        $siteUrl = rtrim($container->getVariable('SITE_BASE_URL') ?? '', '/');
 
         // Calculate relative URL from output path
         // output/foo/bar.html -> foo/bar.html

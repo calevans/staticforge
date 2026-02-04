@@ -25,7 +25,7 @@ class SitemapServiceTest extends UnitTestCase
 
         // Setup container
         $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
-        $this->setContainerVariable('SITE_URL', 'https://example.com');
+        $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
         $logger = $this->createMock(Log::class);
         $this->service = new SitemapService($logger);
