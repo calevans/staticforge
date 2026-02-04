@@ -34,7 +34,8 @@ class CategoryPageService
             throw new \RuntimeException('OUTPUT_DIR not set');
         }
 
-        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $slug . '.html';
+        // Change: Use directory/index.html structure for "pretty URLs" and to avoid conflict with asset directories
+        $outputPath = $outputDir . DIRECTORY_SEPARATOR . $slug . DIRECTORY_SEPARATOR . 'index.html';
 
         $this->deferredFiles[] = [
             'file_path' => $filePath,
