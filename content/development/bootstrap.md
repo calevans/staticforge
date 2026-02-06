@@ -96,12 +96,10 @@ $app = new Symfony\Component\Console\Application('StaticForge', '1.0.0');
 $app->add(new EICC\StaticForge\Commands\InitCommand());
 // ...
 
-// 4. Run the App
-$app->run();
-```
+// 4. Fire Console Init Event
 $container->get(EICC\StaticForge\Core\EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
 
-// Run
+// 5. Run the App
 $app->run();
 ```
 
