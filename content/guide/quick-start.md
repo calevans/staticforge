@@ -89,17 +89,7 @@ site:
   description: "A super fast site built with StaticForge"
 ```
 
-### Step 4: Install a Template (Optional)
-
-Want a different look? You can install new templates via Composer:
-
-```bash
-composer require vendor/template-name
-```
-
-StaticForge automatically copies the new template into your `templates/` directory. You can then activate it by setting `TEMPLATE="template-name"` in your `.env` file.
-
-### Step 5: Generate Your Site
+### Step 4: Generate Your Site
 
 This is the moment of truth. Build your static site using the render command:
 
@@ -124,7 +114,7 @@ Building Site...
 
 Your site is now ready in the `public/` directory!
 
-### Step 6: See It Live
+### Step 5: See It Live
 
 Let's take a look at what you built. Start the built-in development server:
 
@@ -133,14 +123,6 @@ php vendor/bin/staticforge.php site:devserver
 ```
 
 Open your browser to `http://localhost:8000` to see your new site!
-
-### Step 7: Go Live
-
-Built something you're proud of? It's time to share it.
-
-StaticForge includes a smart deployment tool (`site:upload`) that handles everything for you. It optimizes your build for production and syncs only the changes to your server.
-
-👉 **[See the Deployment Guide](site-management.html#going-live)** to configure your server and launch your site.
 
 ---
 
@@ -207,6 +189,14 @@ If you started the local server in Step 5:
 3. See your beautiful new page! 🎉
 
 **Not using the local server?** Just open `public/hello.html` directly in your browser.
+
+### Step 4: Go Live
+
+Built something you're proud of? It's time to share it.
+
+StaticForge includes a smart deployment tool (`site:upload`) that handles everything for you. It optimizes your build for production and syncs only the changes to your server.
+
+👉 **[See the Deployment Guide](site-management.html#going-live)** to configure your server and launch your site.
 
 ---
 
@@ -331,6 +321,16 @@ StaticForge automatically:
 ## What's Next?
 
 **Congratulations!** 🎉 You've created your first static site with StaticForge!
+
+### Want a Different Look?
+
+The default template gets you started, but you can easily switch things up. You can install new templates via Composer:
+
+```bash
+composer require vendor/template-name
+```
+
+StaticForge copies the template to your `templates/` directory. Activate it by setting `TEMPLATE="template-name"` in your `.env` file.
 
 
 ### Quick Tips
