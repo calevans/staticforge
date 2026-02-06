@@ -273,16 +273,6 @@ SFTP_REMOTE_PATH="/var/www/html"
 
 See the [Going Live](site-management.html#going-live) section for more details on setting up SFTP.
 
-**Example:**
-```bash
-SITE_TAGLINE="Built with ❤️ and PHP"
-```
-
-**Template usage:**
-```twig
-<p>{{ site_tagline }}</p>
-```
-
 ---
 
 ### LOG_LEVEL
@@ -457,7 +447,6 @@ Here are recommended settings for different environments:
 ### Development `.env`
 
 ```bash
-SITE_NAME="My Site (DEV)"
 SITE_BASE_URL="http://localhost:8000/"
 TEMPLATE="terminal"
 OUTPUT_DIR="output"
@@ -468,7 +457,6 @@ LOG_FILE="logs/dev.log"
 ### Production `.env`
 
 ```bash
-SITE_NAME="My Awesome Site"
 SITE_BASE_URL="https://www.mysite.com/"
 TEMPLATE="staticforce"
 OUTPUT_DIR="public"

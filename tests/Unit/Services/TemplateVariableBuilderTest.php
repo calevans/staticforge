@@ -21,9 +21,11 @@ class TemplateVariableBuilderTest extends UnitTestCase
     public function testBuildTemplateVariablesMergesSources(): void
     {
         // Setup container variables
-        $this->setContainerVariable('SITE_NAME', 'My Site');
         $this->setContainerVariable('site_config', [
-            'site' => ['description' => 'Test Description'],
+            'site' => [
+                'name' => 'My Site',
+                'description' => 'Test Description'
+            ],
             'menu' => ['top' => []]
         ]);
 

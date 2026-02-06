@@ -47,11 +47,9 @@ class TemplateVariableBuilder
         }
 
         // Normalize common env variable names to lowercase for template consistency
-        // Templates expect site_name, site_base_url, etc. but env vars are UPPERCASE
+        // Templates expect site_base_url, etc. but env vars are UPPERCASE
         $envVarMap = [
-            'SITE_NAME' => 'site_name',
             'SITE_BASE_URL' => 'site_base_url',
-            'SITE_TAGLINE' => 'site_tagline',
         ];
 
         foreach ($envVarMap as $envKey => $templateKey) {

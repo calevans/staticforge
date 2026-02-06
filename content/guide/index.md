@@ -11,6 +11,32 @@ og_image: "Open glowing user manual, guide book leading the way, path to knowled
 
 Welcome to the StaticForge User Guide. This section will walk you through everything from installation to deployment.
 
+## What is a "Page"?
+
+In StaticForge, a "page" is just a text file. You don't need a database. You write your content in a simple file, add a little metadata at the top, and save it.
+
+Here is an example of what a blog post looks like:
+
+```yaml
+---
+title: My First Post
+date: 2023-10-01
+description: "This is a summary of my post"
+template: default
+---
+
+# Hello World
+
+This is the content of my page. I can use **bold** text, *italics*, and lists.
+
+*   Item 1
+*   Item 2
+```
+
+The part between the `---` lines is the **Frontmatter** (metadata). The rest is your content. That's it!
+
+If you are new to writing in this format, check out the original [Markdown Syntax Guide](https://daringfireball.net/projects/markdown/syntax) by John Gruber. It covers everything you need to know.
+
 ## Contents
 
 *   [Quick Start](quick-start.html) - Installation and building your first page.

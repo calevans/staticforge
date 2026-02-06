@@ -234,11 +234,14 @@ HTML;
         // Test all template variables using the bootstrapped container
         $this->setContainerVariable('SOURCE_DIR', $this->sourceDir);
         $this->setContainerVariable('OUTPUT_DIR', $this->outputDir);
-        $this->setContainerVariable('SITE_NAME', 'My Amazing Site');
         $this->setContainerVariable('SITE_BASE_URL', 'https://mysite.com/');
 
-        // Clear site_config to ensure SITE_NAME env var is used (site_config takes precedence)
-        $this->setContainerVariable('site_config', []);
+        // Set site_config to ensure site_name is populated
+        $this->setContainerVariable('site_config', [
+            'site' => [
+                'name' => 'My Amazing Site'
+            ]
+        ]);
 
         // Logger already registered by bootstrap
 

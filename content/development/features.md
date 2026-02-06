@@ -27,18 +27,16 @@ A Feature is just a PHP class that extends `BaseFeature`. It has one main job: t
 namespace App\Features\MyCoolFeature;
 
 use EICC\StaticForge\Core\BaseFeature;
-use EICC\StaticForge\Core\Container;
-use EICC\StaticForge\Core\EventManager;
+use EICC\Utils\Container;
 
 class Feature extends BaseFeature
 {
-    protected string $name = 'MyCoolFeature';
-
-    public function register(EventManager $eventManager, Container $container): void
-    {
-        // "Hey system, wake me up when you are about to render a file!"
-        $eventManager->on('PRE_RENDER', [$this, 'doSomethingCool']);
-    }
+    // Define your listeners here in the $eventListeners array.
+    // The BaseFeature class will automatically handle registration.
+    protected array $eventListeners = [
+        // Event Name => [Method Name, Priority]
+        'PRE_RENDER' => ['doSomethingCool', 500],
+    ];
 
     public function doSomethingCool(Container $container, array $data): array
     {

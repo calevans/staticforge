@@ -147,7 +147,7 @@ class MyFeatureTest extends UnitTestCase
         $logger = $this->container->get('logger');
 
         // Use helper methods
-        $this->setContainerVariable('SITE_NAME', 'Test Site');
+        $this->setContainerVariable('SITE_BASE_URL', 'http://test.com');
         $this->addToContainer('my_service', new MyService());
     }
 }
@@ -173,10 +173,10 @@ $logger->info('Engine started successfully.');
 
 ### Environment Variables
 
-Need to know the site name? It's in the container too.
+Need to know the site URL? It's in the container too.
 
 ```php
-$siteName = $container->getVariable('SITE_NAME');
+$siteUrl = $container->getVariable('SITE_BASE_URL');
 ```
 
 ---

@@ -188,13 +188,7 @@ site:
 <p>{{ site_tagline }}</p>
 ```
 
-**Fallback Behavior:**
-
-If `site` is not in `siteconfig.yaml`, these features will look for environment variables in `.env`:
-- `SITE_NAME`
-- `SITE_TAGLINE`
-
-**Migration Note:** Moving these settings from `.env` to `siteconfig.yaml` is recommended for better version control, but both locations are supported. `SITE_BASE_URL` should remain in `.env` as it's environment-specific (different for dev/staging/production).
+`SITE_BASE_URL` should remain in `.env` as it's environment-specific (different for dev/staging/production).
 
 ### Chapter Navigation
 

@@ -80,7 +80,7 @@ StaticForge passes a lot of data to your templates. You access it using double c
 *   `{{ content }}`: The HTML content of your Markdown file.
 *   `{{ title }}`: The title from your Frontmatter.
 *   `{{ site_base_url }}`: The URL of your site (e.g., `https://mysite.com`). **Always use this for assets!**
-*   `{{ site_name }}`: The name of your site.
+*   `{{ site_name }}`: The name of your site (from `siteconfig.yaml`).
 
 ### The "Features" Array
 

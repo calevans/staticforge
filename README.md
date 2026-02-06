@@ -35,10 +35,18 @@ cp .env.example .env
 
 Your StaticForge installation comes ready to use! Here's how to get started:
 
-1. **Edit your site configuration:**
-   Open `.env` and customize your site name, tagline, and other settings.
+1. **Configure your environment:**
+   Open `.env` to set infrastructure settings like `SITE_BASE_URL` (where your site lives) and `UPLOAD_URL`.
 
-2. **Optional: Install additional templates:**
+2. **Configure site identity:**
+   Create `siteconfig.yaml` to define your site name, tagline, and menus.
+   ```yaml
+   site:
+     name: "My Awesome Site"
+     tagline: "Built with StaticForge"
+   ```
+
+3. **Optional: Install additional templates:**
    ```bash
    composer require vendor/template-name
    ```

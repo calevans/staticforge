@@ -9,7 +9,7 @@ og_image: "Sprinter at starting block ready to run, stopwatch, fast forward icon
 ---
 # Quick Start Guide
 
-Ready to build something fast? You're in the right place. This guide will take you from zero to a fully functional static site in just a few minutes.
+Ready to build something fast? You're in the right place. This guide will take you from zero to a fully functional static site in just a few minutes. We like to call it **The 2-Minute Install**.
 
 ## What You'll Need
 
@@ -44,6 +44,23 @@ Now, let's set the stage. Run the initialization command to set up your director
 php vendor/bin/staticforge.php site:init
 ```
 
+You will see output similar to this:
+
+```text
+StaticForge Initialization
+==========================
+
+[OK] Created directory: content
+[OK] Created directory: templates
+[OK] Created directory: public
+[OK] Created configuration: .env
+[OK] Created configuration: siteconfig.yaml
+[OK] Installed default template: staticforce
+[OK] Created sample content: content/index.md
+
+Success! Your project is ready.
+```
+
 This command does the heavy lifting for you:
 - Creates the necessary directories (`content/`, `templates/`, `public/`, etc.)
 - Copies example configuration files (`.env.example` to `.env`, `siteconfig.yaml.example` to `siteconfig.yaml`)
@@ -52,19 +69,25 @@ This command does the heavy lifting for you:
 
 ### Step 3: Configure Your Site (Optional)
 
-The `init` command created a `.env` file with default settings that work out of the box. You can edit it to customize your site's identity:
+Authentication secrets and environment-specific settings (like URLs) live in your `.env` file, but your site identity lives in `siteconfig.yaml`.
+
+**1. Environment Settings (.env):**
+Use this for things that change between environments (Dev vs Production).
 
 ```bash
-SITE_NAME="My Static Site"
-SITE_TAGLINE="Built with ❤️ and PHP"
 SITE_BASE_URL="http://localhost:8000"
 TEMPLATE="staticforce"
 ```
 
-**Key Settings:**
-- **SITE_NAME**: Your site's name
-- **SITE_BASE_URL**: Your site's URL (use `http://localhost:8000` for local development)
-- **TEMPLATE**: The template to use (`staticforce` or `sample`)
+**2. Site Identity (siteconfig.yaml):**
+Use this for public information about your site. Open `siteconfig.yaml` and edit:
+
+```yaml
+site:
+  name: "My Static Site"
+  tagline: "Built with ❤️ and PHP"
+  description: "A super fast site built with StaticForge"
+```
 
 ### Step 4: Install a Template (Optional)
 
@@ -84,7 +107,22 @@ This is the moment of truth. Build your static site using the render command:
 php vendor/bin/staticforge.php site:render
 ```
 
-You'll see output confirming the generation. Your site is now ready in the `public/` directory!
+You'll see output confirming the generation:
+
+```text
+Building Site...
+================
+
+[+] Discovered 5 files
+[+] Processing content/index.md... OK
+[+] Processing content/about.md... OK
+[+] Generating Sitemap... OK
+[+] Generating RSS Feed... OK
+
+[OK] Site generation complete! (0.42s)
+```
+
+Your site is now ready in the `public/` directory!
 
 ### Step 6: See It Live
 
@@ -95,6 +133,14 @@ php vendor/bin/staticforge.php site:devserver
 ```
 
 Open your browser to `http://localhost:8000` to see your new site!
+
+### Step 7: Go Live
+
+Built something you're proud of? It's time to share it.
+
+StaticForge includes a smart deployment tool (`site:upload`) that handles everything for you. It optimizes your build for production and syncs only the changes to your server.
+
+👉 **[See the Deployment Guide](site-management.html#going-live)** to configure your server and launch your site.
 
 ---
 
@@ -141,7 +187,7 @@ php vendor/bin/staticforge.php site:render
 
 You'll see:
 
-```
+```text
 ✓ Site generation complete!
   Generated 2 pages
 ```
@@ -304,4 +350,3 @@ StaticForge automatically:
 - Explore the templates in `templates/` to see how they work
 
 Happy site building! 🚀
-
