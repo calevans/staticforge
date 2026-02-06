@@ -101,6 +101,30 @@ class FileDiscovery
                     continue;
                 }
 
+                // Check for future dates
+                $showFuture = $this->container->getVariable('SHOW_FUTURE_DATES') ?? false;
+                if (is_string($showFuture)) {
+                    $showFuture = filter_var($showFuture, FILTER_VALIDATE_BOOLEAN);
+                }
+
+                if (!$showFuture && isset($metadata['date'])) {
+                    $dateVal = $metadata['date'];
+                    // var_dump("Date Val: ", $dateVal);
+                    // Handle pre-parsed timestamps (YAML might do this)
+                    if (is_int($dateVal)) {
+                        $fileTime = $dateVal;
+                    } else {
+                        $fileTime = strtotime((string)$dateVal);
+                    }
+
+                    // var_dump("File time: ", $fileTime, "Now: ", time());
+
+                    if ($fileTime !== false && $fileTime > time()) {
+                        $this->logger->log('INFO', "Skipping future dated file: {$filePath} (Date: {$metadata['date']})");
+                        continue;
+                    }
+                }
+
                 $url = $this->generateUrl($filePath, $metadata);
 
                 $files[] = [
