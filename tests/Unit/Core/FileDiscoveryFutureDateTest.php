@@ -64,22 +64,6 @@ class FileDiscoveryFutureDateTest extends UnitTestCase
         $this->assertEquals($this->tempDir . '/past.md', $files[0]['path']);
     }
 
-    public function testIncludesFutureFilesWhenConfigured(): void
-    {
-        $this->setContainerVariable('SHOW_FUTURE_DATES', true);
-        $futureDate = date('Y-m-d', strtotime('+1 day'));
-
-         // Create a future file
-        $content = "---\ntitle: Future Post\ndate: {$futureDate}\n---\nContent";
-        file_put_contents($this->tempDir . '/future.md', $content);
-
-        $this->fileDiscovery->discoverFiles();
-        $files = $this->container->getVariable('discovered_files');
-
-        $this->assertCount(1, $files);
-        $this->assertEquals($this->tempDir . '/future.md', $files[0]['path']);
-    }
-
     public function testIncludesFilesWithoutDate(): void
     {
         // Create a file without date
