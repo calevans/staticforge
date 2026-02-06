@@ -10,6 +10,7 @@ This document serves as the primary context for AI agents working on StaticForge
 -   **Dependency Injection**: `EICC\Utils\Container` stores configuration, services, and state.
 -   **Event System**: Priority-based execution (0-999). Lower numbers run first.
 -   **Templating**: Twig.
+-   **Development URL**: `https://static-forge.lndo.site/`
 
 ## 2. Directory Structure
 
@@ -38,9 +39,59 @@ The build process (`site:render`) follows this strict event sequence:
 7.  **`POST_LOOP`**: Global artifact generation (Sitemap, RSS, Categories).
 8.  **`DESTROY`**: Final cleanup.
 
-## 4. Feature Development Standards ("The Golden Rules")
+## 4. Development Environment & Commands
+
+**MANDATORY**: Always use `lando` prefix for all PHP/database commands.
+
+### Allowed Commands
+You may run these without asking permission:
+```bash
+# Install dependencies
+lando composer install
+
+# Code style checking
+lando phpcs src/
+# Known issues: 5 coding standard violations in BrightDataService.php, EmailProcessingService.php, GoogleMapsService.php, Property.php, PageController.php
+
+# Code style fixing
+lando phpcbf
+
+# Run tests (autoloader PSR-4 warnings are expected and safe to ignore)
+lando phpunit
+
+# Run Specific Test
+lando phpunit tests/Unit/Features/MyFeature/MyTest.php
+
+# CLI commands (Symfony Console)
+lando php bin/staticforge.php list
+lando php bin/staticforge.php site:render
+```
+
+### Forbidden Commands
+You may **never** run the following commands:
+```bash
+lando start
+lando restart
+lando destroy
+lando rebuild
+```
+
+### Key Configuration Files
+-   **`.lando.yml`**: Development environment (PHP 8.4, MariaDB 11.3, Apache)
+-   **`composer.json`**: Dependencies and autoloading (PSR-4, PSR-12 standards)
+-   **`phpunit.xml`**: Test configuration with test database
+-   **`phpcs.xml`**: PHP coding standards (PSR-2, PSR-12)
+-   **`.env`**: Environment variables (database creds, API keys)
+-   **`siteconfig.yaml`**: Main site configuration (themes, plugins, site settings)
+
+## 5. Feature Development Standards ("The Golden Rules")
 
 New functionality **MUST** be implemented as a **Feature**.
+
+### The Golden Rules
+1.  **PHP Only**: When writing tools, thou shalt use no language other than PHP.
+2.  **Read First**: Before writing code, read the necessary classes fully. Do not guess and hope they work.
+3.  **No Vendor Mods**: DO NOT MODIFY FILES IN VENDOR OR OUTSIDE OF YOUR APPLICATION ROOT. EVER.
 
 ### Structure
 A Feature resides in `src/Features/{FeatureName}` and must contain:
@@ -60,19 +111,14 @@ A Feature resides in `src/Features/{FeatureName}` and must contain:
     -   Constants: `UPPER_SNAKE_CASE`
 -   **Dependency Injection**: NEVER `new` up services inside other services if possible. Use the Container.
 
-### Configuration
--   **`siteconfig.yaml`**: User settings (e.g., `rss.title`). Accessed via `$container->getVariable('site_config')`.
--   **`.env`**: Secrets/Environment (e.g., `API_KEY`). Accessed via `$container->getVariable('API_KEY')`.
-
-## 5. Development & Testing Workflow
-
-**Lando is MANDATORY.**
-
--   **Run Tests**: `lando phpunit`
--   **Run Specific Test**: `lando phpunit tests/Unit/Features/MyFeature/MyTest.php`
--   **Lint Code**: `lando phpcs src/`
--   **Fix Linting**: `lando phpcbf`
--   **Run Build**: `lando php bin/staticforge.php site:render`
+### File Modification Rules
+-   **PHP files**: Follow instructions in `.github/instructions/php.instructions.md`
+-   **CSS files**: Follow instructions in `.github/instructions/css.instructions.md`
+-   **JS files**: Follow instructions in `.github/instructions/js.instructions.md`
+-   **Project**: Follow instructions in `.github/instructions/project.instructions.md`
+-   **Unit tests**: `tests/Unit/`
+-   **Integration tests**: `tests/Integration/`
+-   **Example/demo code**: `example_code/`
 
 ## 6. Future Extraction Strategy
 
@@ -87,6 +133,7 @@ We are building new features with the explicit goal of extracting them into stan
 
 -   **Paths**: Always use **absolute paths**. Use `$container->getVariable('app_root')` as the base.
 -   **Output**: Never write directly to `public/` manually inside the loop unless strictly necessary. Let the renderer handle standard file output.
+
 ## 8. Agent Workflows
 **CRITICAL**: The user mandates a strict, multi-agent validation process.
 
@@ -99,7 +146,7 @@ We are building new features with the explicit goal of extracting them into stan
     -   Wait for user approval of the plan (implicit or explicit).
 
 2.  **Implement (Developer)**:
-    -   Write the code following the approved plan and "Feature Development Standards" (Section 4).
+    -   Write the code following the approved plan and "Feature Development Standards" (Section 5).
 
 3.  **Review (Code Reviewer Agent)**:
     -   **MANDATORY**: Use the `code-reviewer` agent.
@@ -127,4 +174,8 @@ We are building new features with the explicit goal of extracting them into stan
 
 4.  **Verify (QA)**:
 
+## 9. Operational Limits
+
+-   **Scope of Work**: Only do what you are told to do and do not do more.
+-   **Permission**: If there is more to do than what was explicitly requested, you must ASK and WAIT for permission before proceeding.
 

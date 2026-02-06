@@ -1,106 +1,12 @@
 # GitHub Copilot Instructions for StaticForge
 
-## Project Overview
+**CRITICAL: Always access and read the file `AGENT.md` before doing any work.**
 
-**StaticForge** is a PHP-based static site generator that addresses the language barrier and extensibility limitations of existing tools like Jekyll, Hugo, and Gatsby. By building in PHP, it opens static site generation to the large PHP developer community who can easily create and customize features. The system generates completely static websites that require no PHP or database at runtime, while providing a flexible, event-driven architecture for content processing.
+`AGENT.md` contains:
+-   System Overview & Directory Structure
+-   Core Architecture & Event Life Cycle
+-   **MANDATORY** Lando Commands & Safe/Unsafe Lists
+-   Feature Development Standards & "Golden Rules"
+-   Agent Workflows (Architect -> Developer -> Reviewer -> Security -> QA)
 
-**Tech Stack**: PHP 8.4, Lando (development),Twig templating, Composer dependency management, Symfony Console for CLI commands.
-
-## Development Environment & Build Instructions
-
-### Environment Setup (CRITICAL - Always Use Lando)
-**NEVER use Docker directly for development** - Always use Lando for development:
-
-
-### Environment Configuration
-- Development URL: `https://static-forge.lndo.site/`
-
-### Build & Validation Commands
-
-**ALWAYS use `lando` prefix for all PHP/database commands:**
-
-You may run these commands without asking permission.
-
-```bash
-# Install dependencies
-lando composer install
-
-# Code style checking (WILL FAIL with current codebase)
-lando phpcs src/
-# Known issues: 5 coding standard violations in BrightDataService.php, EmailProcessingService.php, GoogleMapsService.php, Property.php, PageController.php
-
-# Code style fixing
-lando phpcbf
-
-# Run tests (autoloader PSR-4 warnings are expected and safe to ignore)
-lando phpunit
-
-# CLI commands (Symfony Console)
-lando php bin/staticforge.php list
-```
-
-
-You may never run the following commands:
-```bash
-lando start
-lando restart
-lando destroy
-lando rebuild
-```
-
-
-
-### Known Build Issues & Workarounds
-
-## Project Architecture & Layout
-
-
-### Key Configuration Files
-- **`.lando.yml`**: Development environment (PHP 8.4, MariaDB 11.3, Apache)
-- **`composer.json`**: Dependencies and autoloading (PSR-4, PSR-12 standards)
-- **`phpunit.xml`**: Test configuration with test database
-- **`phpcs.xml`**: PHP coding standards (PSR-2, PSR-12)
-- **`.env`**: Environment variables (database creds, API keys)
-- **`siteconfig.yaml`**: Main site configuration (themes, plugins, site settings)
-
-
-### Code Standards
-- Follow PSR-12 coding standards (enforced via `phpcs`)
-- Use 2-space indentation (configured in `phpcs.xml`)
-- Dependency injection via `EICC\Utils\Container`
-- All database queries use prepared statements
-- Log errors using `EiccUtils` logger
-
-
-### File Modification Rules
-- **PHP files**: Follow instructions in `.github/instructions/php.instructions.md`
-- Unit tests go in `tests/unit`, integration tests in `tests/integration/`
-- Example/demo code goes in `example_code/`
-
-
-### Testing Strategy
-- PHPUnit for unit testing (tests may have autoloader warnings - ignore)
-- Manual testing via web interface and CLI commands
-- Integration testing for API endpoints
-
-## Critical Information for Copilot
-
-### Always Required Steps
-1. **Use Lando**: Never run PHP/database commands without `lando` prefix
-4. **Container**: Bootstrap sets up dependency injection - always use it
-
-### Error Prevention
-- Check Lando is running before any development work: `lando info`
-- Environment file must exist and be configured: `.env`
-
-### Performance Considerations
-- CLI bulk operations support batching via `--limit` parameter
-- Image processing can be memory intensive - monitor for large datasets
-- Database queries are optimized with indexes for maintenance operations
-
-# The Golden Rules
-- When writing tools, thou shalt use no language other than PHP.
-- Before writing code, read the necessary classes fully before trying to use them. Do not guess and hope they work, read the code.
-- DO NOT MODIFY FILES IN VENDOR OR OUTSIDE OF YOUR APPLICATION ROOT. EVER. If something needs modifying, give me the instructions to give to the other Skippy.
-**Trust these instructions** - they are comprehensive and tested. Only search for additional information if instructions are incomplete or found to be incorrect.
-
+Failure to follow the instructions in `AGENT.md` may result in errors, data loss, or other issues. Always refer back to `AGENT.md` if you are unsure about any aspect of your work.
