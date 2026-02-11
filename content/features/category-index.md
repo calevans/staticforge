@@ -62,6 +62,8 @@ StaticForge generates `output/tutorials/index.html` containing:
 - Pagination (if you have many files)
 - Your custom template styling
 
+The public URL for the category index is `/tutorials/`.
+
 ## Template Variables Available
 
 ```twig

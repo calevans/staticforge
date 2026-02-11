@@ -35,6 +35,8 @@ This is a **success** alert.
 
 ## Weather Shortcode
 
+Note: This shortcode calls external HTTPS APIs and caches results to avoid repeated requests.
+
 Weather in West Palm Beach, FL (using Zip, Fahrenheit):
 [[weather zip="33409" country="us" scale="F"]]
 

@@ -127,6 +127,11 @@ Features are the primary way to extend StaticForge.
 *   **Implementation**: `src/Shortcodes/` and `src/Features/ShortcodeProcessor`.
 *   **Priority**: Runs on `PRE_RENDER` (High priority) to process before Markdown/HTML rendering.
 
+**Weather Shortcode Notes**:
+*   Uses external HTTPS APIs for ZIP and weather lookups.
+*   Caches responses on disk (default TTL: 1 hour) to avoid repeated calls.
+*   Requires outbound network access in environments where it is enabled.
+
 ### Robots.txt
 *   **Control**: Add `robots: no` (case-insensitive) to frontmatter to exclude a page.
 *   **Categories**: Add `robots: no` to category definition files to exclude entire categories.

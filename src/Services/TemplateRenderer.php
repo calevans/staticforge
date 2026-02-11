@@ -16,6 +16,9 @@ class TemplateRenderer
     private TemplateVariableBuilder $variableBuilder;
     private Log $logger;
     private ?AssetManager $assetManager;
+    private ?TwigEnvironment $cachedTwig = null;
+    private ?string $cachedTemplateDir = null;
+    private ?string $cachedActiveTemplate = null;
 
     public function __construct(TemplateVariableBuilder $variableBuilder, Log $logger, ?AssetManager $assetManager = null)
     {
@@ -72,16 +75,7 @@ class TemplateRenderer
 
             $this->logger->log('INFO', "Using template: {$templatePath}");
 
-            // Set up Twig with security enabled
-            $loader = new FilesystemLoader($templateDir);
-            // Add the active template directory so includes work
-            $loader->addPath($templateDir . '/' . $activeTemplate);
-            $twig = new TwigEnvironment($loader, [
-                'debug' => true,
-                'strict_variables' => false,
-                'autoescape' => 'html',  // Enable auto-escaping for security
-                'cache' => false,        // Disable cache for development
-            ]);
+            $twig = $this->getTwig($container, $templateDir, $activeTemplate);
 
             // Build template variables dynamically from all sources
             $templateVars = $this->variableBuilder->build($parsedContent, $container, $sourceFile);
@@ -121,20 +115,7 @@ class TemplateRenderer
             }
             $activeTemplate = $container->getVariable('TEMPLATE') ?? 'sample';
 
-            // Set up Twig
-            $loader = new FilesystemLoader($templateDir);
-            // Add the active template directory so includes work
-            $loader->addPath($templateDir . '/' . $activeTemplate);
-
-            // Also add the root templates directory to find shared templates like shortcodes
-            // if they are not in the active template
-
-            $twig = new TwigEnvironment($loader, [
-                'debug' => true,
-                'strict_variables' => false,
-                'autoescape' => 'html',
-                'cache' => false,
-            ]);
+            $twig = $this->getTwig($container, $templateDir, $activeTemplate);
 
             // Add global site config variables if available
             $siteConfig = $container->getVariable('site_config') ?? [];
@@ -210,6 +191,41 @@ class TemplateRenderer
 </body>
 </html>
 HTML;
+    }
+
+    private function getTwig(Container $container, string $templateDir, string $activeTemplate): TwigEnvironment
+    {
+        if ($container->has('twig')
+            && $container->getVariable('twig_template_dir') === $templateDir
+            && $container->getVariable('twig_active_template') === $activeTemplate
+        ) {
+            $twig = $container->get('twig');
+            if ($twig instanceof TwigEnvironment) {
+                return $twig;
+            }
+        }
+
+        if ($this->cachedTwig
+            && $this->cachedTemplateDir === $templateDir
+            && $this->cachedActiveTemplate === $activeTemplate
+        ) {
+            return $this->cachedTwig;
+        }
+
+        $loader = new FilesystemLoader($templateDir);
+        // Add the active template directory so includes work
+        $loader->addPath($templateDir . '/' . $activeTemplate);
+
+        $this->cachedTwig = new TwigEnvironment($loader, [
+            'debug' => true,
+            'strict_variables' => false,
+            'autoescape' => 'html',
+            'cache' => false,
+        ]);
+        $this->cachedTemplateDir = $templateDir;
+        $this->cachedActiveTemplate = $activeTemplate;
+
+        return $this->cachedTwig;
     }
 
     /**

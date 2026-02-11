@@ -4,11 +4,25 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Shortcodes;
 
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 class WeatherShortcode extends BaseShortcode
 {
+    private const CACHE_PREFIX = 'staticforge_weather_';
+    private const DEFAULT_TIMEOUT = 5;
+
+    private ?HttpClientInterface $httpClient = null;
+
     public function getName(): string
     {
         return 'weather';
+    }
+
+    public function setHttpClient(HttpClientInterface $client): void
+    {
+        $this->httpClient = $client;
     }
 
     public function handle(array $attributes, string $content = ''): string
@@ -69,16 +83,21 @@ class WeatherShortcode extends BaseShortcode
         $data = $this->getFromCache($cacheKey);
 
         if (!$data) {
-            $url = "http://api.zippopotam.us/{$country}/{$zip}";
-            $response = @file_get_contents($url);
+            $url = "https://api.zippopotam.us/{$country}/{$zip}";
+            $json = $this->fetchJson($url);
 
-            if ($response) {
-                $json = json_decode($response, true);
-                if (isset($json['places'][0])) {
+            if (isset($json['places'][0])) {
+                $place = $json['places'][0];
+                $lat = $place['latitude'] ?? null;
+                $lon = $place['longitude'] ?? null;
+                $name = $place['place name'] ?? null;
+                $region = $place['state abbreviation'] ?? null;
+
+                if (is_numeric($lat) && is_numeric($lon) && is_string($name) && is_string($region)) {
                     $data = [
-                        'lat' => $json['places'][0]['latitude'],
-                        'lon' => $json['places'][0]['longitude'],
-                        'name' => $json['places'][0]['place name'] . ', ' . $json['places'][0]['state abbreviation']
+                        'lat' => (float)$lat,
+                        'lon' => (float)$lon,
+                        'name' => $name . ', ' . $region,
                     ];
                     $this->saveToCache($cacheKey, $data);
                 }
@@ -98,14 +117,11 @@ class WeatherShortcode extends BaseShortcode
 
         if (!$data) {
             $url = "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$long}&current_weather=true";
-            $response = @file_get_contents($url);
+            $json = $this->fetchJson($url);
 
-            if ($response) {
-                $json = json_decode($response, true);
-                if (isset($json['current_weather'])) {
-                    $data = $json['current_weather'];
-                    $this->saveToCache($cacheKey, $data);
-                }
+            if (isset($json['current_weather']) && is_array($json['current_weather'])) {
+                $data = $json['current_weather'];
+                $this->saveToCache($cacheKey, $data);
             }
         }
 
@@ -117,12 +133,15 @@ class WeatherShortcode extends BaseShortcode
      */
     private function getFromCache(string $key, int $ttl = 86400)
     {
-        $file = sys_get_temp_dir() . '/staticforge_weather_' . md5($key);
+        $file = sys_get_temp_dir() . '/' . self::CACHE_PREFIX . md5($key) . '.json';
         if (file_exists($file)) {
             if (time() - filemtime($file) < $ttl) {
                 $content = file_get_contents($file);
                 if ($content !== false) {
-                    return unserialize($content);
+                    $data = json_decode($content, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        return $data;
+                    }
                 }
             }
             unlink($file);
@@ -135,8 +154,48 @@ class WeatherShortcode extends BaseShortcode
      */
     private function saveToCache(string $key, $data): void
     {
-        $file = sys_get_temp_dir() . '/staticforge_weather_' . md5($key);
-        file_put_contents($file, serialize($data));
+        $file = sys_get_temp_dir() . '/' . self::CACHE_PREFIX . md5($key) . '.json';
+        $payload = json_encode($data);
+        if ($payload !== false) {
+            file_put_contents($file, $payload);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function fetchJson(string $url): ?array
+    {
+        try {
+            $response = $this->getHttpClient()->request('GET', $url);
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
+                return null;
+            }
+
+            $content = $response->getContent(false);
+            $data = json_decode($content, true);
+
+            return is_array($data) ? $data : null;
+        } catch (TransportExceptionInterface $e) {
+            return null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function getHttpClient(): HttpClientInterface
+    {
+        if ($this->httpClient !== null) {
+            return $this->httpClient;
+        }
+
+        $this->httpClient = HttpClient::create([
+            'timeout' => self::DEFAULT_TIMEOUT,
+            'headers' => ['User-Agent' => 'StaticForge-Weather/1.0'],
+        ]);
+
+        return $this->httpClient;
     }
 
     private function getWeatherCondition(int $code): string

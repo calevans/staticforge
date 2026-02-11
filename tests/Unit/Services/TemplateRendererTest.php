@@ -8,6 +8,8 @@ use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
+use Twig\Environment as TwigEnvironment;
+use Twig\Loader\FilesystemLoader;
 
 class TemplateRendererTest extends UnitTestCase
 {
@@ -135,6 +137,32 @@ class TemplateRendererTest extends UnitTestCase
         $this->assertStringContainsString('Child content', $result);
     }
 
+    public function testUsesContainerTwigInstance(): void
+    {
+        $twig = $this->container->get('twig');
+        $this->assertInstanceOf(TwigEnvironment::class, $twig);
+
+        $loader = new FilesystemLoader($this->testTemplateDir);
+        $loader->addPath($this->testTemplateDir . '/test');
+        $twig->setLoader($loader);
+        $twig->addGlobal('marker', 'from-container');
+
+        $this->setContainerVariable('twig_template_dir', $this->testTemplateDir);
+        $this->setContainerVariable('twig_active_template', 'test');
+
+        $parsedContent = [
+            'metadata' => [
+                'template' => 'marker'
+            ],
+            'content' => 'Marker content',
+            'title' => 'Marker Test'
+        ];
+
+        $result = $this->renderer->render($parsedContent, $this->container);
+
+        $this->assertStringContainsString('Marker: from-container', $result);
+    }
+
     private function createTestTemplates(): void
     {
         $baseTemplate = <<<'EOT'
@@ -175,10 +203,15 @@ EOT;
 {% endblock %}
 EOT;
 
+        $markerTemplate = <<<'EOT'
+    Marker: {{ marker }}
+    EOT;
+
         file_put_contents($this->testTemplateDir . '/test/base.html.twig', $baseTemplate);
         file_put_contents($this->testTemplateDir . '/test/variables.html.twig', $variablesTemplate);
         file_put_contents($this->testTemplateDir . '/test/layout.html.twig', $layoutTemplate);
         file_put_contents($this->testTemplateDir . '/test/child.html.twig', $childTemplate);
+        file_put_contents($this->testTemplateDir . '/test/marker.html.twig', $markerTemplate);
     }
 
     // removeDirectory is now provided by UnitTestCase

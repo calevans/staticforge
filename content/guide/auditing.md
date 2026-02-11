@@ -60,6 +60,8 @@ This tool crawls your `output/` directory and checks every `<a>` tag.
 *   **Internal Links**: Verifies that links to other pages on your site actually exist.
 *   **External Links**: (Optional) Pings external websites to ensure they are still up.
 
+**TLS Note:** External checks validate HTTPS certificates by default. If you are testing a local or self-signed site, use `--insecure`.
+
 **Best Practice:** Run internal checks on every build. Run external checks weekly to prevent "link rot."
 
 ```bash
@@ -68,6 +70,9 @@ php bin/staticforge.php audit:links --internal
 
 # Thorough: Check everything (may be slow)
 php bin/staticforge.php audit:links
+
+# Allow self-signed or local certs (not recommended for production checks)
+php bin/staticforge.php audit:links --insecure
 ```
 
 ### SEO Validation (`audit:seo`)
@@ -95,4 +100,7 @@ The `audit:live` command is unique because it checks your **hosted** website, no
 
 ```bash
 php bin/staticforge.php audit:live
+
+# Allow self-signed or local certs (not recommended for production checks)
+php bin/staticforge.php audit:live --insecure
 ```

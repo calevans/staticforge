@@ -223,6 +223,17 @@ $container->stuff('twig', function () use ($container) {
         $loader->addPath($templateDir . '/' . $activeTemplate);
     }
 
+    if ($container->hasVariable('twig_template_dir')) {
+        $container->updateVariable('twig_template_dir', $templateDir);
+    } else {
+        $container->setVariable('twig_template_dir', $templateDir);
+    }
+    if ($container->hasVariable('twig_active_template')) {
+        $container->updateVariable('twig_active_template', $activeTemplate);
+    } else {
+        $container->setVariable('twig_active_template', $activeTemplate);
+    }
+
     return new Environment($loader, [
         'debug' => true,
         'strict_variables' => false,

@@ -80,6 +80,8 @@ class FeatureCreateCommand extends Command
         return <<<PHP
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\\{$name};
 
 use EICC\StaticForge\Core\BaseFeature;
@@ -88,15 +90,24 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\StaticForge\Features\\{$name}\Services\\{$name}Service;
 
+/**
+ * Feature entry point for {$name}.
+ */
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string \$name = '{$name}';
     private {$name}Service \$service;
 
+    /**
+     * @var array<string, array{method: string, priority: int}>
+     */
     protected array \$eventListeners = [
         // Example: 'PRE_LOOP' => ['method' => 'handleEvent', 'priority' => 100]
     ];
 
+    /**
+     * Register the feature and initialize services.
+     */
     public function register(EventManager \$eventManager, Container \$container): void
     {
         parent::register(\$eventManager, \$container);
@@ -104,9 +115,20 @@ class Feature extends BaseFeature implements FeatureInterface
         \$logger = \$container->get('logger');
 
         // Initialize service with dependencies
-        \$this->service = new {$name}Service(\$logger);
+        if (\$container->has({$name}Service::class)) {
+            \$this->service = \$container->get({$name}Service::class);
+        } else {
+            \$this->service = new {$name}Service(\$logger);
+            \$container->add({$name}Service::class, \$this->service);
+        }
     }
 
+    /**
+     * Handle an event callback.
+     *
+     * @param array<string, mixed> \$data
+     * @return array<string, mixed>
+     */
     public function handleEvent(Container \$container, array \$data): array
     {
         return \$this->service->process(\$container, \$data);
@@ -120,11 +142,16 @@ PHP;
         return <<<PHP
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\\{$name}\Services;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
+/**
+ * Service class for {$name} feature logic.
+ */
 class {$name}Service
 {
     private Log \$logger;
@@ -134,6 +161,12 @@ class {$name}Service
         \$this->logger = \$logger;
     }
 
+    /**
+     * Process data for this feature.
+     *
+     * @param array<string, mixed> \$data
+     * @return array<string, mixed>
+     */
     public function process(Container \$container, array \$data): array
     {
         \$this->logger->log('INFO', "{$name}Service processing...");

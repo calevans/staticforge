@@ -18,6 +18,7 @@ class LiveCommand extends Command
 
     protected Container $container;
     protected SymfonyStyle $io;
+    protected bool $insecure = false;
 
     public function __construct(Container $container)
     {
@@ -28,13 +29,21 @@ class LiveCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('Audit a live deployed site for security and best practices')
-            ->addOption('url', 'u', InputOption::VALUE_OPTIONAL, 'The live URL to audit (overrides UPLOAD_URL)', null);
+            ->addOption('url', 'u', InputOption::VALUE_OPTIONAL, 'The live URL to audit (overrides UPLOAD_URL)', null)
+            ->addOption(
+                'insecure',
+                null,
+                InputOption::VALUE_NONE,
+                'Disable TLS certificate verification (use only for local or self-signed certs)'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
         $this->io->title('Live Site Audit');
+
+        $this->insecure = (bool)$input->getOption('insecure');
 
         $url = $input->getOption('url');
 
@@ -54,6 +63,10 @@ class LiveCommand extends Command
         $url = rtrim($url, '/') . '/';
 
         $this->io->note("Auditing target: $url");
+
+        if ($this->insecure) {
+            $this->io->warning('TLS verification is disabled (--insecure). Results may be unreliable.');
+        }
 
         if (!function_exists('curl_init')) {
             $this->io->error("The CURL PHP extension is required for this command.");
@@ -131,16 +144,7 @@ class LiveCommand extends Command
     {
         $ch = curl_init();
 
-        $defaults = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_NOBODY => false,
-            CURLOPT_TIMEOUT => 10,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_FOLLOWLOCATION => true,
-        ];
+        $defaults = $this->buildCurlDefaults($url);
 
         // Apply defaults overriding with passed options if any
         foreach ($defaults as $opt => $val) {
@@ -195,6 +199,25 @@ class LiveCommand extends Command
 
         curl_close($ch);
         return $result;
+    }
+
+    /**
+     * Build default cURL options for audit requests
+     *
+     * @return array<int, mixed>
+     */
+    protected function buildCurlDefaults(string $url): array
+    {
+        return [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_NOBODY => false,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => !$this->insecure,
+            CURLOPT_SSL_VERIFYHOST => $this->insecure ? 0 : 2,
+            CURLOPT_FOLLOWLOCATION => true,
+        ];
     }
 
     protected function checkConnectivityAndSsl(string $url): array

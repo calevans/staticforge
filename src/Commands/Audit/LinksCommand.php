@@ -29,6 +29,7 @@ class LinksCommand extends Command
 
     protected ?string $targetBaseUrl = null;
     protected ?string $transportUrl = null;
+    protected bool $insecure = false;
 
     public function __construct(Container $container)
     {
@@ -42,13 +43,21 @@ class LinksCommand extends Command
             ->addOption('internal', 'i', InputOption::VALUE_NONE, 'Check internal links only')
             ->addOption('external', 'e', InputOption::VALUE_NONE, 'Check external links only')
             ->addOption('concurrency', 'c', InputOption::VALUE_OPTIONAL, 'Number of concurrent external requests', '10')
-            ->addOption('url', 'u', InputOption::VALUE_OPTIONAL, 'Override the Base URL for checks (e.g. http://localhost:8000)', null);
+            ->addOption('url', 'u', InputOption::VALUE_OPTIONAL, 'Override the Base URL for checks (e.g. http://localhost:8000)', null)
+            ->addOption(
+                'insecure',
+                null,
+                InputOption::VALUE_NONE,
+                'Disable TLS certificate verification (use only for local or self-signed certs)'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
         $this->io->title('Link Audit');
+
+        $this->insecure = (bool)$input->getOption('insecure');
 
         $this->outputDir = $this->container->getVariable('OUTPUT_DIR') ?? 'public';
 
@@ -84,6 +93,10 @@ class LinksCommand extends Command
             $this->io->error("Output directory not found: {$this->outputDir}");
             $this->io->note("Run 'site:render' (or similar build command) before auditing links.");
             return Command::FAILURE;
+        }
+
+        if ($this->insecure) {
+            $this->io->warning('TLS verification is disabled (--insecure). Results may be unreliable.');
         }
 
         $checkInternal = $input->getOption('internal');
@@ -240,11 +253,7 @@ class LinksCommand extends Command
         $progressBar = $this->io->createProgressBar(count($checks));
         $progressBar->start();
 
-        $this->httpClient = HttpClient::create([
-                'headers' => ['User-Agent' => 'StaticForge-LinkChecker/1.0'],
-                'timeout' => 5,
-                'verify_peer' => false,
-        ]);
+        $this->httpClient = HttpClient::create($this->buildHttpClientOptions(false));
 
         $urlMap = [];
         $uniqueUrls = [];
@@ -350,12 +359,7 @@ class LinksCommand extends Command
     private function validateExternalLinks(array $urls, int $concurrency, array $urlMap): array
     {
         $errors = [];
-        $this->httpClient = HttpClient::create([
-            'headers' => ['User-Agent' => 'StaticForge-LinkChecker/1.0'],
-            'timeout' => 5,
-            'max_redirects' => 3,
-            'verify_peer' => false,
-        ]);
+        $this->httpClient = HttpClient::create($this->buildHttpClientOptions(true));
 
         $responses = [];
         foreach ($urls as $url) {
@@ -412,5 +416,26 @@ class LinksCommand extends Command
                 'reason' => $reason
             ];
         }
+    }
+
+    /**
+     * Build HttpClient options for link checks
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildHttpClientOptions(bool $external): array
+    {
+        $options = [
+            'headers' => ['User-Agent' => 'StaticForge-LinkChecker/1.0'],
+            'timeout' => 5,
+            'verify_peer' => !$this->insecure,
+            'verify_host' => !$this->insecure,
+        ];
+
+        if ($external) {
+            $options['max_redirects'] = 3;
+        }
+
+        return $options;
     }
 }

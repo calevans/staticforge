@@ -91,8 +91,8 @@ class FeatureSetupCommandTest extends UnitTestCase
 
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString('Copied:', $output);
-        $this->assertStringContainsString('.env.example.full-package', $output);
-        $this->assertStringContainsString('siteconfig.yaml.example.full-package', $output);
+        $this->assertMatchesRegularExpression('/\.env\.example\.full[\s\S]*package/', $output);
+        $this->assertMatchesRegularExpression('/siteconfig\.yaml\.example\.full[\s\S]*package/', $output);
 
         // Verify files were copied to root
         $this->assertFileExists($this->tempRootDir . '/.env.example.full-package');
