@@ -1,3 +1,4 @@
+https://deepwiki.com/badge-maker?url=https%3A%2F%2Fdeepwiki.com%2Fcalevans%2Fstaticforge
 # [StaticForge](https://calevans.com/staticforge)
 
 A PHP-based static site generator that processes content files through an event-driven pipeline to produce deployment-ready static websites.
