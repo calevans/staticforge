@@ -45,6 +45,9 @@
         <main>
             <div class="content">
                 {% block content %}
+                {% if reading_time_label %}
+                    <p class="meta"><em>Estimated reading time: {{ reading_time_label }}</em></p>
+                {% endif %}
                 {{ content | raw }}
                 {% endblock %}
             </div>

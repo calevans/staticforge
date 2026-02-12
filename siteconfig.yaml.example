@@ -48,6 +48,18 @@ chapter_nav:
 
 # Search Configuration
 search:
+  exclude:
+    - /404.html
+    - /search.html
+
+# Reading Time Configuration
+reading_time:
+  wpm: 200              # Words per minute (default: 200)
+  exclude:              # Paths to ignore
+    - /contact
+    - /search
+  label_singular: "min read"
+  label_plural: "min read"
   # Search engine to use: 'minisearch' (default) or 'fuse'
   # minisearch: Faster for exact matches and prefix search
   # fuse: Better fuzzy matching (typo tolerance)

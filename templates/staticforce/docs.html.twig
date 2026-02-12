@@ -69,6 +69,11 @@
             {% endif %}
 
             {% block content %}
+                {% if reading_time_label %}
+                    <div class="reading-time-badge" style="margin-bottom: 1rem; color: #666; font-size: 0.9em;">
+                        ⏱ {{ reading_time_label }}
+                    </div>
+                {% endif %}
                 {{ content|raw }}
             {% endblock %}
 
