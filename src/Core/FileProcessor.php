@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Core;
 
 use EICC\StaticForge\Exceptions\FileProcessingException;
