@@ -5,7 +5,11 @@ description: Git branching strategy, commit message standards, and workflow for 
 
 # Git Workflow
 
-This skill defines the Git workflow and standards for the stock-picking project.
+## When to use this
+Use this skill when you need to:
+- Create a new branch for a feature, bugfix, or hotfix.
+- Write a commit message that complies with project standards.
+- Merge code or understand the branching strategy.
 
 ## Branch Strategy
 

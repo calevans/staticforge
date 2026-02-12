@@ -5,7 +5,11 @@ description: Project-specific coding standards, file structure, and conventions 
 
 # PHP Project Conventions
 
-This skill contains the coding standards and organizational conventions for this stock-picking web application.
+## When to use this
+Use this skill when you need to:
+- Create new PHP files or classes.
+- Organize code within the project structure.
+- Ensure your code adheres to the project's coding standards.
 
 ## Project Structure
 

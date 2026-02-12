@@ -5,6 +5,13 @@ description: Complete SQLite database schema reference including tables, indexes
 
 # Database Schema Reference
 
+## When to use this
+Use this skill when you need to:
+- Write SQL queries for the application.
+- Understand table relationships and foreign keys.
+- Create new migrations or modify existing tables.
+- Debug database-related issues.
+
 This skill documents the complete database schema for the stock-picking application.
 
 ## Database Configuration

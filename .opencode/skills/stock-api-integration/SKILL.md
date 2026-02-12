@@ -5,7 +5,12 @@ description: Guidelines for integrating with stock market data APIs including ra
 
 # Stock API Integration
 
-This skill provides patterns for integrating with stock market data APIs in this project.
+## When to use this
+Use this skill when you need to:
+- Fetch stock market data from external APIs.
+- Implement caching for API responses.
+- Handle API rate limits and errors.
+- Validate data received from external sources.
 
 ## Recommended Free APIs
 

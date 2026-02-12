@@ -6,8 +6,8 @@ disable-model-invocation: true
 
 # Deployment
 
-This skill handles deployment of the stock-picking application to production.
-
+## When to use this
+Use this skill when you are ready to deploy the application to the production server.
 **IMPORTANT**: This skill can only be invoked manually by you using `/deployment` or similar command. Claude will not automatically trigger deployments.
 
 ## Pre-Deployment Checklist
