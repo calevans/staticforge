@@ -63,13 +63,18 @@ TEMPLATE_NAME=staticforce
 
 ## Creating Content
 
-Create your first content file at `content/hello.md`:
+Create your first content file using the CLI:
+
+```bash
+php vendor/bin/staticforge.php make:content "Hello World"
+```
+
+This creates `content/hello-world.md` with the necessary frontmatter. Open it and add your content:
 
 ```markdown
 ---
 title: "Hello World"
-description: "My first post"
-tags: [hello, first-post]
+date: "2026-02-12"
 ---
 
 # Hello World!

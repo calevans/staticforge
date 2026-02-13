@@ -132,32 +132,31 @@ StaticForge includes a starter homepage (`content/index.md`), but let's make you
 
 ### Step 1: Create a Content File
 
-StaticForge looks for content in the `content/` directory. Create a new file called `content/hello.md`:
+You can create content files manually, or use the handy CLI command. Let's use the CLI:
+
+```bash
+php vendor/bin/staticforge.php make:content "Hello World"
+```
+
+This creates a new file at `content/hello-world.md`. Open it in your editor, and you'll see it's ready for you:
 
 ```markdown
 ---
-title: "My First Page"
-description: "Learning how to use StaticForge"
-menu: '2.1.1'
+title: "Hello World"
+date: "2026-02-12"
 ---
 
-# Hello, World!
+# Hello World
 
-Welcome to my **StaticForge** site! This is my first page.
-
-## What I'm Learning
-
-- How to write content in Markdown
-- How to set page metadata
-- How to generate a static site
-
-Pretty cool, right?
+Write your content here...
 ```
 
 **Understanding the Structure:**
 
 - **Lines 1-5** (between `---`) - This is the **frontmatter**. It contains metadata about your page using `key: "value"` YAML format.
 - **Everything after** - This is your content, written in Markdown.
+
+Feel free to edit the content to say whatever you like!
 
 ### Step 2: Regenerate Your Site
 
@@ -185,10 +184,10 @@ StaticForge just:
 If you started the local server in Step 5:
 
 1. Open your browser
-2. Go to `http://localhost:8000/hello.html`
+2. Go to `http://localhost:8000/hello-world.html`
 3. See your beautiful new page! 🎉
 
-**Not using the local server?** Just open `public/hello.html` directly in your browser.
+**Not using the local server?** Just open `public/hello-world.html` directly in your browser.
 
 ### Step 4: Go Live
 
