@@ -21,7 +21,8 @@ class RssFeedFeatureTest extends UnitTestCase
         parent::setUp();
         $this->eventManager = new EventManager($this->container);
         $this->feature = new Feature();
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
     }
 
     public function testFeatureRegistration(): void

@@ -38,11 +38,11 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 100]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
         $imageService = new ImageService($this->logger);
         $this->categoryService = new CategoryService($this->logger, $imageService);

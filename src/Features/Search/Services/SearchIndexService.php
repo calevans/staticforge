@@ -36,6 +36,11 @@ class SearchIndexService
             return $parameters;
         }
 
+        // If output_path is null, we can't index it (e.g., if rendering failed)
+        if ($outputPath === null) {
+            return $parameters;
+        }
+
         // 2. Calculate URL
         $url = $this->calculateUrl($container, $outputPath);
 

@@ -27,10 +27,10 @@ class Feature extends BaseFeature implements FeatureInterface
         'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 50]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
-        $this->logger = $container->get('logger');
+        parent::register($eventManager);
+        $this->logger = $this->container->get('logger');
 
         // Initialize ShortcodeManager
         // We need TemplateRenderer. It might not be in the container yet?
@@ -42,18 +42,18 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Get AssetManager (optional)
         $assetManager = null;
-        if ($container->has(AssetManager::class)) {
-            $assetManager = $container->get(AssetManager::class);
+        if ($this->container->has(AssetManager::class)) {
+            $assetManager = $this->container->get(AssetManager::class);
         }
 
         // We need TemplateVariableBuilder too.
         $templateVariableBuilder = new \EICC\StaticForge\Services\TemplateVariableBuilder();
         $templateRenderer = new TemplateRenderer($templateVariableBuilder, $this->logger, $assetManager);
 
-        $shortcodeManager = new ShortcodeManager($container, $templateRenderer);
+        $shortcodeManager = new ShortcodeManager($this->container, $templateRenderer);
 
         // Register ShortcodeManager in container for other features to use
-        $container->add(ShortcodeManager::class, $shortcodeManager);
+        $this->container->add(ShortcodeManager::class, $shortcodeManager);
 
         // Initialize Service
         $this->service = new ShortcodeProcessorService($this->logger, $shortcodeManager);

@@ -126,11 +126,11 @@ HTML;
         $container = $this->container;
         $app = new Application($container);
 
-      // Should handle missing template gracefully
+      // Should handle missing template gracefully by failing the build
         $result = $app->generate();
 
-      // Check that file was still created (fallback behavior)
-        $this->assertTrue($result || file_exists($this->testOutputDir . '/test.html'));
+      // Check that file was NOT created (no fallback behavior)
+        $this->assertFalse(file_exists($this->testOutputDir . '/test.html'));
     }
 
     public function testEmptyFileHandled(): void

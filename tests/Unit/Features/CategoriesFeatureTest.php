@@ -23,7 +23,8 @@ class CategoriesFeatureTest extends UnitTestCase
       // Logger already registered by bootstrap
 
         $this->feature = new CategoriesFeature();
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
     }
 
     public function testRegisterFeature(): void

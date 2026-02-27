@@ -42,7 +42,8 @@ class FormsFeatureTest extends UnitTestCase
         $dataProp->setValue($this->container, $data);
 
         $this->feature = new Feature();
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
     }
 
     public function testRegisterRegistersEvent(): void

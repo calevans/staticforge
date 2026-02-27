@@ -73,7 +73,7 @@ class MockComposerFeature implements FeatureInterface
         return 'MockComposerFeature';
     }
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
         // Do nothing
     }

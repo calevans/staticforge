@@ -55,6 +55,10 @@ use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Core\ErrorHandler;
+use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
+use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
+use EICC\StaticForge\Services\TemplateVariableBuilder;
+use EICC\StaticForge\Services\TemplateRenderer;
 use Twig\Loader\FilesystemLoader;
 
 // Accept optional environment path parameter
@@ -263,6 +267,27 @@ $container->add(ErrorHandler::class, $errorHandler);
 
 $fileProcessor = new FileProcessor($container, $eventManager);
 $container->add(FileProcessor::class, $fileProcessor);
+
+// Register Shared Services for DI
+$container->stuff(MarkdownProcessor::class, function() {
+    return new MarkdownProcessor();
+});
+
+$container->stuff(ContentExtractor::class, function() {
+    return new ContentExtractor();
+});
+
+$container->stuff(TemplateVariableBuilder::class, function() {
+    return new TemplateVariableBuilder();
+});
+
+$container->stuff(TemplateRenderer::class, function() use ($container) {
+    return new TemplateRenderer(
+        $container->get(TemplateVariableBuilder::class),
+        $container->get('logger'),
+        $container->has(AssetManager::class) ? $container->get(AssetManager::class) : null
+    );
+});
 
 // Return fully configured container
 return $container;

@@ -40,12 +40,12 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return ['SITE_BASE_URL'];
     }
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
         // Get logger from container
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
         // Initialize services
         $this->service = new RssFeedService($this->logger, $eventManager);

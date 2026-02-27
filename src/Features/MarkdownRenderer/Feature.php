@@ -30,28 +30,17 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
         // Get logger from container
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
-        // Initialize dependencies
-        $markdownProcessor = new MarkdownProcessor();
-        $contentExtractor = new ContentExtractor();
-
-        // Get AssetManager (optional)
-        $assetManager = null;
-        if ($container->has(AssetManager::class)) {
-            $assetManager = $container->get(AssetManager::class);
-        }
-
-        $templateRenderer = new TemplateRenderer(
-            new TemplateVariableBuilder(),
-            $this->logger,
-            $assetManager
-        );
+        // Initialize dependencies from container
+        $markdownProcessor = $this->container->get(MarkdownProcessor::class);
+        $contentExtractor = $this->container->get(ContentExtractor::class);
+        $templateRenderer = $this->container->get(TemplateRenderer::class);
 
         // Initialize service
         $this->service = new MarkdownRendererService(
@@ -62,7 +51,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         );
 
         // Register .md extension for processing
-        $extensionRegistry = $container->get(ExtensionRegistry::class);
+        $extensionRegistry = $this->container->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.md');
 
         $this->logger->log('INFO', 'Markdown Renderer Feature registered');

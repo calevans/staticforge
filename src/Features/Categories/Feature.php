@@ -27,12 +27,12 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
         // Get logger from container
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
         $this->service = new CategoriesService($this->logger);
 

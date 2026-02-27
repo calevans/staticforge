@@ -131,6 +131,16 @@ class FileProcessor
         // RENDER event
         $renderContext = $this->eventManager->fire('RENDER', $renderContext);
 
+        // If rendering failed (e.g. missing template), output_path might be null
+        // We should not proceed to POST_RENDER or write if rendering failed
+        if (!isset($renderContext['rendered_content']) || !isset($renderContext['output_path'])) {
+            throw new FileProcessingException(
+                "Rendering failed or produced no output",
+                $filePath,
+                'render'
+            );
+        }
+
         // Track the actual output path after processing
         if (isset($renderContext['output_path']) && $renderContext['output_path']) {
             $this->processedOutputPaths[$renderContext['output_path']] = $filePath;

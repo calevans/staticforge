@@ -30,17 +30,17 @@ class Feature extends BaseFeature implements FeatureInterface
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
         // Get logger from container
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
         // Get AssetManager (optional)
         $assetManager = null;
-        if ($container->has(AssetManager::class)) {
-            $assetManager = $container->get(AssetManager::class);
+        if ($this->container->has(AssetManager::class)) {
+            $assetManager = $this->container->get(AssetManager::class);
         }
 
         // Initialize helpers
@@ -53,7 +53,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->service = new HtmlRendererService($this->logger, $templateRenderer);
 
         // Register .html extension for processing
-        $extensionRegistry = $container->get(ExtensionRegistry::class);
+        $extensionRegistry = $this->container->get(ExtensionRegistry::class);
         $extensionRegistry->registerExtension('.html');
 
         $this->logger->log('INFO', 'HTML Renderer Feature registered');

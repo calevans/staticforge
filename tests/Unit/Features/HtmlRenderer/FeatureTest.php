@@ -17,7 +17,6 @@ class FeatureTest extends UnitTestCase
     private Feature $feature;
 
     private EventManager $eventManager;
-    private vfsStreamDirectory $root;
     private string $sourceDir;
     private string $outputDir;
     private string $templateDir;
@@ -26,17 +25,14 @@ class FeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        // Set up virtual filesystem
-        $this->root = vfsStream::setup('test');
-        $this->sourceDir = $this->root->url() . '/source';
-        $this->outputDir = $this->root->url() . '/output';
-
-        // Create real temp directory for templates (Twig can't use vfsStream)
+        // Create real temp directories
+        $this->sourceDir = sys_get_temp_dir() . '/staticforge_source_' . uniqid();
+        $this->outputDir = sys_get_temp_dir() . '/staticforge_output_' . uniqid();
         $this->templateDir = sys_get_temp_dir() . '/staticforge_templates_' . uniqid();
-        mkdir($this->templateDir . '/test', 0755, true);
 
-        mkdir($this->sourceDir);
-        mkdir($this->outputDir);
+        mkdir($this->sourceDir, 0755, true);
+        mkdir($this->outputDir, 0755, true);
+        mkdir($this->templateDir . '/test', 0755, true);
 
         // Set up container
         // Use bootstrapped container from parent::setUp()
@@ -61,7 +57,8 @@ class FeatureTest extends UnitTestCase
 
         // Create feature
         $this->feature = new Feature();
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
 
         // Create test templates
         $this->createTestTemplates();
@@ -252,7 +249,8 @@ HTML;
         // Set up event manager and register feature
         $eventManager = new EventManager($this->container);
         $feature = new Feature();
-        $feature->register($eventManager, $this->container);
+        $feature->setContainer($this->container);
+        $feature->register($eventManager);
 
         $htmlContent = <<<HTML
 <!-- INI
@@ -293,7 +291,13 @@ HTML;
     {
         parent::tearDown();
 
-        // Clean up template directory
+        // Clean up test directories
+        if (isset($this->sourceDir) && is_dir($this->sourceDir)) {
+            $this->removeDirectory($this->sourceDir);
+        }
+        if (isset($this->outputDir) && is_dir($this->outputDir)) {
+            $this->removeDirectory($this->outputDir);
+        }
         if (isset($this->templateDir) && is_dir($this->templateDir)) {
             $this->removeDirectory($this->templateDir);
         }

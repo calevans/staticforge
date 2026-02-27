@@ -37,12 +37,12 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
 
         // Get logger from container
-        $this->logger = $container->get('logger');
+        $this->logger = $this->container->get('logger');
 
         // Initialize services
         $structureBuilder = new MenuStructureBuilder();
@@ -52,10 +52,10 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
 
         // Register services in container for potential external use/testing
         // Note: Keeping these for backward compatibility/testing, but they are now in Services namespace
-        $container->add(MenuStructureBuilder::class, $structureBuilder);
-        $container->add(MenuHtmlGenerator::class, $htmlGenerator);
-        $container->add(MenuScanner::class, $menuScanner);
-        $container->add(StaticMenuProcessor::class, $staticMenuProcessor);
+        $this->container->add(MenuStructureBuilder::class, $structureBuilder);
+        $this->container->add(MenuHtmlGenerator::class, $htmlGenerator);
+        $this->container->add(MenuScanner::class, $menuScanner);
+        $this->container->add(StaticMenuProcessor::class, $staticMenuProcessor);
 
         // Initialize main service
         $this->service = new MenuBuilderService(

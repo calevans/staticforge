@@ -22,10 +22,10 @@ class Feature extends BaseFeature implements FeatureInterface
         'MARKDOWN_CONVERTED' => ['method' => 'handleMarkdownConverted', 'priority' => 500]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
-        $this->logger = $container->get('logger');
+        parent::register($eventManager);
+        $this->logger = $this->container->get('logger');
         $this->service = new TableOfContentsService($this->logger);
         $eventManager->registerEvent('MARKDOWN_CONVERTED');
         $this->logger->log('INFO', 'TableOfContents Feature registered');

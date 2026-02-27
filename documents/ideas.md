@@ -47,11 +47,22 @@ AI engines prioritize structured data, clear entity relationships, high-quality 
 *   **Why it's GEO friendly:** Helps AI build a knowledge graph of the site's domain and understand topical authority.
 *   **Implementation:** A `POST_GLOB` or `PRE_RENDER` feature that scans for predefined keywords (from a taxonomy file) and auto-links them to category/tag pages.
 
+## 9. Content Negotiation for AI Agents (`AiContentNegotiationFeature`)
+*   **Concept:** Generate alternative, machine-readable formats of every page (e.g., raw Markdown, JSON, or strict XHTML) and serve them to AI bots based on User-Agent or `Accept` headers.
+*   **Why it's GEO friendly:** AI agents (or "machine customers") prefer dense, structured data or clean markdown over parsing complex visual HTML layouts designed for humans.
+*   **Implementation:** A build-time feature that outputs a `.md` or `.json` version of each page alongside the `.html` file. Includes logic to strip sensitive or internal frontmatter before publishing the raw Markdown. Web server rules (or a lightweight routing script) can then handle the content negotiation.
+
+## 10. AI-Optimized Content Generation (`MachineContentGeneratorFeature`)
+*   **Concept:** Automatically generate a secondary, fact-dense, marketing-fluff-free version of the content specifically tailored for AI consumption.
+*   **AI Enablement:** Use an LLM API during the build process to rewrite the page content. Prompt: "Strip out marketing language, focus on facts, value provided, and features. Return in Markdown with relevant headings."
+*   **Why it's GEO friendly:** AI models often discount information when they detect commercial influence. Providing a pre-distilled, objective version ensures the AI ingests the core value proposition without triggering bias penalties.
+*   **Implementation:** A `POST_PARSE` feature that takes the original markdown, passes it to the `AiService`, and saves the result as an alternative representation (e.g., `content.ai.md`), which is then served via the `AiContentNegotiationFeature`.
+
 ---
 
 ## Architectural Notes for AI Enablement
 
-To implement the AI features mentioned above, we must adhere to the project's SOLID principles and favor composition over inheritance. 
+To implement the AI features mentioned above, we must adhere to the project's SOLID principles and favor composition over inheritance.
 
 **Do NOT add AI logic to `BaseFeature`.** Doing so would violate the Single Responsibility Principle (SRP) and bloat every feature in the system with unnecessary dependencies.
 
@@ -65,6 +76,9 @@ Instead, we will use **Dependency Injection** and create a dedicated service:
 2.  **Register in Container**: Initialize `AiService` during the bootstrap phase and store it in the `EICC\Utils\Container`.
 3.  **Inject via Composition**: Only the specific features that require AI capabilities (e.g., `KeyTakeawaysFeature`, `FaqSchemaFeature`) will request the `AiService` via their constructor or retrieve it from the container.
 
+**CRITICAL: Graceful Degradation**
+Any feature that utilizes AI *must* fail gracefully. If the AI service is disabled, unreachable, times out, or returns an error, the build process must not crash. Features should always have a sensible fallback (e.g., using manual frontmatter, skipping the AI enhancement, or returning the original content) and log the failure appropriately using `EiccUtils`.
+
 **Example Implementation Pattern:**
 
 ```php
@@ -73,12 +87,12 @@ namespace EICC\StaticForge\Features\KeyTakeaways;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Services\AiService;
 
-class KeyTakeawaysFeature implements FeatureInterface 
+class KeyTakeawaysFeature implements FeatureInterface
 {
     public function __construct(private AiService $aiService) {}
 
     // ... inside the PRE_RENDER event hook ...
-    public function onPreRender(Event $event): void 
+    public function onPreRender(Event $event): void
     {
         $page = $event->getPage();
         $frontmatter = $page->getFrontmatter();

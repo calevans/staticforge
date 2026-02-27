@@ -138,7 +138,12 @@ class FileDiscovery
      */
     protected function parseFrontmatter(string $filePath): array
     {
-        $content = @file_get_contents($filePath);
+        if (!is_readable($filePath)) {
+            $this->logger->log('WARNING', "Failed to read file (unreadable): {$filePath}");
+            return [];
+        }
+
+        $content = file_get_contents($filePath);
         if ($content === false) {
             $this->logger->log('WARNING', "Failed to read file: {$filePath}");
             return [];

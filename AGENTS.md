@@ -39,6 +39,16 @@ The build process (`site:render`) follows this strict event sequence:
 7.  **`POST_LOOP`**: Global artifact generation (Sitemap, RSS, Categories).
 8.  **`DESTROY`**: Final cleanup.
 
+### Custom Feature Events
+Features may dispatch their own custom events to allow other features to hook into their specific lifecycles. Known custom events include:
+
+*   **`MARKDOWN_CONVERTED`**: Dispatched by `MarkdownRendererService` immediately after a Markdown file is converted to HTML, but before it is passed to the template renderer. Useful for features that need to parse or modify the raw HTML output of the markdown parser (e.g., `TableOfContents`).
+*   **`COLLECT_MENU_ITEMS`**: Dispatched by `MenuBuilderService` to gather menu items from other features before building the final menu structure.
+*   **`RSS_BUILDER_INIT`**: Dispatched by `RssFeedService` when the RSS builder is initialized, allowing modification of the channel metadata.
+*   **`RSS_ITEM_BUILDING`**: Dispatched by `RssFeedService` for each item being added to the feed, allowing modification of individual feed items.
+*   **`SEO_AUDIT_PAGE`**: Dispatched by the `SeoCommand` during an SEO audit to allow features to add their own SEO checks to the audit process.
+*   **`EVENT_UPLOAD_CHECK_FILE`**: Dispatched by `SiteUploader` (Deployment feature) before uploading a file, allowing features to skip or modify the upload behavior for specific files.
+
 ## 4. Development Environment & Commands
 
 **MANDATORY**: Always use `lando` prefix for all PHP/database commands.

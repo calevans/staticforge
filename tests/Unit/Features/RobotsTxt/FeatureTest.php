@@ -28,7 +28,8 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->eventManager = new EventManager($this->container);
 
         $this->feature = new RobotsTxtFeature();
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
     }
 
     public function testRegisterFeature(): void

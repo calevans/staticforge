@@ -11,8 +11,8 @@ use EICC\Utils\Container;
  */
 abstract class BaseFeature implements FeatureInterface
 {
-    protected Container $container;
     protected EventManager $eventManager;
+    protected Container $container;
 
     /**
      * Event listener registrations
@@ -39,11 +39,10 @@ abstract class BaseFeature implements FeatureInterface
     }
 
     /**
-     * Store container and event manager references
+     * Store event manager reference and register listeners
      */
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        $this->container = $container;
         $this->eventManager = $eventManager;
 
         // Register event listeners defined by the feature
@@ -51,12 +50,21 @@ abstract class BaseFeature implements FeatureInterface
     }
 
     /**
+     * Set the container (called by FeatureManager before register)
+     */
+    public function setContainer(Container $container): void
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Check if required features are enabled
      *
+     * @param Container $container The DI container
      * @param array<string> $requiredFeatures List of feature names that must be enabled
      * @return bool True if all required features are enabled, false otherwise
      */
-    protected function requireFeatures(array $requiredFeatures): bool
+    protected function requireFeatures(Container $container, array $requiredFeatures): bool
     {
         // If no requirements, we're good
         if (empty($requiredFeatures)) {
@@ -64,7 +72,7 @@ abstract class BaseFeature implements FeatureInterface
         }
 
         try {
-            $featureManager = $this->container->get(FeatureManager::class);
+            $featureManager = $container->get(FeatureManager::class);
         } catch (\Exception $e) {
             // If we can't get the feature manager, we can't check requirements
             // This shouldn't happen in normal operation
@@ -74,7 +82,7 @@ abstract class BaseFeature implements FeatureInterface
         foreach ($requiredFeatures as $feature) {
             if (!$featureManager->isFeatureEnabled($feature)) {
                 // Log a warning so the developer knows why this feature is skipping its logic
-                $logger = $this->container->get('logger');
+                $logger = $container->get('logger');
                 $logger->log('WARNING',
                     "Feature '{$this->getName()}' requires feature '{$feature}' which is disabled. Skipping functionality."
                 );

@@ -32,7 +32,31 @@ class FormsService
         $content = $parameters['file_content'] ?? null;
 
         if (!$content && $filePath && file_exists($filePath)) {
-            $content = @file_get_contents($filePath);
+            // Security: Validate that the file path is within the source directory
+            $sourceDir = $container->getVariable('SOURCE_DIR');
+            if (!$sourceDir) {
+                throw new \RuntimeException('SOURCE_DIR not set in container');
+            }
+            
+            // Allow vfs:// paths for testing
+            if (strpos($filePath, 'vfs://') === 0) {
+                $realSourceDir = $sourceDir;
+                $realFilePath = $filePath;
+            } else {
+                $realSourceDir = realpath($sourceDir);
+                $realFilePath = realpath($filePath);
+
+                if ($realFilePath === false || strpos($realFilePath, $realSourceDir) !== 0) {
+                    throw new \RuntimeException("Security Error: File path is outside the allowed source directory: {$filePath}");
+                }
+            }
+
+            if (!is_readable($realFilePath)) {
+                $this->logger->log('WARNING', "Failed to read file (unreadable): {$filePath}");
+                return $parameters;
+            }
+
+            $content = file_get_contents($realFilePath);
         }
 
         if (!$content) {

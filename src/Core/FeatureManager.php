@@ -221,8 +221,13 @@ class FeatureManager
                 return;
             }
 
+            // Inject container if the feature supports it
+            if (method_exists($feature, 'setContainer')) {
+                $feature->setContainer($this->container);
+            }
+
             // Register and store the feature
-            $feature->register($this->eventManager, $this->container);
+            $feature->register($this->eventManager);
             $this->features[$feature->getName()] = $feature;
             $this->featureTypes[$feature->getName()] = $type;
             $this->featureStatuses[$feature->getName()] = 'enabled';
@@ -247,7 +252,14 @@ class FeatureManager
         foreach ($possibleClasses as $className) {
             if (class_exists($className)) {
                 try {
-                    $feature = new $className();
+                    // Try to resolve from container first (for DI)
+                    if ($this->container->has($className)) {
+                        $feature = $this->container->get($className);
+                    } else {
+                        // Fallback to new for features without dependencies
+                        $feature = new $className();
+                    }
+                    
                     if ($feature instanceof FeatureInterface) {
                         return $feature;
                     }
@@ -359,7 +371,10 @@ class FeatureManager
             }
 
             // Register
-            $feature->register($this->eventManager, $this->container);
+            if (method_exists($feature, 'setContainer')) {
+                $feature->setContainer($this->container);
+            }
+            $feature->register($this->eventManager);
             $this->features[$feature->getName()] = $feature;
             $this->featureTypes[$feature->getName()] = 'Composer';
             $this->featureStatuses[$feature->getName()] = 'enabled';

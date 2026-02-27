@@ -22,10 +22,10 @@ class Feature extends BaseFeature implements FeatureInterface
         'CREATE' => ['method' => 'handleCreate', 'priority' => 10]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
-        $this->logger = $container->get('logger');
+        parent::register($eventManager);
+        $this->logger = $this->container->get('logger');
 
         $this->service = new CacheBusterService($this->logger);
 

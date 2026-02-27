@@ -89,11 +89,15 @@ class TemplateRenderer
             }
 
             return $html;
+        } catch (\Twig\Error\LoaderError $e) {
+            $this->logger->log('ERROR', "Template file not found: {$templatePath}. Error: " . $e->getMessage());
+            throw new \RuntimeException("Template file not found: {$templatePath}", 0, $e);
+        } catch (\Twig\Error\SyntaxError $e) {
+            $this->logger->log('ERROR', "Template syntax error in {$templatePath}: " . $e->getMessage());
+            throw new \RuntimeException("Template syntax error in {$templatePath}", 0, $e);
         } catch (Exception $e) {
-            $this->logger->log('ERROR', "Template rendering failed: " . $e->getMessage());
-
-            // Fallback to basic template
-            return $this->applyBasicTemplate($parsedContent, $container);
+            $this->logger->log('ERROR', "Template rendering failed for {$templatePath}: " . $e->getMessage());
+            throw new \RuntimeException("Template rendering failed for {$templatePath}", 0, $e);
         }
     }
 

@@ -24,10 +24,10 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
-        $this->logger = $container->get('logger');
+        parent::register($eventManager);
+        $this->logger = $this->container->get('logger');
         $this->service = new TemplateAssetsService($this->logger);
         $this->logger->log('INFO', 'TemplateAssets Feature registered');
     }

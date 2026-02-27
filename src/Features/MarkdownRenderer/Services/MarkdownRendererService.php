@@ -59,9 +59,36 @@ class MarkdownRendererService extends BaseRendererService
 
             // Read file content
             // Use provided content if available (e.g., from CategoryIndex)
-            $content = $parameters['file_content'] ?? @file_get_contents($filePath);
-            if ($content === false) {
-                throw new Exception("Failed to read file: {$filePath}");
+            if (isset($parameters['file_content'])) {
+                $content = $parameters['file_content'];
+            } else {
+                // Security: Validate that the file path is within the source directory
+                $sourceDir = $container->getVariable('SOURCE_DIR');
+                if (!$sourceDir) {
+                    throw new \RuntimeException('SOURCE_DIR not set in container');
+                }
+                
+                // Allow vfs:// paths for testing
+                if (strpos($filePath, 'vfs://') === 0) {
+                    $realSourceDir = $sourceDir;
+                    $realFilePath = $filePath;
+                } else {
+                    $realSourceDir = realpath($sourceDir);
+                    $realFilePath = realpath($filePath);
+
+                    if ($realFilePath === false || strpos($realFilePath, $realSourceDir) !== 0) {
+                        throw new \RuntimeException("Security Error: File path is outside the allowed source directory: {$filePath}");
+                    }
+                }
+
+                if (!is_readable($realFilePath)) {
+                    throw new \RuntimeException("Failed to read file: {$filePath} (Permission denied or file not found)");
+                }
+
+                $content = file_get_contents($realFilePath);
+                if ($content === false) {
+                    throw new \RuntimeException("Failed to read file: {$filePath}");
+                }
             }
 
             // Extract content (skip frontmatter)
@@ -112,6 +139,9 @@ class MarkdownRendererService extends BaseRendererService
             $parameters['rendered_content'] = $renderedContent;
             $parameters['output_path'] = $outputPath;
             $parameters['metadata'] = $metadata;
+        } catch (\RuntimeException $e) {
+            // Re-throw RuntimeExceptions (like missing templates) so they fail the build
+            throw $e;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process Markdown file {$filePath}: " . $e->getMessage());
             $parameters['error'] = $e->getMessage();

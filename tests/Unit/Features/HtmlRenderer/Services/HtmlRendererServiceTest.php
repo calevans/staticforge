@@ -17,7 +17,8 @@ class HtmlRendererServiceTest extends TestCase
     private Log $logger;
     private TemplateRenderer $templateRenderer;
     private Container $container;
-    private $root;
+    private string $sourceDir;
+    private string $outputDir;
 
     protected function setUp(): void
     {
@@ -27,7 +28,29 @@ class HtmlRendererServiceTest extends TestCase
 
         $this->service = new HtmlRendererService($this->logger, $this->templateRenderer);
 
-        $this->root = vfsStream::setup('root');
+        $this->sourceDir = sys_get_temp_dir() . '/staticforge_source_' . uniqid();
+        $this->outputDir = sys_get_temp_dir() . '/staticforge_output_' . uniqid();
+        mkdir($this->sourceDir, 0755, true);
+        mkdir($this->outputDir, 0755, true);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->removeDirectory($this->sourceDir);
+        $this->removeDirectory($this->outputDir);
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = "$dir/$file";
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public function testExtractHtmlContentIni(): void
@@ -74,13 +97,13 @@ class HtmlRendererServiceTest extends TestCase
 
     public function testProcessHtmlFile(): void
     {
-        $file = vfsStream::newFile('test.html')->at($this->root)->setContent('<h1>Test</h1>');
-        $filePath = $file->url();
+        $filePath = $this->sourceDir . '/test.html';
+        file_put_contents($filePath, '<h1>Test</h1>');
 
         $this->container->method('getVariable')
             ->willReturnMap([
-                ['SOURCE_DIR', $this->root->url()],
-                ['OUTPUT_DIR', $this->root->url() . '/public']
+                ['SOURCE_DIR', $this->sourceDir],
+                ['OUTPUT_DIR', $this->outputDir]
             ]);
 
         $this->templateRenderer->expects($this->once())

@@ -29,7 +29,7 @@ class Feature extends BaseFeature implements FeatureInterface
         $application = $parameters['application'];
         $application->add(new FeatureCreateCommand());
         $application->add(new FeatureSetupCommand());
-        $application->add(new ListFeaturesCommand($container->get(\EICC\StaticForge\Core\FeatureManager::class)));
+        $application->add(new ListFeaturesCommand($this->container->get(\EICC\StaticForge\Core\FeatureManager::class)));
 
         return $parameters;
     }

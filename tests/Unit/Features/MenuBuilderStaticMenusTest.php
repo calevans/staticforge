@@ -25,7 +25,8 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->container->stuff('logger', fn() => $logger);
 
         $this->menuBuilder = new Feature();
-        $this->menuBuilder->register($this->eventManager, $this->container);
+        $this->menuBuilder->setContainer($this->container);
+        $this->menuBuilder->register($this->eventManager);
 
         // Set default SITE_BASE_URL for tests
         $this->container->setVariable('SITE_BASE_URL', '/');

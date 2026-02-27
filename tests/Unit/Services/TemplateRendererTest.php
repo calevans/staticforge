@@ -102,7 +102,7 @@ class TemplateRendererTest extends UnitTestCase
         $this->assertStringNotContainsString('<script>alert("xss")</script>', $result);
     }
 
-    public function testFallbackTemplate(): void
+    public function testMissingTemplateThrowsException(): void
     {
         // Use a non-existent template
         $parsedContent = [
@@ -113,11 +113,10 @@ class TemplateRendererTest extends UnitTestCase
             'title' => 'Fallback Test'
         ];
 
-        $result = $this->renderer->render($parsedContent, $this->container);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Template file not found: test/nonexistent.html.twig');
 
-        // Should fall back to basic template
-        $this->assertStringContainsString('Fallback content', $result);
-        $this->assertStringContainsString('Fallback Test | Test Site', $result);
+        $this->renderer->render($parsedContent, $this->container);
     }
 
     public function testTemplateInheritance(): void

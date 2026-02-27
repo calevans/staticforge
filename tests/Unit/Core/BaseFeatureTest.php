@@ -23,7 +23,8 @@ class BaseFeatureTest extends UnitTestCase
 
     public function testRegisterEventListeners(): void
     {
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
 
         // Test that events are actually registered with correct priorities
         $listeners = $this->eventManager->getListeners('TEST_EVENT');
@@ -37,7 +38,8 @@ class BaseFeatureTest extends UnitTestCase
 
     public function testEventListenerExecution(): void
     {
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
 
         // Test that event listeners are properly callable and modify parameters
         $parameters = ['test' => 'value'];
@@ -77,7 +79,8 @@ class BaseFeatureTest extends UnitTestCase
         $services[\EICC\StaticForge\Core\FeatureManager::class] = $featureManager;
         $property->setValue($this->container, $services);
 
-        $this->feature->register($this->eventManager, $this->container);
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
 
         // Test with enabled feature
         $this->assertTrue($this->feature->checkRequirements(['EnabledFeature']));
@@ -114,6 +117,6 @@ class TestFeature extends BaseFeature
 
     public function checkRequirements(array $requiredFeatures): bool
     {
-        return $this->requireFeatures($requiredFeatures);
+        return $this->requireFeatures($this->container, $requiredFeatures);
     }
 }

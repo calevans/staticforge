@@ -74,7 +74,7 @@ class FileProcessorTest extends UnitTestCase
                         'event' => $this->eventName,
                         'parameters' => $parameters
                     ];
-                    return $parameters;
+                    if (isset($this->eventName) && $this->eventName === "RENDER") { $parameters["rendered_content"] = "mock content"; $parameters["output_path"] = "/tmp/output.html"; } return $parameters;
                 }
             };
         };
@@ -117,7 +117,7 @@ class FileProcessorTest extends UnitTestCase
                     'parameters' => $parameters
                 ];
                 $parameters['skip_file'] = true;
-                return $parameters;
+                if (isset($this->eventName) && $this->eventName === "RENDER") { $parameters["rendered_content"] = "mock content"; $parameters["output_path"] = "/tmp/output.html"; } return $parameters;
             }
         };
 
@@ -138,7 +138,7 @@ class FileProcessorTest extends UnitTestCase
                         'event' => $this->eventName,
                         'parameters' => $parameters
                     ];
-                    return $parameters;
+                    if (isset($this->eventName) && $this->eventName === "RENDER") { $parameters["rendered_content"] = "mock content"; $parameters["output_path"] = "/tmp/output.html"; } return $parameters;
                 }
             };
         };
@@ -173,7 +173,7 @@ class FileProcessorTest extends UnitTestCase
             public function handleEvent(Container $container, array $parameters): array
             {
                 $this->contextData = $parameters;
-                return $parameters;
+                if (isset($this->eventName) && $this->eventName === "RENDER") { $parameters["rendered_content"] = "mock content"; $parameters["output_path"] = "/tmp/output.html"; } return $parameters;
             }
         };
 

@@ -15,7 +15,7 @@ interface FeatureInterface
      * Register feature with the system
      * Called during feature instantiation to set up event listeners
      */
-    public function register(EventManager $eventManager, Container $container): void;
+    public function register(EventManager $eventManager): void;
 
     /**
      * Get the simple name for this feature

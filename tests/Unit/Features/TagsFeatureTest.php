@@ -22,7 +22,8 @@ class TagsFeatureTest extends UnitTestCase
     public function testFeatureRegistration(): void
     {
         $feature = new Feature();
-        $feature->register($this->eventManager, $this->container);
+        $feature->setContainer($this->container);
+        $feature->register($this->eventManager);
 
         $this->assertEquals('Tags', $feature->getName());
 
@@ -47,7 +48,8 @@ class TagsFeatureTest extends UnitTestCase
         ]);
 
         $feature = new Feature();
-        $feature->register($this->eventManager, $this->container);
+        $feature->setContainer($this->container);
+        $feature->register($this->eventManager);
 
         // Test POST_GLOB delegation
         $parameters = ['features' => []];

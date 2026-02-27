@@ -21,9 +21,9 @@ class Feature extends BaseFeature implements FeatureInterface
         'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 50]
     ];
 
-    public function register(EventManager $eventManager, Container $container): void
+    public function register(EventManager $eventManager): void
     {
-        parent::register($eventManager, $container);
+        parent::register($eventManager);
         $this->service = new EstimatedReadingTimeService();
     }
 
