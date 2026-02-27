@@ -259,7 +259,7 @@ class FeatureManager
                         // Fallback to new for features without dependencies
                         $feature = new $className();
                     }
-                    
+
                     if ($feature instanceof FeatureInterface) {
                         return $feature;
                     }

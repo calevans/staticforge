@@ -4,7 +4,7 @@ This document provides instructions for AI agents and developers to upgrade exte
 
 ## 1. The Breaking Changes in v2.0
 
-StaticForge v2.0 introduces a strict Dependency Injection architecture to improve testability, security, and resource efficiency. 
+StaticForge v2.0 introduces a strict Dependency Injection architecture to improve testability, security, and resource efficiency.
 
 **Key Changes:**
 1.  **`FeatureInterface` Signature Change:** The `register()` method no longer accepts the `Container`. It is now strictly for event binding.
@@ -44,11 +44,11 @@ Move all dependency resolution into the `__construct()` method using PHP 8.0 Con
 
 **Before (v1.x):**
 ```php
-class MyFeature extends BaseFeature 
+class MyFeature extends BaseFeature
 {
     private MyService $service;
-    
-    public function register(EventManager $eventManager, Container $container): void 
+
+    public function register(EventManager $eventManager, Container $container): void
     {
         $this->service = new MyService($container->get('logger'));
     }
@@ -59,7 +59,7 @@ class MyFeature extends BaseFeature
 ```php
 use Psr\Log\LoggerInterface;
 
-class MyFeature extends BaseFeature 
+class MyFeature extends BaseFeature
 {
     public function __construct(
         public private(set) LoggerInterface $logger,

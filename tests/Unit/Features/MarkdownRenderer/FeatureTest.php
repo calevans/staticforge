@@ -50,7 +50,7 @@ class FeatureTest extends UnitTestCase
         // Create EventManager and test feature
         $eventManager = new EventManager($this->container);
         $this->addToContainer(EventManager::class, $eventManager);
-        
+
         // Register dependencies in container for DI
         $this->addToContainer(\EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor::class, new \EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor());
         $this->addToContainer(\EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor::class, new \EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor());
@@ -294,10 +294,10 @@ MD;
     public function testErrorHandlingOutsideSourceDir(): void
     {
         $parameters = ['file_path' => '/nonexistent/file.md'];
-        
+
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Security Error: File path is outside the allowed source directory');
-        
+
         $this->feature->handleRender($this->container, $parameters);
     }
 
@@ -311,11 +311,11 @@ MD;
         chmod($testFile, 0000); // Make unreadable
 
         $parameters = ['file_path' => $testFile];
-        
+
         try {
             $this->expectException(\RuntimeException::class);
             $this->expectExceptionMessage('Failed to read file');
-            
+
             $this->feature->handleRender($this->container, $parameters);
         } finally {
             // Restore permissions so it can be deleted during tearDown

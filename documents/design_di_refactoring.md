@@ -69,7 +69,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     {
         $eventManager->listen('RENDER', [$this, 'handleRender'], 100);
     }
-    
+
     public function handleRender(array $parameters): array
     {
         // Service is already injected and ready to use

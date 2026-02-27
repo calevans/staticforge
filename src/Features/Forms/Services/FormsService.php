@@ -37,7 +37,7 @@ class FormsService
             if (!$sourceDir) {
                 throw new \RuntimeException('SOURCE_DIR not set in container');
             }
-            
+
             // Allow vfs:// paths for testing
             if (strpos($filePath, 'vfs://') === 0) {
                 $realSourceDir = $sourceDir;
