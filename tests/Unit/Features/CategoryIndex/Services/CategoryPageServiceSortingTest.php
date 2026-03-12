@@ -142,6 +142,21 @@ class CategoryPageServiceSortingTest extends UnitTestCase
                 $files,
                 ['A Post', 'B Post', 'C Post']
             ],
+            'proper_date_desc' => [
+                'date', 'desc', 
+                $files,
+                ['C Post', 'B Post', 'A Post']
+            ],
+            'proper_date_asc' => [
+                'date', 'asc', 
+                $files,
+                ['A Post', 'B Post', 'C Post']
+            ],
+            'proper_date_default' => [
+                'date', '', 
+                $files,
+                ['C Post', 'B Post', 'A Post']
+            ],
              'random_sort_by' => [
                 'random', '',
                 $files,

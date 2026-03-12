@@ -121,11 +121,11 @@ class CategoryService
     private function getFileDate(array $metadata, string $filePath): string
     {
         if (isset($metadata['published_date'])) {
-            return $metadata['published_date'];
+            return is_int($metadata['published_date']) ? date('Y-m-d', $metadata['published_date']) : (string)$metadata['published_date'];
         }
 
         if (isset($metadata['date'])) {
-            return $metadata['date'];
+            return is_int($metadata['date']) ? date('Y-m-d', $metadata['date']) : (string)$metadata['date'];
         }
 
         if (file_exists($filePath)) {
