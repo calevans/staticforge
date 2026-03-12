@@ -15,7 +15,8 @@ This document serves as the primary context for AI agents working on StaticForge
 ## 2. Directory Structure
 
 -   **`src/Core`**: The framework kernel (Application, EventManager, FeatureInterface).
--   **`src/Features`**: Self-contained modules (e.g., `MarkdownRenderer`, `RssFeed`). **New development happens here.**
+-   **`src/Features`**: Core features bundled with the framework (e.g., `MarkdownRenderer`, `RssFeed`). **New core development happens here.**
+-   **`Features/`**: Non-core (external) features, developed separately from the core framework.
 -   **`src/Commands`**: CLI entry points (e.g., `RenderSiteCommand`).
 -   **`src/Services`**: Shared business logic (e.g., `TemplateVariableBuilder`).
 -   **`content/`**: Source files (Markdown, HTML) with YAML frontmatter.
@@ -104,7 +105,7 @@ New functionality **MUST** be implemented as a **Feature**.
 3.  **No Vendor Mods**: DO NOT MODIFY FILES IN VENDOR OR OUTSIDE OF YOUR APPLICATION ROOT. EVER.
 
 ### Structure
-A Feature resides in `src/Features/{FeatureName}` and must contain:
+A Core Feature resides in `src/Features/{FeatureName}` (and non-core features in `Features/{FeatureName}`) and must contain:
 -   **`Feature.php`**: The entry point.
     -   Must implement `EICC\StaticForge\Core\FeatureInterface`.
     -   Should implement `EICC\StaticForge\Core\ConfigurableFeatureInterface` if it needs config.
