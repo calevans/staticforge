@@ -257,7 +257,7 @@ class FeatureManager
                         $feature = $this->container->get($className);
                     } else {
                         // Fallback to new for features without dependencies
-                        $feature = new $className();
+                        if ($this->container->has($className)) { $feature = $this->container->get($className); } else { $feature = new $className(); }
                     }
 
                     if ($feature instanceof FeatureInterface) {
@@ -351,7 +351,7 @@ class FeatureManager
         }
 
         try {
-            $feature = new $className();
+            if ($this->container->has($className)) { $feature = $this->container->get($className); } else { $feature = new $className(); }
             if (!$feature instanceof FeatureInterface) {
                  $this->logger->log('WARNING', "Class {$className} from package {$packageName} does not implement FeatureInterface.");
                  return;
