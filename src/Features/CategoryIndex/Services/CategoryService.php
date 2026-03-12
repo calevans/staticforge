@@ -123,6 +123,11 @@ class CategoryService
         if (isset($metadata['published_date'])) {
             return $metadata['published_date'];
         }
+
+        if (isset($metadata['date'])) {
+            return $metadata['date'];
+        }
+
         if (file_exists($filePath)) {
             $mtime = filemtime($filePath);
             if ($mtime !== false) {
