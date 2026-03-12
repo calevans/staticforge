@@ -137,7 +137,7 @@ class CategoryPageService
 
         // Determine default direction if not specified
         if ($sortDirection === null) {
-            $sortDirection = ($sortBy === 'published_date') ? 'desc' : 'asc';
+            $sortDirection = ($sortBy === 'published_date' || $sortBy === 'date') ? 'desc' : 'asc';
         }
 
         $sortDirection = strtolower($sortDirection);
