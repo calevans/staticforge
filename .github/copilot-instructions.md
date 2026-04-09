@@ -1,6 +1,6 @@
 # GitHub Copilot Instructions for StaticForge
 
-**CRITICAL: Always access and read the file `AGENT.md` before doing any work.**
+**CRITICAL: Always access and read the file `AGENTS.md` before doing any work.**
 
 `AGENT.md` contains:
 -   System Overview & Directory Structure
