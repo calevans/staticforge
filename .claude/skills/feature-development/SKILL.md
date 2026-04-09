@@ -1,4 +1,5 @@
 ---
+name: feature-development
 description: Architectural guidelines for developing new self-contained Features in StaticForge.
 applyTo: "src/Features/**/*.php"
 ---

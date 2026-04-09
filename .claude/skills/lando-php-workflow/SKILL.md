@@ -1,4 +1,5 @@
 ---
+name: lando-php-workflow
 description: Development workflow for StaticForge using strict PHP and the Lando environment wrapper.
 applyTo: "**/*.php"
 ---

@@ -1,4 +1,5 @@
 ---
+name: deployment-and-git-flow
 description: Critical security and deployment protocols for editing code, handling credentials, and publishing StaticForge.
 applyTo: "**/*.md"
 ---

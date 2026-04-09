@@ -1,4 +1,5 @@
 ---
+name: content-and-shortcodes
 description: Protocols for handling content, shortcodes, YAML frontmatter, and Twig within StaticForge.
 applyTo: "content/**/*.md, templates/**/*.twig"
 ---
