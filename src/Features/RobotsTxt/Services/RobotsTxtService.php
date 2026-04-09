@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\RobotsTxt\Services;
 
+use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -80,7 +81,18 @@ class RobotsTxtService
 
         $this->logger->log('INFO', 'RobotsTxt: Generating robots.txt file');
 
-        $robotsTxtContent = $this->generator->generate($siteBaseUrl, $this->disallowedPaths);
+        $rules = [
+            '*' => [
+                'Disallow' => $this->disallowedPaths,
+                'Allow' => []
+            ]
+        ];
+
+        $eventManager = $container->get(EventManager::class);
+        $eventResult = $eventManager->fire('ROBOTS_TXT_BUILDING', ['rules' => $rules]);
+        $finalRules = $eventResult['rules'] ?? $rules;
+
+        $robotsTxtContent = $this->generator->generate($siteBaseUrl, $finalRules);
 
         // Write robots.txt to output directory
         $robotsTxtPath = $outputDir . '/robots.txt';

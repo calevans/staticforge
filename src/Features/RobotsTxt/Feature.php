@@ -15,7 +15,8 @@ use EICC\Utils\Log;
 /**
  * RobotsTxt Feature - generates robots.txt file based on content metadata
  *
- * EVENTS FIRED: None
+ * EVENTS FIRED:
+ * - ROBOTS_TXT_BUILDING: Allows external features to modify the robots rules payload.
  *
  * EVENTS OBSERVED:
  * - POST_GLOB (priority 150): Scans discovered files for robots metadata
