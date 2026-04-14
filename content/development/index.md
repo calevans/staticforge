@@ -3,7 +3,6 @@ title: Developer Guide
 description: 'Landing page for the StaticForge Developer Guide, covering architecture, events, features, and customization.'
 template: docs
 menu: '4.1'
-url: "https://calevans.com/staticforge/development/index.html"
 og_image: "Developer guide book glowing on a dark desk, digital compass, map of code structures, technical schematic background, dramatic lighting, --ar 16:9"
 ---
 

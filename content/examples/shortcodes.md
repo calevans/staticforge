@@ -3,7 +3,6 @@ title: Shortcode Demo
 layout: page
 category: docs/examples
 description: "Demonstration of StaticForge's powerful Shortcode system, showing how to easily embed dynamic content like YouTube videos and more."
-url: "https://calevans.com/staticforge/examples/docs-examples/shortcodes.html"
 og_image: "Magic wand casting code snippets, keyboard shortcut keys, automation sparks, wizardry in coding, --ar 16:9"
 ---
 

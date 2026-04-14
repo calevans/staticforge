@@ -3,7 +3,6 @@ title: 'Table of Contents'
 description: 'Documentation for the Table of Contents feature, auto-generating navigational links from page headings.'
 template: docs
 menu: '3.1.13'
-url: "https://calevans.com/staticforge/features/table-of-contents.html"
 og_image: "Open book with structured chapter list, navigation sidebar, organized document sections, clean typography, --ar 16:9"
 ---
 # Table of Contents

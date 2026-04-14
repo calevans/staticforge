@@ -3,7 +3,6 @@ title: 'Architecture & Data Flow'
 description: 'Deep dive into StaticForge internal architecture, data flow pipeline, and core design principles.'
 template: docs
 menu: '4.1.1'
-url: "https://calevans.com/staticforge/development/architecture.html"
 og_image: "Isometric 3D diagram of a complex server architecture, glowing blue data streams, white clean background, high tech visualization of software design, unreal engine render, --ar 16:9"
 ---
 

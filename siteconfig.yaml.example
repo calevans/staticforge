@@ -159,3 +159,8 @@ calendars:
     view: week
     start: "-1 month"
 
+
+# Answer Engine Optimization (AXO/AEO) Configuration
+answer_engine_optimization:
+  enabled: true
+  # AI Crawler settings are injected automatically (OAI-SearchBot, etc.)

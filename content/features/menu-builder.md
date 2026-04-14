@@ -3,7 +3,6 @@ title: 'Menu Builder'
 description: 'How to use the Menu Builder feature to automatically generate navigation menus from content frontmatter.'
 template: docs
 menu: '3.1.8'
-url: "https://calevans.com/staticforge/features/menu-builder.html"
 og_image: "Tree structure of a website menu, navigation hierarchy, branching nodes, organizational chart using light beams, dark background, --ar 16:9"
 ---
 # Menu Builder

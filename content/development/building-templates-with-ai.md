@@ -3,7 +3,6 @@ menu: '4.1.6'
 title: 'AI-Assisted Design'
 description: 'Guide to creating custom StaticForge templates using AI assistance and Copilot.'
 template: docs
-url: "https://calevans.com/staticforge/development/building-templates-with-ai.html"
 og_image: "Robot arm painting a website layout on a digital canvas, AI assistant collaboration, futuristic minimalist design studio, soft lighting, 8k, --ar 16:9"
 ---
 

@@ -82,3 +82,6 @@ search:
     - /categories/
   exclude_content_in: []
   engine: fuse
+# Answer Engine Optimization (AXO/AEO) Configuration
+answer_engine_optimization:
+  enabled: true

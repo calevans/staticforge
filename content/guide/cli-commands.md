@@ -3,7 +3,6 @@ title: 'CLI Commands'
 description: 'Reference for all StaticForge CLI commands.'
 template: docs
 menu: '2.2'
-url: "https://calevans.com/staticforge/guide/cli-commands.html"
 og_image: "Command line interface abstract, matrix code rain, green text on black screen, power user terminal, --ar 16:9"
 hero: assets/images/cli-commands-hero.jpg
 ---

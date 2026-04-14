@@ -3,7 +3,6 @@ title: 'Testing Your Code'
 description: 'How to write unit and integration tests for StaticForge features.'
 template: docs
 menu: '4.2'
-url: "https://calevans.com/staticforge/development/testing.html"
 og_image: "Scientist examining a glowing blue crystal with a magnifying glass, laboratory background, digital interface overlays, high detail, --ar 16:9"
 ---
 

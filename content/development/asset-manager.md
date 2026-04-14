@@ -3,7 +3,6 @@ title: 'Asset Manager'
 description: 'Documentation for the StaticForge AssetManager service, handling JS/CSS dependency resolution and injection.'
 template: docs
 menu: '4.1.6'
-url: "https://calevans.com/staticforge/development/asset-manager.html"
 og_image: "Digital asset management interface, floating holographic icons of CSS JS and images, organized grid, futuristic UI, cyan and purple lighting, --ar 16:9"
 ---
 

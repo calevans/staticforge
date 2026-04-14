@@ -3,7 +3,6 @@ menu: '4.1.5'
 title: 'The Face of the Operation: Templates'
 description: 'Comprehensive guide to the Twig templating system in StaticForge, variables, inheritance, and layout design.'
 template: docs
-url: "https://calevans.com/staticforge/development/templates.html"
 og_image: "Web design architectural blueprints, wireframes on a table, rulers and pencils, digital overlay of final design, creative studio atmosphere, --ar 16:9"
 ---
 

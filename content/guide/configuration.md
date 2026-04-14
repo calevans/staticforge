@@ -3,7 +3,6 @@ title: 'Configuration Guide'
 description: 'Detailed configuration options for StaticForge, covering environment variables, feature settings, and project structure.'
 template: docs
 menu: '2.1.2'
-url: "https://calevans.com/staticforge/guide/configuration.html"
 og_image: "Control panel with complicated dials and switches, settings gear mechanism, fine tuning, configuration dashboard, --ar 16:9"
 ---
 # Configuration Guide

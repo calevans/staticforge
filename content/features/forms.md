@@ -6,7 +6,6 @@ menu: '3.1.5'
 tags:
   - forms
   - feature
-url: "https://calevans.com/staticforge/features/forms.html"
 og_image: "Minimalist contact form floating in 3d space, paper airplane taking off, communication concept, envelope icon, clean design, --ar 16:9"
 ---
 # Forms Feature

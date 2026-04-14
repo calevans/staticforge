@@ -3,7 +3,6 @@ title: 'Site Auditing'
 description: 'A guide to using StaticForge audit tools to validate integrity, SEO, and security.'
 template: docs
 menu: '2.2.2'
-url: "https://calevans.com/staticforge/guide/auditing.html"
 og_image: "A magnifying glass examining digital code, green checkmarks appearing on a holographic screen, quality assurance, futuristic lab, --ar 16:9"
 hero: assets/images/auditing-hero.jpg
 ---

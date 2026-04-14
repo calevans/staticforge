@@ -3,7 +3,6 @@ title: Categories
 description: 'How to use the Categories feature to organize content, apply directory-specific templates, and structure your site.'
 template: docs
 menu: '3.1.3'
-url: "https://calevans.com/staticforge/features/categories.html"
 og_image: "Futuristic filing cabinet, glowing folders, organized taxonomy system, labeling, library archives, sci-fi interface, --ar 16:9"
 ---
 # Categories

@@ -9,7 +9,6 @@ tags:
   - api
   - rest
   - tutorial
-url: "https://calevans.com/staticforge/examples/tutorials/rss-enabled-article.html"
 og_image: "News article with RSS broadcast signal overlay, syndication tower, digital newspaper, breaking news, --ar 16:9"
 ---
 # Building a REST API with PHP
