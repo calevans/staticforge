@@ -69,3 +69,10 @@ Features/AnswerEngineOptimization/
 2. Secure event listeners for Schema Generation, Markdown representation mirroring, and `llms.txt` compiling.
 3. Unit and Integration tests meeting >80% coverage.
 4. Updates to `siteconfig.yaml.example` documenting AI crawler settings and publisher schema defaults.
+## 10. Architecture Decision: OUTPUT_DIR in LlmsTxtGeneratorService
+**Problem**: Output path was hardcoded to `appRoot . '/public/llms.txt'`. Real deployments use a dynamic `OUTPUT_DIR`.
+**Evaluation of Options**:
+- **Option A (Inject Container into Service)**: Violates the Dependency Inversion Principle and introduces the Service Locator anti-pattern. The service becomes tightly coupled to the framework's DI container and hides its true dependencies, making it harder to test (KISS violation).
+- **Option B (Feature.php passes explicit outputDir)**: Adheres to SOLID (Single Responsibility, Dependency Inversion) by isolating the service's logic from the framework. `Feature.php`, acting as the composition root for the event payload, extracts the `OUTPUT_DIR` from the container and passes it explicitly to `generate(string $outputDir)`. This ensures exactly what the service requires is explicitly defined in its API, significantly improving readability and testability (KISS).
+
+**Recommendation**: **Option B** is the architecturally sound choice. `Feature.php` should fetch the `OUTPUT_DIR` from the Container during the `POST_LOOP` event and pass it directly to the service's `generate` method, eliminating tight coupling and hidden dependencies.

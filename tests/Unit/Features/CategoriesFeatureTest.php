@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Features;
+namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Categories\Feature as CategoriesFeature;

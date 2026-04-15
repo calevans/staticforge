@@ -12,6 +12,7 @@
     ],
     "require": {
         "php": "^8.4",
+        "calevans/answer-engine-optimization": "^1.0",
         "eicc/staticforge-installer": ">=1.0",
         "eicc/utils": "^1.0",
         "gajus/dindent": "^2.0",
