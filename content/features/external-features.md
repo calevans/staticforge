@@ -31,6 +31,9 @@ Move media files (images, audio, video) to an AWS S3 bucket. (or compatible serv
 ### **[Social Metadata](https://github.com/calevans/staticforge-social-metadata)**
 (`calevans/staticforge-social-metadata`)<br />
 Automatically generates Open Graph and Twitter Card metadata tags for your pages. It supports site-wide defaults and per-page overrides via frontmatter to ensure your content looks great when shared on social media.<br /><br />
+### **[Answer Engine Optimization](https://github.com/calevans/staticforge-answer-engine-optimization)**
+(`calevans/answer-engine-optimization`)<br />
+Prepares your site for AI-powered search engines and LLM agents (ChatGPT, Perplexity, Claude, Gemini). It automatically injects JSON-LD structured data (Article and FAQPage schemas), generates an `/llms.txt` AI sitemap, publishes clean `.md` mirrors of your Markdown pages for machine consumption, and adds AI-crawler-friendly rules to your `robots.txt`. FAQ schema can be defined in frontmatter or via the `[aeo_faq]` shortcode.<br /><br />
 
 ## Installing External Features
 
