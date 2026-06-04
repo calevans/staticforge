@@ -48,10 +48,10 @@ class SitemapService
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $relativePath = str_replace($outputDir . '/', '', $outputPath);
+        $relativePath = ltrim(substr($outputPath, strlen($outputDir)), '/');
 
-        // Construct full URL
-        $loc = $siteUrl . '/' . ltrim($relativePath, '/');
+        // Construct canonical URL, rewriting index.html paths to directory URLs
+        $loc = $this->normalizeUrl($relativePath, $siteUrl);
 
         // Get last modification date
         // Prefer 'date' from metadata, fallback to file mtime if available, else now
@@ -77,6 +77,20 @@ class SitemapService
         return $parameters;
     }
 
+    private function normalizeUrl(string $relativePath, string $siteUrl): string
+    {
+        // Root case must be first: dirname('index.html') returns '.' and would produce a bad URL.
+        if ($relativePath === 'index.html') {
+            return $siteUrl . '/';
+        }
+
+        if (basename($relativePath) === 'index.html') {
+            return $siteUrl . '/' . rtrim(dirname($relativePath), '/') . '/';
+        }
+
+        return $siteUrl . '/' . ltrim($relativePath, '/');
+    }
+
     /**
      * Generate sitemap.xml file
      *
@@ -99,7 +113,7 @@ class SitemapService
         foreach ($this->urls as $url) {
             $xml .= '  <url>' . PHP_EOL;
             $xml .= '    <loc>' . htmlspecialchars($url['loc']) . '</loc>' . PHP_EOL;
-            $xml .= '    <lastmod>' . $url['lastmod'] . '</lastmod>' . PHP_EOL;
+            $xml .= '    <lastmod>' . htmlspecialchars($url['lastmod']) . '</lastmod>' . PHP_EOL;
             $xml .= '  </url>' . PHP_EOL;
         }
 

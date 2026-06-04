@@ -102,4 +102,59 @@ class SitemapServiceTest extends UnitTestCase
         $sitemapPath = $this->tempDir . '/sitemap.xml';
         $this->assertFileDoesNotExist($sitemapPath);
     }
+
+    public function testCollectUrlRootIndexHtmlProducesTrailingSlash(): void
+    {
+        $parameters = [
+            'output_path' => $this->tempDir . '/index.html',
+            'metadata' => ['date' => '2024-01-15'],
+        ];
+        $this->service->collectUrl($this->container, $parameters);
+        $this->service->generateSitemap($this->container, []);
+
+        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $this->assertStringContainsString('<loc>https://example.com/</loc>', $content);
+    }
+
+    public function testCollectUrlSubdirectoryIndexHtmlProducesDirectoryUrl(): void
+    {
+        $parameters = [
+            'output_path' => $this->tempDir . '/podcast/index.html',
+            'metadata' => ['date' => '2024-02-01'],
+        ];
+        $this->service->collectUrl($this->container, $parameters);
+        $this->service->generateSitemap($this->container, []);
+
+        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $this->assertStringContainsString('<loc>https://example.com/podcast/</loc>', $content);
+    }
+
+    public function testCollectUrlNestedIndexHtmlProducesNestedDirectoryUrl(): void
+    {
+        $parameters = [
+            'output_path' => $this->tempDir . '/a/b/index.html',
+            'metadata' => ['date' => '2024-03-10'],
+        ];
+        $this->service->collectUrl($this->container, $parameters);
+        $this->service->generateSitemap($this->container, []);
+
+        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $this->assertStringContainsString('<loc>https://example.com/a/b/</loc>', $content);
+    }
+
+    public function testCollectUrlRegularHtmlFileIsUnchanged(): void
+    {
+        $parameters = [
+            'output_path' => $this->tempDir . '/guide/content-creation.html',
+            'metadata' => ['date' => '2024-04-20'],
+        ];
+        $this->service->collectUrl($this->container, $parameters);
+        $this->service->generateSitemap($this->container, []);
+
+        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $this->assertStringContainsString(
+            '<loc>https://example.com/guide/content-creation.html</loc>',
+            $content
+        );
+    }
 }
