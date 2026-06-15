@@ -85,6 +85,9 @@ class RobotsTxtService
             '*' => [
                 'Disallow' => $this->disallowedPaths,
                 'Allow' => []
+            ],
+            'Bingbot' => [
+                'Allow' => ['/']
             ]
         ];
 

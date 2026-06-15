@@ -97,6 +97,31 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->assertStringNotContainsString('Disallow: /allowed.html', $content);
     }
 
+    public function testGeneratedRobotsTxtContainsExplicitBingbotAllow(): void
+    {
+        $content = "---\ntitle=\"Test Page\"\nrobots=\"yes\"\n---\n\n# Test Content";
+        $filePath = vfsStream::url('test/content/page.md');
+
+        vfsStream::create(['content' => []], $this->root);
+        file_put_contents($filePath, $content);
+
+        $this->setContainerVariable('discovered_files', [
+            ['path' => $filePath, 'url' => 'page.md', 'metadata' => ['robots' => 'yes']]
+        ]);
+        $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
+
+        $this->service->scanForRobotsMetadata($this->container, []);
+
+        $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
+        $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
+
+        $this->service->generateRobotsTxt($this->container, []);
+
+        $robotsContent = file_get_contents(vfsStream::url('test/output/robots.txt'));
+        $this->assertStringContainsString('User-agent: Bingbot', $robotsContent);
+        $this->assertStringContainsString('Allow: /', $robotsContent);
+    }
+
     public function testScanCategoryFileWithRobotsNo(): void
     {
         // Create a category file with robots=no
