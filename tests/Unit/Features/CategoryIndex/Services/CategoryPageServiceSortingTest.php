@@ -9,12 +9,13 @@ use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class CategoryPageServiceSortingTest extends UnitTestCase
 {
     private CategoryPageService $service;
-    private Log $logger;
-    private CategoryService $categoryService;
+    private Log&MockObject $logger;
+    private CategoryService&MockObject $categoryService;
     private string $tempDir;
 
     protected function setUp(): void
@@ -52,6 +53,8 @@ class CategoryPageServiceSortingTest extends UnitTestCase
 
     /**
      * @dataProvider sortingDataProvider
+     * @param array<int, array<string, mixed>> $files
+     * @param array<int, string> $expectedOrder
      */
     public function testSorting(string $sortBy, string $sortDirection, array $files, array $expectedOrder): void
     {
@@ -103,6 +106,9 @@ class CategoryPageServiceSortingTest extends UnitTestCase
         $this->service->processDeferredFiles($this->container);
     }
 
+    /**
+     * @return array<string, array{0: string, 1: string, 2: array<int, array<string, mixed>>, 3: array<int, string>}>
+     */
     public static function sortingDataProvider(): array
     {
         $files = [

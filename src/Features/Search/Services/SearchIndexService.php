@@ -10,6 +10,10 @@ use EICC\Utils\Log;
 class SearchIndexService
 {
     private Log $logger;
+
+    /**
+     * @var array<int, array{id: int, title: string, text: string, url: string, tags: string, category: mixed}>
+     */
     private array $documents = [];
     private int $idCounter = 1;
 
@@ -105,9 +109,11 @@ class SearchIndexService
 
         // Remove script, style, head
         $nodesToRemove = $xpath->query('//script | //style | //head');
-        foreach ($nodesToRemove as $node) {
-            if ($node->parentNode) {
-                $node->parentNode->removeChild($node);
+        if ($nodesToRemove !== false) {
+            foreach ($nodesToRemove as $node) {
+                if ($node instanceof \DOMNode && $node->parentNode) {
+                    $node->parentNode->removeChild($node);
+                }
             }
         }
 
@@ -115,6 +121,9 @@ class SearchIndexService
         // We select h1-h6 and text nodes
         $query = '//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6] | //text()';
         $nodes = $xpath->query($query);
+        if ($nodes === false) {
+            return [];
+        }
 
         $sections = [];
         $currentSection = [
@@ -193,6 +202,9 @@ class SearchIndexService
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     */
     private function shouldIndex(Container $container, array $parameters): bool
     {
         $metadata = $parameters['metadata'] ?? [];

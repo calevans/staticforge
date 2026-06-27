@@ -58,7 +58,7 @@ class ShortcodeManager
         // 5. Optional closing bracket (escaping)
         $pattern = '/(\[?)\[\[\s*([a-zA-Z0-9_-]+)([^\]]*?)\]\](?:([\s\S]*?)\[\[\/\2\]\])?(\]?)/';
 
-        return preg_replace_callback($pattern, function ($matches) {
+        $result = preg_replace_callback($pattern, function ($matches) {
             $fullMatch = $matches[0];
             $escapeOpen = $matches[1];
             $tagName = $matches[2];
@@ -86,6 +86,8 @@ class ShortcodeManager
                 return "<!-- Shortcode error: {$tagName} -->";
             }
         }, $content);
+
+        return $result ?? $content;
     }
 
     /**

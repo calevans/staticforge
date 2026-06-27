@@ -6,12 +6,13 @@ use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
 use EICC\StaticForge\Features\CategoryIndex\Services\ImageService;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class CategoryServiceTest extends UnitTestCase
 {
     private CategoryService $service;
-    private Log $logger;
-    private ImageService $imageService;
+    private Log&MockObject $logger;
+    private ImageService&MockObject $imageService;
 
     protected function setUp(): void
     {

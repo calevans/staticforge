@@ -6,12 +6,13 @@ use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\TemplateAssets\Feature;
 use EICC\StaticForge\Core\EventManager;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 
 class FeatureTest extends UnitTestCase
 {
     private Feature $feature;
     private EventManager $eventManager;
-    private $root;
+    private vfsStreamDirectory $root;
 
     protected function setUp(): void
     {

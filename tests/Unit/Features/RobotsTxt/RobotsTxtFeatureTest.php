@@ -10,12 +10,13 @@ use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 
 class RobotsTxtFeatureTest extends UnitTestCase
 {
     private RobotsTxtFeature $feature;
     private EventManager $eventManager;
-    private $root;
+    private vfsStreamDirectory $root;
 
     protected function setUp(): void
     {
@@ -30,6 +31,13 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature = new RobotsTxtFeature();
         $this->feature->setContainer($this->container);
         $this->feature->register($this->eventManager);
+    }
+
+    private function readFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+        $this->assertNotFalse($contents, "Expected to read file: {$path}");
+        return $contents;
     }
 
     public function testRegisterFeature(): void
@@ -49,7 +57,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testScanMarkdownFileWithRobotsNo(): void
@@ -70,7 +78,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testScanMarkdownFileWithRobotsYes(): void
@@ -91,7 +99,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testScanMarkdownFileWithoutRobotsField(): void
@@ -112,7 +120,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testScanHtmlFileWithRobotsNo(): void
@@ -133,7 +141,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testScanCategoryFileWithRobotsNo(): void
@@ -154,7 +162,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $parameters = [];
         $result = $this->feature->handlePostGlob($this->container, $parameters);
 
-        $this->assertIsArray($result);
+        $this->assertSame($parameters, $result);
     }
 
     public function testGenerateRobotsTxtWithNoDisallowedPaths(): void
@@ -180,7 +188,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
 
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
         $this->assertStringContainsString('User-agent: *', $content);
         $this->assertStringContainsString('Disallow:', $content);
         $this->assertStringContainsString('Sitemap: https://example.com/sitemap.xml', $content);
@@ -216,7 +224,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
 
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
         $this->assertStringContainsString('User-agent: *', $content);
         $this->assertStringContainsString('Disallow: /private.html', $content);
         $this->assertStringContainsString('Disallow: /secret.html', $content);
@@ -252,7 +260,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
 
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
         $this->assertStringContainsString('Disallow: /private-stuff/', $content);
     }
 
@@ -288,7 +296,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature->handlePostLoop($this->container, $parameters);
 
         $robotsTxtPath = $outputDir . '/robots.txt';
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
 
       // Verify paths are in sorted order
         $this->assertMatchesRegularExpression('/Disallow: \/another\.html.*Disallow: \/test\.html.*Disallow: \/zebra\.html/s', $content);
@@ -315,7 +323,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature->handlePostLoop($this->container, $parameters);
 
         $robotsTxtPath = $outputDir . '/robots.txt';
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
 
       // Should not contain Sitemap line when base URL is empty
         $this->assertStringNotContainsString('Sitemap:', $content);
@@ -353,7 +361,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature->handlePostLoop($this->container, $parameters);
 
         $robotsTxtPath = $outputDir . '/robots.txt';
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
 
       // Only disallowed.html should be in robots.txt
         $this->assertStringContainsString('Disallow: /disallowed.html', $content);
@@ -390,7 +398,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature->handlePostLoop($this->container, $parameters);
 
         $robotsTxtPath = $outputDir . '/robots.txt';
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
 
       // Both should be disallowed
         $this->assertStringContainsString('Disallow: /uppercase.html', $content);
@@ -427,7 +435,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->feature->handlePostLoop($this->container, $parameters);
 
         $robotsTxtPath = $outputDir . '/robots.txt';
-        $content = file_get_contents($robotsTxtPath);
+        $content = $this->readFile($robotsTxtPath);
 
       // Should preserve subdirectory in path
         $this->assertStringContainsString('Disallow: /subdir/nested.html', $content);

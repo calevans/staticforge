@@ -46,6 +46,14 @@ class FeatureInteractionTest extends IntegrationTestCase
         $this->removeDirectory($this->testTemplateDir);
     }
 
+    private function readOutputFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+        $this->assertNotFalse($contents, "Expected to read generated file: {$path}");
+
+        return $contents;
+    }
+
     private function createTemplateWithAllFeatures(): void
     {
         $template = <<<'TWIG'
@@ -233,7 +241,7 @@ MD;
         $this->assertFileExists($this->testOutputDir . '/js-guide.html');
 
       // Check that PHP tutorial has related content
-        $tutorialHtml = file_get_contents($this->testOutputDir . '/php-tutorial.html');
+        $tutorialHtml = $this->readOutputFile($this->testOutputDir . '/php-tutorial.html');
         $this->assertStringContainsString('php', $tutorialHtml);
         $this->assertStringContainsString('programming', $tutorialHtml);
         $this->assertStringContainsString('tutorial', $tutorialHtml);
@@ -342,7 +350,7 @@ MD;
         $this->assertFileExists($this->testOutputDir . '/docs/related.html');
 
       // Verify all features applied
-        $complexHtml = file_get_contents($this->testOutputDir . '/docs/complex.html');
+        $complexHtml = $this->readOutputFile($this->testOutputDir . '/docs/complex.html');
 
       // Check metadata
         $this->assertStringContainsString('Complex Page', $complexHtml);

@@ -16,6 +16,13 @@ class RssFeedIntegrationTest extends IntegrationTestCase
     private string $testContentDir;
     private string $testTemplateDir;
 
+    private function readFile(string $path): string
+    {
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content, "Failed to read file: {$path}");
+        return $content;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -136,7 +143,7 @@ MD;
         $this->assertFileExists($rssPath, 'RSS feed should be generated in category directory');
 
         // Verify RSS content
-        $xml = file_get_contents($rssPath);
+        $xml = $this->readFile($rssPath);
 
         // Check basic RSS structure
         $this->assertStringContainsString('<?xml version="1.0" encoding="UTF-8"?>', $xml);
@@ -227,7 +234,7 @@ MD;
         $this->assertFileDoesNotExist($this->testOutputDir . '/rss.xml');
 
         // Check no subdirectories created
-        $dirs = glob($this->testOutputDir . '/*', GLOB_ONLYDIR);
+        $dirs = glob($this->testOutputDir . '/*', GLOB_ONLYDIR) ?: [];
         // Filter out assets directory if it exists (created by TemplateAssets)
         $dirs = array_filter($dirs, fn($dir) => basename($dir) !== 'assets');
         $this->assertEmpty($dirs, 'Unexpected directories found: ' . implode(', ', $dirs));
@@ -262,6 +269,6 @@ MD;
         // Validate XML
         $dom = new \DOMDocument();
         $dom->validateOnParse = true;
-        $this->assertTrue($dom->loadXML(file_get_contents($rssFile)), 'RSS XML should be valid');
+        $this->assertTrue($dom->loadXML($this->readFile($rssFile)), 'RSS XML should be valid');
     }
 }

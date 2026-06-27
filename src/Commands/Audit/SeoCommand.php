@@ -26,7 +26,10 @@ class SeoCommand extends Command
     protected SymfonyStyle $io;
 
     // Tracking for uniqueness
+    /** @var array<string, array<int, string>> */
     protected array $titles = [];
+
+    /** @var array<string, array<int, string>> */
     protected array $descriptions = [];
 
     public function __construct(Container $container)
@@ -167,6 +170,9 @@ class SeoCommand extends Command
         return $errors > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
+    /**
+     * @return array<int, array{file: string, type: string, message: string}>
+     */
     protected function auditFile(Crawler $crawler, string $filename, InputInterface $input): array
     {
         $issues = [];
@@ -176,7 +182,8 @@ class SeoCommand extends Command
             $title = $crawler->filter('title')->text();
 
             // Clean title (remove newlines if multiline)
-            $title = trim(preg_replace('/\s+/', ' ', $title));
+            $normalizedTitle = preg_replace('/\s+/', ' ', $title);
+            $title = trim($normalizedTitle ?? $title);
 
             if ($title !== '') {
                 $this->titles[$title][] = $filename;
@@ -217,7 +224,8 @@ class SeoCommand extends Command
                  $description = $descNode->attr('content');
 
                 if ($description) {
-                    $description = trim(preg_replace('/\s+/', ' ', $description));
+                    $normalizedDescription = preg_replace('/\s+/', ' ', $description);
+                    $description = trim($normalizedDescription ?? $description);
                     $this->descriptions[$description][] = $filename;
 
                     $minDesc = (int)$input->getOption('min-desc');
@@ -311,6 +319,9 @@ class SeoCommand extends Command
         return $issues;
     }
 
+    /**
+     * @return array<int, SplFileInfo>
+     */
     protected function findHtmlFiles(string $directory): array
     {
         $directoryIterator = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);

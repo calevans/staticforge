@@ -230,11 +230,19 @@ MARKDOWN;
 
         foreach ($paths as $path) {
             if (is_dir($path . 'templates')) {
-                return realpath($path);
+                $resolved = realpath($path);
+                if ($resolved !== false) {
+                    return $resolved;
+                }
             }
         }
 
       // Fallback to development path
-        return realpath(__DIR__ . '/../../');
+        $fallback = realpath(__DIR__ . '/../../');
+        if ($fallback === false) {
+            throw new \RuntimeException('Unable to resolve StaticForge package path.');
+        }
+
+        return $fallback;
     }
 }

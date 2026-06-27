@@ -55,6 +55,11 @@ abstract class BaseRendererService
             $html
         );
 
+        if ($html === null) {
+            // preg_replace_callback failed (e.g. invalid UTF-8); fall back to original HTML
+            return $originalHtml;
+        }
+
         try {
             $indenter = new Indenter();
             $html = $indenter->indent($html);

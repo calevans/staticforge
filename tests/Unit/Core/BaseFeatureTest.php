@@ -94,6 +94,27 @@ class BaseFeatureTest extends UnitTestCase
         // Test with no requirements
         $this->assertTrue($this->feature->checkRequirements([]));
     }
+
+    public function testRequireFeaturesReturnsFalseWhenFeatureManagerUnavailable(): void
+    {
+        // Replace the FeatureManager service slot with a callable that throws,
+        // simulating a container resolution failure (Container::get() wraps callable
+        // failures in a RuntimeException).
+        $reflection = new \ReflectionClass($this->container);
+        $property = $reflection->getProperty('data');
+        $property->setAccessible(true);
+        $services = $property->getValue($this->container);
+        $services[\EICC\StaticForge\Core\FeatureManager::class] = function () {
+            throw new \RuntimeException('Service unavailable');
+        };
+        $property->setValue($this->container, $services);
+
+        $this->feature->setContainer($this->container);
+        $this->feature->register($this->eventManager);
+
+        // requireFeatures() should catch the failure and return false rather than propagate
+        $this->assertFalse($this->feature->checkRequirements(['AnyFeature']));
+    }
 }
 
 class TestFeature extends BaseFeature
@@ -103,18 +124,29 @@ class TestFeature extends BaseFeature
         'ANOTHER_EVENT' => ['method' => 'handleAnotherEvent', 'priority' => 50]
     ];
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handleTestEvent(Container $container, array $parameters): array
     {
         $parameters['processed'] = true;
         return $parameters;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handleAnotherEvent(Container $container, array $parameters): array
     {
         $parameters['another'] = true;
         return $parameters;
     }
 
+    /**
+     * @param array<string> $requiredFeatures
+     */
     public function checkRequirements(array $requiredFeatures): bool
     {
         return $this->requireFeatures($this->container, $requiredFeatures);

@@ -9,12 +9,13 @@ use EICC\StaticForge\Features\TemplateAssets\Services\TemplateAssetsService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 
 class TemplateAssetsServiceTest extends UnitTestCase
 {
     private TemplateAssetsService $service;
     private Log $logger;
-    private $root;
+    private vfsStreamDirectory $root;
 
     protected function setUp(): void
     {
@@ -77,6 +78,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         // Verify CSS bundled
         $this->assertTrue($this->root->hasChild('output/assets/css/main.css'));
         $bundledContent = file_get_contents($outputDir->url() . '/assets/css/main.css');
+        $this->assertNotFalse($bundledContent, 'Expected bundled main.css to be readable');
 
         $this->assertStringContainsString('/* Import: variables.css */', $bundledContent);
         $this->assertStringContainsString(':root { --main-color: blue; }', $bundledContent);

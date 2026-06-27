@@ -13,15 +13,16 @@ use EICC\StaticForge\Features\MenuBuilder\Services\StaticMenuProcessor;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class MenuBuilderServiceTest extends UnitTestCase
 {
     private MenuBuilderService $service;
-    private MenuScanner $menuScanner;
-    private MenuHtmlGenerator $htmlGenerator;
-    private StaticMenuProcessor $staticMenuProcessor;
-    private MenuStructureBuilder $structureBuilder;
-    private EventManager $eventManager;
+    private MenuScanner&MockObject $menuScanner;
+    private MenuHtmlGenerator&MockObject $htmlGenerator;
+    private StaticMenuProcessor&MockObject $staticMenuProcessor;
+    private MenuStructureBuilder&MockObject $structureBuilder;
+    private EventManager&MockObject $eventManager;
 
     protected function setUp(): void
     {

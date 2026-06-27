@@ -140,6 +140,10 @@ class LiveCommand extends Command
     /**
      * Helper to perform CURL requests and parse headers
      */
+    /**
+     * @param array<int, mixed> $curlOptions
+     * @return array{success: bool, code: int, headers: array<string, string|array<int, string>>, body: string, error: string}
+     */
     protected function performRequest(string $url, array $curlOptions = []): array
     {
         $ch = curl_init();
@@ -166,7 +170,7 @@ class LiveCommand extends Command
             'error' => ''
         ];
 
-        if ($response === false) {
+        if ($response === false || $response === true) {
             $result['error'] = curl_error($ch);
         } else {
             $result['success'] = true;
@@ -220,6 +224,9 @@ class LiveCommand extends Command
         ];
     }
 
+    /**
+     * @return array<int, array{type: string, scope: string, message: string}>
+     */
     protected function checkConnectivityAndSsl(string $url): array
     {
         $issues = [];
@@ -236,11 +243,15 @@ class LiveCommand extends Command
             ]);
 
             $urlParts = parse_url($url);
+            if ($urlParts === false || !isset($urlParts['host'])) {
+                $issues[] = ['type' => 'error', 'scope' => 'Connectivity', 'message' => "Could not parse URL: {$url}"];
+                return $issues;
+            }
             $host = $urlParts['host'];
-            $port = $urlParts['scheme'] === 'https' ? 443 : 80;
+            $port = ($urlParts['scheme'] ?? '') === 'https' ? 443 : 80;
 
             // Use native socket to get Cert info easily, HttpClient abstracts this heavily
-            if ($urlParts['scheme'] === 'https') {
+            if (($urlParts['scheme'] ?? '') === 'https') {
                 $client = stream_socket_client(
                     "ssl://{$host}:{$port}",
                     $errno,
@@ -256,8 +267,13 @@ class LiveCommand extends Command
                 }
 
                 $params = stream_context_get_params($client);
-                $cert = $params['options']['ssl']['peer_certificate'];
-                $certInfo = openssl_x509_parse($cert);
+                $cert = $params['options']['ssl']['peer_certificate'] ?? null;
+                $certInfo = $cert !== null ? openssl_x509_parse($cert) : false;
+
+                if ($certInfo === false || !isset($certInfo['validTo_time_t'])) {
+                    $issues[] = ['type' => 'error', 'scope' => 'SSL', 'message' => "Could not parse SSL certificate."];
+                    return $issues;
+                }
 
                 $validTo = $certInfo['validTo_time_t'];
                 $daysUntilExpiry = round(($validTo - time()) / 86400);
@@ -280,6 +296,9 @@ class LiveCommand extends Command
         return $issues;
     }
 
+    /**
+     * @return array<int, array{type: string, scope: string, message: string}>
+     */
     protected function checkSecurityHeaders(string $url): array
     {
         $issues = [];
@@ -326,6 +345,9 @@ class LiveCommand extends Command
         return $issues;
     }
 
+    /**
+     * @return array<int, array{type: string, scope: string, message: string}>
+     */
     protected function checkPerformanceHeaders(string $url): array
     {
         $issues = [];
@@ -378,6 +400,9 @@ class LiveCommand extends Command
         return $issues;
     }
 
+    /**
+     * @return array<int, array{type: string, scope: string, message: string}>
+     */
     protected function checkDeploymentIntegrity(string $url): array
     {
         $issues = [];

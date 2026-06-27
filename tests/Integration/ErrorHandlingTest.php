@@ -186,10 +186,12 @@ Plain markdown content without frontmatter.';
 
       // Check content preserved for HTML file
         $htmlOutput = file_get_contents($this->testOutputDir . '/plain.html');
+        $this->assertIsString($htmlOutput);
         $this->assertStringContainsString('No Frontmatter', $htmlOutput);
 
       // Check content processed for Markdown file
         $markdownOutput = file_get_contents($this->testOutputDir . '/markdown.html');
+        $this->assertIsString($markdownOutput);
         $this->assertStringContainsString('Markdown Title', $markdownOutput);
     }
 
@@ -340,6 +342,7 @@ MD;
 
       // Verify unicode preserved
         $output = file_get_contents($this->testOutputDir . '/unicode.html');
+        $this->assertIsString($output);
         // DOMDocument may encode unicode characters as HTML entities
         $decodedOutput = html_entity_decode($output, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
         $this->assertStringContainsString('Привет мир', $decodedOutput);

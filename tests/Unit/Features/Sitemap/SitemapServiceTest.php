@@ -31,6 +31,13 @@ class SitemapServiceTest extends UnitTestCase
         $this->service = new SitemapService($logger);
     }
 
+    private function readFile(string $path): string
+    {
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content, "Failed to read file: {$path}");
+        return $content;
+    }
+
     protected function tearDown(): void
     {
         // Clean up temp directory
@@ -91,7 +98,7 @@ class SitemapServiceTest extends UnitTestCase
         $sitemapPath = $this->tempDir . '/sitemap.xml';
         $this->assertFileExists($sitemapPath);
 
-        $content = file_get_contents($sitemapPath);
+        $content = $this->readFile($sitemapPath);
         $this->assertStringContainsString('<loc>https://example.com/foo/bar.html</loc>', $content);
         $this->assertStringContainsString('<lastmod>2023-01-01</lastmod>', $content);
     }
@@ -112,7 +119,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->service->collectUrl($this->container, $parameters);
         $this->service->generateSitemap($this->container, []);
 
-        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/</loc>', $content);
     }
 
@@ -125,7 +132,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->service->collectUrl($this->container, $parameters);
         $this->service->generateSitemap($this->container, []);
 
-        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/podcast/</loc>', $content);
     }
 
@@ -138,7 +145,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->service->collectUrl($this->container, $parameters);
         $this->service->generateSitemap($this->container, []);
 
-        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/a/b/</loc>', $content);
     }
 
@@ -151,7 +158,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->service->collectUrl($this->container, $parameters);
         $this->service->generateSitemap($this->container, []);
 
-        $content = file_get_contents($this->tempDir . '/sitemap.xml');
+        $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString(
             '<loc>https://example.com/guide/content-creation.html</loc>',
             $content

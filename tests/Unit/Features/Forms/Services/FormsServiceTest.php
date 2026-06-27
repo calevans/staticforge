@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\Forms\Services;
 use EICC\StaticForge\Features\Forms\Services\FormsService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
 use Twig\Loader\LoaderInterface;
@@ -14,10 +15,10 @@ use Twig\Loader\LoaderInterface;
 class FormsServiceTest extends TestCase
 {
     private FormsService $service;
-    private Log $logger;
-    private Container $container;
-    private Environment $twig;
-    private LoaderInterface $twigLoader;
+    private Log&MockObject $logger;
+    private Container&MockObject $container;
+    private Environment&MockObject $twig;
+    private LoaderInterface&MockObject $twigLoader;
 
     protected function setUp(): void
     {
@@ -130,5 +131,75 @@ class FormsServiceTest extends TestCase
 
         // Content should remain unchanged if form not found (or at least shortcode remains, logic says continue)
         $this->assertEquals($content, $result['file_content']);
+    }
+
+    public function testProcessFormsReturnsParametersWhenNoContentAndNoFilePath(): void
+    {
+        $parameters = [];
+        $result = $this->service->processForms($this->container, $parameters);
+
+        $this->assertSame($parameters, $result);
+    }
+
+    public function testProcessFormsThrowsWhenSourceDirNotSetAndFileGiven(): void
+    {
+        $filePath = sys_get_temp_dir() . '/staticforge_forms_test_' . uniqid() . '.md';
+        file_put_contents($filePath, 'content');
+
+        $this->container->method('getVariable')->willReturn(null);
+
+        $parameters = ['file_path' => $filePath];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('SOURCE_DIR not set in container');
+
+        try {
+            $this->service->processForms($this->container, $parameters);
+        } finally {
+            unlink($filePath);
+        }
+    }
+
+    public function testProcessFormsThrowsWhenFileOutsideSourceDir(): void
+    {
+        $sourceDir = sys_get_temp_dir() . '/staticforge_forms_source_' . uniqid();
+        mkdir($sourceDir, 0755, true);
+
+        $outsideFile = sys_get_temp_dir() . '/staticforge_forms_outside_' . uniqid() . '.md';
+        file_put_contents($outsideFile, 'content');
+
+        $this->container->method('getVariable')
+            ->willReturnMap([
+                ['SOURCE_DIR', $sourceDir],
+            ]);
+
+        $parameters = ['file_path' => $outsideFile];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/Security Error/');
+
+        try {
+            $this->service->processForms($this->container, $parameters);
+        } finally {
+            unlink($outsideFile);
+            rmdir($sourceDir);
+        }
+    }
+
+    public function testGenerateFormHtmlAppendsFormIdWithAmpersandWhenQueryParamsPresent(): void
+    {
+        $config = [
+            'provider_url' => 'https://api.example.com/submit?existing=1',
+            'form_id' => '123',
+        ];
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with('staticforce/_form.html.twig', $this->callback(function ($context) {
+                return $context['endpoint'] === 'https://api.example.com/submit?existing=1&FORMID=123';
+            }))
+            ->willReturn('<form>Default</form>');
+
+        $this->service->generateFormHtml($config, 'default');
     }
 }

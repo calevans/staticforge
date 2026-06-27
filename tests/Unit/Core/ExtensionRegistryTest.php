@@ -74,7 +74,6 @@ class ExtensionRegistryTest extends UnitTestCase
     {
         $extensions = $this->registry->getRegisteredExtensions();
 
-        $this->assertIsArray($extensions);
         $this->assertEmpty($extensions);
     }
 

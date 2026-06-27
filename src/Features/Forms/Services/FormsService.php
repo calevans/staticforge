@@ -46,7 +46,7 @@ class FormsService
                 $realSourceDir = realpath($sourceDir);
                 $realFilePath = realpath($filePath);
 
-                if ($realFilePath === false || strpos($realFilePath, $realSourceDir) !== 0) {
+                if ($realFilePath === false || $realSourceDir === false || strpos($realFilePath, $realSourceDir) !== 0) {
                     throw new \RuntimeException("Security Error: File path is outside the allowed source directory: {$filePath}");
                 }
             }

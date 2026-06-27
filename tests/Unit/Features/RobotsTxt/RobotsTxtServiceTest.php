@@ -10,12 +10,13 @@ use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtGenerator;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 
 class RobotsTxtServiceTest extends UnitTestCase
 {
     private RobotsTxtService $service;
     private RobotsTxtGenerator $generator;
-    private $root;
+    private vfsStreamDirectory $root;
 
     protected function setUp(): void
     {
@@ -27,6 +28,13 @@ class RobotsTxtServiceTest extends UnitTestCase
         $logger = $this->container->get('logger');
         $this->generator = new RobotsTxtGenerator();
         $this->service = new RobotsTxtService($logger, $this->generator);
+    }
+
+    private function readFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+        $this->assertNotFalse($contents, "Expected to read file: {$path}");
+        return $contents;
     }
 
     public function testScanForRobotsMetadataWithNoFiles(): void
@@ -67,7 +75,7 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->service->generateRobotsTxt($this->container, []);
 
         $this->assertTrue($this->root->hasChild('output/robots.txt'));
-        $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
+        $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /test.html', $content);
     }
 
@@ -93,7 +101,7 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $this->service->generateRobotsTxt($this->container, []);
 
-        $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
+        $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringNotContainsString('Disallow: /allowed.html', $content);
     }
 
@@ -117,7 +125,7 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $this->service->generateRobotsTxt($this->container, []);
 
-        $robotsContent = file_get_contents(vfsStream::url('test/output/robots.txt'));
+        $robotsContent = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('User-agent: Bingbot', $robotsContent);
         $this->assertStringContainsString('Allow: /', $robotsContent);
     }
@@ -144,7 +152,7 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $this->service->generateRobotsTxt($this->container, []);
 
-        $content = file_get_contents(vfsStream::url('test/output/robots.txt'));
+        $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /secret-category/', $content);
     }
 }

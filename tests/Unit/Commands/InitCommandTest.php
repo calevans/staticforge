@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Tests\Unit\Commands;
 
 use EICC\StaticForge\Commands\InitCommand;
@@ -60,6 +62,7 @@ class InitCommandTest extends UnitTestCase
 
         $this->assertFileExists($this->testDir . '/.env');
         $content = file_get_contents($this->testDir . '/.env');
+        $this->assertNotFalse($content);
         $this->assertStringContainsString('SITE_NAME=TestEnv', $content);
     }
 
@@ -78,6 +81,7 @@ class InitCommandTest extends UnitTestCase
 
         $this->assertFileExists($this->testDir . '/content/index.md');
         $content = file_get_contents($this->testDir . '/content/index.md');
+        $this->assertNotFalse($content);
         $this->assertStringContainsString('Welcome to StaticForge', $content);
     }
 
@@ -120,6 +124,7 @@ class InitCommandTest extends UnitTestCase
 
         $this->assertFileExists($this->testDir . '/.env');
         $content = file_get_contents($this->testDir . '/.env');
+        $this->assertNotFalse($content);
         $this->assertStringContainsString('SITE_NAME=NewContent', $content);
     }
 

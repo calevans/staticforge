@@ -84,6 +84,7 @@ class FileDiscovery
             new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
+        /** @var \SplFileInfo $file */
         foreach ($iterator as $file) {
             if ($file->isFile() && $this->extensionRegistry->canProcess($file->getPathname())) {
                 $filePath = $file->getPathname();
@@ -244,11 +245,11 @@ class FileDiscovery
         $relativePath = str_replace($sourceDir . '/', '', $filePath);
 
         // Change extension to .html
-        $relativePath = preg_replace('/\.(md|html)$/', '.html', $relativePath);
+        $relativePath = preg_replace('/\.(md|html)$/', '.html', $relativePath) ?? $relativePath;
 
         // If file has a category, add category subdirectory
         if (isset($metadata['category'])) {
-            $category = $metadata['category'];
+            $category = (string)$metadata['category'];
             $categorySlug = $this->slugify($category);
 
             // Get filename from path
@@ -290,10 +291,10 @@ class FileDiscovery
         $slug = str_replace([' ', '_'], '-', $slug);
 
         // Remove special characters
-        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
+        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug) ?? $slug;
 
         // Remove consecutive hyphens
-        $slug = preg_replace('/-+/', '-', $slug);
+        $slug = preg_replace('/-+/', '-', $slug) ?? $slug;
 
         // Trim hyphens from ends
         $slug = trim($slug, '-');

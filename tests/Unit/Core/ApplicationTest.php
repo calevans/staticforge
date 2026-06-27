@@ -100,11 +100,8 @@ class ApplicationTest extends UnitTestCase
 
         if (!$result) {
             // Check if there are any logged errors
-            $container = $this->application->getContainer();
             $this->fail('Generate returned false - check for errors in the implementation');
         }
-
-        $this->assertTrue($result);
 
         // Verify discovered_files was set (even if empty)
         $discoveredFiles = $this->application->getContainer()->getVariable('discovered_files');
@@ -134,18 +131,17 @@ class ApplicationTest extends UnitTestCase
     public function testEventPipelineExecution(): void
     {
         // Create a test event listener to track event firing
-        $firedEvents = [];
         $eventManager = $this->application->getEventManager();
 
-        $testListener = new class ($firedEvents) {
-            private array $firedEvents;
+        $testListener = new class {
+            /** @var array<string> */
+            public array $firedEvents = [];
 
-            public function __construct(array &$firedEvents)
-            {
-                $this->firedEvents = &$firedEvents;
-            }
-
-            public function handleEvent($container, $parameters)
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handleEvent(Container $container, array $parameters): array
             {
                 $this->firedEvents[] = 'EVENT_FIRED';
                 return $parameters;
@@ -161,7 +157,7 @@ class ApplicationTest extends UnitTestCase
         $result = $this->application->generate();
 
         $this->assertTrue($result);
-        $this->assertCount(6, $firedEvents); // All 6 events should have fired
+        $this->assertCount(6, $testListener->firedEvents); // All 6 events should have fired
     }
 
     public function testEventErrorHandling(): void
@@ -169,7 +165,11 @@ class ApplicationTest extends UnitTestCase
         // Register an event listener that throws an exception
         $eventManager = $this->application->getEventManager();
         $errorListener = new class {
-            public function handleEvent($container, $parameters)
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handleEvent(Container $container, array $parameters): array
             {
                 throw new \Exception('Test feature error');
             }
@@ -181,6 +181,157 @@ class ApplicationTest extends UnitTestCase
         $result = $this->application->generate();
 
         $this->assertTrue($result); // Should not fail due to feature error
+    }
+
+    public function testConstructorThrowsForInvalidTemplateOverride(): void
+    {
+        // A fresh container is needed because Application::__construct() registers itself
+        // as a service, and the existing $this->container already has one bound.
+        $freshContainer = include __DIR__ . '/../../../src/bootstrap.php';
+        $freshContainer->updateVariable('SOURCE_DIR', $this->tempSourceDir);
+        $freshContainer->updateVariable('OUTPUT_DIR', $this->tempOutputDir);
+        $freshContainer->updateVariable('TEMPLATE_DIR', $this->tempFeaturesDir . '/templates');
+        $freshContainer->updateVariable('FEATURES_DIR', $this->tempFeaturesDir);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/not found in/');
+
+        new Application($freshContainer, 'nonexistent-template');
+    }
+
+    public function testConstructorAcceptsValidTemplateOverride(): void
+    {
+        mkdir($this->tempFeaturesDir . '/templates/custom-template', 0777, true);
+
+        $freshContainer = include __DIR__ . '/../../../src/bootstrap.php';
+        $freshContainer->updateVariable('SOURCE_DIR', $this->tempSourceDir);
+        $freshContainer->updateVariable('OUTPUT_DIR', $this->tempOutputDir);
+        $freshContainer->updateVariable('TEMPLATE_DIR', $this->tempFeaturesDir . '/templates');
+        $freshContainer->updateVariable('FEATURES_DIR', $this->tempFeaturesDir);
+
+        $app = new Application($freshContainer, 'custom-template');
+
+        $this->assertEquals('custom-template', $freshContainer->getVariable('TEMPLATE'));
+        $this->assertInstanceOf(Application::class, $app);
+    }
+
+    public function testConstructorThrowsWhenLoggerMissingFromContainer(): void
+    {
+        $freshContainer = include __DIR__ . '/../../../src/bootstrap.php';
+
+        // 'logger' is registered as a service via add(), not a variable; we must replace the
+        // service slot directly to simulate a bootstrap that never initialized the logger.
+        $reflection = new \ReflectionClass($freshContainer);
+        $property = $reflection->getProperty('data');
+        $property->setAccessible(true);
+        $services = $property->getValue($freshContainer);
+        unset($services['logger']);
+        $property->setValue($freshContainer, $services);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Logger not initialized in container');
+
+        new Application($freshContainer);
+    }
+
+    public function testGenerateReturnsFalseWhenSourceDirMissing(): void
+    {
+        $this->container->removeVariable('SOURCE_DIR');
+
+        $result = $this->application->generate();
+
+        $this->assertFalse($result);
+    }
+
+    public function testRenderSingleFileWritesOutputAndReturnsContext(): void
+    {
+        $renderListener = new class {
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handlePreRender(Container $container, array $parameters): array
+            {
+                return $parameters;
+            }
+
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handleRender(Container $container, array $parameters): array
+            {
+                $parameters['rendered_content'] = '<h1>Rendered</h1>';
+                $parameters['output_path'] = $parameters['additional'] ?? '/tmp/should-not-happen.html';
+                return $parameters;
+            }
+
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handlePostRender(Container $container, array $parameters): array
+            {
+                return $parameters;
+            }
+        };
+
+        $outputPath = $this->tempOutputDir . '/single-file.html';
+        $eventManager = $this->application->getEventManager();
+        $eventManager->registerListener('PRE_RENDER', [$renderListener, 'handlePreRender'], 100);
+        $eventManager->registerListener('RENDER', [$renderListener, 'handleRender'], 100);
+        $eventManager->registerListener('POST_RENDER', [$renderListener, 'handlePostRender'], 100);
+
+        $context = $this->application->renderSingleFile('/tmp/input.html', ['additional' => $outputPath]);
+
+        $this->assertEquals('<h1>Rendered</h1>', $context['rendered_content']);
+        $this->assertFileExists($outputPath);
+        $this->assertStringContainsString('Rendered', (string)file_get_contents($outputPath));
+    }
+
+    public function testRenderSingleFileReturnsEarlyWhenSkipped(): void
+    {
+        $skipListener = new class {
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handlePreRender(Container $container, array $parameters): array
+            {
+                $parameters['skip_file'] = true;
+                return $parameters;
+            }
+        };
+
+        $eventManager = $this->application->getEventManager();
+        $eventManager->registerListener('PRE_RENDER', [$skipListener, 'handlePreRender'], 100);
+
+        $context = $this->application->renderSingleFile('/tmp/skip-me.html');
+
+        $this->assertTrue($context['skip_file']);
+        $this->assertNull($context['rendered_content']);
+    }
+
+    public function testRenderSingleFilePropagatesExceptionFromListener(): void
+    {
+        $throwingListener = new class {
+            /**
+             * @param array<string, mixed> $parameters
+             * @return array<string, mixed>
+             */
+            public function handlePreRender(Container $container, array $parameters): array
+            {
+                throw new \RuntimeException('Listener failure during render');
+            }
+        };
+
+        $eventManager = $this->application->getEventManager();
+        $eventManager->registerListener('PRE_RENDER', [$throwingListener, 'handlePreRender'], 100);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Listener failure during render');
+
+        $this->application->renderSingleFile('/tmp/throws.html');
     }
 
     // removeDirectory is now provided by UnitTestCase

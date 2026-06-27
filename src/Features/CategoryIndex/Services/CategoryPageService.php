@@ -13,7 +13,7 @@ class CategoryPageService
 {
     private Log $logger;
     private CategoryService $categoryService;
-    /** @var array<string, array{file_path: string, output_path: string, metadata: array<string, mixed>}> */
+    /** @var array<int, array{file_path: string, output_path: string, metadata: array<string, mixed>}> */
     private array $deferredFiles = [];
 
     public function __construct(Log $logger, CategoryService $categoryService)

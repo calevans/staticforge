@@ -139,7 +139,7 @@ class CategoriesService
         $sanitized = strtolower($category);
 
         // Replace spaces and special characters with hyphens
-        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
+        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized) ?? '';
 
         // Remove leading/trailing hyphens
         $sanitized = trim($sanitized, '-');

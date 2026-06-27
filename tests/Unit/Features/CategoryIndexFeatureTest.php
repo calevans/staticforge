@@ -16,6 +16,13 @@ class CategoryIndexFeatureTest extends UnitTestCase
     private EventManager $eventManager;
     private string $tempDir;
 
+    private function readFile(string $path): string
+    {
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content, "Failed to read file: {$path}");
+        return $content;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -166,7 +173,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $this->assertFileExists($indexPath);
 
       // Verify content
-        $content = file_get_contents($indexPath);
+        $content = $this->readFile($indexPath);
         $this->assertStringContainsString('File 1', $content);
         $this->assertStringContainsString('File 2', $content);
         $this->assertStringContainsString('File 3', $content);
@@ -212,11 +219,11 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $this->assertFileExists($this->tempDir . '/blog/index.html');
 
       // Each should contain only its files
-        $techContent = file_get_contents($this->tempDir . '/technology/index.html');
+        $techContent = $this->readFile($this->tempDir . '/technology/index.html');
         $this->assertStringContainsString('Tech 1', $techContent);
         $this->assertStringNotContainsString('Blog 1', $techContent);
 
-        $blogContent = file_get_contents($this->tempDir . '/blog/index.html');
+        $blogContent = $this->readFile($this->tempDir . '/blog/index.html');
         $this->assertStringContainsString('Blog 1', $blogContent);
         $this->assertStringNotContainsString('Tech 1', $blogContent);
     }
@@ -250,7 +257,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $indexPath = $this->tempDir . '/test/index.html';
         $this->assertFileExists($indexPath);
 
-        $content = file_get_contents($indexPath);
+        $content = $this->readFile($indexPath);
 
       // Should include pagination configuration
         $this->assertStringContainsString('data-per-page="5"', $content);
@@ -273,6 +280,9 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $this->assertEmpty($files);
     }
 
+    /**
+     * @param array<int, array{file_path: string, metadata: array<string, mixed>, output_path: string}> $files
+     */
     private function setDeferredCategoryFiles(array $files): void
     {
         $reflection = new \ReflectionClass($this->feature);

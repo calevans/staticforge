@@ -9,14 +9,15 @@ use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class HtmlRendererServiceTest extends TestCase
 {
     private HtmlRendererService $service;
-    private Log $logger;
-    private TemplateRenderer $templateRenderer;
-    private Container $container;
+    private Log&MockObject $logger;
+    private TemplateRenderer&MockObject $templateRenderer;
+    private Container&MockObject $container;
     private string $sourceDir;
     private string $outputDir;
 

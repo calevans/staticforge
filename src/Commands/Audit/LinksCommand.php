@@ -13,6 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use InvalidArgumentException;
@@ -226,6 +227,9 @@ class LinksCommand extends Command
         return false;
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function findHtmlFiles(string $dir): array
     {
         $files = [];
@@ -273,7 +277,10 @@ class LinksCommand extends Command
                 if (str_starts_with($href, '/')) {
                     $targetUrl = $this->targetBaseUrl . $href;
                 } else {
-                    $basePath = parse_url($baseParams, PHP_URL_PATH) ?? '/';
+                    $basePath = parse_url($baseParams, PHP_URL_PATH);
+                    if (!is_string($basePath) || $basePath === '') {
+                        $basePath = '/';
+                    }
                     $basePath = rtrim($basePath, '/');
                     $targetUrl = $this->targetBaseUrl . $basePath . '/' . $href;
                 }
@@ -290,7 +297,7 @@ class LinksCommand extends Command
             // Map Target URL to Transport URL
             $transportRequestUrl = $targetUrl;
 
-            if ($this->transportUrl && $this->transportUrl !== $this->targetBaseUrl) {
+            if ($this->transportUrl && $this->targetBaseUrl && $this->transportUrl !== $this->targetBaseUrl) {
                 if (str_starts_with($targetUrl, $this->targetBaseUrl)) {
                     $path = substr($targetUrl, strlen($this->targetBaseUrl));
                     $transportRequestUrl = $this->transportUrl . $path;
@@ -399,7 +406,10 @@ class LinksCommand extends Command
         return $errors;
     }
 
-    private function findUrlByResponse(array $responses, $response): ?string
+    /**
+     * @param array<string, ResponseInterface> $responses
+     */
+    private function findUrlByResponse(array $responses, ResponseInterface $response): ?string
     {
         foreach ($responses as $url => $r) {
             if ($r === $response) return $url;
@@ -407,6 +417,10 @@ class LinksCommand extends Command
         return null;
     }
 
+    /**
+     * @param array<int, array{source: string, link: string, reason: string}> $errors
+     * @param array<string, array<int, string>> $urlMap
+     */
     private function addError(array &$errors, string $url, string $reason, array $urlMap): void
     {
         foreach ($urlMap[$url] as $sourceFile) {

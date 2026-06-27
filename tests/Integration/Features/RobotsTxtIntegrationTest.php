@@ -53,6 +53,14 @@ class RobotsTxtIntegrationTest extends IntegrationTestCase
         $this->removeDirectory($this->testTemplateDir);
     }
 
+    private function readFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+        $this->assertNotFalse($contents, "Expected to read file: {$path}");
+
+        return $contents;
+    }
+
     private function createBaseTemplate(): void
     {
         $template = <<<'TWIG'
@@ -99,7 +107,7 @@ MD;
         $robotsTxtPath = $this->testOutputDir . '/robots.txt';
         $this->assertFileExists($robotsTxtPath);
 
-        $robotsTxtContent = file_get_contents($robotsTxtPath);
+        $robotsTxtContent = $this->readFile($robotsTxtPath);
         $this->assertStringContainsString('User-agent: *', $robotsTxtContent);
         $this->assertStringContainsString('Disallow:', $robotsTxtContent);
         $this->assertStringContainsString('Sitemap: https://test.example.com/sitemap.xml', $robotsTxtContent);
@@ -146,7 +154,7 @@ MD;
         $robotsTxtPath = $this->testOutputDir . '/robots.txt';
         $this->assertFileExists($robotsTxtPath);
 
-        $robotsTxtContent = file_get_contents($robotsTxtPath);
+        $robotsTxtContent = $this->readFile($robotsTxtPath);
 
       // Should contain disallow for private pages
         $this->assertStringContainsString('Disallow: /private.html', $robotsTxtContent);
@@ -187,7 +195,7 @@ MD;
         $robotsTxtPath = $this->testOutputDir . '/robots.txt';
         $this->assertFileExists($robotsTxtPath);
 
-        $robotsTxtContent = file_get_contents($robotsTxtPath);
+        $robotsTxtContent = $this->readFile($robotsTxtPath);
 
       // Should contain disallow for category directory
         $this->assertStringContainsString('Disallow: /private-stuff/', $robotsTxtContent);
@@ -232,7 +240,7 @@ HTML;
         $robotsTxtPath = $this->testOutputDir . '/robots.txt';
         $this->assertFileExists($robotsTxtPath);
 
-        $robotsTxtContent = file_get_contents($robotsTxtPath);
+        $robotsTxtContent = $this->readFile($robotsTxtPath);
 
       // Should contain disallow for private HTML
         $this->assertStringContainsString('Disallow: /private.html', $robotsTxtContent);
@@ -262,7 +270,7 @@ MD;
 
       // Check robots.txt
         $robotsTxtPath = $this->testOutputDir . '/robots.txt';
-        $robotsTxtContent = file_get_contents($robotsTxtPath);
+        $robotsTxtContent = $this->readFile($robotsTxtPath);
 
       // Extract all Disallow lines
         preg_match_all('/Disallow: (.+)/', $robotsTxtContent, $matches);

@@ -12,6 +12,10 @@ class TestRendererFeature extends BaseRendererFeature
     protected string $name = 'TestRenderer';
 
     // Expose protected method for testing
+    /**
+     * @param array<string, mixed> $metadata
+     * @return array<string, mixed>
+     */
     public function testApplyDefaultMetadata(array $metadata): array
     {
         return $this->applyDefaultMetadata($metadata);

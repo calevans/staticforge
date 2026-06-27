@@ -80,9 +80,10 @@ TWIG;
         parent::tearDown();
     }
 
-    private function recursiveRemoveDirectory($directory)
+    private function recursiveRemoveDirectory(string $directory): void
     {
-        foreach (glob("{$directory}/*") as $file) {
+        $files = glob("{$directory}/*") ?: [];
+        foreach ($files as $file) {
             if (is_dir($file)) {
                 $this->recursiveRemoveDirectory($file);
             } else {
@@ -90,6 +91,13 @@ TWIG;
             }
         }
         rmdir($directory);
+    }
+
+    private function readFile(string $path): string
+    {
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content, "Failed to read file: {$path}");
+        return $content;
     }
 
     public function testEndToEndHtmlProcessing(): void
@@ -133,16 +141,16 @@ TWIG;
         $this->assertFileExists($this->outputDir . '/blog/first-post.html'); // has category="blog"
 
         // Verify content processing
-        $indexContent = file_get_contents($this->outputDir . '/main/index.html');
+        $indexContent = $this->readFile($this->outputDir . '/main/index.html');
         $this->assertStringContainsString('<title>Home Page | Integration Test Site</title>', $indexContent);
         $this->assertMatchesRegularExpression('/<h1>\s*Welcome to Our Site\s*<\/h1>/', $indexContent);
         $this->assertStringContainsString('<meta name="description" content="Welcome to our amazing website">', $indexContent);
 
-        $aboutContent = file_get_contents($this->outputDir . '/about.html');
+        $aboutContent = $this->readFile($this->outputDir . '/about.html');
         $this->assertStringContainsString('<title>Untitled Page | Integration Test Site</title>', $aboutContent);
         $this->assertStringNotContainsString('---', $aboutContent); // YAML removed
 
-        $blogContent = file_get_contents($this->outputDir . '/blog/first-post.html'); // category="blog" prevents double nesting
+        $blogContent = $this->readFile($this->outputDir . '/blog/first-post.html'); // category="blog" prevents double nesting
         $this->assertStringContainsString('<title>My First Blog Post | Integration Test Site</title>', $blogContent);
         $this->assertStringContainsString('<meta name="keywords" content="blog, first-post, welcome">', $blogContent);
     }
@@ -186,7 +194,7 @@ HTML;
         $this->assertFileExists($this->outputDir . '/page.html');
 
         // Verify HTML was processed (has template)
-        $htmlOutput = file_get_contents($this->outputDir . '/page.html');
+        $htmlOutput = $this->readFile($this->outputDir . '/page.html');
         $this->assertStringContainsString('<!DOCTYPE html>', $htmlOutput);
         $this->assertStringContainsString('<title>HTML File | Integration Test Site</title>', $htmlOutput);
 

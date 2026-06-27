@@ -70,6 +70,17 @@ class EventManagerTest extends UnitTestCase
         $this->assertEquals(50, $listeners[0]['priority']);  // third (highest priority)
         $this->assertEquals(100, $listeners[1]['priority']); // first
         $this->assertEquals(200, $listeners[2]['priority']); // second (lowest priority)
+
+        // Confirm ordering also reflects the correct listener instances, not just priorities
+        $instance0 = $listeners[0]['callback'][0];
+        $instance1 = $listeners[1]['callback'][0];
+        $instance2 = $listeners[2]['callback'][0];
+        $this->assertInstanceOf(TestListener::class, $instance0);
+        $this->assertInstanceOf(TestListener::class, $instance1);
+        $this->assertInstanceOf(TestListener::class, $instance2);
+        $this->assertEquals('third', $instance0->getName());
+        $this->assertEquals('first', $instance1->getName());
+        $this->assertEquals('second', $instance2->getName());
     }
 
     public function testUnregisterListener(): void
@@ -116,14 +127,78 @@ class EventManagerTest extends UnitTestCase
 
         $this->assertEquals(['data' => 'container_data'], $result);
     }
+
+    public function testUnregisterListenerForUnknownEventIsNoOp(): void
+    {
+        $callback = [new TestListener(), 'handle'];
+
+        // Unregistering for an event that was never registered should not throw
+        $this->eventManager->unregisterListener('NEVER_REGISTERED', $callback);
+
+        $this->assertEmpty($this->eventManager->getListeners('NEVER_REGISTERED'));
+    }
+
+    public function testFireEventStoresReturnedFeaturesInContainerWhenNotPreviouslySet(): void
+    {
+        $listener = new FeaturesReturningListener(['NewFeature' => ['type' => 'Custom']]);
+        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);
+
+        $this->eventManager->fire('TEST_EVENT', []);
+
+        $features = $this->container->getVariable('features');
+        $this->assertIsArray($features);
+        $this->assertArrayHasKey('NewFeature', $features);
+        $this->assertEquals(['type' => 'Custom'], $features['NewFeature']);
+    }
+
+    public function testFireEventMergesReturnedFeaturesWithExistingContainerFeatures(): void
+    {
+        $this->setContainerVariable('features', ['ExistingFeature' => ['type' => 'Standard']]);
+
+        $listener = new FeaturesReturningListener(['NewFeature' => ['type' => 'Custom']]);
+        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);
+
+        $this->eventManager->fire('TEST_EVENT', []);
+
+        $features = $this->container->getVariable('features');
+        $this->assertIsArray($features);
+        $this->assertArrayHasKey('ExistingFeature', $features);
+        $this->assertArrayHasKey('NewFeature', $features);
+    }
+
+    public function testFireEventWithNonCallableListenerIsSkipped(): void
+    {
+        // Register a callback referencing a method that does not exist.
+        // is_callable() will be false, so fire() must skip it without error.
+        $listener = new TestListener();
+        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'nonexistentMethod']);
+
+        $parameters = ['key' => 'value'];
+        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
+
+        // Parameters pass through unchanged since the only listener was skipped
+        $this->assertEquals($parameters, $result);
+    }
 }
 
 class TestListener
 {
+    private string $name;
+
     public function __construct(string $name = 'test')
     {
+        $this->name = $name;
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handle(Container $container, array $parameters): array
     {
         return $parameters;
@@ -139,6 +214,10 @@ class ParameterModifyingListener
         $this->step = $step;
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handle(Container $container, array $parameters): array
     {
         $parameters['steps'][] = $this->step;
@@ -148,9 +227,39 @@ class ParameterModifyingListener
 
 class ContainerAwareListener
 {
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
     public function handle(Container $container, array $parameters): array
     {
         $value = $container->getVariable('test_value');
         return ['data' => $value];
+    }
+}
+
+class FeaturesReturningListener
+{
+    /**
+     * @var array<string, mixed>
+     */
+    private array $features;
+
+    /**
+     * @param array<string, mixed> $features
+     */
+    public function __construct(array $features)
+    {
+        $this->features = $features;
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
+    public function handle(Container $container, array $parameters): array
+    {
+        $parameters['features'] = $this->features;
+        return $parameters;
     }
 }

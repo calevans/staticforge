@@ -176,6 +176,9 @@ class SiteUploader
         return $this->errorCount;
     }
 
+    /**
+     * @return array<string, ?string>
+     */
     private function loadRemoteManifest(string $remotePath, OutputInterface $output): array
     {
         $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
@@ -209,6 +212,10 @@ class SiteUploader
         return $data;
     }
 
+    /**
+     * @param array<string, ?string> $oldManifest
+     * @param array<string, ?string> $newManifest
+     */
     private function processManifestCleanup(
         string $remotePath,
         array $oldManifest,
@@ -246,10 +253,18 @@ class SiteUploader
         }
     }
 
+    /**
+     * @param array<string, ?string> $manifestData
+     */
     private function updateRemoteManifest(string $remotePath, array $manifestData, OutputInterface $output): void
     {
         $manifestPath = $remotePath . '/' . self::MANIFEST_FILENAME;
         $content = json_encode($manifestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($content === false) {
+            $output->writeln('<error>Failed to encode manifest data to JSON.</error>');
+            return;
+        }
 
         if ($this->client->putContent($manifestPath, $content)) {
             if ($output->isVerbose()) {

@@ -17,7 +17,7 @@ class ContentCreatorCommand extends Command
     protected static $defaultName = 'make:content';
     protected static $defaultDescription = 'Create a new content file with frontmatter';
 
-    private Container $container;
+    protected Container $container;
     private SymfonyStyle $io;
 
     public function __construct(Container $container)
@@ -40,10 +40,16 @@ class ContentCreatorCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $title = $input->getArgument('title');
-        $type = $input->getOption('type');
-        $date = $input->getOption('date');
-        $isDraft = $input->getOption('draft');
+        $titleArg = $input->getArgument('title');
+        $title = is_string($titleArg) ? $titleArg : (string)$titleArg;
+
+        $typeOption = $input->getOption('type');
+        $type = is_string($typeOption) ? $typeOption : '';
+
+        $dateOption = $input->getOption('date');
+        $date = is_string($dateOption) ? $dateOption : (string)$dateOption;
+
+        $isDraft = (bool)$input->getOption('draft');
 
         // 1. Determine Directory
         $baseDir = 'content';
@@ -99,15 +105,18 @@ class ContentCreatorCommand extends Command
         // Convert to lowercase
         $slug = strtolower($text);
         // Replace non-letter or digits by -
-        $slug = preg_replace('~[^\pL\d]+~u', '-', $slug);
+        $slug = preg_replace('~[^\pL\d]+~u', '-', $slug) ?? $slug;
         // Transliterate
-        $slug = iconv('utf-8', 'us-ascii//TRANSLIT', $slug);
+        $transliterated = iconv('utf-8', 'us-ascii//TRANSLIT', $slug);
+        if ($transliterated !== false) {
+            $slug = $transliterated;
+        }
         // Remove unwanted characters
-        $slug = preg_replace('~[^-\w]+~', '', $slug);
+        $slug = preg_replace('~[^-\w]+~', '', $slug) ?? $slug;
         // Trim
         $slug = trim($slug, '-');
         // Remove duplicate -
-        $slug = preg_replace('~-+~', '-', $slug);
+        $slug = preg_replace('~-+~', '-', $slug) ?? $slug;
 
         if (empty($slug)) {
             return 'untitled';
@@ -116,6 +125,9 @@ class ContentCreatorCommand extends Command
         return $slug;
     }
 
+    /**
+     * @param array<string, mixed> $frontmatter
+     */
     private function buildFileContent(array $frontmatter, string $title): string
     {
         $yaml = "---\n";

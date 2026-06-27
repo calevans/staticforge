@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Services\Upload;
 
 class UploadCheckService
@@ -18,9 +20,12 @@ class UploadCheckService
 
             // Normalize sfcb parameters to ensure timestamp changes don't affect hash
             // We replace the specific timestamp digits with a constant placeholder
-            $content = preg_replace('/sfcb=\d+/', 'sfcb=IGNORED', $content);
+            $normalizedContent = preg_replace('/sfcb=\d+/', 'sfcb=IGNORED', $content);
+            if ($normalizedContent === null) {
+                $normalizedContent = $content;
+            }
 
-            return md5($content);
+            return md5($normalizedContent);
         }
 
         return md5_file($filePath) ?: '';

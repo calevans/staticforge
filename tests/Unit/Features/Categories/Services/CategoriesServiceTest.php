@@ -7,13 +7,14 @@ namespace EICC\StaticForge\Tests\Unit\Features\Categories\Services;
 use EICC\StaticForge\Features\Categories\Services\CategoriesService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class CategoriesServiceTest extends TestCase
 {
     private CategoriesService $service;
-    private Log $logger;
-    private Container $container;
+    private Log&MockObject $logger;
+    private Container&MockObject $container;
 
     protected function setUp(): void
     {

@@ -5,7 +5,7 @@ namespace EICC\StaticForge\Features\MenuBuilder\Services;
 class MenuHtmlGenerator
 {
     /**
-     * @param array<int, array<int, array{title: string, url: string, file: string, position: string}>> $menuData
+     * @param array<int, array<int|string, mixed>> $menuData
      * @return array<int, string>
      */
     public function buildMenuHtml(array $menuData): array

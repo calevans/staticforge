@@ -22,6 +22,8 @@ class ContentCommand extends Command
     protected Container $container;
     protected SymfonyStyle $io;
     protected string $contentDir;
+
+    /** @var array<string, mixed> */
     protected array $siteConfig;
 
     public function __construct(Container $container)
@@ -116,6 +118,9 @@ class ContentCommand extends Command
         return $errors > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
+    /**
+     * @return array<int, array{file: string, type: string, message: string}>
+     */
     protected function auditFrontmatter(): array
     {
         $this->io->section('Checking Frontmatter...');
@@ -130,6 +135,15 @@ class ContentCommand extends Command
 
             $content = file_get_contents($file->getPathname());
             $relativePath = str_replace(getcwd() . '/', '', $file->getPathname());
+
+            if ($content === false) {
+                $issues[] = [
+                    'file' => $relativePath,
+                    'type' => 'error',
+                    'message' => 'Unable to read file contents'
+                ];
+                continue;
+            }
 
             // Regex for frontmatter
             if (!preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches)) {
@@ -179,6 +193,9 @@ class ContentCommand extends Command
         return $issues;
     }
 
+    /**
+     * @return array<int, array{file: string, type: string, message: string}>
+     */
     protected function auditTaxonomies(): array
     {
         // Simple check: Collect all used tags/categories and check if they look sane.
@@ -190,6 +207,9 @@ class ContentCommand extends Command
         return [];
     }
 
+    /**
+     * @return array<int, array{file: string, type: string, message: string}>
+     */
     protected function auditMarkdownLinks(): array
     {
         $this->io->section('Checking Markdown Internal Links...');
@@ -204,6 +224,15 @@ class ContentCommand extends Command
 
             $content = file_get_contents($file->getPathname());
             $relativePath = str_replace(getcwd() . '/', '', $file->getPathname());
+
+            if ($content === false) {
+                $issues[] = [
+                    'file' => $relativePath,
+                    'type' => 'error',
+                    'message' => 'Unable to read file contents'
+                ];
+                continue;
+            }
 
             // Match [Label](link)
             // Exclude external links (http), mailto, anchors (#)
@@ -232,6 +261,9 @@ class ContentCommand extends Command
 
                     // Remove query strings or hashes
                     $cleanLink = preg_replace('/[#?].*$/', '', $link);
+                    if ($cleanLink === null) {
+                        $cleanLink = $link;
+                    }
 
                     if (str_starts_with($cleanLink, '/')) {
                         // Root relative

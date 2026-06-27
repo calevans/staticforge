@@ -17,7 +17,6 @@ class CacheBusterServiceTest extends TestCase
 
         $buildId = $service->generateBuildId();
 
-        $this->assertIsString($buildId);
         $this->assertNotEmpty($buildId);
         $this->assertTrue(is_numeric($buildId));
     }

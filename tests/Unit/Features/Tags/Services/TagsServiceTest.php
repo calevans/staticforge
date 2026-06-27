@@ -7,10 +7,11 @@ use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
 
 class TagsServiceTest extends UnitTestCase
 {
-    private $root;
+    private vfsStreamDirectory $root;
     private Log $logger;
     private TagsService $service;
 

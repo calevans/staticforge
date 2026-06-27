@@ -76,7 +76,11 @@ class MarkdownRendererService extends BaseRendererService
                     $realSourceDir = realpath($sourceDir);
                     $realFilePath = realpath($filePath);
 
-                    if ($realFilePath === false || strpos($realFilePath, $realSourceDir) !== 0) {
+                    if (
+                        $realSourceDir === false
+                        || $realFilePath === false
+                        || strpos($realFilePath, $realSourceDir) !== 0
+                    ) {
                         throw new \RuntimeException("Security Error: File path is outside the allowed source directory: {$filePath}");
                     }
                 }

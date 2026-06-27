@@ -16,6 +16,13 @@ class FullSiteGenerationTest extends IntegrationTestCase
     private string $testTemplateDir;
     private Container $container;
 
+    private function readFile(string $path): string
+    {
+        $content = file_get_contents($path);
+        $this->assertNotFalse($content, "Failed to read file: {$path}");
+        return $content;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -123,13 +130,13 @@ MD;
         $this->assertFileExists($this->testOutputDir . '/about.html');
 
       // Verify HTML content
-        $indexHtml = file_get_contents($this->testOutputDir . '/index.html');
+        $indexHtml = $this->readFile($this->testOutputDir . '/index.html');
         $this->assertStringContainsString('Home Page', $indexHtml);
         $this->assertMatchesRegularExpression('/<h2>\s*Welcome\s*<\/h2>/', $indexHtml);
         $this->assertStringContainsString('This is the home page', $indexHtml);
 
       // Verify Markdown was converted
-        $aboutHtml = file_get_contents($this->testOutputDir . '/about.html');
+        $aboutHtml = $this->readFile($this->testOutputDir . '/about.html');
         $this->assertStringContainsString('About Us', $aboutHtml);
         $this->assertStringContainsString('<strong>great</strong>', $aboutHtml);
         $this->assertStringContainsString('<li>Feature 1</li>', $aboutHtml);
@@ -180,7 +187,7 @@ MD;
         $this->assertFileExists($this->testOutputDir . '/blog/article.html');
 
       // Verify content preserved
-        $blogHtml = file_get_contents($this->testOutputDir . '/blog/blog-post.html');
+        $blogHtml = $this->readFile($this->testOutputDir . '/blog/blog-post.html');
         $this->assertStringContainsString('First Blog Post', $blogHtml);
         $this->assertStringContainsString('blog post', $blogHtml);
     }
@@ -214,7 +221,7 @@ MD;
       // Verify nested output structure
         $this->assertFileExists($this->testOutputDir . '/docs/api/reference.html');
 
-        $apiHtml = file_get_contents($this->testOutputDir . '/docs/api/reference.html');
+        $apiHtml = $this->readFile($this->testOutputDir . '/docs/api/reference.html');
         $this->assertStringContainsString('API Documentation', $apiHtml);
     }
 
@@ -258,13 +265,13 @@ More *Markdown*');
         $this->assertFileExists($this->testOutputDir . '/page4.html');
 
       // Verify HTML preserved and Markdown converted
-        $page1 = file_get_contents($this->testOutputDir . '/page1.html');
+        $page1 = $this->readFile($this->testOutputDir . '/page1.html');
         $this->assertStringContainsString('<p>HTML content</p>', $page1);
 
-        $page2 = file_get_contents($this->testOutputDir . '/page2.html');
+        $page2 = $this->readFile($this->testOutputDir . '/page2.html');
         $this->assertStringContainsString('<strong>Markdown</strong>', $page2);
 
-        $page4 = file_get_contents($this->testOutputDir . '/page4.html');
+        $page4 = $this->readFile($this->testOutputDir . '/page4.html');
         $this->assertStringContainsString('<em>Markdown</em>', $page4);
     }
 
@@ -283,7 +290,7 @@ More *Markdown*');
 
       // Output directory should exist but be empty (except for auto-generated files like robots.txt/sitemap.xml)
         $this->assertDirectoryExists($this->testOutputDir);
-        $files = glob($this->testOutputDir . '/*');
+        $files = glob($this->testOutputDir . '/*') ?: [];
 
       // Filter out robots.txt, sitemap.xml, search.json, and assets directory
         $contentFiles = array_filter($files, function ($file) {
@@ -326,7 +333,7 @@ MD;
         $this->assertTrue($result);
 
       // Verify metadata in output
-        $html = file_get_contents($this->testOutputDir . '/metadata-test.html');
+        $html = $this->readFile($this->testOutputDir . '/metadata-test.html');
         $this->assertStringContainsString('Metadata Test', $html);
         $this->assertStringContainsString('test, metadata, integration', $html);
     }
@@ -353,7 +360,7 @@ MD;
 
         $outputFile = $this->testOutputDir . '/code-test.html';
         $this->assertFileExists($outputFile);
-        $content = file_get_contents($outputFile);
+        $content = $this->readFile($outputFile);
 
       // Check that newlines and indentation are preserved
         $this->assertStringContainsString('function hello() {', $content);

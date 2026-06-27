@@ -64,6 +64,105 @@ class FeatureManagerComposerTest extends UnitTestCase
         $this->assertArrayHasKey('MockComposerFeature', $features);
         $this->assertInstanceOf(MockComposerFeature::class, $features['MockComposerFeature']);
     }
+
+    public function testMissingInstalledJsonIsHandledGracefully(): void
+    {
+        // Point at a path that doesn't exist - should not throw, simply skip composer discovery
+        $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->tempDir . '/does-not-exist.json');
+
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager->loadFeatures();
+
+        $features = $this->featureManager->getFeatures();
+        $this->assertArrayNotHasKey('MockComposerFeature', $features);
+    }
+
+    public function testMalformedInstalledJsonIsHandledGracefully(): void
+    {
+        file_put_contents($this->installedJsonPath, '{not valid json');
+        $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
+
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+
+        // Should not throw - malformed JSON decodes to null and is skipped
+        $this->featureManager->loadFeatures();
+
+        $this->assertGreaterThanOrEqual(0, count($this->featureManager->getFeatures()));
+    }
+
+    public function testComposerFeatureClassNotFoundIsSkipped(): void
+    {
+        $data = [
+            'packages' => [
+                [
+                    'name' => 'vendor/missing-feature',
+                    'extra' => [
+                        'staticforge' => [
+                            'feature' => 'Nonexistent\\Class\\Feature',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        file_put_contents($this->installedJsonPath, json_encode($data));
+        $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
+
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+
+        // Should not throw - logged as a warning and skipped
+        $this->featureManager->loadFeatures();
+
+        $this->assertNull($this->featureManager->getFeature('Nonexistent\\Class\\Feature'));
+    }
+
+    public function testComposerFeatureNotImplementingInterfaceIsSkipped(): void
+    {
+        $data = [
+            'packages' => [
+                [
+                    'name' => 'vendor/invalid-feature',
+                    'extra' => [
+                        'staticforge' => [
+                            'feature' => NotAFeature::class,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        file_put_contents($this->installedJsonPath, json_encode($data));
+        $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
+
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager->loadFeatures();
+
+        $features = $this->featureManager->getFeatures();
+        $this->assertArrayNotHasKey('NotAFeature', $features);
+    }
+
+    public function testDisabledComposerFeatureIsNotLoaded(): void
+    {
+        $data = [
+            'packages' => [
+                [
+                    'name' => 'vendor/test-feature',
+                    'extra' => [
+                        'staticforge' => [
+                            'feature' => MockComposerFeature::class,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        file_put_contents($this->installedJsonPath, json_encode($data));
+        $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
+        $this->setContainerVariable('site_config', ['disabled_features' => ['MockComposerFeature']]);
+
+        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager->loadFeatures();
+
+        $this->assertNull($this->featureManager->getFeature('MockComposerFeature'));
+        $this->assertFalse($this->featureManager->isFeatureEnabled('MockComposerFeature'));
+    }
 }
 
 class MockComposerFeature implements FeatureInterface
@@ -77,4 +176,9 @@ class MockComposerFeature implements FeatureInterface
     {
         // Do nothing
     }
+}
+
+class NotAFeature
+{
+    // Intentionally does not implement FeatureInterface
 }

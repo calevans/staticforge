@@ -9,12 +9,13 @@ use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class CategoryPageServiceTest extends UnitTestCase
 {
     private CategoryPageService $service;
-    private Log $logger;
-    private CategoryService $categoryService;
+    private Log&MockObject $logger;
+    private CategoryService&MockObject $categoryService;
     private string $tempDir;
 
     protected function setUp(): void

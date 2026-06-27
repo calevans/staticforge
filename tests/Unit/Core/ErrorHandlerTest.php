@@ -168,6 +168,7 @@ class ErrorHandlerTest extends UnitTestCase
 
         $this->assertFileExists($this->logFile);
         $logContents = file_get_contents($this->logFile);
+        $this->assertIsString($logContents);
         $this->assertStringContainsString('no errors', $logContents);
     }
 
@@ -183,6 +184,7 @@ class ErrorHandlerTest extends UnitTestCase
 
         $this->assertFileExists($this->logFile);
         $logContents = file_get_contents($this->logFile);
+        $this->assertIsString($logContents);
         $this->assertStringContainsString('with errors', $logContents);
     }
 
@@ -226,6 +228,7 @@ class ErrorHandlerTest extends UnitTestCase
 
         $this->assertFileExists($this->logFile);
         $logContents = file_get_contents($this->logFile);
+        $this->assertIsString($logContents);
         $this->assertStringContainsString('FileDiscovery', $logContents);
         $this->assertStringContainsString('discovery', $logContents);
     }

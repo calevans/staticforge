@@ -45,7 +45,7 @@ EOT;
 
     public function testWeatherShortcodeRendersFromZip(): void
     {
-        $zipResponse = new MockResponse(json_encode([
+        $zipResponse = new MockResponse($this->jsonBody([
             'places' => [[
                 'latitude' => '26.7',
                 'longitude' => '-80.1',
@@ -54,7 +54,7 @@ EOT;
             ]],
         ]));
 
-        $weatherResponse = new MockResponse(json_encode([
+        $weatherResponse = new MockResponse($this->jsonBody([
             'current_weather' => [
                 'temperature' => 20,
                 'windspeed' => 5,
@@ -83,6 +83,138 @@ EOT;
         $output = $shortcode->handle(['scale' => 'C']);
 
         $this->assertStringContainsString('Weather shortcode requires lat/long', $output);
+    }
+
+    public function testWeatherShortcodeRendersFromLatLong(): void
+    {
+        $weatherResponse = new MockResponse($this->jsonBody([
+            'current_weather' => [
+                'temperature' => 15,
+                'windspeed' => 10,
+                'weathercode' => 0,
+            ],
+        ]));
+
+        $client = new MockHttpClient([$weatherResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'lat' => '40.7',
+            'long' => '-74.0',
+            'scale' => 'C',
+        ]);
+
+        $this->assertStringContainsString('Location: 40.7, -74.0', $output);
+        $this->assertStringContainsString('Temp: 15', $output);
+        $this->assertStringContainsString('Condition: Clear sky', $output);
+    }
+
+    public function testWeatherShortcodeConvertsToFahrenheit(): void
+    {
+        $weatherResponse = new MockResponse($this->jsonBody([
+            'current_weather' => [
+                'temperature' => 0,
+                'windspeed' => 1,
+                'weathercode' => 0,
+            ],
+        ]));
+
+        $client = new MockHttpClient([$weatherResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'lat' => '40.7',
+            'long' => '-74.0',
+            'scale' => 'F',
+        ]);
+
+        $this->assertStringContainsString('Temp: 32 °F', $output);
+    }
+
+    public function testWeatherShortcodeFallsBackToDefaultScaleWhenInvalid(): void
+    {
+        $weatherResponse = new MockResponse($this->jsonBody([
+            'current_weather' => [
+                'temperature' => 10,
+                'windspeed' => 1,
+                'weathercode' => 0,
+            ],
+        ]));
+
+        $client = new MockHttpClient([$weatherResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'lat' => '40.7',
+            'long' => '-74.0',
+            'scale' => 'kelvin',
+        ]);
+
+        $this->assertStringContainsString('°C', $output);
+    }
+
+    public function testWeatherShortcodeReturnsErrorWhenWeatherApiFails(): void
+    {
+        $weatherResponse = new MockResponse('', ['http_code' => 500]);
+        $client = new MockHttpClient([$weatherResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'lat' => '40.7',
+            'long' => '-74.0',
+        ]);
+
+        $this->assertSame('<!-- Weather data unavailable -->', $output);
+    }
+
+    public function testWeatherShortcodeReturnsNoLocationCommentWhenZipLookupFails(): void
+    {
+        $zipResponse = new MockResponse('', ['http_code' => 404]);
+        $client = new MockHttpClient([$zipResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'zip' => '00000',
+            'country' => 'us',
+        ]);
+
+        $this->assertSame('<!-- Weather shortcode requires lat/long or valid zip -->', $output);
+    }
+
+    public function testWeatherShortcodeHandlesMalformedJsonGracefully(): void
+    {
+        $weatherResponse = new MockResponse('not valid json{{{');
+        $client = new MockHttpClient([$weatherResponse]);
+
+        $shortcode = $this->createShortcodeWithRenderer();
+        $shortcode->setHttpClient($client);
+
+        $output = $shortcode->handle([
+            'lat' => '40.7',
+            'long' => '-74.0',
+        ]);
+
+        $this->assertSame('<!-- Weather data unavailable -->', $output);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function jsonBody(array $data): string
+    {
+        $encoded = json_encode($data);
+        $this->assertNotFalse($encoded, 'Failed to encode mock JSON response body');
+        return $encoded;
     }
 
     private function createShortcodeWithRenderer(): WeatherShortcode

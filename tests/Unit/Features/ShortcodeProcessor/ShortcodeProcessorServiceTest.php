@@ -8,12 +8,13 @@ use EICC\StaticForge\Features\ShortcodeProcessor\Services\ShortcodeProcessorServ
 use EICC\StaticForge\Shortcodes\ShortcodeManager;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionMethod;
 
 class ShortcodeProcessorServiceTest extends UnitTestCase
 {
     private ShortcodeProcessorService $service;
-    private ShortcodeManager $shortcodeManager;
+    private ShortcodeManager&MockObject $shortcodeManager;
 
     protected function setUp(): void
     {
@@ -78,5 +79,71 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
 
         $this->assertEquals("", $result['frontmatter']);
         $this->assertEquals("Body content only", $result['body']);
+    }
+
+    public function testProcessShortcodesThrowsWhenSourceDirNotSet(): void
+    {
+        $this->container->updateVariable('SOURCE_DIR', null);
+
+        $tempFile = sys_get_temp_dir() . '/staticforge_sp_test_' . uniqid() . '.md';
+        file_put_contents($tempFile, 'content');
+
+        $parameters = ['file_path' => $tempFile];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('SOURCE_DIR not set in container');
+
+        try {
+            $this->service->processShortcodes($this->container, $parameters);
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function testProcessShortcodesThrowsWhenFileOutsideSourceDir(): void
+    {
+        $sourceDir = sys_get_temp_dir() . '/staticforge_sp_source_' . uniqid();
+        mkdir($sourceDir, 0755, true);
+        $this->setContainerVariable('SOURCE_DIR', $sourceDir);
+
+        $outsideFile = sys_get_temp_dir() . '/staticforge_sp_outside_' . uniqid() . '.md';
+        file_put_contents($outsideFile, 'content');
+
+        $parameters = ['file_path' => $outsideFile];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/Security Error/');
+
+        try {
+            $this->service->processShortcodes($this->container, $parameters);
+        } finally {
+            unlink($outsideFile);
+            rmdir($sourceDir);
+        }
+    }
+
+    public function testProcessShortcodesReturnsParametersWhenFileUnreadable(): void
+    {
+        $sourceDir = sys_get_temp_dir() . '/staticforge_sp_source_' . uniqid();
+        mkdir($sourceDir, 0755, true);
+        $this->setContainerVariable('SOURCE_DIR', $sourceDir);
+
+        $filePath = $sourceDir . '/unreadable.md';
+        file_put_contents($filePath, 'content');
+        chmod($filePath, 0000);
+
+        $parameters = ['file_path' => $filePath];
+
+        try {
+            if (function_exists('posix_getuid') && posix_getuid() === 0) {
+                $this->markTestSkipped('Cannot test unreadable files as root');
+            }
+            $result = $this->service->processShortcodes($this->container, $parameters);
+            $this->assertSame($parameters, $result);
+        } finally {
+            chmod($filePath, 0644);
+            unlink($filePath);
+            rmdir($sourceDir);
+        }
     }
 }

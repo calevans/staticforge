@@ -63,8 +63,8 @@ class RssFeedFeatureTest extends UnitTestCase
 
         // Test POST_LOOP delegation (handlePostLoop)
         // This should not throw an exception
-        $this->feature->handlePostLoop($this->container, []);
-        
-        $this->assertTrue(true); // If we got here, no exceptions were thrown
+        $result = $this->feature->handlePostLoop($this->container, []);
+
+        $this->assertSame([], $result);
     }
 }

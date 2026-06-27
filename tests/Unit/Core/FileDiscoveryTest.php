@@ -147,6 +147,64 @@ class FileDiscoveryTest extends UnitTestCase
         $this->assertCount(3, $discoveredFiles);
     }
 
+    public function testDiscoverFilesThrowsWhenSourceDirNotSet(): void
+    {
+        // Neither SOURCE_DIR nor SCAN_DIRECTORIES configured
+        $this->container->removeVariable('SOURCE_DIR');
+        $this->extensionRegistry->registerExtension('.html');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('SOURCE_DIR not set in container');
+
+        $this->fileDiscovery->discoverFiles();
+    }
+
+    public function testDiscoverFilesWithMalformedYamlFrontmatterIsSkippedGracefully(): void
+    {
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
+        $this->extensionRegistry->registerExtension('.md');
+
+        // Invalid YAML (unbalanced bracket) inside frontmatter delimiters
+        $this->createTestFile('bad.md', "---\ntitle: [Unbalanced\n---\nBody content");
+
+        // Should not throw - malformed YAML results in empty metadata, file still discovered
+        $this->fileDiscovery->discoverFiles();
+
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertIsArray($discoveredFiles);
+        $this->assertCount(1, $discoveredFiles);
+        $this->assertEquals([], $discoveredFiles[0]['metadata']);
+    }
+
+    public function testDiscoverFilesGeneratesUrlWithCategorySubdirectory(): void
+    {
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
+        $this->setContainerVariable('SITE_BASE_URL', 'https://example.test');
+        $this->extensionRegistry->registerExtension('.md');
+
+        $this->createTestFile('post.md', "---\ntitle: My Post\ncategory: My Category\n---\nBody");
+
+        $this->fileDiscovery->discoverFiles();
+
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertCount(1, $discoveredFiles);
+        $this->assertStringContainsString('my-category/post.html', $discoveredFiles[0]['url']);
+    }
+
+    public function testDiscoverFilesThrowsWhenSiteBaseUrlNotSet(): void
+    {
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
+        $this->container->removeVariable('SITE_BASE_URL');
+        $this->extensionRegistry->registerExtension('.html');
+
+        $this->createTestFile('test.html', '<h1>Test</h1>');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('SITE_BASE_URL not set in container');
+
+        $this->fileDiscovery->discoverFiles();
+    }
+
     private function createTestFile(string $relativePath, string $content): string
     {
         $fullPath = $this->tempDir . '/' . $relativePath;

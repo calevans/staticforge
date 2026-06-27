@@ -257,7 +257,7 @@ class FeatureManager
                         $feature = $this->container->get($className);
                     } else {
                         // Fallback to new for features without dependencies
-                        if ($this->container->has($className)) { $feature = $this->container->get($className); } else { $feature = new $className(); }
+                        $feature = new $className();
                     }
 
                     if ($feature instanceof FeatureInterface) {
@@ -399,7 +399,10 @@ class FeatureManager
 
         foreach ($paths as $path) {
             if (is_dir($path)) {
-                return realpath($path);
+                $resolved = realpath($path);
+                if ($resolved !== false) {
+                    return $resolved;
+                }
             }
         }
 

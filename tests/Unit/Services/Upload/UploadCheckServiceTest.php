@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Tests\Unit\Services\Upload;
 
 use EICC\StaticForge\Services\Upload\UploadCheckService;
@@ -14,7 +16,7 @@ class UploadCheckServiceTest extends TestCase
         $this->service = new UploadCheckService();
     }
 
-    public function testHashCalculationForBinaryFiles()
+    public function testHashCalculationForBinaryFiles(): void
     {
         $content = random_bytes(1024);
         $file = sys_get_temp_dir() . '/test.bin';
@@ -26,7 +28,7 @@ class UploadCheckServiceTest extends TestCase
         unlink($file);
     }
 
-    public function testHashCalculationIgnoresSfcbInHtml()
+    public function testHashCalculationIgnoresSfcbInHtml(): void
     {
         $content1 = '<html><link href="style.css?sfcb=1234567890"></html>';
         $content2 = '<html><link href="style.css?sfcb=0987654321"></html>';
@@ -46,7 +48,7 @@ class UploadCheckServiceTest extends TestCase
         unlink($file2);
     }
 
-    public function testHashCalculationRespectsOtherParams()
+    public function testHashCalculationRespectsOtherParams(): void
     {
         $content1 = '<html><link href="style.css?other=123&sfcb=111"></html>';
         $content2 = '<html><link href="style.css?other=456&sfcb=111"></html>';
@@ -66,7 +68,7 @@ class UploadCheckServiceTest extends TestCase
         unlink($file2);
     }
 
-    public function testHashCalculationHandlesMixedParams()
+    public function testHashCalculationHandlesMixedParams(): void
     {
         // sfcb is stripped, leaving 'a=1' in both cases ideally, or at least handled consistently.
         // 'file.css?a=1&sfcb=2' -> 'file.css?a=1'

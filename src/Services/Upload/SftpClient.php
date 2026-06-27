@@ -19,6 +19,20 @@ class SftpClient
     }
 
     /**
+     * Get the active SFTP connection, asserting it has been established
+     *
+     * @throws \RuntimeException If connect() has not been called successfully
+     */
+    private function getSftp(): SFTP
+    {
+        if ($this->sftp === null) {
+            throw new \RuntimeException('SFTP connection has not been established. Call connect() first.');
+        }
+
+        return $this->sftp;
+    }
+
+    /**
      * Establish SFTP connection with authentication
      *
      * @param array<string, mixed> $config
@@ -83,10 +97,10 @@ class SftpClient
 
             $this->logger->log('DEBUG', sprintf('Authenticating as user: %s', $username));
 
-            if (!$this->sftp->login($username, $key)) {
+            if (!$this->getSftp()->login($username, $key)) {
                 $this->logger->log('ERROR', 'Login failed with key', [
                     'username' => $username,
-                    'errors' => $this->sftp->getErrors() ?: 'Unknown error'
+                    'errors' => $this->getSftp()->getErrors() ?: 'Unknown error'
                 ]);
                 return false;
             }
@@ -104,7 +118,7 @@ class SftpClient
     private function authenticateWithPassword(string $username, string $password): bool
     {
         try {
-            return $this->sftp->login($username, $password);
+            return $this->getSftp()->login($username, $password);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Password authentication failed', ['error' => $e->getMessage()]);
             return false;
@@ -117,12 +131,12 @@ class SftpClient
     public function ensureRemoteDirectory(string $path): bool
     {
         try {
-            if ($this->sftp->is_dir($path)) {
+            if ($this->getSftp()->is_dir($path)) {
                 return true;
             }
 
             // Create directory recursively
-            return $this->sftp->mkdir($path, -1, true);
+            return $this->getSftp()->mkdir($path, -1, true);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to create remote directory', [
                 'path' => $path,
@@ -140,15 +154,15 @@ class SftpClient
         try {
             // Ensure remote directory exists
             $remoteDir = dirname($remotePath);
-            if (!$this->sftp->is_dir($remoteDir)) {
-                if (!$this->sftp->mkdir($remoteDir, -1, true)) {
+            if (!$this->getSftp()->is_dir($remoteDir)) {
+                if (!$this->getSftp()->mkdir($remoteDir, -1, true)) {
                     $this->logger->log('ERROR', 'Failed to create remote directory', ['path' => $remoteDir]);
                     return false;
                 }
             }
 
             // Upload file
-            $result = $this->sftp->put($remotePath, $localPath, SFTP::SOURCE_LOCAL_FILE);
+            $result = $this->getSftp()->put($remotePath, $localPath, SFTP::SOURCE_LOCAL_FILE);
 
             if (!$result) {
                 $this->logger->log('ERROR', 'Failed to upload file', [
@@ -175,7 +189,7 @@ class SftpClient
     public function fileExists(string $remotePath): bool
     {
         try {
-            return $this->sftp->file_exists($remotePath);
+            return $this->getSftp()->file_exists($remotePath);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to check file existence', ['path' => $remotePath, 'error' => $e->getMessage()]);
             return false;
@@ -188,10 +202,10 @@ class SftpClient
     public function readFile(string $remotePath): ?string
     {
         try {
-            if (!$this->sftp->file_exists($remotePath)) {
+            if (!$this->getSftp()->file_exists($remotePath)) {
                 return null;
             }
-            $content = $this->sftp->get($remotePath);
+            $content = $this->getSftp()->get($remotePath);
             return $content === false ? null : (string)$content;
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to read file', ['path' => $remotePath, 'error' => $e->getMessage()]);
@@ -205,10 +219,10 @@ class SftpClient
     public function deleteFile(string $remotePath): bool
     {
         try {
-            if (!$this->sftp->file_exists($remotePath)) {
+            if (!$this->getSftp()->file_exists($remotePath)) {
                 return true; // Already gone
             }
-            return $this->sftp->delete($remotePath);
+            return $this->getSftp()->delete($remotePath);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to delete file', ['path' => $remotePath, 'error' => $e->getMessage()]);
             return false;
@@ -221,7 +235,7 @@ class SftpClient
     public function putContent(string $remotePath, string $content): bool
     {
         try {
-            return $this->sftp->put($remotePath, $content);
+            return $this->getSftp()->put($remotePath, $content);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to write content', ['path' => $remotePath, 'error' => $e->getMessage()]);
             return false;

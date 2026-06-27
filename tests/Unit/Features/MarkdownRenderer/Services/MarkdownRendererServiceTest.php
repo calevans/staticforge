@@ -12,14 +12,15 @@ use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class MarkdownRendererServiceTest extends UnitTestCase
 {
     private MarkdownRendererService $service;
-    private MarkdownProcessor $markdownProcessor;
-    private ContentExtractor $contentExtractor;
-    private TemplateRenderer $templateRenderer;
-    private EventManager $eventManager;
+    private MarkdownProcessor&MockObject $markdownProcessor;
+    private ContentExtractor&MockObject $contentExtractor;
+    private TemplateRenderer&MockObject $templateRenderer;
+    private EventManager&MockObject $eventManager;
 
     protected function setUp(): void
     {

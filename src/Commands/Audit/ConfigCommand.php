@@ -108,6 +108,9 @@ class ConfigCommand extends Command
         $io->section('Feature Configuration');
 
         $featureManager = $this->container->get(FeatureManager::class);
+        if (!$featureManager instanceof FeatureManager) {
+            throw new \RuntimeException('FeatureManager service is not registered correctly in the container.');
+        }
         $features = $featureManager->getFeatures();
 
         $checkedFeatures = 0;
@@ -193,6 +196,9 @@ class ConfigCommand extends Command
         return Command::FAILURE;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function hasConfigKey(array $config, string $key): bool
     {
         $keys = explode('.', $key);

@@ -99,4 +99,152 @@ class RssFeedServiceTest extends UnitTestCase
 
         $this->assertEquals('/blog/post.html', $method->invoke($this->service, $outputPath, $outputDir));
     }
+
+    public function testCollectCategoryFilesSkipsWithoutCategory(): void
+    {
+        $parameters = ['metadata' => ['title' => 'No category']];
+
+        $result = $this->service->collectCategoryFiles($this->container, $parameters);
+
+        $this->assertEquals($parameters, $result);
+    }
+
+    public function testCollectCategoryFilesSkipsWithoutOutputOrFilePath(): void
+    {
+        $parameters = ['metadata' => ['category' => 'Tech', 'title' => 'Missing paths']];
+
+        $result = $this->service->collectCategoryFiles($this->container, $parameters);
+
+        $this->assertEquals($parameters, $result);
+    }
+
+    public function testCollectCategoryFilesCollectsValidFile(): void
+    {
+        $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
+        mkdir($outputDir, 0755, true);
+        $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+
+        $parameters = [
+            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
+            'output_path' => $outputDir . '/tech/article1.html',
+            'file_path' => '/source/article1.md',
+            'rendered_content' => '<p>Some content</p>'
+        ];
+
+        $result = $this->service->collectCategoryFiles($this->container, $parameters);
+
+        $this->assertEquals($parameters, $result);
+
+        $this->removeDirectory($outputDir);
+    }
+
+    public function testGenerateRssFeedsSkipsWhenNoCategoryFilesCollected(): void
+    {
+        $result = $this->service->generateRssFeeds($this->container, []);
+
+        $this->assertEquals([], $result);
+    }
+
+    public function testGenerateRssFeedsThrowsWhenOutputDirMissing(): void
+    {
+        $logger = $this->createMock(Log::class);
+        $eventManager = $this->createMock(EventManager::class);
+        $service = new RssFeedService($logger, $eventManager);
+
+        $container = new \EICC\Utils\Container();
+
+        $parameters = [
+            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
+            'output_path' => '/tmp/does-not-matter/tech/article1.html',
+            'file_path' => '/source/article1.md',
+            'rendered_content' => '<p>Some content</p>'
+        ];
+
+        // collectCategoryFiles bails out silently because OUTPUT_DIR isn't set,
+        // so nothing is collected and generateRssFeeds short-circuits before
+        // reaching the OUTPUT_DIR check. Set OUTPUT_DIR only for collection,
+        // then verify the explicit guard in generateRssFeeds with a container
+        // that never had OUTPUT_DIR set but has collected files via a second
+        // service instance that did have it set.
+        $collectingContainer = new \EICC\Utils\Container();
+        $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
+        mkdir($outputDir, 0755, true);
+        $collectingContainer->setVariable('OUTPUT_DIR', $outputDir);
+        $parameters['output_path'] = $outputDir . '/tech/article1.html';
+        $service->collectCategoryFiles($collectingContainer, $parameters);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('OUTPUT_DIR not set in container');
+
+        // generateRssFeeds is called with a container missing OUTPUT_DIR;
+        // the service already has categoryFiles collected internally.
+        $service->generateRssFeeds($container, []);
+
+        $this->removeDirectory($outputDir);
+    }
+
+    public function testGenerateRssFeedsThrowsWhenSiteBaseUrlMissing(): void
+    {
+        $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
+        mkdir($outputDir, 0755, true);
+
+        $logger = $this->createMock(Log::class);
+        $eventManager = $this->createMock(EventManager::class);
+        $service = new RssFeedService($logger, $eventManager);
+
+        $container = new \EICC\Utils\Container();
+        $container->setVariable('OUTPUT_DIR', $outputDir);
+
+        $parameters = [
+            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
+            'output_path' => $outputDir . '/tech/article1.html',
+            'file_path' => '/source/article1.md',
+            'rendered_content' => '<p>Some content</p>'
+        ];
+        $service->collectCategoryFiles($container, $parameters);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('SITE_BASE_URL not set in container');
+
+        $service->generateRssFeeds($container, []);
+
+        $this->removeDirectory($outputDir);
+    }
+
+    public function testGenerateRssFeedsWritesRssFileForCategory(): void
+    {
+        $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
+        mkdir($outputDir, 0755, true);
+
+        $logger = $this->createMock(Log::class);
+        $eventManager = $this->createMock(EventManager::class);
+        $eventManager->method('fire')->willReturnArgument(1);
+        $service = new RssFeedService($logger, $eventManager);
+
+        $container = new \EICC\Utils\Container();
+        $container->setVariable('OUTPUT_DIR', $outputDir);
+        $container->setVariable('SITE_BASE_URL', 'https://example.com');
+        $container->setVariable('site_config', ['site' => ['name' => 'My Site']]);
+        $container->setVariable('discovered_files', []);
+
+        $parameters = [
+            'metadata' => ['category' => 'Tech', 'title' => 'Article 1', 'date' => '2024-01-01'],
+            'output_path' => $outputDir . '/tech/article1.html',
+            'file_path' => '/source/article1.md',
+            'rendered_content' => '<p>Some content</p>'
+        ];
+        $service->collectCategoryFiles($container, $parameters);
+
+        $service->generateRssFeeds($container, []);
+
+        $rssPath = $outputDir . '/tech/rss.xml';
+        $this->assertFileExists($rssPath);
+
+        $xml = file_get_contents($rssPath);
+        $this->assertNotFalse($xml);
+        $this->assertStringContainsString('My Site - Tech', $xml);
+        $this->assertStringContainsString('Article 1', $xml);
+
+        $this->removeDirectory($outputDir);
+    }
 }
