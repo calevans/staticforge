@@ -1,6 +1,15 @@
 {
   "permissions": {
     "allow": [
+      "Read(//home/calevans/Projects/staticforge-social-metadata/**)",
+      "Read(//home/calevans/Projects/**)",
+      "Bash(lando phpcs *)",
+      "Bash(lando phpunit *)",
+      "Bash(lando exec *)",
+      "Bash(lando phpcbf *)",
+      "Bash(find *)",
+      "Bash(awk *)",
+      "Bash(grep *)"
     ],
     "defaultMode": "bypassPermissions"
   }

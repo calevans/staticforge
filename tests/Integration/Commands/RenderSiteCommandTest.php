@@ -236,6 +236,12 @@ title: "Test Page"
 
         $outputOption = $definition->getOption('output');
         $this->assertEquals('Override output directory path', $outputOption->getDescription());
+
+        $includeDraftsOption = $definition->getOption('include-drafts');
+        $this->assertEquals(
+            'Render files marked draft: true (for local preview only)',
+            $includeDraftsOption->getDescription()
+        );
     }
 
   /**
@@ -383,5 +389,30 @@ title: "Both Override"
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString('Site generation failed', $output);
         $this->assertStringContainsString('Input directory does not exist', $output);
+    }
+
+  /**
+   * Test command with include-drafts option
+   */
+    public function testRenderSiteCommandWithIncludeDrafts(): void
+    {
+        $application = new Application();
+        $container = $this->container;
+        $application->add(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+        'command' => $command->getName(),
+        '--include-drafts' => true,
+        ]);
+
+        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Including draft content in this build', $output);
+        $this->assertStringContainsString('Site generation completed successfully', $output);
+
+        $this->assertTrue($container->getVariable('SHOW_DRAFTS'));
     }
 }

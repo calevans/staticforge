@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex\Services;
 
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
+use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
 use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;
@@ -26,7 +27,12 @@ class CategoryPageServiceSortingTest extends UnitTestCase
 
         $this->logger = $this->createMock(Log::class);
         $this->categoryService = $this->createMock(CategoryService::class);
-        $this->service = new CategoryPageService($this->logger, $this->categoryService);
+        $this->service = new CategoryPageService(
+            $this->logger,
+            $this->categoryService,
+            new PaginationService(),
+            10
+        );
 
         $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
         $this->setContainerVariable('features', []);

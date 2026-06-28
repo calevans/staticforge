@@ -49,6 +49,7 @@ class RenderSiteCommandTest extends UnitTestCase
         $this->assertTrue($definition->hasOption('template'));
         $this->assertTrue($definition->hasOption('input'));
         $this->assertTrue($definition->hasOption('output'));
+        $this->assertTrue($definition->hasOption('include-drafts'));
     }
 
     public function testGetNameAndDescription(): void

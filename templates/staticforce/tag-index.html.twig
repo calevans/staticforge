@@ -1,0 +1,64 @@
+{#
+    Template: Tag Index
+    ====================
+    Used for tag archive pages (e.g., /tags/php/index.html).
+
+    Behavior:
+    - Displays the tag name and a count of files tagged with it.
+    - Lists all files for the current page, with prev/next pagination links.
+
+    Variables:
+    - tag: (string) The tag name.
+    - tag_slug: (string) The sanitized slug used in the URL.
+    - tag_files: (array) Files for the current page. Each object has:
+      - url: Link to the page
+      - title: Page title
+      - date: (optional) Published date
+      - metadata.description: (optional)
+    - tag_files_count: (int) Count of files on the current page.
+    - total_files: (int) Total files across all pages for this tag.
+    - current_page / total_pages: (int) Pagination state.
+    - pagination_prev_url / pagination_next_url: (string|null) Pagination links.
+#}
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <div class="prose max-w-none mb-8">
+        <h1>{{ tag }}</h1>
+        <p class="text-gray-500">{{ total_files }} {{ total_files == 1 ? 'file' : 'files' }} tagged &ldquo;{{ tag }}&rdquo;</p>
+    </div>
+
+    {% if tag_files is defined and tag_files|length > 0 %}
+        <div class="tag-list grid gap-6">
+            {% for file in tag_files %}
+                <div class="tag-item border rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <h2 class="text-2xl font-bold mb-2">
+                        <a href="{{ file.url }}" class="text-blue-600 hover:text-blue-800 no-underline">{{ file.title }}</a>
+                    </h2>
+                    {% if file.date %}
+                        <p class="text-gray-500 text-sm mb-3">{{ file.date }}</p>
+                    {% endif %}
+                    {% if file.metadata.description %}
+                        <p class="text-gray-700">{{ file.metadata.description }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-500 italic">No files found for this tag.</p>
+    {% endif %}
+
+    {% if pagination_prev_url or pagination_next_url %}
+        <div class="pagination flex justify-between mt-8">
+            {% if pagination_prev_url %}
+                <a href="{{ pagination_prev_url }}" class="text-blue-600 hover:text-blue-800">&laquo; Previous</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <span class="text-gray-500">Page {{ current_page }} of {{ total_pages }}</span>
+            {% if pagination_next_url %}
+                <a href="{{ pagination_next_url }}" class="text-blue-600 hover:text-blue-800">Next &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

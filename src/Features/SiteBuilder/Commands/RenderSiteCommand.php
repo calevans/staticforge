@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\SiteBuilder\Commands;
 
 use EICC\StaticForge\Core\Application;
@@ -52,6 +54,19 @@ class RenderSiteCommand extends Command
                  'o',
                  InputOption::VALUE_REQUIRED,
                  'Override output directory path'
+             )
+             ->addOption(
+                 'include-drafts',
+                 null,
+                 InputOption::VALUE_NONE,
+                 'Render files marked draft: true (for local preview only)'
+             )
+             ->addOption(
+                 'incremental',
+                 null,
+                 InputOption::VALUE_NONE,
+                 'Skip re-rendering files whose source has not changed since last build '
+                 . '(opt-in, experimental)'
              );
     }
 
@@ -98,6 +113,24 @@ class RenderSiteCommand extends Command
 
             if ($outputOverride) {
                 $this->container->updateVariable('OUTPUT_DIR', $outputOverride);
+            }
+
+            if ($input->getOption('include-drafts')) {
+                $output->writeln('<comment>Including draft content in this build</comment>');
+                if ($this->container->hasVariable('SHOW_DRAFTS')) {
+                    $this->container->updateVariable('SHOW_DRAFTS', true);
+                } else {
+                    $this->container->setVariable('SHOW_DRAFTS', true);
+                }
+            }
+
+            if ($input->getOption('incremental')) {
+                $output->writeln('<comment>Incremental build enabled (experimental)</comment>');
+                if ($this->container->hasVariable('INCREMENTAL_BUILD')) {
+                    $this->container->updateVariable('INCREMENTAL_BUILD', true);
+                } else {
+                    $this->container->setVariable('INCREMENTAL_BUILD', true);
+                }
             }
 
             if ($output->isVerbose()) {

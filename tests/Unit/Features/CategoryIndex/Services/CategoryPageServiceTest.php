@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex\Services;
 
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
+use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
 use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;
@@ -26,7 +27,12 @@ class CategoryPageServiceTest extends UnitTestCase
 
         $this->logger = $this->createMock(Log::class);
         $this->categoryService = $this->createMock(CategoryService::class);
-        $this->service = new CategoryPageService($this->logger, $this->categoryService);
+        $this->service = new CategoryPageService(
+            $this->logger,
+            $this->categoryService,
+            new PaginationService(),
+            10
+        );
 
         $this->setContainerVariable('OUTPUT_DIR', $this->tempDir);
         $this->setContainerVariable('features', []);
@@ -258,5 +264,115 @@ class CategoryPageServiceTest extends UnitTestCase
         $this->container->add(Application::class, $mockApp);
 
         $this->service->processDeferredFiles($this->container);
+    }
+
+    public function testSinglePageCategoryRendersExactlyOnce(): void
+    {
+        $this->service->deferFile(
+            '/path/to/tech.md',
+            ['title' => 'Tech'],
+            $this->container
+        );
+
+        $category = new Category('tech', ['title' => 'Tech']);
+        for ($i = 1; $i <= 5; $i++) {
+            $category->addFile(new CategoryFile("Post {$i}", "/url{$i}", '2023-01-0' . $i));
+        }
+
+        $this->categoryService->method('getCategory')
+            ->with('tech')
+            ->willReturn($category);
+
+        $expectedOutputPath = $this->tempDir . DIRECTORY_SEPARATOR . 'tech' . DIRECTORY_SEPARATOR . 'index.html';
+
+        $mockApp = $this->createMock(Application::class);
+        $mockApp->expects($this->once())
+            ->method('renderSingleFile')
+            ->with(
+                $this->equalTo('/path/to/tech.md'),
+                $this->callback(function ($context) use ($expectedOutputPath) {
+                    $metadata = $context['file_metadata'];
+                    return $context['output_path'] === $expectedOutputPath
+                        && $metadata['current_page'] === 1
+                        && $metadata['total_pages'] === 1
+                        && $metadata['pagination_prev_url'] === null
+                        && $metadata['pagination_next_url'] === null
+                        && $metadata['category_files_count'] === 5
+                        && $metadata['total_files'] === 5;
+                })
+            );
+
+        $this->container->add(Application::class, $mockApp);
+
+        $this->service->processDeferredFiles($this->container);
+    }
+
+    public function testMultiPageCategoryRendersOncePerPage(): void
+    {
+        $this->service->deferFile(
+            '/path/to/tech.md',
+            ['title' => 'Tech', 'sort_by' => 'title', 'sort_direction' => 'asc'],
+            $this->container
+        );
+
+        $category = new Category('tech', ['title' => 'Tech']);
+        // 25 files, titled so alphabetical sort == insertion order
+        for ($i = 1; $i <= 25; $i++) {
+            $title = sprintf('Post %02d', $i);
+            $category->addFile(new CategoryFile($title, "/url{$i}", '2023-01-01'));
+        }
+
+        $this->categoryService->method('getCategory')
+            ->with('tech')
+            ->willReturn($category);
+
+        $categoryDir = $this->tempDir . DIRECTORY_SEPARATOR . 'tech';
+        $pageDir = $categoryDir . DIRECTORY_SEPARATOR . 'page' . DIRECTORY_SEPARATOR;
+        $expectedPaths = [
+            1 => $categoryDir . DIRECTORY_SEPARATOR . 'index.html',
+            2 => $pageDir . '2' . DIRECTORY_SEPARATOR . 'index.html',
+            3 => $pageDir . '3' . DIRECTORY_SEPARATOR . 'index.html',
+        ];
+        $expectedCounts = [1 => 10, 2 => 10, 3 => 5];
+        $expectedPrev = [1 => null, 2 => '/tech/', 3 => '/tech/page/2/'];
+        $expectedNext = [1 => '/tech/page/2/', 2 => '/tech/page/3/', 3 => null];
+
+        $calls = [];
+
+        $mockApp = $this->createMock(Application::class);
+        $mockApp->expects($this->exactly(3))
+            ->method('renderSingleFile')
+            ->with(
+                $this->equalTo('/path/to/tech.md'),
+                $this->callback(function ($context) use (
+                    &$calls,
+                    $expectedPaths,
+                    $expectedCounts,
+                    $expectedPrev,
+                    $expectedNext
+                ) {
+                    $metadata = $context['file_metadata'];
+                    $page = $metadata['current_page'];
+                    $calls[] = $page;
+
+                    $files = $metadata['category_files'];
+                    $firstTitleOnPage = $files[0]['title'] ?? null;
+                    $expectedFirstTitle = sprintf('Post %02d', (($page - 1) * 10) + 1);
+
+                    return $context['output_path'] === $expectedPaths[$page]
+                        && $metadata['total_pages'] === 3
+                        && $metadata['category_files_count'] === $expectedCounts[$page]
+                        && $metadata['total_files'] === 25
+                        && $metadata['pagination_prev_url'] === $expectedPrev[$page]
+                        && $metadata['pagination_next_url'] === $expectedNext[$page]
+                        && $firstTitleOnPage === $expectedFirstTitle;
+                })
+            );
+
+        $this->container->add(Application::class, $mockApp);
+
+        $this->service->processDeferredFiles($this->container);
+
+        $this->assertSame([1, 2, 3], $calls);
     }
 }

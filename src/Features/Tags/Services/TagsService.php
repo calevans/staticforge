@@ -144,6 +144,16 @@ class TagsService
     }
 
     /**
+     * Get the tag index mapping each tag to the file paths that contain it
+     *
+     * @return array<string, array<int, string>>
+     */
+    public function getTagIndex(): array
+    {
+        return $this->tagIndex;
+    }
+
+    /**
      * Get all tags sorted alphabetically
      *
      * @return array<int, string>

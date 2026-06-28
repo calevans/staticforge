@@ -35,6 +35,23 @@ class FileProcessor
     }
 
     /**
+     * Whether incremental builds are enabled (opt-in via --incremental flag).
+     *
+     * Read lazily at point of use rather than cached at construction time, because
+     * FileProcessor is instantiated eagerly in bootstrap.php, before the CLI command
+     * has had a chance to set INCREMENTAL_BUILD on the container (mirrors how
+     * FileDiscovery reads SHOW_DRAFTS).
+     */
+    private function isIncrementalEnabled(): bool
+    {
+        $incrementalEnabled = $this->container->getVariable('INCREMENTAL_BUILD') ?? false;
+        if (is_string($incrementalEnabled)) {
+            $incrementalEnabled = filter_var($incrementalEnabled, FILTER_VALIDATE_BOOLEAN);
+        }
+        return (bool) $incrementalEnabled;
+    }
+
+    /**
      * Process all discovered files through the render pipeline
      */
     public function processFiles(): void
@@ -117,7 +134,8 @@ class FileProcessor
             'rendered_content' => null,
             'metadata' => $fileData['metadata'], // Legacy for backwards compatibility
             'output_path' => null,
-            'skip_file' => false
+            'skip_file' => false,
+            'cache_hit' => false,
         ];
 
         // PRE-RENDER event
@@ -128,8 +146,19 @@ class FileProcessor
             return;
         }
 
-        // RENDER event
-        $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+        // Some features (e.g. Categories) rewrite output_path at POST_RENDER, after the
+        // renderer has already overwritten it once at RENDER. Such features may instead
+        // predict that final path during PRE_RENDER and publish it as
+        // 'expected_output_path', so the cache check below compares against the file that
+        // will actually exist on disk rather than the un-rewritten path.
+        $cacheCheckPath = $renderContext['expected_output_path'] ?? $expectedOutputPath;
+
+        if ($this->isIncrementalEnabled() && $this->canReuseCachedOutput($filePath, $cacheCheckPath)) {
+            $renderContext = $this->substituteCachedRender($renderContext, $cacheCheckPath);
+        } else {
+            // RENDER event
+            $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+        }
 
         // If rendering failed (e.g. missing template), output_path might be null
         // We should not proceed to POST_RENDER or write if rendering failed
@@ -146,13 +175,66 @@ class FileProcessor
             $this->processedOutputPaths[$renderContext['output_path']] = $filePath;
         }
 
-        // POST-RENDER event
+        // POST-RENDER event (always fires, cache hit or not - this is the safety invariant
+        // that keeps Sitemap/RssFeed/CategoryIndex/Search aggregate output correct)
         $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
 
-        // Write file to disk after POST-RENDER (Core responsibility)
-        if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
+        // Write file to disk after POST-RENDER (Core responsibility).
+        // Skip the write on a cache hit - the output file on disk is already correct.
+        if (
+            !($renderContext['cache_hit'] ?? false)
+            && isset($renderContext['rendered_content'])
+            && isset($renderContext['output_path'])
+        ) {
             $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
         }
+    }
+
+    /**
+     * Determine whether a previously-written output file can be reused instead of
+     * re-running the RENDER event for this source file.
+     *
+     * Mirrors the established mtime-comparison idiom used elsewhere in the codebase
+     * (e.g. CategoryIndex\Services\ImageService, ResponsiveImages\Services\ImageVariantGenerator).
+     */
+    private function canReuseCachedOutput(string $sourcePath, string $outputPath): bool
+    {
+        if (!is_file($outputPath)) {
+            return false;
+        }
+
+        $sourceMtime = filemtime($sourcePath);
+        $outputMtime = filemtime($outputPath);
+
+        if ($sourceMtime === false || $outputMtime === false) {
+            // Fail safe -> full render
+            return false;
+        }
+
+        return $outputMtime >= $sourceMtime;
+    }
+
+    /**
+     * Substitute the RENDER step with the previously-written output file's contents,
+     * read back from disk. Falls back to a full render if the cached file is unreadable.
+     *
+     * @param array<string, mixed> $renderContext
+     * @return array<string, mixed>
+     */
+    private function substituteCachedRender(array $renderContext, string $outputPath): array
+    {
+        $cachedHtml = file_get_contents($outputPath);
+
+        if ($cachedHtml === false) {
+            // Fail safe: if we can't read it back, do a full render instead.
+            return $this->eventManager->fire('RENDER', $renderContext);
+        }
+
+        $renderContext['rendered_content'] = $cachedHtml;
+        $renderContext['output_path'] = $outputPath;
+        $renderContext['cache_hit'] = true;
+
+        return $renderContext;
     }
 
     /**
@@ -220,11 +302,25 @@ class FileProcessor
             }
         }
 
-        $bytesWritten = file_put_contents($outputPath, $content);
+        // Write to a temp file first, then atomically rename into place. This protects
+        // against partially-written output files if the process is killed mid-write,
+        // which matters for incremental builds: a truncated file with a fresh mtime
+        // would otherwise be wrongly treated as cacheable on the next build.
+        $tempPath = $outputPath . '.tmp';
+
+        $bytesWritten = file_put_contents($tempPath, $content);
 
         if ($bytesWritten === false) {
             throw new FileProcessingException(
                 "Failed to write output file: {$outputPath}",
+                $outputPath,
+                'write'
+            );
+        }
+
+        if (!rename($tempPath, $outputPath)) {
+            throw new FileProcessingException(
+                "Failed to finalize output file: {$outputPath}",
                 $outputPath,
                 'write'
             );

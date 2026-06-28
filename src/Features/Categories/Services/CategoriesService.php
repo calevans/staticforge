@@ -103,6 +103,34 @@ class CategoriesService
     }
 
     /**
+     * Calculate the output path a source file would get before any category
+     * subdirectory rewrite is applied. Mirrors FileProcessor::calculateOutputPath()
+     * so that handlePreRender() can predict the post-categorization path before
+     * RENDER has actually run.
+     */
+    public function calculateUncategorizedOutputPath(string $filePath, Container $container): string
+    {
+        $sourceDir = $container->getVariable('SOURCE_DIR');
+        if (!$sourceDir) {
+            throw new \RuntimeException('SOURCE_DIR not set in container');
+        }
+        $outputDir = $container->getVariable('OUTPUT_DIR');
+        if (!$outputDir) {
+            throw new \RuntimeException('OUTPUT_DIR not set in container');
+        }
+
+        $relativePath = str_replace($sourceDir . DIRECTORY_SEPARATOR, '', $filePath);
+
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        if (in_array($extension, ['md', 'html'], true)) {
+            $pattern = '/\.' . preg_quote($extension, '/') . '$/';
+            $relativePath = preg_replace($pattern, '.html', $relativePath) ?? $relativePath;
+        }
+
+        return $outputDir . '/' . $relativePath;
+    }
+
+    /**
      * Modify output path to include category subdirectory
      */
     public function categorizeOutputPath(string $outputPath, string $category): string

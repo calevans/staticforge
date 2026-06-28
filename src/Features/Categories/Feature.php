@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\Categories;
 
 use EICC\StaticForge\Core\BaseFeature;
@@ -24,6 +26,7 @@ class Feature extends BaseFeature implements FeatureInterface
      */
     protected array $eventListeners = [
         'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 250],
+        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 200],
         'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
     ];
 
@@ -51,6 +54,33 @@ class Feature extends BaseFeature implements FeatureInterface
     public function handlePostGlob(Container $container, array $parameters): array
     {
         $this->service->processCategoryTemplates($container);
+        return $parameters;
+    }
+
+    /**
+     * Handle PRE_RENDER event to pre-compute the categorized output path before
+     * RENDER runs, so FileProcessor's incremental-build cache check can compare
+     * against the actual file that will be written, not the un-categorized path.
+     *
+     * Called dynamically by EventManager when PRE_RENDER event fires.
+     *
+     * @phpstan-used Called via EventManager event dispatch
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
+    public function handlePreRender(Container $container, array $parameters): array
+    {
+        $metadata = $parameters['file_metadata'] ?? $parameters['metadata'] ?? [];
+        $category = $metadata['category'] ?? null;
+        $filePath = $parameters['file_path'] ?? null;
+
+        if (!$category || !$filePath) {
+            return $parameters;
+        }
+
+        $uncategorizedOutputPath = $this->service->calculateUncategorizedOutputPath($filePath, $container);
+        $parameters['expected_output_path'] = $this->service->categorizeOutputPath($uncategorizedOutputPath, $category);
+
         return $parameters;
     }
 
@@ -89,4 +119,3 @@ class Feature extends BaseFeature implements FeatureInterface
         return $parameters;
     }
 }
-

@@ -164,3 +164,39 @@ calendars:
 answer_engine_optimization:
   enabled: true
   # AI Crawler settings are injected automatically (OAI-SearchBot, etc.)
+
+# Category Index Configuration
+category_index:
+  # Number of files per category page before pagination kicks in (default: 10)
+  items_per_page: 10
+
+# Tags Configuration
+tags:
+  # Number of files per tag archive page before pagination kicks in (default: 10)
+  items_per_page: 10
+
+# Responsive Images Configuration
+# Generates resized image variants and rewrites <img> tags to <picture>/srcset
+# for content images referenced in rendered HTML (markdown or raw HTML pages).
+responsive_images:
+  # Master switch. Disabled by default: changes asset output substantially
+  # and adds build time proportional to image count. Enable deliberately.
+  enabled: false
+
+  # Breakpoint widths (px) to generate. Each generates one resized file
+  # per configured format. Source images narrower than a given width are
+  # skipped for that width (no upscaling).
+  widths: [400, 800, 1200]
+
+  # Also generate WebP variants alongside the original format.
+  webp: true
+
+  # JPEG/WebP compression quality (1-100).
+  quality: 82
+
+  # Directory (relative to OUTPUT_DIR) where generated variants are written.
+  output_dir: "assets/images/responsive"
+
+  # Minimum source image width (px) below which the feature leaves the
+  # <img> tag untouched (not worth generating srcset for tiny icons).
+  min_source_width: 400

@@ -44,8 +44,15 @@ class FileDiscovery
             $this->scanDirectory($directory, $discoveredFiles);
         }
 
-        // Store discovered files in container
-        $this->container->setVariable('discovered_files', $discoveredFiles);
+        // Store discovered files in container. Use update when already set so that
+        // re-running discovery within the same process (e.g. multiple site:render
+        // invocations against one container, as incremental-build tests do) does not
+        // throw on the second pass.
+        if ($this->container->hasVariable('discovered_files')) {
+            $this->container->updateVariable('discovered_files', $discoveredFiles);
+        } else {
+            $this->container->setVariable('discovered_files', $discoveredFiles);
+        }
 
         $this->logger->log('INFO', "Discovered " . count($discoveredFiles) . " processable files");
     }

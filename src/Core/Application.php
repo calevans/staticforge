@@ -42,8 +42,13 @@ class Application
         $this->errorHandler = $container->get(ErrorHandler::class);
         $this->fileProcessor = $container->get(FileProcessor::class);
 
-        // Register application instance
-        $this->container->add(Application::class, $this);
+        // Register application instance. Guarded because the same container can be
+        // reused across multiple Application instances within one process (e.g. an
+        // incremental build re-invoking site:render against an already-bootstrapped
+        // container in tests, or a future watch-mode).
+        if (!$this->container->has(Application::class)) {
+            $this->container->add(Application::class, $this);
+        }
     }
 
     /**
