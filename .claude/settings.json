@@ -9,7 +9,11 @@
       "Bash(lando phpcbf *)",
       "Bash(find *)",
       "Bash(awk *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(curl -s -I http://localhost:8000/)",
+      "Bash(kill 1309382 1309383)",
+      "Bash(curl -sk https://static-forge.lndo.site/ -D - -o /tmp/check2.html)",
+      "Bash(curl -sk https://localhost:62667/ -o /dev/null -w \"direct port: %{http_code}\\\\n\")"
     ],
     "defaultMode": "bypassPermissions"
   }
