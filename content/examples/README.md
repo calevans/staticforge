@@ -1,7 +1,7 @@
 ---
 title: "Examples Directory Readme"
 description: "Overview of example content files provided with StaticForge to demonstrate features like blog posts, landing pages, and documentation."
-template: "doc"
+template: "docs"
 og_image: "Read me file concept, open instructional book on a table, info icon, learning, study atmosphere, --ar 16:9"
 ---
 # Content Examples
