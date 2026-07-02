@@ -46,7 +46,6 @@ if (!class_exists('Composer\Autoload\ClassLoader')) {
 use Dotenv\Dotenv;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureManager;
@@ -55,6 +54,7 @@ use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Core\ErrorHandler;
+use EICC\StaticForge\Core\Config\SiteConfigLoader;
 use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
@@ -144,32 +144,17 @@ foreach ($_ENV as $key => $value) {
     $container->setVariable($key, $value);
 }
 
-// Load optional siteconfig.yaml file
-// This file contains non-sensitive site-wide configuration (menus, site title, etc.)
-// Unlike .env, this file can be committed to version control
-$siteConfigPaths = [
-    getcwd() . '/siteconfig.yaml',           // Current working directory
-    $appRoot . 'siteconfig.yaml'             // Application root
-];
-
-$siteConfig = [];
-foreach ($siteConfigPaths as $configPath) {
-    if (file_exists($configPath)) {
-        try {
-            $siteConfig = Yaml::parseFile($configPath);
-            if (!is_array($siteConfig)) {
-                $siteConfig = [];
-            }
-        } catch (\Exception $e) {
-            throw new \RuntimeException(
-                "Critical Error: Failed to parse siteconfig.yaml at {$configPath}: " . $e->getMessage(),
-                0,
-                $e
-            );
-        }
-        break;
-    }
+// Load optional siteconfig.yaml file, then deep-merge any siteconfig.d/*.yaml
+// override files on top (alphabetically). This file contains non-sensitive
+// site-wide configuration (menus, site title, etc.)
+// Unlike .env, this file can be committed to version control.
+// The 'logger' Container service isn't registered until later in this file,
+// so no logger is passed here (merge-collision logging is best-effort/no-op).
+$cwd = getcwd();
+if ($cwd === false) {
+    throw new \RuntimeException('Unable to determine current working directory.');
 }
+$siteConfig = (new SiteConfigLoader())->load($appRoot, $cwd, null);
 
 // Store site configuration in container
 $container->setVariable('site_config', $siteConfig);
