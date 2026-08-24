@@ -52,6 +52,7 @@ use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FileDiscovery;
 use EICC\StaticForge\Core\FileProcessor;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Core\ErrorHandler;
 use EICC\StaticForge\Core\Config\SiteConfigLoader;
@@ -250,23 +251,28 @@ $container->add(FileDiscovery::class, $fileDiscovery);
 $errorHandler = new ErrorHandler($container);
 $container->add(ErrorHandler::class, $errorHandler);
 
-$fileProcessor = new FileProcessor($container, $eventManager);
+$outputWriter = new OutputWriter($container, $container->get('logger'));
+$container->add(OutputWriter::class, $outputWriter);
+
+$fileProcessor = new FileProcessor($container, $eventManager, $outputWriter);
 $container->add(FileProcessor::class, $fileProcessor);
 
 // Register Shared Services for DI
-$container->stuff(MarkdownProcessor::class, function() {
-    return new MarkdownProcessor();
+$container->stuff(MarkdownProcessor::class, function () use ($container) {
+    $siteConfig = $container->getVariable('site_config') ?? [];
+    $trustHtml = $siteConfig['markdown']['trust_html'] ?? true;
+    return new MarkdownProcessor((bool) $trustHtml);
 });
 
-$container->stuff(ContentExtractor::class, function() {
+$container->stuff(ContentExtractor::class, function () {
     return new ContentExtractor();
 });
 
-$container->stuff(TemplateVariableBuilder::class, function() {
+$container->stuff(TemplateVariableBuilder::class, function () {
     return new TemplateVariableBuilder();
 });
 
-$container->stuff(TemplateRenderer::class, function() use ($container) {
+$container->stuff(TemplateRenderer::class, function () use ($container) {
     return new TemplateRenderer(
         $container->get(TemplateVariableBuilder::class),
         $container->get('logger'),

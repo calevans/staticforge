@@ -8,6 +8,7 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
 use EICC\StaticForge\Features\Search\Services\SearchAssetService;
 use EICC\Utils\Container;
@@ -58,7 +59,7 @@ YAML;
     {
         parent::register($eventManager);
         $this->logger = $this->container->get('logger');
-        $this->service = new SearchIndexService($this->logger);
+        $this->service = new SearchIndexService($this->logger, $this->container->get(OutputWriter::class));
         $this->assetService = new SearchAssetService($this->logger);
         $this->logger->log('INFO', 'Search Feature registered');
     }

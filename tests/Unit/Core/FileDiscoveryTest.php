@@ -176,6 +176,28 @@ class FileDiscoveryTest extends UnitTestCase
         $this->assertEquals([], $discoveredFiles[0]['metadata']);
     }
 
+    public function testDiscoverFilesStripsReservedFrontmatterKeys(): void
+    {
+        $this->setContainerVariable('SOURCE_DIR', $this->tempDir);
+        $this->extensionRegistry->registerExtension('.md');
+
+        $this->createTestFile(
+            'post.md',
+            "---\ntitle: Real Title\ncontent: Forged content\nSFTP_PASSWORD: leaked\n---\nBody content"
+        );
+
+        $this->fileDiscovery->discoverFiles();
+
+        $discoveredFiles = $this->container->getVariable('discovered_files');
+        $this->assertIsArray($discoveredFiles);
+        $this->assertCount(1, $discoveredFiles);
+
+        $metadata = $discoveredFiles[0]['metadata'];
+        $this->assertSame('Real Title', $metadata['title']);
+        $this->assertArrayNotHasKey('content', $metadata);
+        $this->assertArrayNotHasKey('SFTP_PASSWORD', $metadata);
+    }
+
     public function testDiscoverFilesGeneratesUrlWithCategorySubdirectory(): void
     {
         $this->setContainerVariable('SOURCE_DIR', $this->tempDir);

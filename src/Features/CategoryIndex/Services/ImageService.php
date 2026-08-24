@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\CategoryIndex\Services;
 
+use EICC\StaticForge\Core\PathGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Imagick;
@@ -99,11 +100,10 @@ class ImageService
             $this->logger->log('ERROR', "Thumbnail generation failed: " . $e->getMessage());
         }
 
-        // Fallback if thumbnail generation fails: return original image URL relative to site root?
-        // We need to convert absolute file path back to URL.
-        // Assuming $imagePath starts with $outputDir.
-        if (str_starts_with($imagePath, $outputDir)) {
-             return substr($imagePath, strlen($outputDir));
+        // Fallback if thumbnail generation fails: return original image URL relative to site root.
+        $relativePath = PathGuard::relativeTo($imagePath, $outputDir);
+        if ($relativePath !== null) {
+            return '/' . $relativePath;
         }
 
         return ''; // Should not happen if logic is correct

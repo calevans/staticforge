@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Search\Services;
 
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class SearchIndexService
 {
     private Log $logger;
+    private OutputWriter $outputWriter;
 
     /**
      * @var array<int, array{id: int, title: string, text: string, url: string, tags: string, category: mixed}>
@@ -17,9 +19,10 @@ class SearchIndexService
     private array $documents = [];
     private int $idCounter = 1;
 
-    public function __construct(Log $logger)
+    public function __construct(Log $logger, OutputWriter $outputWriter)
     {
         $this->logger = $logger;
+        $this->outputWriter = $outputWriter;
     }
 
     /**
@@ -195,8 +198,10 @@ class SearchIndexService
         }
 
         $indexPath = $outputDir . '/search.json';
-        if (file_put_contents($indexPath, $json) === false) {
-            $this->logger->log('ERROR', "Failed to write search index to {$indexPath}");
+        try {
+            $this->outputWriter->write($indexPath, $json);
+        } catch (\Throwable $e) {
+            $this->logger->log('ERROR', "Failed to write search index to {$indexPath}: " . $e->getMessage());
         }
 
         return $parameters;

@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\RssFeed;
 
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
 use ReflectionMethod;
@@ -20,7 +21,7 @@ class RssFeedServiceTest extends UnitTestCase
         parent::setUp();
         $logger = $this->createMock(Log::class);
         $this->eventManager = $this->createMock(EventManager::class);
-        $this->service = new RssFeedService($logger, $this->eventManager);
+        $this->service = new RssFeedService($logger, $this->eventManager, $this->container->get(OutputWriter::class));
     }
 
     public function testSanitizeCategoryName(): void
@@ -149,9 +150,8 @@ class RssFeedServiceTest extends UnitTestCase
     {
         $logger = $this->createMock(Log::class);
         $eventManager = $this->createMock(EventManager::class);
-        $service = new RssFeedService($logger, $eventManager);
-
         $container = new \EICC\Utils\Container();
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
 
         $parameters = [
             'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
@@ -190,10 +190,9 @@ class RssFeedServiceTest extends UnitTestCase
 
         $logger = $this->createMock(Log::class);
         $eventManager = $this->createMock(EventManager::class);
-        $service = new RssFeedService($logger, $eventManager);
-
         $container = new \EICC\Utils\Container();
         $container->setVariable('OUTPUT_DIR', $outputDir);
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
 
         $parameters = [
             'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
@@ -219,10 +218,10 @@ class RssFeedServiceTest extends UnitTestCase
         $logger = $this->createMock(Log::class);
         $eventManager = $this->createMock(EventManager::class);
         $eventManager->method('fire')->willReturnArgument(1);
-        $service = new RssFeedService($logger, $eventManager);
-
         $container = new \EICC\Utils\Container();
         $container->setVariable('OUTPUT_DIR', $outputDir);
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
+
         $container->setVariable('SITE_BASE_URL', 'https://example.com');
         $container->setVariable('site_config', ['site' => ['name' => 'My Site']]);
         $container->setVariable('discovered_files', []);

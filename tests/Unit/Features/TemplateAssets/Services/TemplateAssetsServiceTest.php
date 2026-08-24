@@ -103,4 +103,50 @@ class TemplateAssetsServiceTest extends UnitTestCase
         // Verify output dir exists but no assets
         $this->assertFalse($this->root->hasChild('output/assets'));
     }
+
+    public function testHandlePostLoopRejectsCssImportPathTraversal(): void
+    {
+        // vfsStream's URL scheme bypasses PathGuard's jail check entirely (by
+        // design, same as the rest of the codebase's vfs:// escape hatch), so
+        // this needs a real filesystem to actually exercise the boundary check.
+        $baseDir = sys_get_temp_dir() . '/staticforge_css_jail_' . uniqid();
+        $templateDir = $baseDir . '/templates';
+        $cssDir = $templateDir . '/sample/assets/css';
+        $outputDir = $baseDir . '/output';
+        $secretDir = $baseDir . '/secret';
+
+        mkdir($cssDir, 0755, true);
+        mkdir($secretDir, 0755, true);
+        file_put_contents($secretDir . '/leaked.css', 'body { background: url(leaked-data); }');
+        file_put_contents(
+            $cssDir . '/main.css',
+            "@import '../../../../secret/leaked.css';\nbody { color: red; }"
+        );
+
+        $this->setContainerVariable('TEMPLATE_DIR', $templateDir);
+        $this->setContainerVariable('TEMPLATE', 'sample');
+        $this->setContainerVariable('OUTPUT_DIR', $outputDir);
+        $this->setContainerVariable('SOURCE_DIR', $baseDir . '/content');
+
+        $this->service->handlePostLoop($this->container, []);
+
+        $bundledContent = file_get_contents($outputDir . '/assets/css/main.css');
+        $this->assertNotFalse($bundledContent);
+        $this->assertStringNotContainsString('leaked-data', $bundledContent);
+        $this->assertStringContainsString("@import '../../../../secret/leaked.css';", $bundledContent);
+
+        $this->recursiveRemove($baseDir);
+    }
+
+    private function recursiveRemove(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $files = array_diff(scandir($dir) ?: [], ['.', '..']);
+        foreach ($files as $file) {
+            (is_dir("$dir/$file")) ? $this->recursiveRemove("$dir/$file") : unlink("$dir/$file");
+        }
+        rmdir($dir);
+    }
 }

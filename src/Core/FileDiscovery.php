@@ -160,12 +160,31 @@ class FileDiscovery
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         if ($extension === 'md') {
-            return $this->parseMarkdownFrontmatter($content);
+            return $this->stripReservedFrontmatterKeys($this->parseMarkdownFrontmatter($content), $filePath);
         } elseif ($extension === 'html') {
-            return $this->parseHtmlFrontmatter($content);
+            return $this->stripReservedFrontmatterKeys($this->parseHtmlFrontmatter($content), $filePath);
         }
 
         return [];
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     * @return array<string, mixed>
+     */
+    private function stripReservedFrontmatterKeys(array $metadata, string $filePath): array
+    {
+        $cleaned = Frontmatter::stripReserved($metadata);
+
+        $droppedKeys = array_diff(array_keys($metadata), array_keys($cleaned));
+        foreach ($droppedKeys as $key) {
+            $this->logger->log(
+                'WARNING',
+                "Frontmatter key '{$key}' in {$filePath} is reserved and was ignored"
+            );
+        }
+
+        return $cleaned;
     }
 
     /**

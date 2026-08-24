@@ -27,6 +27,7 @@ class Application
     private FileDiscovery $fileDiscovery;
     private FileProcessor $fileProcessor;
     private ErrorHandler $errorHandler;
+    private OutputWriter $outputWriter;
     private Log $logger;
 
     public function __construct(Container $container, ?string $templateOverride = null)
@@ -41,6 +42,7 @@ class Application
         $this->fileDiscovery = $container->get(FileDiscovery::class);
         $this->errorHandler = $container->get(ErrorHandler::class);
         $this->fileProcessor = $container->get(FileProcessor::class);
+        $this->outputWriter = $container->get(OutputWriter::class);
 
         // Register application instance. Guarded because the same container can be
         // reused across multiple Application instances within one process (e.g. an
@@ -315,7 +317,7 @@ class Application
 
             // Write the rendered output if content and path are available
             if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
-                $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
+                $this->outputWriter->write($renderContext['output_path'], $renderContext['rendered_content']);
                 $this->logger->log('INFO', "File rendered: {$renderContext['output_path']}", [
                     'output' => $renderContext['output_path'],
                     'size' => strlen($renderContext['rendered_content']),
@@ -326,29 +328,6 @@ class Application
         } catch (Exception $e) {
             $this->errorHandler->handleFileError($e, $filePath, 'render');
             throw $e;
-        }
-    }
-
-
-
-    /**
-     * Write output file to disk
-     *
-     * @param string $outputPath Path to write the file
-     * @param string $content Content to write
-     */
-    private function writeOutputFile(string $outputPath, string $content): void
-    {
-        $outputDir = dirname($outputPath);
-
-        if (!is_dir($outputDir)) {
-            if (!mkdir($outputDir, 0755, true) && !is_dir($outputDir)) {
-                throw new \RuntimeException("Failed to create output directory: {$outputDir}");
-            }
-        }
-
-        if (file_put_contents($outputPath, $content) === false) {
-            throw new \RuntimeException("Failed to write output file: {$outputPath}");
         }
     }
 }

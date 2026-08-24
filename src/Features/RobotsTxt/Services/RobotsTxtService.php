@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\RobotsTxt\Services;
 
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
+use EICC\StaticForge\Core\PathGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -12,6 +14,7 @@ class RobotsTxtService
 {
     private Log $logger;
     private RobotsTxtGenerator $generator;
+    private OutputWriter $outputWriter;
 
     /**
      * Paths to disallow in robots.txt
@@ -19,10 +22,11 @@ class RobotsTxtService
      */
     private array $disallowedPaths = [];
 
-    public function __construct(Log $logger, RobotsTxtGenerator $generator)
+    public function __construct(Log $logger, RobotsTxtGenerator $generator, OutputWriter $outputWriter)
     {
         $this->logger = $logger;
         $this->generator = $generator;
+        $this->outputWriter = $outputWriter;
     }
 
     /**
@@ -100,17 +104,11 @@ class RobotsTxtService
         // Write robots.txt to output directory
         $robotsTxtPath = $outputDir . '/robots.txt';
 
-        // Create output directory if it doesn't exist
-        if (!file_exists($outputDir)) {
-            mkdir($outputDir, 0755, true);
-        }
-
-        $result = file_put_contents($robotsTxtPath, $robotsTxtContent);
-
-        if ($result === false) {
-            $this->logger->log('ERROR', "Failed to write robots.txt to {$robotsTxtPath}");
-        } else {
+        try {
+            $this->outputWriter->write($robotsTxtPath, $robotsTxtContent);
             $this->logger->log('INFO', "robots.txt generated at {$robotsTxtPath}");
+        } catch (\Throwable $e) {
+            $this->logger->log('ERROR', "Failed to write robots.txt to {$robotsTxtPath}: " . $e->getMessage());
         }
 
         return $parameters;
@@ -179,18 +177,7 @@ class RobotsTxtService
      */
     private function calculateWebPath(string $filePath, string $sourceDir): string
     {
-        // Normalize paths
-        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
-        $normalizedFilePath = $filePath;
-
-        // Check if file path starts with source directory
-        if (!str_starts_with($normalizedFilePath, $normalizedSourceDir)) {
-            // Fallback to just the filename
-            $relativePath = basename($filePath);
-        } else {
-            // Get path relative to source directory
-            $relativePath = substr($normalizedFilePath, strlen($normalizedSourceDir) + 1);
-        }
+        $relativePath = PathGuard::relativeTo($filePath, $sourceDir) ?? basename($filePath);
 
         // Convert file extension to .html
         $relativePath = preg_replace('/\.(md|html)$/', '.html', $relativePath) ?? $relativePath;

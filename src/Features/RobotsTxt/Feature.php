@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\RobotsTxt;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtGenerator;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtService;
 use EICC\Utils\Container;
@@ -51,7 +52,7 @@ class Feature extends BaseFeature implements FeatureInterface
 
         // Initialize services
         $generator = new RobotsTxtGenerator();
-        $this->service = new RobotsTxtService($this->logger, $generator);
+        $this->service = new RobotsTxtService($this->logger, $generator, $this->container->get(OutputWriter::class));
 
         $this->logger->log('INFO', 'RobotsTxt Feature registered');
     }

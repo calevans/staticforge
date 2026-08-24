@@ -10,6 +10,22 @@ use EICC\Utils\Container;
 class TemplateVariableBuilder
 {
     /**
+     * Container variables safe to expose to templates. Everything else —
+     * including every raw .env value (SFTP_PASSWORD, API keys, etc.) that
+     * src/bootstrap.php copies onto the container — stays out. Page-specific
+     * values (toc, pagination, category/tag listings, reading time, etc.)
+     * don't go through this list at all; they arrive via $parsedContent['metadata'].
+     *
+     * @var array<int, string>
+     */
+    private const ALLOWED_CONTAINER_VARIABLES = [
+        'site_config',
+        'SITE_BASE_URL',
+        'cache_buster',
+        'features',
+    ];
+
+    /**
      * Build template variables dynamically from all available sources
      * Merges file metadata, container variables, and flattened site config
      *
@@ -20,8 +36,7 @@ class TemplateVariableBuilder
      */
     public function build(array $parsedContent, Container $container, string $sourceFile = ''): array
     {
-        // Start with all container variables
-        $templateVars = $container->getAllVariables();
+        $templateVars = $this->allowedContainerVariables($container);
 
         // Flatten site_config to top level (site, menu, chapter_nav, etc.)
         // This allows templates to access {{ site.name }}, {{ menu.top }}, etc.
@@ -81,5 +96,22 @@ class TemplateVariableBuilder
         }
 
         return $templateVars;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function allowedContainerVariables(Container $container): array
+    {
+        $allVariables = $container->getAllVariables();
+        $allowed = [];
+
+        foreach ($allVariables as $key => $value) {
+            if (in_array($key, self::ALLOWED_CONTAINER_VARIABLES, true) || str_starts_with($key, 'menu')) {
+                $allowed[$key] = $value;
+            }
+        }
+
+        return $allowed;
     }
 }

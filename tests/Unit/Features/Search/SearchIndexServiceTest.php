@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Search;
 
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -19,12 +20,20 @@ class SearchIndexServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = $this->createMock(Log::class);
-        $this->container = $this->createMock(Container::class);
-        $this->service = new SearchIndexService($this->logger);
-
         $this->tempDir = sys_get_temp_dir() . '/staticforge_search_test_' . uniqid();
         mkdir($this->tempDir);
+
+        $this->logger = $this->createMock(Log::class);
+        $this->container = $this->createMock(Container::class);
+
+        // OutputWriter needs its own real container (just for OUTPUT_DIR),
+        // separate from the mocked $this->container passed into the
+        // service's own methods.
+        $realContainer = new Container();
+        $realContainer->setVariable('OUTPUT_DIR', $this->tempDir);
+        $outputWriter = new OutputWriter($realContainer, $this->logger);
+
+        $this->service = new SearchIndexService($this->logger, $outputWriter);
     }
 
     protected function tearDown(): void

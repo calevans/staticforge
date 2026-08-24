@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Sitemap;
 
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Sitemap\Services\SitemapService;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
@@ -28,7 +29,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
         $logger = $this->createMock(Log::class);
-        $this->service = new SitemapService($logger);
+        $this->service = new SitemapService($logger, $this->container->get(OutputWriter::class));
     }
 
     private function readFile(string $path): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\RobotsTxt;
 
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtService;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtGenerator;
@@ -27,7 +28,7 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $logger = $this->container->get('logger');
         $this->generator = new RobotsTxtGenerator();
-        $this->service = new RobotsTxtService($logger, $this->generator);
+        $this->service = new RobotsTxtService($logger, $this->generator, $this->container->get(OutputWriter::class));
     }
 
     private function readFile(string $path): string

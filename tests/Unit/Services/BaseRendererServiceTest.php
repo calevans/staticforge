@@ -18,7 +18,7 @@ class BaseRendererServiceTest extends UnitTestCase
         parent::setUp();
         /** @var Log&MockObject $logger */
         $logger = $this->createMock(Log::class);
-        $this->service = new class($logger) extends BaseRendererService {
+        $this->service = new class ($logger) extends BaseRendererService {
         };
     }
 
@@ -96,6 +96,20 @@ class BaseRendererServiceTest extends UnitTestCase
         $result = $this->service->generateOutputPath('/elsewhere/post.md', $this->container);
 
         $this->assertSame('/public' . DIRECTORY_SEPARATOR . 'post.md', $result);
+    }
+
+    public function testGenerateOutputPathFallsBackForSiblingDirectoryWithSharedPrefix(): void
+    {
+        // Regression: a naive strpos($path, $sourceDir) === 0 check would
+        // treat "/content-evil" as inside "/content" (shared string prefix,
+        // no directory-boundary check). Must fall back like any other
+        // outside-source-dir path, not leak content-evil's structure.
+        $this->setContainerVariable('SOURCE_DIR', '/content');
+        $this->setContainerVariable('OUTPUT_DIR', '/public');
+
+        $result = $this->service->generateOutputPath('/content-evil/secret.md', $this->container);
+
+        $this->assertSame('/public' . DIRECTORY_SEPARATOR . 'secret.md', $result);
     }
 
     public function testGenerateOutputPathThrowsWhenSourceDirMissing(): void

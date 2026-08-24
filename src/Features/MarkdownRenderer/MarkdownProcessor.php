@@ -14,7 +14,14 @@ class MarkdownProcessor
 {
     private MarkdownConverter $converter;
 
-    public function __construct()
+    /**
+     * @param bool $trustHtml Whether raw HTML in Markdown source is passed through
+     *   unchanged (current default) or escaped. Content authors have always been able
+     *   to write raw HTML in this project's Markdown files; flipping this to false is
+     *   a deliberate per-site opt-in via siteconfig.yaml's `markdown.trust_html`, not
+     *   something this constructor decides on its own.
+     */
+    public function __construct(bool $trustHtml = true)
     {
         // Create the CommonMark environment and converter with table support
         $environment = new Environment();
@@ -28,6 +35,7 @@ class MarkdownProcessor
                 'symbol' => '',
                 'insert' => 'after',
             ],
+            'html_input' => $trustHtml ? 'allow' : 'escape',
         ]);
 
         $this->converter = new MarkdownConverter($environment);

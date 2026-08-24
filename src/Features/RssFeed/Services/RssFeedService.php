@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\RssFeed\Services;
 
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
 use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
 use EICC\Utils\Container;
@@ -14,6 +15,7 @@ class RssFeedService
 {
     private Log $logger;
     private EventManager $eventManager;
+    private OutputWriter $outputWriter;
 
     /**
      * Files organized by category for RSS feeds
@@ -21,10 +23,11 @@ class RssFeedService
      */
     private array $categoryFiles = [];
 
-    public function __construct(Log $logger, EventManager $eventManager)
+    public function __construct(Log $logger, EventManager $eventManager, OutputWriter $outputWriter)
     {
         $this->logger = $logger;
         $this->eventManager = $eventManager;
+        $this->outputWriter = $outputWriter;
     }
 
     /**
@@ -222,14 +225,14 @@ class RssFeedService
 
         // Write RSS file
         $categoryDir = $outputDir . DIRECTORY_SEPARATOR . $categorySlug;
-        if (!is_dir($categoryDir)) {
-            mkdir($categoryDir, 0755, true);
-        }
-
         $rssPath = $categoryDir . DIRECTORY_SEPARATOR . 'rss.xml';
-        file_put_contents($rssPath, $xml);
 
-        $this->logger->log('INFO', "Generated RSS feed: {$rssPath} with " . count($files) . " items");
+        try {
+            $this->outputWriter->write($rssPath, $xml);
+            $this->logger->log('INFO', "Generated RSS feed: {$rssPath} with " . count($files) . " items");
+        } catch (\Throwable $e) {
+            $this->logger->log('ERROR', "Failed to write RSS feed to {$rssPath}: " . $e->getMessage());
+        }
     }
 
     // --- Helper Methods ---

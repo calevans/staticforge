@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\MarkdownRenderer\Services;
 
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
 use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
 use EICC\StaticForge\Services\BaseRendererService;
@@ -68,21 +69,12 @@ class MarkdownRendererService extends BaseRendererService
                     throw new \RuntimeException('SOURCE_DIR not set in container');
                 }
 
-                // Allow vfs:// paths for testing
-                if (strpos($filePath, 'vfs://') === 0) {
-                    $realSourceDir = $sourceDir;
-                    $realFilePath = $filePath;
-                } else {
-                    $realSourceDir = realpath($sourceDir);
-                    $realFilePath = realpath($filePath);
-
-                    if (
-                        $realSourceDir === false
-                        || $realFilePath === false
-                        || strpos($realFilePath, $realSourceDir) !== 0
-                    ) {
-                        throw new \RuntimeException("Security Error: File path is outside the allowed source directory: {$filePath}");
-                    }
+                try {
+                    $realFilePath = PathGuard::resolveInside($filePath, $sourceDir);
+                } catch (\RuntimeException $e) {
+                    throw new \RuntimeException(
+                        "Security Error: File path is outside the allowed source directory: {$filePath}"
+                    );
                 }
 
                 if (!is_readable($realFilePath)) {

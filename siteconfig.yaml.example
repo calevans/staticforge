@@ -167,6 +167,14 @@ tags:
   # Number of files per tag archive page before pagination kicks in (default: 10)
   items_per_page: 10
 
+# Markdown Configuration
+markdown:
+  # Whether raw HTML written in Markdown source is passed through unchanged
+  # (true, default — this is today's behavior) or HTML-escaped (false).
+  # Flip to false only after reviewing your content/ for raw HTML you'd
+  # break by escaping it.
+  trust_html: true
+
 # Responsive Images Configuration
 # Generates resized image variants and rewrites <img> tags to <picture>/srcset
 # for content images referenced in rendered HTML (markdown or raw HTML pages).

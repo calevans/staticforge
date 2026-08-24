@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Sitemap\Services;
 
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class SitemapService
 {
     private Log $logger;
+    private OutputWriter $outputWriter;
 
     /**
      * Collected URLs for the sitemap
@@ -17,9 +19,10 @@ class SitemapService
      */
     private array $urls = [];
 
-    public function __construct(Log $logger)
+    public function __construct(Log $logger, OutputWriter $outputWriter)
     {
         $this->logger = $logger;
+        $this->outputWriter = $outputWriter;
     }
 
     /**
@@ -125,10 +128,11 @@ class SitemapService
         }
         $sitemapPath = $outputDir . '/sitemap.xml';
 
-        if (file_put_contents($sitemapPath, $xml) === false) {
-            $this->logger->log('ERROR', 'Failed to write sitemap.xml to ' . $sitemapPath);
-        } else {
+        try {
+            $this->outputWriter->write($sitemapPath, $xml);
             $this->logger->log('INFO', 'sitemap.xml generated successfully');
+        } catch (\Throwable $e) {
+            $this->logger->log('ERROR', 'Failed to write sitemap.xml to ' . $sitemapPath . ': ' . $e->getMessage());
         }
 
         return $parameters;

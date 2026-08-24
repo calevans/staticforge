@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\TemplateAssets\Services;
 
+use EICC\StaticForge\Core\PathGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use RecursiveIteratorIterator;
@@ -97,7 +98,13 @@ class TemplateAssetsService
 
         $newContent = preg_replace_callback($pattern, function ($matches) use ($cssDir) {
             $importPath = $matches[1];
-            $fullPath = $cssDir . DIRECTORY_SEPARATOR . $importPath;
+
+            try {
+                $fullPath = PathGuard::resolveInside($cssDir . DIRECTORY_SEPARATOR . $importPath, $cssDir);
+            } catch (\RuntimeException $e) {
+                $this->logger->log('WARNING', "CSS import escapes the theme css directory: {$importPath}");
+                return $matches[0];
+            }
 
             if (file_exists($fullPath)) {
                 $this->logger->log('DEBUG', "Resolving CSS import: {$importPath}");

@@ -51,7 +51,18 @@ Pretty *exciting*, right?
 - Content is wrapped in your chosen template
 - File saved as `output/blog-post.html`
 
-**No configuration needed** - just create `.md` files and go!
+**No configuration needed by default** - just create `.md` files and go!
+
+## Raw HTML in Markdown
+
+By default, raw HTML written inside a `.md` file is passed through to the output unchanged - this has always been the behavior. If you want raw HTML escaped instead (for example, because your content comes from a source you don't fully trust), opt in via `siteconfig.yaml`:
+
+```yaml
+markdown:
+  trust_html: false
+```
+
+Review your existing `content/` for raw HTML before flipping this - escaping is applied site-wide.
 
 ## Draft Content
 

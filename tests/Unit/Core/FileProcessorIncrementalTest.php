@@ -8,6 +8,7 @@ use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ErrorHandler;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 
 class FileProcessorIncrementalTest extends UnitTestCase
@@ -33,7 +34,11 @@ class FileProcessorIncrementalTest extends UnitTestCase
         $this->eventManager = new EventManager($this->container);
         $this->errorHandler = $this->container->get(ErrorHandler::class);
 
-        $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
+        $this->fileProcessor = new FileProcessor(
+            $this->container,
+            $this->eventManager,
+            $this->container->get(OutputWriter::class)
+        );
     }
 
     protected function tearDown(): void

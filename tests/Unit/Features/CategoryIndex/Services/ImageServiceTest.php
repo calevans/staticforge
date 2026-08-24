@@ -109,6 +109,22 @@ class ImageServiceTest extends UnitTestCase
         $this->assertFileExists($this->outputDir . $result);
     }
 
+    public function testExtractHeroImageFallsBackToOriginalUrlWhenThumbnailGenerationFails(): void
+    {
+        mkdir($this->outputDir . '/images', 0755, true);
+        $imagePath = $this->outputDir . '/images/corrupt.jpg';
+
+        // Not a valid image, so Imagick's constructor throws and generateThumbnail()
+        // falls back to deriving the URL from the file's location under OUTPUT_DIR.
+        file_put_contents($imagePath, 'not a real image');
+
+        $html = '<p><img src="/images/corrupt.jpg"></p>';
+
+        $result = $this->service->extractHeroImage($html, [], '/src/post.md', $this->container);
+
+        $this->assertSame('/images/corrupt.jpg', $result);
+    }
+
     public function testExtractHeroImageReturnsNullWhenNoImageFound(): void
     {
         $result = $this->service->extractHeroImage('<p>No images here at all.</p>', [], '/src/post.md', $this->container);

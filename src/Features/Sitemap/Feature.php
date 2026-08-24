@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\Sitemap;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Sitemap\Services\SitemapService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -33,7 +34,7 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         parent::register($eventManager);
         $this->logger = $this->container->get('logger');
-        $this->service = new SitemapService($this->logger);
+        $this->service = new SitemapService($this->logger, $this->container->get(OutputWriter::class));
         $this->logger->log('INFO', 'Sitemap Feature registered');
     }
 
@@ -61,4 +62,3 @@ class Feature extends BaseFeature implements FeatureInterface
         return $this->service->generateSitemap($container, $parameters);
     }
 }
-

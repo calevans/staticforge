@@ -6,6 +6,7 @@ use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ErrorHandler;
+use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -24,7 +25,11 @@ class FileProcessorTest extends UnitTestCase
         // use the same bootstrapped instance here to observe its error statistics.
         $this->errorHandler = $this->container->get(ErrorHandler::class);
 
-        $this->fileProcessor = new FileProcessor($this->container, $this->eventManager);
+        $this->fileProcessor = new FileProcessor(
+            $this->container,
+            $this->eventManager,
+            $this->container->get(OutputWriter::class)
+        );
     }
 
     public function testProcessFilesWithNoFiles(): void
@@ -233,7 +238,7 @@ class EventTrackingListener
     {
         $this->record('RENDER', $parameters);
         $parameters['rendered_content'] = 'mock content';
-        $parameters['output_path'] = '/tmp/output.html';
+        $parameters['output_path'] = rtrim((string) $container->getVariable('OUTPUT_DIR'), '/') . '/output.html';
         return $parameters;
     }
 
@@ -259,4 +264,3 @@ class EventTrackingListener
         $this->lastParameters = $parameters;
     }
 }
-

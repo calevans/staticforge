@@ -18,6 +18,7 @@ class FileProcessor
     private Log $logger;
     private EventManager $eventManager;
     private ErrorHandler $errorHandler;
+    private OutputWriter $outputWriter;
 
     /**
      * Track processed output paths to detect duplicates
@@ -26,12 +27,13 @@ class FileProcessor
      */
     private array $processedOutputPaths = [];
 
-    public function __construct(Container $container, EventManager $eventManager)
+    public function __construct(Container $container, EventManager $eventManager, OutputWriter $outputWriter)
     {
         $this->container = $container;
         $this->logger = $container->get('logger');
         $this->eventManager = $eventManager;
         $this->errorHandler = $container->get(ErrorHandler::class);
+        $this->outputWriter = $outputWriter;
     }
 
     /**
@@ -290,45 +292,6 @@ class FileProcessor
      */
     private function writeOutputFile(string $outputPath, string $content): void
     {
-        // Ensure output directory exists
-        $outputDirPath = dirname($outputPath);
-        if (!is_dir($outputDirPath)) {
-            if (!mkdir($outputDirPath, 0755, true) && !is_dir($outputDirPath)) {
-                throw new FileProcessingException(
-                    "Failed to create output directory: {$outputDirPath}",
-                    $outputPath,
-                    'write'
-                );
-            }
-        }
-
-        // Write to a temp file first, then atomically rename into place. This protects
-        // against partially-written output files if the process is killed mid-write,
-        // which matters for incremental builds: a truncated file with a fresh mtime
-        // would otherwise be wrongly treated as cacheable on the next build.
-        $tempPath = $outputPath . '.tmp';
-
-        $bytesWritten = file_put_contents($tempPath, $content);
-
-        if ($bytesWritten === false) {
-            throw new FileProcessingException(
-                "Failed to write output file: {$outputPath}",
-                $outputPath,
-                'write'
-            );
-        }
-
-        if (!rename($tempPath, $outputPath)) {
-            throw new FileProcessingException(
-                "Failed to finalize output file: {$outputPath}",
-                $outputPath,
-                'write'
-            );
-        }
-
-        $this->logger->log('INFO', "Written {$bytesWritten} bytes to {$outputPath}", [
-            'output' => $outputPath,
-            'size' => $bytesWritten,
-        ]);
+        $this->outputWriter->write($outputPath, $content);
     }
 }

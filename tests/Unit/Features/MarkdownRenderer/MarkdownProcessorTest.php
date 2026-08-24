@@ -39,4 +39,25 @@ class MarkdownProcessorTest extends TestCase
         // Check for the anchor link (empty symbol)
         $this->assertStringContainsString('href="#content-my-heading"', $html);
     }
+
+    public function testTrustHtmlDefaultsToAllowingRawHtml(): void
+    {
+        $html = $this->processor->convert('<div class="raw">raw html</div>');
+        $this->assertStringContainsString('<div class="raw">raw html</div>', $html);
+    }
+
+    public function testTrustHtmlExplicitTrueAllowsRawHtml(): void
+    {
+        $processor = new MarkdownProcessor(true);
+        $html = $processor->convert('<div class="raw">raw html</div>');
+        $this->assertStringContainsString('<div class="raw">raw html</div>', $html);
+    }
+
+    public function testTrustHtmlFalseEscapesRawHtml(): void
+    {
+        $processor = new MarkdownProcessor(false);
+        $html = $processor->convert('<div class="raw">raw html</div>');
+        $this->assertStringNotContainsString('<div class="raw">', $html);
+        $this->assertStringContainsString('&lt;div class="raw"&gt;', $html);
+    }
 }

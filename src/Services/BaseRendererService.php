@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Services;
 
+use EICC\StaticForge\Core\PathGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Gajus\Dindent\Indenter;
@@ -95,18 +96,7 @@ abstract class BaseRendererService
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
 
-        // Normalize paths for comparison (handle both real and virtual filesystems)
-        $normalizedSourceDir = rtrim($sourceDir, DIRECTORY_SEPARATOR);
-        $normalizedInputPath = $inputPath;
-
-        // Check if input path starts with source directory
-        if (strpos($normalizedInputPath, $normalizedSourceDir) === 0) {
-            // Get path relative to source directory
-            $relativePath = substr($normalizedInputPath, strlen($normalizedSourceDir) + 1);
-        } else {
-            // Fallback to filename only
-            $relativePath = basename($inputPath);
-        }
+        $relativePath = PathGuard::relativeTo($inputPath, $sourceDir) ?? basename($inputPath);
 
         if ($targetExtension) {
             $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
@@ -117,9 +107,6 @@ abstract class BaseRendererService
             }
         }
 
-        // Build output path preserving directory structure
-        // Use DIRECTORY_SEPARATOR or / consistently. The existing code used DIRECTORY_SEPARATOR in one place and / in another.
-        // Let's use DIRECTORY_SEPARATOR.
         $outputPath = $outputDir . DIRECTORY_SEPARATOR . $relativePath;
 
         return $outputPath;
