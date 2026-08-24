@@ -12,10 +12,12 @@ use Symfony\Component\Console\Tester\CommandTester;
 class InitCommandTest extends UnitTestCase
 {
     private string $testDir;
+    private string $originalCwd;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->originalCwd = getcwd();
         $this->testDir = sys_get_temp_dir() . '/staticforge_init_test_' . uniqid();
         mkdir($this->testDir);
         chdir($this->testDir);
@@ -23,6 +25,7 @@ class InitCommandTest extends UnitTestCase
 
     protected function tearDown(): void
     {
+        chdir($this->originalCwd);
         $this->removeDirectory($this->testDir);
     }
 
@@ -127,6 +130,4 @@ class InitCommandTest extends UnitTestCase
         $this->assertNotFalse($content);
         $this->assertStringContainsString('SITE_NAME=NewContent', $content);
     }
-
 }
-

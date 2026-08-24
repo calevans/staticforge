@@ -10,6 +10,7 @@ services:
     type: php:8.5
     extensions:
       - gd
+      - pcov
     build_as_root:
       - /app/scripts/build-as-root.sh
       - a2enmod headers rewrite deflate expires
