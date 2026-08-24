@@ -42,7 +42,7 @@ class FormsServiceTest extends TestCase
 
         $this->twig->expects($this->once())
             ->method('render')
-            ->with('staticforce/_form.html.twig', $this->callback(function($context) {
+            ->with('staticforce/_form.html.twig', $this->callback(function ($context) {
                 return $context['endpoint'] === 'https://api.example.com/submit?FORMID=123';
             }))
             ->willReturn('<form>Default</form>');
@@ -184,6 +184,67 @@ class FormsServiceTest extends TestCase
             unlink($outsideFile);
             rmdir($sourceDir);
         }
+    }
+
+    public function testGenerateFormHtmlDropsNonHttpsProviderUrl(): void
+    {
+        $config = [
+            'provider_url' => 'http://api.example.com/submit',
+            'form_id' => '123',
+        ];
+
+        $this->logger->expects($this->once())
+            ->method('log')
+            ->with('WARNING', $this->stringContains('provider_url'));
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with('staticforce/_form.html.twig', $this->callback(function ($context) {
+                return $context['endpoint'] === '';
+            }))
+            ->willReturn('<form></form>');
+
+        $this->service->generateFormHtml($config, 'default');
+    }
+
+    public function testGenerateFormHtmlDropsNonHttpsChallengeUrl(): void
+    {
+        $config = [
+            'provider_url' => 'https://api.example.com/submit',
+            'form_id' => '123',
+            'challenge_url' => 'javascript:alert(1)',
+        ];
+
+        $this->logger->expects($this->once())
+            ->method('log')
+            ->with('WARNING', $this->stringContains('challenge_url'));
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with('staticforce/_form.html.twig', $this->callback(function ($context) {
+                return $context['challenge_url'] === null;
+            }))
+            ->willReturn('<form></form>');
+
+        $this->service->generateFormHtml($config, 'default');
+    }
+
+    public function testGenerateFormHtmlKeepsHttpsChallengeUrl(): void
+    {
+        $config = [
+            'provider_url' => 'https://api.example.com/submit',
+            'form_id' => '123',
+            'challenge_url' => 'https://altcha.example.com/challenge',
+        ];
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with('staticforce/_form.html.twig', $this->callback(function ($context) {
+                return $context['challenge_url'] === 'https://altcha.example.com/challenge';
+            }))
+            ->willReturn('<form></form>');
+
+        $this->service->generateFormHtml($config, 'default');
     }
 
     public function testGenerateFormHtmlAppendsFormIdWithAmpersandWhenQueryParamsPresent(): void

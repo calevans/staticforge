@@ -119,6 +119,64 @@ class SftpConfigLoaderTest extends UnitTestCase
         $this->assertEquals('secret', $config['password']);
     }
 
+    public function testLoadConfigurationDerivesKnownHostsPathFromKeyPath(): void
+    {
+        $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+        $this->setContainerVariable('SFTP_HOST', 'example.com');
+        $this->setContainerVariable('SFTP_USERNAME', 'user');
+        $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www');
+        $this->setContainerVariable('SFTP_PRIVATE_KEY_PATH', '/home/user/.ssh/id_ed25519');
+        $input = new ArrayInput([], $this->definition);
+
+        $config = $this->loader->load($input, $this->container);
+
+        $this->assertSame('/home/user/.ssh/known_hosts', $config['known_hosts_path']);
+    }
+
+    public function testLoadConfigurationFallsBackToHomeSshForKnownHostsPath(): void
+    {
+        $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+        $this->setContainerVariable('SFTP_HOST', 'example.com');
+        $this->setContainerVariable('SFTP_USERNAME', 'user');
+        $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www');
+        $this->setContainerVariable('SFTP_PASSWORD', 'secret');
+        $input = new ArrayInput([], $this->definition);
+
+        $config = $this->loader->load($input, $this->container);
+
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        $this->assertSame(($home ?: sys_get_temp_dir()) . '/.ssh/known_hosts', $config['known_hosts_path']);
+    }
+
+    public function testLoadConfigurationPicksUpHostKeyOverride(): void
+    {
+        $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+        $this->setContainerVariable('SFTP_HOST', 'example.com');
+        $this->setContainerVariable('SFTP_USERNAME', 'user');
+        $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www');
+        $this->setContainerVariable('SFTP_PASSWORD', 'secret');
+        $this->setContainerVariable('SFTP_HOST_KEY', 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA');
+        $input = new ArrayInput([], $this->definition);
+
+        $config = $this->loader->load($input, $this->container);
+
+        $this->assertSame('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA', $config['host_key']);
+    }
+
+    public function testLoadConfigurationHostKeyDefaultsToNull(): void
+    {
+        $this->setContainerVariable('OUTPUT_DIR', __DIR__);
+        $this->setContainerVariable('SFTP_HOST', 'example.com');
+        $this->setContainerVariable('SFTP_USERNAME', 'user');
+        $this->setContainerVariable('SFTP_REMOTE_PATH', '/var/www');
+        $this->setContainerVariable('SFTP_PASSWORD', 'secret');
+        $input = new ArrayInput([], $this->definition);
+
+        $config = $this->loader->load($input, $this->container);
+
+        $this->assertNull($config['host_key']);
+    }
+
     public function testLoadConfigurationWithInputOverride(): void
     {
         $this->setContainerVariable('OUTPUT_DIR', '/tmp'); // Should be ignored

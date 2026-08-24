@@ -50,6 +50,7 @@ class SftpConfigLoader
 
         $keyPassphrase = $container->getVariable('SFTP_PRIVATE_KEY_PASSPHRASE');
         $remotePath = $container->getVariable('SFTP_REMOTE_PATH');
+        $hostKey = $container->getVariable('SFTP_HOST_KEY') ?: null;
 
         // Validate required settings
         if (!$host) {
@@ -78,6 +79,22 @@ class SftpConfigLoader
             'key_path' => $keyPath,
             'key_passphrase' => $keyPassphrase,
             'remote_path' => rtrim($remotePath, '/'),
+            'host_key' => $hostKey,
+            'known_hosts_path' => $this->resolveKnownHostsPath($keyPath),
         ];
+    }
+
+    /**
+     * Trust-on-first-use host key store lives next to the identity key when
+     * one is configured, otherwise falls back to the conventional ~/.ssh location.
+     */
+    private function resolveKnownHostsPath(?string $keyPath): string
+    {
+        if ($keyPath) {
+            return dirname($keyPath) . '/known_hosts';
+        }
+
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        return ($home ?: sys_get_temp_dir()) . '/.ssh/known_hosts';
     }
 }

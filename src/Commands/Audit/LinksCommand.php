@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands\Audit;
 
+use EICC\StaticForge\Services\UrlSafetyValidator;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -124,7 +125,9 @@ class LinksCommand extends Command
 
         foreach ($htmlFiles as $filePath) {
             $html = file_get_contents($filePath);
-            if ($html === false) continue;
+            if ($html === false) {
+                continue;
+            }
 
             $crawler = new Crawler($html);
             $baseHref = null;
@@ -289,7 +292,9 @@ class LinksCommand extends Command
                     $targetUrl = $this->targetBaseUrl . $href;
                 } else {
                     $dir = dirname($relativePath);
-                    if ($dir === '/' || $dir === '\\') $dir = '';
+                    if ($dir === '/' || $dir === '\\') {
+                        $dir = '';
+                    }
                     $targetUrl = $this->targetBaseUrl . $dir . '/' . $href;
                 }
             }
@@ -340,7 +345,7 @@ class LinksCommand extends Command
             } catch (\Exception $e) {
                  $reqUrl = $this->findUrlByResponse($responses, $response);
                  $originalUrl = $transportMap[$reqUrl] ?? $reqUrl;
-                 if ($originalUrl && isset($urlMap[$originalUrl])) {
+                if ($originalUrl && isset($urlMap[$originalUrl])) {
                     foreach ($urlMap[$originalUrl] as $context) {
                         $errors[] = [
                             'source' => $context['source'],
@@ -348,7 +353,7 @@ class LinksCommand extends Command
                             'reason' => $e->getMessage()
                         ];
                     }
-                 }
+                }
             }
         }
 
@@ -370,6 +375,12 @@ class LinksCommand extends Command
 
         $responses = [];
         foreach ($urls as $url) {
+            try {
+                UrlSafetyValidator::assertSafe($url);
+            } catch (InvalidArgumentException $e) {
+                $this->addError($errors, $url, $e->getMessage(), $urlMap);
+                continue;
+            }
             $responses[$url] = $this->httpClient->request('GET', $url);
         }
 
@@ -380,14 +391,18 @@ class LinksCommand extends Command
             try {
                 if ($chunk->isTimeout()) {
                     $u = $this->findUrlByResponse($responses, $response);
-                    if ($u) $this->addError($errors, $u, 'Timeout', $urlMap);
+                    if ($u) {
+                        $this->addError($errors, $u, 'Timeout', $urlMap);
+                    }
                     $response->cancel();
                 }
                 if ($chunk->isFirst()) {
                     $statusCode = $response->getStatusCode();
                     if ($statusCode >= 400) {
                         $u = $this->findUrlByResponse($responses, $response);
-                        if ($u) $this->addError($errors, $u, "HTTP {$statusCode}", $urlMap);
+                        if ($u) {
+                            $this->addError($errors, $u, "HTTP {$statusCode}", $urlMap);
+                        }
                         $response->cancel();
                     }
                 }
@@ -396,7 +411,9 @@ class LinksCommand extends Command
                 }
             } catch (\Exception $e) {
                  $u = $this->findUrlByResponse($responses, $response);
-                 if ($u) $this->addError($errors, $u, "Connection Error: " . $e->getMessage(), $urlMap);
+                if ($u) {
+                    $this->addError($errors, $u, "Connection Error: " . $e->getMessage(), $urlMap);
+                }
                  $progressBar->advance();
             }
         }
@@ -412,7 +429,9 @@ class LinksCommand extends Command
     private function findUrlByResponse(array $responses, ResponseInterface $response): ?string
     {
         foreach ($responses as $url => $r) {
-            if ($r === $response) return $url;
+            if ($r === $response) {
+                return $url;
+            }
         }
         return null;
     }
@@ -439,17 +458,12 @@ class LinksCommand extends Command
      */
     protected function buildHttpClientOptions(bool $external): array
     {
-        $options = [
+        return [
             'headers' => ['User-Agent' => 'StaticForge-LinkChecker/1.0'],
             'timeout' => 5,
             'verify_peer' => !$this->insecure,
             'verify_host' => !$this->insecure,
+            'max_redirects' => $external ? 3 : 5,
         ];
-
-        if ($external) {
-            $options['max_redirects'] = 3;
-        }
-
-        return $options;
     }
 }

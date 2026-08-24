@@ -93,11 +93,13 @@ class FormsService
      */
     public function generateFormHtml(array $config, string $activeTemplate): string
     {
-        $providerUrl = $config['provider_url'] ?? '';
+        $providerUrl = $this->requireHttpsUrl($config['provider_url'] ?? '', 'provider_url');
         $formId = $config['form_id'] ?? '';
 
         // Ensure provider URL ends with ? or & if it has query params, or add ?FORMID=
-        if (strpos($providerUrl, '?') !== false) {
+        if ($providerUrl === '') {
+            $endpoint = '';
+        } elseif (strpos($providerUrl, '?') !== false) {
             $endpoint = $providerUrl . '&FORMID=' . $formId;
         } else {
             $endpoint = $providerUrl . '?FORMID=' . $formId;
@@ -105,7 +107,7 @@ class FormsService
 
         $context = [
             'endpoint' => $endpoint,
-            'challenge_url' => $config['challenge_url'] ?? null,
+            'challenge_url' => $this->requireHttpsUrl($config['challenge_url'] ?? '', 'challenge_url') ?: null,
             'submit_text' => $config['submit_text'] ?? 'Submit',
             'success_message' => $config['success_message'] ?? 'Thank you for your message.',
             'error_message' => $config['error_message'] ?? 'There was an error sending your message.',
@@ -125,5 +127,20 @@ class FormsService
         }
 
         return $this->twig->render('staticforce/_form.html.twig', $context);
+    }
+
+    /**
+     * Returns $url unchanged if it's https: (or empty), otherwise logs a warning
+     * and returns an empty string so an http:/javascript:-shaped value never
+     * reaches rendered HTML.
+     */
+    private function requireHttpsUrl(string $url, string $configKey): string
+    {
+        if ($url === '' || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        $this->logger->log('WARNING', "Form {$configKey} must use https:, ignoring: {$url}");
+        return '';
     }
 }

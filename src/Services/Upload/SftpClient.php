@@ -44,6 +44,11 @@ class SftpClient
             $this->logger->log('DEBUG', sprintf('Connecting to %s:%d', $config['host'], $config['port']));
             $this->sftp = new SFTP($config['host'], $config['port']);
 
+            if (!$this->verifyHostKey($this->sftp, $config)) {
+                $this->sftp = null;
+                return false;
+            }
+
             // Try key-based authentication first if configured
             if (!empty($config['key_path'])) {
                 $this->logger->log('DEBUG', sprintf('Attempting key auth with: %s', $config['key_path']));
@@ -68,6 +73,58 @@ class SftpClient
             $this->logger->log('ERROR', 'SFTP connection failed', ['error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    /**
+     * Trust-on-first-use host key verification. Called immediately after the
+     * SSH handshake and before any credentials are sent, so a host that fails
+     * verification never sees them:
+     *
+     * - An explicit SFTP_HOST_KEY config value pins and overrides the store.
+     * - No stored key yet: trust this connection, record the key, continue.
+     * - Stored key present and it doesn't match: fail closed - possible MITM.
+     *
+     * @param array<string, mixed> $config
+     */
+    private function verifyHostKey(SFTP $sftp, array $config): bool
+    {
+        $presented = $sftp->getServerPublicHostKey();
+        if ($presented === false) {
+            $this->logger->log('ERROR', 'SFTP handshake failed - could not retrieve server host key');
+            return false;
+        }
+
+        if (!empty($config['host_key'])) {
+            if ($presented !== $config['host_key']) {
+                $this->logger->log('ERROR', 'SFTP host key does not match configured SFTP_HOST_KEY', [
+                    'host' => $config['host'],
+                ]);
+                $sftp->disconnect();
+                return false;
+            }
+            return true;
+        }
+
+        $store = new KnownHostsStore($config['known_hosts_path']);
+        $stored = $store->getStoredKey($config['host'], $config['port']);
+
+        if ($stored === null) {
+            $this->logger->log('INFO', 'First connection to this SFTP host - trusting and recording its host key', [
+                'host' => $config['host'],
+            ]);
+            $store->remember($config['host'], $config['port'], $presented);
+            return true;
+        }
+
+        if ($stored !== $presented) {
+            $this->logger->log('ERROR', 'SFTP host key changed since last connection - possible MITM, refusing', [
+                'host' => $config['host'],
+            ]);
+            $sftp->disconnect();
+            return false;
+        }
+
+        return true;
     }
 
     /**

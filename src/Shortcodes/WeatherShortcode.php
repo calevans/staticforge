@@ -46,7 +46,7 @@ class WeatherShortcode extends BaseShortcode
             }
         }
 
-        if (!$lat || !$long) {
+        if (!$this->isValidCoordinate($lat, -90, 90) || !$this->isValidCoordinate($long, -180, 180)) {
             return '<!-- Weather shortcode requires lat/long or valid zip -->';
         }
 
@@ -74,6 +74,11 @@ class WeatherShortcode extends BaseShortcode
         ]);
     }
 
+    private function isValidCoordinate(mixed $value, float $min, float $max): bool
+    {
+        return is_numeric($value) && (float) $value >= $min && (float) $value <= $max;
+    }
+
     /**
      * @return array{lat: float, lon: float, name: string}|null
      */
@@ -83,7 +88,7 @@ class WeatherShortcode extends BaseShortcode
         $data = $this->getFromCache($cacheKey);
 
         if (!$data) {
-            $url = "https://api.zippopotam.us/{$country}/{$zip}";
+            $url = 'https://api.zippopotam.us/' . rawurlencode($country) . '/' . rawurlencode($zip);
             $json = $this->fetchJson($url);
 
             if (isset($json['places'][0])) {
@@ -116,7 +121,11 @@ class WeatherShortcode extends BaseShortcode
         $data = $this->getFromCache($cacheKey, 3600); // 1 hour cache
 
         if (!$data) {
-            $url = "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$long}&current_weather=true";
+            $url = 'https://api.open-meteo.com/v1/forecast?' . http_build_query([
+                'latitude' => $lat,
+                'longitude' => $long,
+                'current_weather' => 'true',
+            ]);
             $json = $this->fetchJson($url);
 
             if (isset($json['current_weather']) && is_array($json['current_weather'])) {

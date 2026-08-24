@@ -103,6 +103,48 @@ class DevServerCommandTest extends UnitTestCase
         $this->assertFalse($result);
     }
 
+    public function testInitializePlacesRouterFileOutsidePublicDir(): void
+    {
+        mkdir($this->tempCwd . '/public', 0755, true);
+
+        $command = new DevServerCommand();
+        $method = new ReflectionMethod($command, 'initialize');
+        $method->setAccessible(true);
+
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $input->bind($command->getDefinition());
+        $output = new \Symfony\Component\Console\Output\NullOutput();
+        $method->invoke($command, $input, $output);
+
+        $publicDirProp = new ReflectionProperty($command, 'publicDir');
+        $publicDirProp->setAccessible(true);
+        $routerFileProp = new ReflectionProperty($command, 'routerFile');
+        $routerFileProp->setAccessible(true);
+
+        $publicDir = $publicDirProp->getValue($command);
+        $routerFile = $routerFileProp->getValue($command);
+
+        // Regression: a live site:render wipes and regenerates publicDir, which
+        // would delete the router file out from under a running dev server.
+        $this->assertStringStartsNotWith($publicDir, $routerFile);
+        $this->assertStringStartsWith(sys_get_temp_dir(), $routerFile);
+    }
+
+    public function testGetRouterTemplateResolvesFilesRelativeToWorkingDirectory(): void
+    {
+        // Regression: the router script must resolve requested files via getcwd(),
+        // not __DIR__ - the built-in server sets cwd to the docroot per request,
+        // but the router script itself now lives outside that docroot.
+        $command = new DevServerCommand();
+        $method = new ReflectionMethod($command, 'getRouterTemplate');
+        $method->setAccessible(true);
+
+        $template = $method->invoke($command);
+
+        $this->assertStringContainsString('getcwd()', $template);
+        $this->assertStringNotContainsString('__DIR__', $template);
+    }
+
     public function testGetRouterTemplateContainsExpected404Markup(): void
     {
         $command = new DevServerCommand();
@@ -119,7 +161,7 @@ class DevServerCommandTest extends UnitTestCase
     public function testCleanupRemovesRouterFileWhenPresent(): void
     {
         mkdir($this->tempCwd . '/public', 0755, true);
-        $routerFile = $this->tempCwd . '/public/.ht.route.php';
+        $routerFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
         file_put_contents($routerFile, '<?php // router');
 
         $command = new DevServerCommand();
@@ -143,10 +185,11 @@ class DevServerCommandTest extends UnitTestCase
 
         $routerFileProp = new ReflectionProperty($command, 'routerFile');
         $routerFileProp->setAccessible(true);
-        $routerFileProp->setValue($command, $this->tempCwd . '/public/.ht.route.php');
+        $missingRouterFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
+        $routerFileProp->setValue($command, $missingRouterFile);
 
         // Should not throw even though the file was never created
         $command->cleanup();
-        $this->assertFileDoesNotExist($this->tempCwd . '/public/.ht.route.php');
+        $this->assertFileDoesNotExist($missingRouterFile);
     }
 }

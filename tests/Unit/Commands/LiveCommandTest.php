@@ -13,7 +13,7 @@ class LiveCommandTest extends UnitTestCase
 {
     public function testCurlDefaultsVerifyTlsByDefault(): void
     {
-        $command = new class($this->container) extends LiveCommand {
+        $command = new class ($this->container) extends LiveCommand {
             /**
              * @return array<int, mixed>
              */
@@ -31,7 +31,7 @@ class LiveCommandTest extends UnitTestCase
 
     public function testCurlDefaultsDisableTlsWhenInsecure(): void
     {
-        $command = new class($this->container) extends LiveCommand {
+        $command = new class ($this->container) extends LiveCommand {
             public function setInsecureForTest(bool $value): void
             {
                 $this->insecure = $value;
@@ -51,6 +51,51 @@ class LiveCommandTest extends UnitTestCase
 
         $this->assertFalse($defaults[CURLOPT_SSL_VERIFYPEER]);
         $this->assertSame(0, $defaults[CURLOPT_SSL_VERIFYHOST]);
+    }
+
+    public function testCurlDefaultsRestrictRedirectsAndProtocols(): void
+    {
+        $command = new class ($this->container) extends LiveCommand {
+            /**
+             * @return array<int, mixed>
+             */
+            public function getCurlDefaultsForTest(string $url): array
+            {
+                return $this->buildCurlDefaults($url);
+            }
+        };
+
+        $defaults = $command->getCurlDefaultsForTest('https://example.com');
+
+        $this->assertSame(5, $defaults[CURLOPT_MAXREDIRS]);
+        $this->assertSame(CURLPROTO_HTTP | CURLPROTO_HTTPS, $defaults[CURLOPT_PROTOCOLS]);
+        $this->assertSame(CURLPROTO_HTTP | CURLPROTO_HTTPS, $defaults[CURLOPT_REDIR_PROTOCOLS]);
+    }
+
+    public function testRejectsLoopbackUrl(): void
+    {
+        $application = new Application();
+        $application->add(new LiveCommand($this->container));
+        $command = $application->find('audit:live');
+        $tester = new CommandTester($command);
+
+        $exitCode = $tester->execute(['--url' => 'http://127.0.0.1/']);
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('private, loopback, or reserved', $tester->getDisplay());
+    }
+
+    public function testRejectsNonHttpScheme(): void
+    {
+        $application = new Application();
+        $application->add(new LiveCommand($this->container));
+        $command = $application->find('audit:live');
+        $tester = new CommandTester($command);
+
+        $exitCode = $tester->execute(['--url' => 'file:///etc/passwd']);
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('scheme must be http or https', $tester->getDisplay());
     }
 
     public function testFailsWhenNoUrlProvidedOrConfigured(): void

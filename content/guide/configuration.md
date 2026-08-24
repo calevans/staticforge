@@ -270,7 +270,16 @@ SFTP_USERNAME="deploy"
 SFTP_REMOTE_PATH="/var/www/html"
 ```
 
-See the [Going Live](site-management.html#going-live) section for more details on setting up SFTP.
+### SFTP_HOST_KEY
+
+**What it does:** Optionally pins the exact SSH host key expected from `SFTP_HOST`, instead of trust-on-first-use. Leave unset to trust the key presented on your first connection and verify against it on every connection after that.
+
+**Example:**
+```bash
+SFTP_HOST_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
+```
+
+See the [Going Live](site-management.html#going-live) section for more details on setting up SFTP, including how host key verification works.
 
 ---
 

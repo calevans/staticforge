@@ -77,23 +77,38 @@
             if (!container) return;
 
             if (results.length === 0) {
-                container.innerHTML = '';
+                container.replaceChildren();
                 container.style.display = 'none';
                 return;
             }
 
-            const html = results.slice(0, 10).map(result => `
-                <div class="search-result-item">
-                    <a href="${result.url}">
-                        <div class="search-result-title">${result.title}</div>
-                        <div class="search-result-meta">
-                            ${result.category ? `<span class="badge">${result.category}</span>` : ''}
-                        </div>
-                    </a>
-                </div>
-            `).join('');
+            const items = results.slice(0, 10).map(result => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
 
-            container.innerHTML = html;
+                const link = document.createElement('a');
+                link.href = result.url;
+
+                const title = document.createElement('div');
+                title.className = 'search-result-title';
+                title.textContent = result.title;
+                link.appendChild(title);
+
+                const meta = document.createElement('div');
+                meta.className = 'search-result-meta';
+                if (result.category) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge';
+                    badge.textContent = result.category;
+                    meta.appendChild(badge);
+                }
+                link.appendChild(meta);
+
+                item.appendChild(link);
+                return item;
+            });
+
+            container.replaceChildren(...items);
             container.style.display = 'block';
         }
     };

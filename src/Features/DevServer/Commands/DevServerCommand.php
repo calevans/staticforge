@@ -32,7 +32,12 @@ class DevServerCommand extends Command
     {
         $output->writeln("CWD: " . getcwd());
         $this->publicDir = getcwd() . '/public';
-        $this->routerFile = $this->publicDir . '/.ht.route.php';
+        // Deliberately outside OUTPUT_DIR (public/): a live site:render wipes and
+        // regenerates that directory, which would delete the router file out from
+        // under a running dev server. The PHP built-in server accepts an absolute
+        // router-script path regardless of the -t docroot, so this doesn't need to
+        // live inside it. PID-suffixed to avoid collision across concurrent instances.
+        $this->routerFile = sys_get_temp_dir() . '/staticforge-devserver-router-' . getmypid() . '.php';
 
         // Register cleanup function
         register_shutdown_function([$this, 'cleanup']);
@@ -101,7 +106,7 @@ class DevServerCommand extends Command
             escapeshellarg($host),
             $port,
             escapeshellarg($this->publicDir),
-            escapeshellarg('.ht.route.php')
+            escapeshellarg($this->routerFile)
         );
 
         // Change to public directory for the server
@@ -174,7 +179,9 @@ class DevServerCommand extends Command
  */
 
 $requestUri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
-$filePath = __DIR__ . $requestUri;
+// The built-in server sets the working directory to the -t docroot for every
+// request, regardless of where this router script itself lives on disk.
+$filePath = getcwd() . $requestUri;
 
 // If the file exists, let the server handle it normally
 if (is_file($filePath)) {

@@ -77,6 +77,16 @@ SFTP_PRIVATE_KEY_PATH="/home/user/.ssh/id_rsa"
 # SFTP_PASSWORD="your-password"
 ```
 
+### Host Key Verification
+
+`site:upload` verifies the server's SSH host key on every connection using trust-on-first-use: the first time you connect to `SFTP_HOST`, it accepts and records the key the server presents (next to your private key if `SFTP_PRIVATE_KEY_PATH` is set, otherwise in `~/.ssh/known_hosts`). Every connection after that compares against the recorded key and **refuses to connect** if it ever changes — this catches a server impersonating your host after the fact, though a first-connect man-in-the-middle is still possible if `SFTP_HOST` itself is wrong, the same trade-off as `ssh`'s own `StrictHostKeyChecking=accept-new`.
+
+If you already know the server's host key (or want to skip trust-on-first-use entirely), pin it explicitly:
+
+```bash
+SFTP_HOST_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
+```
+
 ### Deploying
 
 Once configured, going live is a single command.
@@ -98,3 +108,4 @@ php vendor/bin/staticforge.php site:upload --url="https://staging.mysite.com"
 *   **Connection Failed**: Check hostname, port (22), and firewall rules.
 *   **Permission Denied**: Ensure the SFTP user has write permissions to `SFTP_REMOTE_PATH`.
 *   **SSH Keys**: Ensure your private key file has strict permissions (`chmod 600`).
+*   **Host key changed since last connection**: uploads refuse to proceed rather than silently trust a new key. If you rebuilt or replaced the server, delete the stale entry from the recorded known-hosts file (or `SFTP_HOST_KEY` if you're pinning explicitly) and reconnect to trust the new key.

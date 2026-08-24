@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands\Audit;
 
+use EICC\StaticForge\Services\UrlSafetyValidator;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -56,6 +57,13 @@ class LiveCommand extends Command
 
         if (!$url) {
             $this->io->error("No URL provided. Use --url or ensure UPLOAD_URL is set in .env");
+            return Command::FAILURE;
+        }
+
+        try {
+            UrlSafetyValidator::assertSafe($url);
+        } catch (\InvalidArgumentException $e) {
+            $this->io->error($e->getMessage());
             return Command::FAILURE;
         }
 
@@ -112,7 +120,7 @@ class LiveCommand extends Command
 
         $this->io->section('Live Audit Results');
         foreach ($issues as $issue) {
-            $typeColor = match($issue['type']) {
+            $typeColor = match ($issue['type']) {
                 'error' => 'red',
                 'warning' => 'yellow',
                 'success' => 'green',
@@ -221,6 +229,9 @@ class LiveCommand extends Command
             CURLOPT_SSL_VERIFYPEER => !$this->insecure,
             CURLOPT_SSL_VERIFYHOST => $this->insecure ? 0 : 2,
             CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
         ];
     }
 
@@ -288,7 +299,6 @@ class LiveCommand extends Command
             } else {
                  $issues[] = ['type' => 'warning', 'scope' => 'SSL', 'message' => "Site is not using HTTPS."];
             }
-
         } catch (\Exception $e) {
              $issues[] = ['type' => 'error', 'scope' => 'Connectivity', 'message' => "Connection failed: " . $e->getMessage()];
         }
@@ -326,7 +336,9 @@ class LiveCommand extends Command
         // 2. X-Content-Type-Options
         // Value might be array if duplicate headers, handle gracefully
         $val = $headers['x-content-type-options'] ?? null;
-        if (is_array($val)) $val = $val[0];
+        if (is_array($val)) {
+            $val = $val[0];
+        }
 
         if (!$val || !str_contains(strtolower($val), 'nosniff')) {
             $issues[] = ['type' => 'warning', 'scope' => 'Security', 'message' => "Missing or invalid 'X-Content-Type-Options' header (should be 'nosniff')."];
@@ -368,7 +380,9 @@ class LiveCommand extends Command
 
         // Content-Encoding
         $encoding = $headers['content-encoding'] ?? null;
-        if (is_array($encoding)) $encoding = $encoding[0];
+        if (is_array($encoding)) {
+            $encoding = $encoding[0];
+        }
 
         if ($encoding && preg_match('/(gzip|deflate|br)/i', $encoding, $matches)) {
             $issues[] = ['type' => 'success', 'scope' => 'Performance', 'message' => "Content-Encoding enabled ({$matches[1]})."];
@@ -423,7 +437,9 @@ class LiveCommand extends Command
         } else {
             // Check content type
             $type = $resSitemap['headers']['content-type'] ?? '';
-            if (is_array($type)) $type = $type[0];
+            if (is_array($type)) {
+                $type = $type[0];
+            }
 
             if (!str_contains($type, 'xml')) {
                  $issues[] = ['type' => 'warning', 'scope' => 'Integrity', 'message' => "sitemap.xml has incorrect Content-Type: {$type}"];
