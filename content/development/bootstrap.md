@@ -88,7 +88,7 @@ It simply requires the bootstrap file and then hands the container to the applic
 $container = require_once __DIR__ . '/../src/bootstrap.php';
 
 // 2. Create the Console Application
-$app = new Symfony\Component\Console\Application('StaticForge', '1.0.0');
+$app = new Symfony\Component\Console\Application('StaticForge', '2.1.0');
 
 // 3. Register Commands
 // We register the core commands. Features will register their own commands later.

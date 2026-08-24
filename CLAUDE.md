@@ -7,6 +7,7 @@ This document serves as the primary context for AI agents working on StaticForge
 **StaticForge** is a PHP 8.4+ static site generator. It compiles content (Markdown/HTML) into a static site (`public/`) using a component-based, event-driven architecture.
 
 -   **Runtime**: Lando (Docker wrapper). **ALL** commands must be prefixed with `lando`.
+-   **Storage**: File-based. There is no application database. Real stores are `content/`, `siteconfig.yaml` / `siteconfig.d/`, `.env`, Twig templates, `public/` (build output), `search.json`, the SFTP upload manifest, and the mtime cache.
 -   **Dependency Injection**: `EICC\Utils\Container` stores configuration, services, and state.
 -   **Event System**: Priority-based execution (0-999). Lower numbers run first.
 -   **Templating**: Twig.
@@ -48,11 +49,11 @@ Features may dispatch their own custom events to allow other features to hook in
 *   **`RSS_BUILDER_INIT`**: Dispatched by `RssFeedService` when the RSS builder is initialized, allowing modification of the channel metadata.
 *   **`RSS_ITEM_BUILDING`**: Dispatched by `RssFeedService` for each item being added to the feed, allowing modification of individual feed items.
 *   **`SEO_AUDIT_PAGE`**: Dispatched by the `SeoCommand` during an SEO audit to allow features to add their own SEO checks to the audit process.
-*   **`EVENT_UPLOAD_CHECK_FILE`**: Dispatched by `SiteUploader` (Deployment feature) before uploading a file, allowing features to skip or modify the upload behavior for specific files.
+*   **`UPLOAD_CHECK_FILE`**: Dispatched by `SiteUploader` (Deployment feature) before uploading a file, allowing features to skip or modify the upload behavior for specific files. (The PHP constant is named `SiteUploader::EVENT_UPLOAD_CHECK_FILE`; the event name it fires is the string `UPLOAD_CHECK_FILE`.)
 
 ## 4. Development Environment & Commands
 
-**MANDATORY**: Always use `lando` prefix for all PHP/database commands.
+**MANDATORY**: Always use `lando` prefix for all PHP commands.
 
 ### Allowed Commands
 You may run these without asking permission:
@@ -62,7 +63,6 @@ lando composer install
 
 # Code style checking
 lando phpcs src/
-# Known issues: 5 coding standard violations in BrightDataService.php, EmailProcessingService.php, GoogleMapsService.php, Property.php, PageController.php
 
 # Code style fixing
 lando phpcbf
@@ -88,11 +88,11 @@ lando rebuild
 ```
 
 ### Key Configuration Files
--   **`.lando.yml`**: Development environment (PHP 8.4, MariaDB 11.3, Apache)
+-   **`.lando.yml`**: Development environment (PHP 8.5, `lamp` recipe — MariaDB sidecar is unused, no application database, Apache)
 -   **`composer.json`**: Dependencies and autoloading (PSR-4, PSR-12 standards)
--   **`phpunit.xml`**: Test configuration with test database
+-   **`phpunit.xml`**: Test configuration
 -   **`phpcs.xml`**: PHP coding standards (PSR-2, PSR-12)
--   **`.env`**: Environment variables (database creds, API keys)
+-   **`.env`**: Environment variables (SFTP creds, API keys)
 -   **`siteconfig.yaml`**: Main site configuration (themes, plugins, site settings)
 
 ## 5. Feature Development Standards ("The Golden Rules")

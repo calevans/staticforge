@@ -14,7 +14,7 @@ class ContentExtractor
      */
     public function extractMarkdownContent(string $content): string
     {
-        // Check for INI frontmatter (--- ... ---)
+        // Check for YAML frontmatter (--- ... ---)
         if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
             return trim($matches[2]);
         }

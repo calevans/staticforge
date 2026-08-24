@@ -109,12 +109,21 @@
     <script src="{{ site_base_url }}assets/js/search.js"></script>
     <script>
         if (window.StaticForgeSearch) {
+            {% if (search.engine|default('minisearch')) == 'fuse' %}
+            window.StaticForgeSearch.init({
+                inputSelector: '#search-input',
+                resultsSelector: '#search-results',
+                fusePath: '{{ site_base_url }}assets/js/fuse.basic.min.js',
+                indexPath: '{{ site_base_url }}search.json'
+            });
+            {% else %}
             window.StaticForgeSearch.init({
                 inputSelector: '#search-input',
                 resultsSelector: '#search-results',
                 minisearchPath: '{{ site_base_url }}assets/js/minisearch.min.js',
                 indexPath: '{{ site_base_url }}search.json'
             });
+            {% endif %}
         }
     </script>
     {% endblock %}

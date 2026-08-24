@@ -6,7 +6,7 @@ applyTo: '**/*.php'
 - Implement all new features from the specified version of php as is reasonable.
 - Use the latest stable version of PHPUnit for testing.
 - Use EICC\Utils for logging and utility functions.
-- We use Doctrine DBAL for database layer.
+- StaticForge is file-based; there is no database layer.
 - Before installing a package, make sure that we aren't already using it or something similar.
 - Follow PSR-12 coding standards for PHP (PSR-2 is deprecated).
 - Do not use static methods unless there is no other way to achieve the same functionality.
@@ -19,8 +19,6 @@ applyTo: '**/*.php'
 - Use type hints for all method parameters and return types.
 - Use nullable types (?string) instead of union types where appropriate.
 - Implement proper input validation and sanitization for all user data.
-- Use prepared statements for all database queries via Doctrine DBAL.
-- Use transactions for multi-step database operations.
 - Implement proper error logging using EICC\Utils with appropriate log levels.
 - Use constants for magic numbers and strings - define them as class constants or global constants.
 - Follow single responsibility principle - one class, one purpose.

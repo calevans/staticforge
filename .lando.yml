@@ -1,12 +1,13 @@
 name: static-forge
 recipe: lamp
+
 config:
   webroot: public
 
 services:
 
   appserver:
-    type: php:8.4
+    type: php:8.5
     extensions:
       - gd
     build_as_root:

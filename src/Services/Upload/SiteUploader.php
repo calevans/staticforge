@@ -101,10 +101,10 @@ class SiteUploader
                 'handled' => false
             ];
 
-            // Fire event to allow plugins (like S3) to intervene
+            // Fire event to allow plugins to intervene (e.g. an external asset-offload package)
             $eventData = $this->eventManager->fire(self::EVENT_UPLOAD_CHECK_FILE, $eventData);
 
-            // If plugin handled the upload (e.g. S3), just record the hash
+            // If a plugin handled the upload itself, just record the hash
             if (!empty($eventData['handled'])) {
                 $this->newManifest[$relativePath] = $currentHash;
                 continue;

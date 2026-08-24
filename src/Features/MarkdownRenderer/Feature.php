@@ -15,7 +15,7 @@ use EICC\Utils\Log;
 
 /**
  * Markdown Renderer Feature - processes .md files during RENDER event
- * Extracts INI frontmatter, converts Markdown to HTML, and applies templates
+ * Extracts YAML frontmatter, converts Markdown to HTML, and applies templates
  */
 class Feature extends BaseRendererFeature implements FeatureInterface
 {

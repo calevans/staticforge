@@ -15,7 +15,7 @@ use EICC\Utils\Log;
 
 /**
  * HTML Renderer Feature - processes .html files during RENDER event
- * Extracts INI metadata, processes content, and writes output files
+ * Extracts frontmatter metadata (YAML, or INI-tagged HTML comment), processes content, and writes output files
  */
 class Feature extends BaseFeature implements FeatureInterface
 {

@@ -110,7 +110,7 @@ class ShortcodeProcessorService
      */
     private function splitFrontmatter(string $content): array
     {
-        // Check for INI frontmatter (--- ... ---)
+        // Check for YAML frontmatter (--- ... ---)
         if (preg_match('/^(---\s*\n.*?\n---\s*\n)(.*)$/s', $content, $matches)) {
             return [
                 'frontmatter' => $matches[1],

@@ -51,6 +51,16 @@ search:
   exclude:
     - /404.html
     - /search.html
+  # Search engine to use: 'minisearch' (default) or 'fuse'
+  # minisearch: Faster for exact matches and prefix search
+  # fuse: Better fuzzy matching (typo tolerance)
+  engine: minisearch
+  # Paths to exclude from the search index (e.g., list pages)
+  exclude_paths:
+    - /tags/
+    - /categories/
+  # Content directories to exclude entirely (e.g., private docs)
+  exclude_content_in: []
 
 # Reading Time Configuration
 reading_time:
@@ -60,21 +70,11 @@ reading_time:
     - /search
   label_singular: "min read"
   label_plural: "min read"
-  # Search engine to use: 'minisearch' (default) or 'fuse'
-  # minisearch: Faster for exact matches and prefix search
-  # fuse: Better fuzzy matching (typo tolerance)
-  engine: minisearch
 
   # Separator between navigation elements (default: |)
   separator: "|"
 
   enabled: true
-  # Paths to exclude from the search index (e.g., list pages)
-  exclude_paths:
-    - /tags/
-    - /categories/
-  # Content directories to exclude entirely (e.g., private docs)
-  exclude_content_in: []
 
 # Forms Configuration
 # Define forms that can be embedded using {{ form('name') }}
@@ -132,20 +132,12 @@ google_analytics:
   enabled: true
   # tracking_id is now set in .env as GOOGLE_ANALYTICS_ID
 
-# S3 Media Offload Configuration
-# Offload static assets to AWS S3
-s3_offload:
-  bucket: "my-static-site-assets"
-  region: "us-east-1"
-  # Optional: Custom endpoint for S3-compatible services (e.g., MinIO, DigitalOcean Spaces)
-  # endpoint: "https://nyc3.digitaloceanspaces.com"
-  # Credentials can be set here or via environment variables / IAM roles
-  # key: "YOUR_AWS_ACCESS_KEY"
-  # secret: "YOUR_AWS_SECRET_KEY"
 #   github: https://github.com/mysite
 
-# Calendars Configuration
-# Define named calendars to be used with the [[calendar name="work"]] shortcode
+# Calendars Configuration (currently a no-op)
+# This key is parsed but not read by any in-tree feature — there is no
+# built-in Calendar feature yet, so the [[calendar name="work"]] shortcode
+# used below is not processed. Accepted as forward-compatible config only.
 calendars:
   work:
     # Default view: month (default), week, or year

@@ -364,6 +364,10 @@ search:
     - /404.html
 ```
 
+### Calendars (Currently a No-op)
+
+`siteconfig.yaml` accepts a `calendars:` key for defining named calendars, but no in-tree Calendar feature reads it yet. It is parsed without error and reserved for future use; the `[[calendar name="..."]]` shortcode is not processed.
+
 ## Version Control
 
 **DO commit `siteconfig.yaml` to version control** - it contains no sensitive information.
