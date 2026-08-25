@@ -72,7 +72,7 @@ class InitCommand extends Command
         'Edit .env to configure your site settings',
         'Add your content to the content/ directory',
         'Customize templates in the templates/ directory',
-        'Run: staticforge render:site to build your site'
+        'Run: php bin/staticforge.php site:render to build your site'
         ]);
 
         return Command::SUCCESS;
@@ -163,7 +163,7 @@ Congratulations! Your StaticForge site has been initialized successfully.
 1. **Edit this content** - Modify files in the `content/` directory
 2. **Customize templates** - Update templates in the `templates/` directory
 3. **Configure your site** - Edit the `.env` file with your site settings
-4. **Build your site** - Run `staticforge render:site`
+4. **Build your site** - Run `php bin/staticforge.php site:render`
 
 ## Features
 

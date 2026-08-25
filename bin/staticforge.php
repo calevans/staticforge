@@ -64,6 +64,7 @@ $app = new Application('StaticForge', '2.1.0');
 // Add commands
 $app->addCommand(new InitCommand());
 $app->addCommand(new ConfigCommand($container));
+$app->addCommand(new ContentCommand($container));
 $app->addCommand(new ContentCreatorCommand($container));
 $app->addCommand(new LinksCommand($container));
 $app->addCommand(new LiveCommand($container));
