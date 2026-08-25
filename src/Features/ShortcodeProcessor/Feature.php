@@ -7,8 +7,9 @@ namespace EICC\StaticForge\Features\ShortcodeProcessor;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\ShortcodeProcessor\Services\ShortcodeProcessorService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class Feature extends BaseFeature implements FeatureInterface
@@ -16,13 +17,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'ShortcodeProcessor';
     protected Log $logger;
     private ShortcodeProcessorService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 50]
-    ];
 
     public function __construct(Log $logger, ShortcodeProcessorService $service)
     {
@@ -39,13 +33,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
     /**
      * Handle PRE_RENDER event
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePreRender(Container $container, array $parameters): array
+    #[EventListener('PRE_RENDER', priority: 50)]
+    public function handlePreRender(RenderEvent $event): void
     {
-        return $this->service->processShortcodes($container, $parameters);
+        $this->service->processShortcodes($event);
     }
 }

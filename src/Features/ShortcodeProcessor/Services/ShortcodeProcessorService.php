@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\ShortcodeProcessor\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Shortcodes\ShortcodeManager;
 use EICC\Utils\Container;
@@ -13,11 +14,13 @@ class ShortcodeProcessorService
 {
     private Log $logger;
     private ShortcodeManager $shortcodeManager;
+    private Container $container;
 
-    public function __construct(Log $logger, ShortcodeManager $shortcodeManager)
+    public function __construct(Log $logger, ShortcodeManager $shortcodeManager, Container $container)
     {
         $this->logger = $logger;
         $this->shortcodeManager = $shortcodeManager;
+        $this->container = $container;
     }
 
     /**
@@ -31,20 +34,16 @@ class ShortcodeProcessorService
     }
 
     /**
-     * Process shortcodes in content during PRE_RENDER
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Process shortcodes in content during PRE_RENDER, mutating $event in place.
      */
-    public function processShortcodes(Container $container, array $parameters): array
+    public function processShortcodes(RenderEvent $event): void
     {
-        $filePath = $parameters['file_path'] ?? null;
+        $filePath = $event->filePath;
 
         // Only process .md files (or others if needed)
         // Shortcodes are primarily for Markdown content.
-        if (!$filePath || pathinfo($filePath, PATHINFO_EXTENSION) !== 'md') {
-            return $parameters;
+        if ($filePath === '' || pathinfo($filePath, PATHINFO_EXTENSION) !== 'md') {
+            return;
         }
 
         $this->logger->log('DEBUG', "Processing shortcodes for: {$filePath}");
@@ -52,11 +51,11 @@ class ShortcodeProcessorService
         // Get content
         // If file_content is already set (by another feature), use it.
         // Otherwise read from file.
-        if (isset($parameters['file_content'])) {
-            $content = $parameters['file_content'];
+        if (isset($event->extra['file_content'])) {
+            $content = $event->extra['file_content'];
         } else {
             // Security: Validate that the file path is within the source directory
-            $sourceDir = $container->getVariable('SOURCE_DIR');
+            $sourceDir = $this->container->getVariable('SOURCE_DIR');
             if (!$sourceDir) {
                 throw new \RuntimeException('SOURCE_DIR not set in container');
             }
@@ -71,13 +70,13 @@ class ShortcodeProcessorService
 
             if (!is_readable($realFilePath)) {
                 $this->logger->log('WARNING', "Failed to read file (unreadable): {$filePath}");
-                return $parameters;
+                return;
             }
 
             $content = file_get_contents($realFilePath);
             if ($content === false) {
                 $this->logger->log('WARNING', "Failed to read file: {$filePath}");
-                return $parameters;
+                return;
             }
         }
 
@@ -92,10 +91,8 @@ class ShortcodeProcessorService
         // Reconstruct content
         $newContent = $frontmatter . $processedBody;
 
-        // Update parameters
-        $parameters['file_content'] = $newContent;
-
-        return $parameters;
+        // Update event
+        $event->extra['file_content'] = $newContent;
     }
 
     /**

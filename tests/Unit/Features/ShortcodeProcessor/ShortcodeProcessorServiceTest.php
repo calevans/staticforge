@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\ShortcodeProcessor;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\ShortcodeProcessor\Services\ShortcodeProcessorService;
 use EICC\StaticForge\Shortcodes\ShortcodeManager;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -21,7 +22,18 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
         parent::setUp();
         $logger = $this->createMock(Log::class);
         $this->shortcodeManager = $this->createMock(ShortcodeManager::class);
-        $this->service = new ShortcodeProcessorService($logger, $this->shortcodeManager);
+        $this->service = new ShortcodeProcessorService($logger, $this->shortcodeManager, $this->container);
+    }
+
+    private function makeEvent(string $filePath, string $fileContent = ''): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: [],
+            extra: $fileContent !== '' ? ['file_content' => $fileContent] : [],
+        );
     }
 
     public function testRegisterReferenceShortcodes(): void
@@ -34,27 +46,25 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
 
     public function testProcessShortcodesIgnoresNonMdFiles(): void
     {
-        $parameters = ['file_path' => 'test.html'];
-        $result = $this->service->processShortcodes($this->container, $parameters);
+        $event = $this->makeEvent('test.html');
 
-        $this->assertSame($parameters, $result);
+        $this->service->processShortcodes($event);
+
+        $this->assertSame([], $event->extra);
     }
 
     public function testProcessShortcodesProcessesMdFiles(): void
     {
-        $parameters = [
-            'file_path' => 'test.md',
-            'file_content' => 'content with [shortcode]'
-        ];
+        $event = $this->makeEvent('test.md', 'content with [shortcode]');
 
         $this->shortcodeManager->expects($this->once())
             ->method('process')
             ->with('content with [shortcode]')
             ->willReturn('processed content');
 
-        $result = $this->service->processShortcodes($this->container, $parameters);
+        $this->service->processShortcodes($event);
 
-        $this->assertEquals('processed content', $result['file_content']);
+        $this->assertEquals('processed content', $event->extra['file_content']);
     }
 
     public function testSplitFrontmatter(): void
@@ -86,13 +96,13 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
         $tempFile = sys_get_temp_dir() . '/staticforge_sp_test_' . uniqid() . '.md';
         file_put_contents($tempFile, 'content');
 
-        $parameters = ['file_path' => $tempFile];
+        $event = $this->makeEvent($tempFile);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('SOURCE_DIR not set in container');
 
         try {
-            $this->service->processShortcodes($this->container, $parameters);
+            $this->service->processShortcodes($event);
         } finally {
             unlink($tempFile);
         }
@@ -107,13 +117,13 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
         $outsideFile = sys_get_temp_dir() . '/staticforge_sp_outside_' . uniqid() . '.md';
         file_put_contents($outsideFile, 'content');
 
-        $parameters = ['file_path' => $outsideFile];
+        $event = $this->makeEvent($outsideFile);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/Security Error/');
 
         try {
-            $this->service->processShortcodes($this->container, $parameters);
+            $this->service->processShortcodes($event);
         } finally {
             unlink($outsideFile);
             rmdir($sourceDir);
@@ -130,14 +140,14 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
         file_put_contents($filePath, 'content');
         chmod($filePath, 0000);
 
-        $parameters = ['file_path' => $filePath];
+        $event = $this->makeEvent($filePath);
 
         try {
             if (function_exists('posix_getuid') && posix_getuid() === 0) {
                 $this->markTestSkipped('Cannot test unreadable files as root');
             }
-            $result = $this->service->processShortcodes($this->container, $parameters);
-            $this->assertSame($parameters, $result);
+            $this->service->processShortcodes($event);
+            $this->assertSame([], $event->extra);
         } finally {
             chmod($filePath, 0644);
             unlink($filePath);
