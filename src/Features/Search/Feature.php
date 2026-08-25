@@ -8,6 +8,9 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
 use EICC\StaticForge\Features\Search\Services\SearchAssetService;
 use EICC\Utils\Container;
@@ -23,14 +26,7 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     protected Log $logger;
     private SearchIndexService $service;
     private SearchAssetService $assetService;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100],
-        'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
-    ];
+    private Container $applicationContainer;
 
     public function getRequiredConfig(): array
     {
@@ -54,11 +50,16 @@ YAML;
         return null;
     }
 
-    public function __construct(Log $logger, SearchIndexService $service, SearchAssetService $assetService)
-    {
+    public function __construct(
+        Log $logger,
+        SearchIndexService $service,
+        SearchAssetService $assetService,
+        Container $applicationContainer
+    ) {
         $this->logger = $logger;
         $this->service = $service;
         $this->assetService = $assetService;
+        $this->applicationContainer = $applicationContainer;
     }
 
     public function register(EventManager $eventManager): void
@@ -67,28 +68,16 @@ YAML;
         $this->logger->log('INFO', 'Search Feature registered');
     }
 
-    /**
-     * Collect page data for search index
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 100)]
+    public function handlePostRender(RenderEvent $event): void
     {
-        return $this->service->collectPage($container, $parameters);
+        $this->service->collectPage($event);
     }
 
-    /**
-     * Generate search.json and copy assets
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostLoop(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 100)]
+    public function handlePostLoop(Event $event): void
     {
-        $this->assetService->copyAssets($container);
-        return $this->service->buildIndex($container, $parameters);
+        $this->assetService->copyAssets($this->applicationContainer);
+        $this->service->buildIndex();
     }
 }

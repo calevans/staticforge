@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\RssFeed;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
@@ -21,7 +22,31 @@ class RssFeedServiceTest extends UnitTestCase
         parent::setUp();
         $logger = $this->createMock(Log::class);
         $this->eventManager = $this->createMock(EventManager::class);
-        $this->service = new RssFeedService($logger, $this->eventManager, $this->container->get(OutputWriter::class));
+        $this->service = new RssFeedService(
+            $logger,
+            $this->eventManager,
+            $this->container->get(OutputWriter::class),
+            $this->container
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(
+        ?string $outputPath,
+        string $filePath,
+        string $renderedContent,
+        array $metadata = []
+    ): RenderEvent {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: $metadata,
+            renderedContent: $renderedContent,
+            outputPath: $outputPath,
+        );
     }
 
     public function testSanitizeCategoryName(): void
@@ -96,20 +121,18 @@ class RssFeedServiceTest extends UnitTestCase
 
     public function testCollectCategoryFilesSkipsWithoutCategory(): void
     {
-        $parameters = ['metadata' => ['title' => 'No category']];
+        $event = $this->makeEvent(null, '', '', ['title' => 'No category']);
 
-        $result = $this->service->collectCategoryFiles($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->collectCategoryFiles($event);
     }
 
     public function testCollectCategoryFilesSkipsWithoutOutputOrFilePath(): void
     {
-        $parameters = ['metadata' => ['category' => 'Tech', 'title' => 'Missing paths']];
+        $event = $this->makeEvent(null, '', '', ['category' => 'Tech', 'title' => 'Missing paths']);
 
-        $result = $this->service->collectCategoryFiles($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->collectCategoryFiles($event);
     }
 
     public function testCollectCategoryFilesCollectsValidFile(): void
@@ -118,60 +141,62 @@ class RssFeedServiceTest extends UnitTestCase
         mkdir($outputDir, 0755, true);
         $this->setContainerVariable('OUTPUT_DIR', $outputDir);
 
-        $parameters = [
-            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
-            'output_path' => $outputDir . '/tech/article1.html',
-            'file_path' => '/source/article1.md',
-            'rendered_content' => '<p>Some content</p>'
-        ];
+        $event = $this->makeEvent(
+            $outputDir . '/tech/article1.html',
+            '/source/article1.md',
+            '<p>Some content</p>',
+            ['category' => 'Tech', 'title' => 'Article 1'],
+        );
 
-        $result = $this->service->collectCategoryFiles($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->collectCategoryFiles($event);
 
         $this->removeDirectory($outputDir);
     }
 
     public function testGenerateRssFeedsSkipsWhenNoCategoryFilesCollected(): void
     {
-        $result = $this->service->generateRssFeeds($this->container, []);
-
-        $this->assertEquals([], $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->generateRssFeeds();
     }
 
     public function testGenerateRssFeedsThrowsWhenOutputDirMissing(): void
     {
-        $logger = $this->createMock(Log::class);
-        $eventManager = $this->createMock(EventManager::class);
-        $container = new \EICC\Utils\Container();
-        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
-
-        $parameters = [
-            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
-            'output_path' => '/tmp/does-not-matter/tech/article1.html',
-            'file_path' => '/source/article1.md',
-            'rendered_content' => '<p>Some content</p>'
-        ];
-
-        // collectCategoryFiles bails out silently because OUTPUT_DIR isn't set,
-        // so nothing is collected and generateRssFeeds short-circuits before
-        // reaching the OUTPUT_DIR check. Set OUTPUT_DIR only for collection,
-        // then verify the explicit guard in generateRssFeeds with a container
-        // that never had OUTPUT_DIR set but has collected files via a second
-        // service instance that did have it set.
-        $collectingContainer = new \EICC\Utils\Container();
+        // Both collectCategoryFiles() and generateRssFeeds() guard on the same
+        // OUTPUT_DIR variable, so proving generateRssFeeds()'s own guard fires
+        // requires categoryFiles to already be populated by the time OUTPUT_DIR
+        // goes missing. A mock container that returns a real dir on the first
+        // read (during collection) and null afterward (during generation)
+        // reproduces that sequencing without needing two container instances.
         $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
         mkdir($outputDir, 0755, true);
-        $collectingContainer->setVariable('OUTPUT_DIR', $outputDir);
-        $parameters['output_path'] = $outputDir . '/tech/article1.html';
-        $service->collectCategoryFiles($collectingContainer, $parameters);
+
+        $logger = $this->createMock(Log::class);
+        $eventManager = $this->createMock(EventManager::class);
+        $container = $this->createMock(\EICC\Utils\Container::class);
+        $callCount = 0;
+        $container->method('getVariable')->willReturnCallback(function (string $key) use (&$callCount, $outputDir) {
+            if ($key !== 'OUTPUT_DIR') {
+                return null;
+            }
+            $callCount++;
+            return $callCount === 1 ? $outputDir : null;
+        });
+
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger), $container);
+
+        $event = $this->makeEvent(
+            $outputDir . '/tech/article1.html',
+            '/source/article1.md',
+            '<p>Some content</p>',
+            ['category' => 'Tech', 'title' => 'Article 1'],
+        );
+        $service->collectCategoryFiles($event);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('OUTPUT_DIR not set in container');
 
-        // generateRssFeeds is called with a container missing OUTPUT_DIR;
-        // the service already has categoryFiles collected internally.
-        $service->generateRssFeeds($container, []);
+        $service->generateRssFeeds();
 
         $this->removeDirectory($outputDir);
     }
@@ -185,20 +210,20 @@ class RssFeedServiceTest extends UnitTestCase
         $eventManager = $this->createMock(EventManager::class);
         $container = new \EICC\Utils\Container();
         $container->setVariable('OUTPUT_DIR', $outputDir);
-        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger), $container);
 
-        $parameters = [
-            'metadata' => ['category' => 'Tech', 'title' => 'Article 1'],
-            'output_path' => $outputDir . '/tech/article1.html',
-            'file_path' => '/source/article1.md',
-            'rendered_content' => '<p>Some content</p>'
-        ];
-        $service->collectCategoryFiles($container, $parameters);
+        $event = $this->makeEvent(
+            $outputDir . '/tech/article1.html',
+            '/source/article1.md',
+            '<p>Some content</p>',
+            ['category' => 'Tech', 'title' => 'Article 1'],
+        );
+        $service->collectCategoryFiles($event);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('SITE_BASE_URL not set in container');
 
-        $service->generateRssFeeds($container, []);
+        $service->generateRssFeeds();
 
         $this->removeDirectory($outputDir);
     }
@@ -213,21 +238,21 @@ class RssFeedServiceTest extends UnitTestCase
         $eventManager->method('fire')->willReturnArgument(1);
         $container = new \EICC\Utils\Container();
         $container->setVariable('OUTPUT_DIR', $outputDir);
-        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger));
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger), $container);
 
         $container->setVariable('SITE_BASE_URL', 'https://example.com');
         $container->setVariable('site_config', ['site' => ['name' => 'My Site']]);
         $container->setVariable('discovered_files', []);
 
-        $parameters = [
-            'metadata' => ['category' => 'Tech', 'title' => 'Article 1', 'date' => '2024-01-01'],
-            'output_path' => $outputDir . '/tech/article1.html',
-            'file_path' => '/source/article1.md',
-            'rendered_content' => '<p>Some content</p>'
-        ];
-        $service->collectCategoryFiles($container, $parameters);
+        $event = $this->makeEvent(
+            $outputDir . '/tech/article1.html',
+            '/source/article1.md',
+            '<p>Some content</p>',
+            ['category' => 'Tech', 'title' => 'Article 1', 'date' => '2024-01-01'],
+        );
+        $service->collectCategoryFiles($event);
 
-        $service->generateRssFeeds($container, []);
+        $service->generateRssFeeds();
 
         $rssPath = $outputDir . '/tech/rss.xml';
         $this->assertFileExists($rssPath);

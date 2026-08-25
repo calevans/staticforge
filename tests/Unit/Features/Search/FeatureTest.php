@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Search;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\Search\Feature;
@@ -84,14 +86,17 @@ class FeatureTest extends UnitTestCase
 
     public function testHandlePostRenderCollectsPageIntoIndex(): void
     {
-        $parameters = [
-            'metadata' => ['title' => 'Feature Test Page'],
-            'output_path' => $this->tempDir . '/page.html',
-            'rendered_content' => '<p>Some searchable content.</p>',
-        ];
+        $event = new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: ['title' => 'Feature Test Page'],
+            renderedContent: '<p>Some searchable content.</p>',
+            outputPath: $this->tempDir . '/page.html',
+        );
 
-        $this->feature->handlePostRender($this->container, $parameters);
-        $this->feature->handlePostLoop($this->container, []);
+        $this->feature->handlePostRender($event);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $this->assertFileExists($this->tempDir . '/search.json');
         $json = json_decode((string) file_get_contents($this->tempDir . '/search.json'), true);
@@ -101,7 +106,7 @@ class FeatureTest extends UnitTestCase
 
     public function testHandlePostLoopCopiesSearchAssets(): void
     {
-        $this->feature->handlePostLoop($this->container, []);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $this->assertFileExists($this->tempDir . '/assets/js/minisearch.min.js');
         $this->assertFileExists($this->tempDir . '/assets/js/search.js');

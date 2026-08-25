@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\RssFeed\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
+use EICC\StaticForge\Core\Events\RssBuilderInitEvent;
+use EICC\StaticForge\Core\Events\RssItemBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
@@ -16,6 +19,7 @@ class RssFeedService
     private Log $logger;
     private EventManager $eventManager;
     private OutputWriter $outputWriter;
+    private Container $container;
 
     /**
      * Files organized by category for RSS feeds
@@ -23,36 +27,33 @@ class RssFeedService
      */
     private array $categoryFiles = [];
 
-    public function __construct(Log $logger, EventManager $eventManager, OutputWriter $outputWriter)
+    public function __construct(Log $logger, EventManager $eventManager, OutputWriter $outputWriter, Container $container)
     {
         $this->logger = $logger;
         $this->eventManager = $eventManager;
         $this->outputWriter = $outputWriter;
+        $this->container = $container;
     }
 
     /**
      * Collect files that have categories during POST_RENDER
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function collectCategoryFiles(Container $container, array $parameters): array
+    public function collectCategoryFiles(RenderEvent $event): void
     {
-        $metadata = $parameters['metadata'] ?? [];
+        $metadata = $event->metadata;
         $category = $metadata['category'] ?? null;
 
         if (!$category) {
-            return $parameters;
+            return;
         }
 
-        $outputPath = $parameters['output_path'] ?? null;
-        $filePath = $parameters['file_path'] ?? null;
-        $renderedContent = $parameters['rendered_content'] ?? '';
+        $outputPath = $event->outputPath;
+        $filePath = $event->filePath;
+        $renderedContent = $event->renderedContent ?? '';
         $title = $metadata['title'] ?? 'Untitled';
 
         if (!$outputPath || !$filePath) {
-            return $parameters;
+            return;
         }
 
         // Sanitize category name to match filesystem
@@ -69,10 +70,10 @@ class RssFeedService
         $description = $this->extractDescription($renderedContent, $metadata);
         $date = $this->getFileDate($metadata, $filePath);
 
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
              // Should not happen if output_path is set, but safe fallback
-             return $parameters;
+             return;
         }
         $url = $this->getFileUrl($outputPath, $outputDir);
 
@@ -86,41 +87,35 @@ class RssFeedService
         ];
 
         $this->logger->log('DEBUG', "Collected file for RSS: {$title} in category {$category}");
-
-        return $parameters;
     }
 
     /**
      * Generate RSS feeds for all categories during POST_LOOP
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function generateRssFeeds(Container $container, array $parameters): array
+    public function generateRssFeeds(): void
     {
         if (empty($this->categoryFiles)) {
             $this->logger->log('INFO', 'No categories with files - skipping RSS feed generation');
-            return $parameters;
+            return;
         }
 
         $this->logger->log('INFO', 'Generating RSS feeds for ' . count($this->categoryFiles) . ' categories');
 
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL');
+        $siteBaseUrl = $this->container->getVariable('SITE_BASE_URL');
         if ($siteBaseUrl === null) {
             throw new \RuntimeException('SITE_BASE_URL not set in container');
         }
 
-        $siteConfig = $container->getVariable('site_config') ?? [];
+        $siteConfig = $this->container->getVariable('site_config') ?? [];
         $siteInfo = $siteConfig['site'] ?? [];
-        $siteName = $siteInfo['name'] ?? $container->getVariable('SITE_NAME') ?? 'My Site';
+        $siteName = $siteInfo['name'] ?? $this->container->getVariable('SITE_NAME') ?? 'My Site';
 
         // Get category definitions to find podcast settings
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
         $categoryDefinitions = [];
 
         foreach ($discoveredFiles as $file) {
@@ -143,8 +138,6 @@ class RssFeedService
                 $categoryMetadata
             );
         }
-
-        return $parameters;
     }
 
     /**
@@ -180,10 +173,11 @@ class RssFeedService
         $builder = new RssBuilder();
 
         // Fire event to allow features (like Podcast) to configure the builder
-        $this->eventManager->fire('RSS_BUILDER_INIT', [
-            'builder' => $builder,
-            'category_metadata' => $categoryMetadata
-        ]);
+        $this->eventManager->fire('RSS_BUILDER_INIT', new RssBuilderInitEvent(
+            'RSS_BUILDER_INIT',
+            $builder,
+            $categoryMetadata
+        ));
 
         // Create Channel Model
         $channel = new FeedChannel(
@@ -212,10 +206,11 @@ class RssFeedService
             $item->author = $file['metadata']['author'] ?? null;
 
             // Fire event to allow other features (like Podcast) to modify the item
-            $this->eventManager->fire('RSS_ITEM_BUILDING', [
-                'item' => $item,
-                'file' => $file
-            ]);
+            $this->eventManager->fire('RSS_ITEM_BUILDING', new RssItemBuildingEvent(
+                'RSS_ITEM_BUILDING',
+                $item,
+                $file
+            ));
 
             $feedItems[] = $item;
         }

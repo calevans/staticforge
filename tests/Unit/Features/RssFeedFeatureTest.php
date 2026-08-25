@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Features\RssFeed\Feature;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
@@ -49,24 +51,23 @@ class RssFeedFeatureTest extends UnitTestCase
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com/');
 
         // Test POST_RENDER delegation (handlePostRender)
-        $parameters = [
-            'metadata' => [
+        $event = new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: $root->url() . '/content/test.md',
+            fileUrl: '',
+            metadata: [
                 'title' => 'Test Article',
                 'category' => 'Technology',
                 'description' => 'A test article'
             ],
-            'output_path' => $root->url() . '/technology/test.html',
-            'file_path' => $root->url() . '/content/test.md',
-            'rendered_content' => '<p>Content</p>'
-        ];
+            renderedContent: '<p>Content</p>',
+            outputPath: $root->url() . '/technology/test.html',
+        );
 
         // This should not throw an exception
-        $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        // Test POST_LOOP delegation (handlePostLoop)
-        // This should not throw an exception
-        $result = $this->feature->handlePostLoop($this->container, []);
-
-        $this->assertSame([], $result);
+        // Test POST_LOOP delegation (handlePostLoop) - should not throw
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
     }
 }

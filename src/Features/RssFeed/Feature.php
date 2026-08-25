@@ -8,8 +8,10 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -21,14 +23,6 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     protected string $name = 'RssFeed';
     protected Log $logger;
     private RssFeedService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 110],
-        'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 90]
-    ];
 
     public function getRequiredConfig(): array
     {
@@ -52,33 +46,15 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         $this->logger->log('INFO', 'RssFeed Feature registered');
     }
 
-    /**
-     * Collect files that have categories during POST_RENDER
-     *
-     * Called dynamically by EventManager when POST_RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 110)]
+    public function handlePostRender(RenderEvent $event): void
     {
-        return $this->service->collectCategoryFiles($container, $parameters);
+        $this->service->collectCategoryFiles($event);
     }
 
-    /**
-     * Generate RSS feeds for all categories during POST_LOOP
-     *
-     * Called dynamically by EventManager when POST_LOOP event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostLoop(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 90)]
+    public function handlePostLoop(Event $event): void
     {
-        return $this->service->generateRssFeeds($container, $parameters);
+        $this->service->generateRssFeeds();
     }
 }

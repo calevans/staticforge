@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Search\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -12,6 +13,7 @@ class SearchIndexService
 {
     private Log $logger;
     private OutputWriter $outputWriter;
+    private Container $container;
 
     /**
      * @var array<int, array{id: int, title: string, text: string, url: string, tags: string, category: mixed}>
@@ -19,37 +21,34 @@ class SearchIndexService
     private array $documents = [];
     private int $idCounter = 1;
 
-    public function __construct(Log $logger, OutputWriter $outputWriter)
+    public function __construct(Log $logger, OutputWriter $outputWriter, Container $container)
     {
         $this->logger = $logger;
         $this->outputWriter = $outputWriter;
+        $this->container = $container;
     }
 
     /**
      * Collect page data for the search index
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function collectPage(Container $container, array $parameters): array
+    public function collectPage(RenderEvent $event): void
     {
-        $metadata = $parameters['metadata'] ?? [];
-        $outputPath = $parameters['output_path'] ?? null;
-        $content = $parameters['rendered_content'] ?? '';
+        $metadata = $event->metadata;
+        $outputPath = $event->outputPath;
+        $content = $event->renderedContent ?? '';
 
         // 1. Check if page should be indexed
-        if (!$this->shouldIndex($container, $parameters)) {
-            return $parameters;
+        if (!$this->shouldIndex($event)) {
+            return;
         }
 
         // If output_path is null, we can't index it (e.g., if rendering failed)
         if ($outputPath === null) {
-            return $parameters;
+            return;
         }
 
         // 2. Calculate URL
-        $url = $this->calculateUrl($container, $outputPath);
+        $url = $this->calculateUrl($outputPath);
 
         // 3. Parse content into sections
         $pageTitle = $metadata['title'] ?? 'Untitled';
@@ -85,8 +84,6 @@ class SearchIndexService
 
             $this->documents[] = $doc;
         }
-
-        return $parameters;
     }
 
     /**
@@ -175,17 +172,13 @@ class SearchIndexService
 
     /**
      * Build the search index and write it to disk
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function buildIndex(Container $container, array $parameters): array
+    public function buildIndex(): void
     {
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             $this->logger->log('ERROR', 'OUTPUT_DIR not set, cannot write search index');
-            return $parameters;
+            return;
         }
 
         $this->logger->log('INFO', 'Building search index with ' . count($this->documents) . ' documents');
@@ -194,7 +187,7 @@ class SearchIndexService
         $json = json_encode($this->documents, JSON_PRETTY_PRINT);
         if ($json === false) {
             $this->logger->log('ERROR', 'Failed to encode search index to JSON');
-            return $parameters;
+            return;
         }
 
         $indexPath = $outputDir . '/search.json';
@@ -203,17 +196,12 @@ class SearchIndexService
         } catch (\Throwable $e) {
             $this->logger->log('ERROR', "Failed to write search index to {$indexPath}: " . $e->getMessage());
         }
-
-        return $parameters;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
-    private function shouldIndex(Container $container, array $parameters): bool
+    private function shouldIndex(RenderEvent $event): bool
     {
-        $metadata = $parameters['metadata'] ?? [];
-        $outputPath = $parameters['output_path'] ?? '';
+        $metadata = $event->metadata;
+        $outputPath = $event->outputPath ?? '';
 
         // Check frontmatter exclusion
         if (isset($metadata['search_index']) && $metadata['search_index'] === false) {
@@ -221,12 +209,12 @@ class SearchIndexService
         }
 
         // Check config exclusions
-        $config = $container->getVariable('site_config')['search'] ?? [];
+        $config = $this->container->getVariable('site_config')['search'] ?? [];
         $excludePaths = $config['exclude_paths'] ?? [];
         $excludeContentIn = $config['exclude_content_in'] ?? [];
 
         // Get relative path for checking
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         $relativePath = str_replace($outputDir, '', $outputPath);
 
         // Check exclude_paths (exact matches or starts with)
@@ -246,14 +234,14 @@ class SearchIndexService
         return true;
     }
 
-    private function calculateUrl(Container $container, string $outputPath): string
+    private function calculateUrl(string $outputPath): string
     {
-        $siteUrl = $container->getVariable('SITE_BASE_URL');
+        $siteUrl = $this->container->getVariable('SITE_BASE_URL');
         if ($siteUrl === null) {
             throw new \RuntimeException('SITE_BASE_URL not set in container');
         }
         $siteUrl = rtrim($siteUrl, '/');
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         $relativePath = str_replace($outputDir, '', $outputPath);
 
         return $siteUrl . $relativePath;

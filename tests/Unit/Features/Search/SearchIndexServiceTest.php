@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Search;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Search\Services\SearchIndexService;
 use EICC\Utils\Container;
@@ -28,12 +29,12 @@ class SearchIndexServiceTest extends TestCase
 
         // OutputWriter needs its own real container (just for OUTPUT_DIR),
         // separate from the mocked $this->container passed into the
-        // service's own methods.
+        // service's constructor.
         $realContainer = new Container();
         $realContainer->setVariable('OUTPUT_DIR', $this->tempDir);
         $outputWriter = new OutputWriter($realContainer, $this->logger);
 
-        $this->service = new SearchIndexService($this->logger, $outputWriter);
+        $this->service = new SearchIndexService($this->logger, $outputWriter, $this->container);
     }
 
     protected function tearDown(): void
@@ -66,6 +67,21 @@ class SearchIndexServiceTest extends TestCase
         return $json;
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(?string $outputPath, string $renderedContent, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: $metadata,
+            renderedContent: $renderedContent,
+            outputPath: $outputPath,
+        );
+    }
+
     public function testCollectPageAddsDocument(): void
     {
         $this->container->method('getVariable')
@@ -75,14 +91,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Test Page', 'tags' => ['foo', 'bar']],
-            'output_path' => $this->tempDir . '/test.html',
-            'rendered_content' => '<h1>Test Page</h1><p>This is content.</p>'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/test.html',
+            '<h1>Test Page</h1><p>This is content.</p>',
+            ['title' => 'Test Page', 'tags' => ['foo', 'bar']],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $this->assertFileExists($this->tempDir . '/search.json');
         $json = $this->readSearchIndex();
@@ -103,14 +119,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Hidden Page', 'search_index' => false],
-            'output_path' => $this->tempDir . '/hidden.html',
-            'rendered_content' => 'Content'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/hidden.html',
+            'Content',
+            ['title' => 'Hidden Page', 'search_index' => false],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $this->assertFileExists($this->tempDir . '/search.json');
         $json = $this->readSearchIndex();
@@ -127,14 +143,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Tag Page'],
-            'output_path' => $this->tempDir . '/tags/foo.html',
-            'rendered_content' => 'Content'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/tags/foo.html',
+            'Content',
+            ['title' => 'Tag Page'],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(0, $json);
@@ -149,14 +165,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Draft Page'],
-            'output_path' => $this->tempDir . '/drafts/foo.html',
-            'rendered_content' => 'Content'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/drafts/foo.html',
+            'Content',
+            ['title' => 'Draft Page'],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(0, $json);
@@ -171,14 +187,10 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'No Output'],
-            'output_path' => null,
-            'rendered_content' => 'Content'
-        ];
+        $event = $this->makeEvent(null, 'Content', ['title' => 'No Output']);
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(0, $json);
@@ -193,14 +205,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'CSV Tags', 'tags' => 'foo, bar, baz'],
-            'output_path' => $this->tempDir . '/csv.html',
-            'rendered_content' => '<p>Some content here.</p>'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/csv.html',
+            '<p>Some content here.</p>',
+            ['title' => 'CSV Tags', 'tags' => 'foo, bar, baz'],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(1, $json);
@@ -216,14 +228,14 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Headings Only'],
-            'output_path' => $this->tempDir . '/headings.html',
-            'rendered_content' => '<h2 id="empty-one"></h2><h2 id="empty-two"></h2>'
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/headings.html',
+            '<h2 id="empty-one"></h2><h2 id="empty-two"></h2>',
+            ['title' => 'Headings Only'],
+        );
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(0, $json);
@@ -238,14 +250,10 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', 'https://example.com']
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Empty'],
-            'output_path' => $this->tempDir . '/empty.html',
-            'rendered_content' => ''
-        ];
+        $event = $this->makeEvent($this->tempDir . '/empty.html', '', ['title' => 'Empty']);
 
-        $this->service->collectPage($this->container, $parameters);
-        $this->service->buildIndex($this->container, []);
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
 
         $json = $this->readSearchIndex();
         $this->assertCount(0, $json);
@@ -259,9 +267,7 @@ class SearchIndexServiceTest extends TestCase
             ->method('log')
             ->with('ERROR', $this->stringContains('OUTPUT_DIR not set'));
 
-        $result = $this->service->buildIndex($this->container, ['foo' => 'bar']);
-
-        $this->assertSame(['foo' => 'bar'], $result);
+        $this->service->buildIndex();
     }
 
     public function testCollectPageThrowsWhenSiteBaseUrlNotSet(): void
@@ -273,15 +279,15 @@ class SearchIndexServiceTest extends TestCase
                 ['SITE_BASE_URL', null],
             ]);
 
-        $parameters = [
-            'metadata' => ['title' => 'Test'],
-            'output_path' => $this->tempDir . '/test.html',
-            'rendered_content' => '<p>Content</p>',
-        ];
+        $event = $this->makeEvent(
+            $this->tempDir . '/test.html',
+            '<p>Content</p>',
+            ['title' => 'Test'],
+        );
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('SITE_BASE_URL not set in container');
 
-        $this->service->collectPage($this->container, $parameters);
+        $this->service->collectPage($event);
     }
 }
