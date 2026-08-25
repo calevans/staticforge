@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FeatureManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FeatureInterface;
@@ -30,7 +31,12 @@ class FeatureManagerTest extends UnitTestCase
 
         $this->setContainerVariable('FEATURES_DIR', $this->tempDir);
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
+    }
+
+    private function makeFeatureManager(): FeatureManager
+    {
+        return new FeatureManager($this->container, $this->eventManager, new FeatureFactory($this->container));
     }
 
     protected function tearDown(): void
@@ -55,7 +61,7 @@ class FeatureManagerTest extends UnitTestCase
         // Test with nonexistent directory
         $this->setContainerVariable('FEATURES_DIR', '/nonexistent/path');
 
-        $freshFeatureManager = new FeatureManager($this->container, $this->eventManager);
+        $freshFeatureManager = $this->makeFeatureManager();
         $freshFeatureManager->loadFeatures();
 
         $features = $freshFeatureManager->getFeatures();
@@ -153,7 +159,7 @@ PHP;
         $this->setContainerVariable('site_config', $siteConfig);
 
         // Re-initialize feature manager to pick up the config
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
         $this->featureManager->loadFeatures();
 
         // Verify feature is not loaded

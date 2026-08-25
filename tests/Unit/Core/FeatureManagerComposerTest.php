@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\FeatureManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\Utils\Container;
@@ -22,6 +23,11 @@ class FeatureManagerComposerTest extends UnitTestCase
         $this->tempDir = sys_get_temp_dir() . '/staticforge_composer_test_' . uniqid();
         mkdir($this->tempDir, 0777, true);
         $this->installedJsonPath = $this->tempDir . '/installed.json';
+    }
+
+    private function makeFeatureManager(): FeatureManager
+    {
+        return new FeatureManager($this->container, $this->eventManager, new FeatureFactory($this->container));
     }
 
     protected function tearDown(): void
@@ -56,7 +62,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
 
         // Initialize manager
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
         $this->featureManager->loadFeatures();
 
         // Assert
@@ -70,7 +76,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         // Point at a path that doesn't exist - should not throw, simply skip composer discovery
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->tempDir . '/does-not-exist.json');
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
@@ -82,7 +88,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         file_put_contents($this->installedJsonPath, '{not valid json');
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
 
         // Should not throw - malformed JSON decodes to null and is skipped
         $this->featureManager->loadFeatures();
@@ -107,7 +113,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         file_put_contents($this->installedJsonPath, json_encode($data));
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
 
         // Should not throw - logged as a warning and skipped
         $this->featureManager->loadFeatures();
@@ -132,7 +138,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         file_put_contents($this->installedJsonPath, json_encode($data));
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
         $this->featureManager->loadFeatures();
 
         $features = $this->featureManager->getFeatures();
@@ -157,7 +163,7 @@ class FeatureManagerComposerTest extends UnitTestCase
         $this->setContainerVariable('COMPOSER_INSTALLED_JSON_PATH', $this->installedJsonPath);
         $this->setContainerVariable('site_config', ['disabled_features' => ['MockComposerFeature']]);
 
-        $this->featureManager = new FeatureManager($this->container, $this->eventManager);
+        $this->featureManager = $this->makeFeatureManager();
         $this->featureManager->loadFeatures();
 
         $this->assertNull($this->featureManager->getFeature('MockComposerFeature'));

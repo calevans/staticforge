@@ -14,6 +14,7 @@ class FeatureManager
 {
     private Container $container;
     private EventManager $eventManager;
+    private FeatureFactory $featureFactory;
     private Log $logger;
 
     /**
@@ -40,10 +41,11 @@ class FeatureManager
      */
     private array $featureStatuses = [];
 
-    public function __construct(Container $container, EventManager $eventManager)
+    public function __construct(Container $container, EventManager $eventManager, FeatureFactory $featureFactory)
     {
         $this->container = $container;
         $this->eventManager = $eventManager;
+        $this->featureFactory = $featureFactory;
         $this->logger = $container->get('logger');
     }
 
@@ -252,18 +254,12 @@ class FeatureManager
         foreach ($possibleClasses as $className) {
             if (class_exists($className)) {
                 try {
-                    // Try to resolve from container first (for DI)
-                    if ($this->container->has($className)) {
-                        $feature = $this->container->get($className);
-                    } else {
-                        // Fallback to new for features without dependencies
-                        $feature = new $className();
-                    }
+                    $feature = $this->featureFactory->make($className);
 
                     if ($feature instanceof FeatureInterface) {
                         return $feature;
                     }
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $this->logger->log('WARNING', "Failed to instantiate feature {$className}: " . $e->getMessage());
                 }
             }
@@ -351,7 +347,7 @@ class FeatureManager
         }
 
         try {
-            if ($this->container->has($className)) { $feature = $this->container->get($className); } else { $feature = new $className(); }
+            $feature = $this->featureFactory->make($className);
             if (!$feature instanceof FeatureInterface) {
                  $this->logger->log('WARNING', "Class {$className} from package {$packageName} does not implement FeatureInterface.");
                  return;

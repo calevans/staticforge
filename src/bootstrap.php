@@ -48,6 +48,7 @@ use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Twig\Environment;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Core\FileDiscovery;
@@ -239,7 +240,10 @@ $container->add(EventManager::class, $eventManager);
 $assetManager = new AssetManager();
 $container->add(AssetManager::class, $assetManager);
 
-$featureManager = new FeatureManager($container, $eventManager);
+$featureFactory = new FeatureFactory($container);
+$container->add(FeatureFactory::class, $featureFactory);
+
+$featureManager = new FeatureManager($container, $eventManager, $featureFactory);
 $container->add(FeatureManager::class, $featureManager);
 
 $extensionRegistry = new ExtensionRegistry($container);

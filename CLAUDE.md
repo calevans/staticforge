@@ -189,4 +189,5 @@ We are building new features with the explicit goal of extracting them into stan
 
 -   **Scope of Work**: Only do what you are told to do and do not do more.
 -   **Permission**: If there is more to do than what was explicitly requested, you must ASK and WAIT for permission before proceeding.
+-   **Communication**: Be succinct. No headers/bullet walls for routine updates, no restating a decision already made, no trailing "here's what I did" summary after the diff/output already shows it. State results directly.
 
