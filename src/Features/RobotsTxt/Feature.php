@@ -7,8 +7,9 @@ namespace EICC\StaticForge\Features\RobotsTxt;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -33,14 +34,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected Log $logger;
     private RobotsTxtService $service;
 
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150],
-        'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
-    ];
-
     public function __construct(Log $logger, RobotsTxtService $service)
     {
         $this->logger = $logger;
@@ -53,31 +46,15 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'RobotsTxt Feature registered');
     }
 
-    /**
-     * Handle POST_GLOB event - scan all discovered files for robots metadata
-     *
-     * Called dynamically by EventManager when POST_GLOB event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostGlob(Container $container, array $parameters): array
+    #[EventListener('POST_GLOB', priority: 150)]
+    public function handlePostGlob(Event $event): void
     {
-        return $this->service->scanForRobotsMetadata($container, $parameters);
+        $this->service->scanForRobotsMetadata();
     }
 
-    /**
-     * Handle POST_LOOP event - generate robots.txt file
-     *
-     * Called dynamically by EventManager when POST_LOOP event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostLoop(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 100)]
+    public function handlePostLoop(Event $event): void
     {
-        return $this->service->generateRobotsTxt($container, $parameters);
+        $this->service->generateRobotsTxt();
     }
 }

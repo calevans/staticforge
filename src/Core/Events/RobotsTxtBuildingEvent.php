@@ -11,7 +11,7 @@ namespace EICC\StaticForge\Core\Events;
 class RobotsTxtBuildingEvent extends Event
 {
     /**
-     * @param array<int, string> $rules
+     * @param array<string, array{Disallow?: array<int, string>, Allow?: array<int, string>}> $rules
      */
     public function __construct(string $name, public array $rules)
     {

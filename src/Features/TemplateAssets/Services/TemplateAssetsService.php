@@ -13,28 +13,26 @@ use RecursiveDirectoryIterator;
 class TemplateAssetsService
 {
     private Log $logger;
+    private Container $container;
 
-    public function __construct(Log $logger)
+    public function __construct(Log $logger, Container $container)
     {
         $this->logger = $logger;
+        $this->container = $container;
     }
 
     /**
      * Handle POST_LOOP event
      * Copies assets from template directory to output directory
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePostLoop(Container $container, array $parameters): array
+    public function handlePostLoop(): void
     {
-        $templateDir = $container->getVariable('TEMPLATE_DIR');
+        $templateDir = $this->container->getVariable('TEMPLATE_DIR');
         if (!$templateDir) {
             throw new \RuntimeException('TEMPLATE_DIR not set in container');
         }
-        $templateName = $container->getVariable('TEMPLATE') ?? 'sample';
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $templateName = $this->container->getVariable('TEMPLATE') ?? 'sample';
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
@@ -53,7 +51,7 @@ class TemplateAssetsService
         }
 
         // 2. Copy Content Assets (Overwrites template assets)
-        $contentDir = $container->getVariable('SOURCE_DIR') ?? 'content';
+        $contentDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
         $contentAssetsDir = $contentDir . DIRECTORY_SEPARATOR . 'assets';
 
         if (is_dir($contentAssetsDir)) {
@@ -67,8 +65,6 @@ class TemplateAssetsService
 
         // 3. Process CSS Imports (Bundling)
         $this->processCssBundling($targetAssetsDir);
-
-        return $parameters;
     }
 
     /**

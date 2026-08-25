@@ -7,8 +7,9 @@ namespace EICC\StaticForge\Features\TemplateAssets;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Features\TemplateAssets\Services\TemplateAssetsService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class Feature extends BaseFeature implements FeatureInterface
@@ -16,13 +17,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'TemplateAssets';
     protected Log $logger;
     private TemplateAssetsService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
-    ];
 
     public function __construct(Log $logger, TemplateAssetsService $service)
     {
@@ -36,16 +30,9 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'TemplateAssets Feature registered');
     }
 
-    /**
-     * Handle POST_LOOP event
-     * Copies assets from template directory to output directory
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostLoop(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 100)]
+    public function handlePostLoop(Event $event): void
     {
-        return $this->service->handlePostLoop($container, $parameters);
+        $this->service->handlePostLoop();
     }
 }

@@ -61,7 +61,7 @@ class FeatureTest extends UnitTestCase
         $this->container->updateVariable('OUTPUT_DIR', $this->root->url() . '/public');
 
         // Run the feature
-        $this->feature->handlePostLoop($this->container, []);
+        $this->feature->handlePostLoop(new \EICC\StaticForge\Core\Events\Event('POST_LOOP'));
 
         // Assertions - if file exists, delegation worked
         $this->assertTrue($this->root->hasChild('public/assets/css/style.css'), 'Template asset should be copied via service delegation');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\RobotsTxt;
 
+use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtService;
@@ -28,7 +29,7 @@ class RobotsTxtServiceTest extends UnitTestCase
 
         $logger = $this->container->get('logger');
         $this->generator = new RobotsTxtGenerator();
-        $this->service = new RobotsTxtService($logger, $this->generator, $this->container->get(OutputWriter::class));
+        $this->service = new RobotsTxtService($logger, $this->generator, $this->container->get(OutputWriter::class), new EventManager(), $this->container);
     }
 
     private function readFile(string $path): string
@@ -43,10 +44,8 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->setContainerVariable('discovered_files', []);
         $this->setContainerVariable('SOURCE_DIR', 'content');
 
-        $parameters = [];
-        $result = $this->service->scanForRobotsMetadata($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->scanForRobotsMetadata();
     }
 
     public function testScanMarkdownFileWithRobotsNo(): void
@@ -64,8 +63,7 @@ class RobotsTxtServiceTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $this->service->scanForRobotsMetadata($this->container, $parameters);
+        $this->service->scanForRobotsMetadata();
 
         // We can't easily inspect private property disallowedPaths,
         // but we can verify generateRobotsTxt produces expected output
@@ -73,7 +71,7 @@ class RobotsTxtServiceTest extends UnitTestCase
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
-        $this->service->generateRobotsTxt($this->container, []);
+        $this->service->generateRobotsTxt();
 
         $this->assertTrue($this->root->hasChild('output/robots.txt'));
         $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
@@ -95,12 +93,12 @@ class RobotsTxtServiceTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $this->service->scanForRobotsMetadata($this->container, []);
+        $this->service->scanForRobotsMetadata();
 
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
-        $this->service->generateRobotsTxt($this->container, []);
+        $this->service->generateRobotsTxt();
 
         $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringNotContainsString('Disallow: /allowed.html', $content);
@@ -119,12 +117,12 @@ class RobotsTxtServiceTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $this->service->scanForRobotsMetadata($this->container, []);
+        $this->service->scanForRobotsMetadata();
 
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
-        $this->service->generateRobotsTxt($this->container, []);
+        $this->service->generateRobotsTxt();
 
         $robotsContent = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('User-agent: Bingbot', $robotsContent);
@@ -146,12 +144,12 @@ class RobotsTxtServiceTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $this->service->scanForRobotsMetadata($this->container, []);
+        $this->service->scanForRobotsMetadata();
 
         $this->setContainerVariable('OUTPUT_DIR', vfsStream::url('test/output'));
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
-        $this->service->generateRobotsTxt($this->container, []);
+        $this->service->generateRobotsTxt();
 
         $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /secret-category/', $content);

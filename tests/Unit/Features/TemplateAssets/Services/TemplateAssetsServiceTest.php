@@ -22,7 +22,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         parent::setUp();
         $this->root = vfsStream::setup('root');
         $this->logger = $this->container->get('logger');
-        $this->service = new TemplateAssetsService($this->logger);
+        $this->service = new TemplateAssetsService($this->logger, $this->container);
     }
 
     public function testHandlePostLoopCopiesAssets(): void
@@ -46,7 +46,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir->url());
 
         // Run service
-        $this->service->handlePostLoop($this->container, []);
+        $this->service->handlePostLoop();
 
         // Verify assets copied
         $this->assertTrue($this->root->hasChild('output/assets/style.css'));
@@ -73,7 +73,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $this->root->url() . '/content'); // Empty content dir
 
         // Run service
-        $this->service->handlePostLoop($this->container, []);
+        $this->service->handlePostLoop();
 
         // Verify CSS bundled
         $this->assertTrue($this->root->hasChild('output/assets/css/main.css'));
@@ -98,7 +98,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $this->root->url() . '/content');
 
         // Run service - should not throw exception
-        $this->service->handlePostLoop($this->container, []);
+        $this->service->handlePostLoop();
 
         // Verify output dir exists but no assets
         $this->assertFalse($this->root->hasChild('output/assets'));
@@ -128,7 +128,7 @@ class TemplateAssetsServiceTest extends UnitTestCase
         $this->setContainerVariable('OUTPUT_DIR', $outputDir);
         $this->setContainerVariable('SOURCE_DIR', $baseDir . '/content');
 
-        $this->service->handlePostLoop($this->container, []);
+        $this->service->handlePostLoop();
 
         $bundledContent = file_get_contents($outputDir . '/assets/css/main.css');
         $this->assertNotFalse($bundledContent);

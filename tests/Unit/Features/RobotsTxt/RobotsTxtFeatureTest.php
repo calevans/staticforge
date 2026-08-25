@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\RobotsTxt;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\RobotsTxt\Feature as RobotsTxtFeature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -56,10 +57,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('discovered_files', []);
         $this->setContainerVariable('SOURCE_DIR', 'content');
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testScanMarkdownFileWithRobotsNo(): void
@@ -77,10 +75,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testScanMarkdownFileWithRobotsYes(): void
@@ -98,10 +93,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testScanMarkdownFileWithoutRobotsField(): void
@@ -119,10 +111,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testScanHtmlFileWithRobotsNo(): void
@@ -140,10 +129,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testScanCategoryFileWithRobotsNo(): void
@@ -161,10 +147,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         ]);
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertSame($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
     }
 
     public function testGenerateRobotsTxtWithNoDisallowedPaths(): void
@@ -181,11 +164,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
       // Run POST_GLOB to scan files (none in this case)
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
@@ -217,11 +199,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB to scan files
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
@@ -253,11 +234,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB to scan files
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $this->assertTrue(file_exists($robotsTxtPath));
@@ -291,11 +271,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB to scan files
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $content = $this->readFile($robotsTxtPath);
@@ -318,11 +297,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', vfsStream::url('test/content'));
 
       // Run POST_GLOB
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $content = $this->readFile($robotsTxtPath);
@@ -356,11 +334,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $content = $this->readFile($robotsTxtPath);
@@ -393,11 +370,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $content = $this->readFile($robotsTxtPath);
@@ -430,11 +406,10 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $contentDir);
 
       // Run POST_GLOB
-        $parameters = [];
-        $this->feature->handlePostGlob($this->container, $parameters);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
       // Generate robots.txt
-        $this->feature->handlePostLoop($this->container, $parameters);
+        $this->feature->handlePostLoop(new Event('POST_LOOP'));
 
         $robotsTxtPath = $outputDir . '/robots.txt';
         $content = $this->readFile($robotsTxtPath);

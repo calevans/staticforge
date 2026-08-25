@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Sitemap;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Sitemap\Services\SitemapService;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -29,7 +30,7 @@ class SitemapServiceTest extends UnitTestCase
         $this->setContainerVariable('SITE_BASE_URL', 'https://example.com');
 
         $logger = $this->createMock(Log::class);
-        $this->service = new SitemapService($logger, $this->container->get(OutputWriter::class));
+        $this->service = new SitemapService($logger, $this->container->get(OutputWriter::class), $this->container);
     }
 
     private function readFile(string $path): string
@@ -57,44 +58,49 @@ class SitemapServiceTest extends UnitTestCase
         rmdir($dir);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(?string $outputPath, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: $metadata,
+            outputPath: $outputPath,
+        );
+    }
+
     public function testCollectUrl(): void
     {
-        $parameters = [
-            'output_path' => $this->tempDir . '/foo/bar.html',
-            'metadata' => [
-                'date' => '2023-01-01'
-            ]
-        ];
+        $event = $this->makeEvent($this->tempDir . '/foo/bar.html', ['date' => '2023-01-01']);
 
-        $result = $this->service->collectUrl($this->container, $parameters);
+        $this->service->collectUrl($event);
 
-        // Should return parameters unchanged
-        $this->assertEquals($parameters, $result);
+        $this->service->generateSitemap();
+        $content = $this->readFile($this->tempDir . '/sitemap.xml');
+        $this->assertStringContainsString('<loc>https://example.com/foo/bar.html</loc>', $content);
     }
 
     public function testCollectUrlSkipsIfNoOutputPath(): void
     {
-        $parameters = [
-            'metadata' => []
-        ];
+        $event = $this->makeEvent(null);
 
-        $result = $this->service->collectUrl($this->container, $parameters);
-        $this->assertEquals($parameters, $result);
+        $this->service->collectUrl($event);
+        $this->service->generateSitemap();
+
+        $this->assertFileDoesNotExist($this->tempDir . '/sitemap.xml');
     }
 
     public function testGenerateSitemap(): void
     {
         // Collect a URL first
-        $parameters = [
-            'output_path' => $this->tempDir . '/foo/bar.html',
-            'metadata' => [
-                'date' => '2023-01-01'
-            ]
-        ];
-        $this->service->collectUrl($this->container, $parameters);
+        $event = $this->makeEvent($this->tempDir . '/foo/bar.html', ['date' => '2023-01-01']);
+        $this->service->collectUrl($event);
 
         // Generate sitemap
-        $this->service->generateSitemap($this->container, []);
+        $this->service->generateSitemap();
 
         $sitemapPath = $this->tempDir . '/sitemap.xml';
         $this->assertFileExists($sitemapPath);
@@ -106,19 +112,16 @@ class SitemapServiceTest extends UnitTestCase
 
     public function testGenerateSitemapSkipsIfNoUrls(): void
     {
-        $this->service->generateSitemap($this->container, []);
+        $this->service->generateSitemap();
         $sitemapPath = $this->tempDir . '/sitemap.xml';
         $this->assertFileDoesNotExist($sitemapPath);
     }
 
     public function testCollectUrlRootIndexHtmlProducesTrailingSlash(): void
     {
-        $parameters = [
-            'output_path' => $this->tempDir . '/index.html',
-            'metadata' => ['date' => '2024-01-15'],
-        ];
-        $this->service->collectUrl($this->container, $parameters);
-        $this->service->generateSitemap($this->container, []);
+        $event = $this->makeEvent($this->tempDir . '/index.html', ['date' => '2024-01-15']);
+        $this->service->collectUrl($event);
+        $this->service->generateSitemap();
 
         $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/</loc>', $content);
@@ -126,12 +129,9 @@ class SitemapServiceTest extends UnitTestCase
 
     public function testCollectUrlSubdirectoryIndexHtmlProducesDirectoryUrl(): void
     {
-        $parameters = [
-            'output_path' => $this->tempDir . '/podcast/index.html',
-            'metadata' => ['date' => '2024-02-01'],
-        ];
-        $this->service->collectUrl($this->container, $parameters);
-        $this->service->generateSitemap($this->container, []);
+        $event = $this->makeEvent($this->tempDir . '/podcast/index.html', ['date' => '2024-02-01']);
+        $this->service->collectUrl($event);
+        $this->service->generateSitemap();
 
         $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/podcast/</loc>', $content);
@@ -139,12 +139,9 @@ class SitemapServiceTest extends UnitTestCase
 
     public function testCollectUrlNestedIndexHtmlProducesNestedDirectoryUrl(): void
     {
-        $parameters = [
-            'output_path' => $this->tempDir . '/a/b/index.html',
-            'metadata' => ['date' => '2024-03-10'],
-        ];
-        $this->service->collectUrl($this->container, $parameters);
-        $this->service->generateSitemap($this->container, []);
+        $event = $this->makeEvent($this->tempDir . '/a/b/index.html', ['date' => '2024-03-10']);
+        $this->service->collectUrl($event);
+        $this->service->generateSitemap();
 
         $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString('<loc>https://example.com/a/b/</loc>', $content);
@@ -152,12 +149,9 @@ class SitemapServiceTest extends UnitTestCase
 
     public function testCollectUrlRegularHtmlFileIsUnchanged(): void
     {
-        $parameters = [
-            'output_path' => $this->tempDir . '/guide/content-creation.html',
-            'metadata' => ['date' => '2024-04-20'],
-        ];
-        $this->service->collectUrl($this->container, $parameters);
-        $this->service->generateSitemap($this->container, []);
+        $event = $this->makeEvent($this->tempDir . '/guide/content-creation.html', ['date' => '2024-04-20']);
+        $this->service->collectUrl($event);
+        $this->service->generateSitemap();
 
         $content = $this->readFile($this->tempDir . '/sitemap.xml');
         $this->assertStringContainsString(

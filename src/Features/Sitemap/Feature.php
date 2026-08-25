@@ -7,8 +7,10 @@ namespace EICC\StaticForge\Features\Sitemap;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Sitemap\Services\SitemapService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -20,14 +22,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'Sitemap';
     protected Log $logger;
     private SitemapService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100],
-        'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
-    ];
 
     public function __construct(Log $logger, SitemapService $service)
     {
@@ -41,27 +35,15 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'Sitemap Feature registered');
     }
 
-    /**
-     * Collect URL from processed file
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 100)]
+    public function handlePostRender(RenderEvent $event): void
     {
-        return $this->service->collectUrl($container, $parameters);
+        $this->service->collectUrl($event);
     }
 
-    /**
-     * Generate sitemap.xml file
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostLoop(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 100)]
+    public function handlePostLoop(Event $event): void
     {
-        return $this->service->generateSitemap($container, $parameters);
+        $this->service->generateSitemap();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Sitemap\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -12,6 +13,7 @@ class SitemapService
 {
     private Log $logger;
     private OutputWriter $outputWriter;
+    private Container $container;
 
     /**
      * Collected URLs for the sitemap
@@ -19,35 +21,32 @@ class SitemapService
      */
     private array $urls = [];
 
-    public function __construct(Log $logger, OutputWriter $outputWriter)
+    public function __construct(Log $logger, OutputWriter $outputWriter, Container $container)
     {
         $this->logger = $logger;
         $this->outputWriter = $outputWriter;
+        $this->container = $container;
     }
 
     /**
      * Collect URL from processed file
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function collectUrl(Container $container, array $parameters): array
+    public function collectUrl(RenderEvent $event): void
     {
-        $outputPath = $parameters['output_path'] ?? null;
-        $metadata = $parameters['metadata'] ?? [];
+        $outputPath = $event->outputPath;
+        $metadata = $event->metadata;
 
         // Skip if no output path
         if (!$outputPath) {
-            return $parameters;
+            return;
         }
 
         // Get site URL from config or default to /
-        $siteUrl = rtrim($container->getVariable('SITE_BASE_URL') ?? '', '/');
+        $siteUrl = rtrim($this->container->getVariable('SITE_BASE_URL') ?? '', '/');
 
         // Calculate relative URL from output path
         // output/foo/bar.html -> foo/bar.html
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
@@ -65,8 +64,8 @@ class SitemapService
             if ($timestamp !== false) {
                 $lastmod = date('Y-m-d', $timestamp);
             }
-        } elseif (isset($parameters['file_path']) && file_exists($parameters['file_path'])) {
-            $mtime = filemtime($parameters['file_path']);
+        } elseif ($event->filePath !== '' && file_exists($event->filePath)) {
+            $mtime = filemtime($event->filePath);
             if ($mtime !== false) {
                 $lastmod = date('Y-m-d', $mtime);
             }
@@ -76,8 +75,6 @@ class SitemapService
             'loc' => $loc,
             'lastmod' => $lastmod
         ];
-
-        return $parameters;
     }
 
     private function normalizeUrl(string $relativePath, string $siteUrl): string
@@ -96,16 +93,12 @@ class SitemapService
 
     /**
      * Generate sitemap.xml file
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function generateSitemap(Container $container, array $parameters): array
+    public function generateSitemap(): void
     {
         if (empty($this->urls)) {
             $this->logger->log('INFO', 'No URLs collected, skipping sitemap.xml generation');
-            return $parameters;
+            return;
         }
 
         $this->logger->log('INFO', 'Generating sitemap.xml with ' . count($this->urls) . ' URLs');
@@ -122,7 +115,7 @@ class SitemapService
 
         $xml .= '</urlset>';
 
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
@@ -134,7 +127,5 @@ class SitemapService
         } catch (\Throwable $e) {
             $this->logger->log('ERROR', 'Failed to write sitemap.xml to ' . $sitemapPath . ': ' . $e->getMessage());
         }
-
-        return $parameters;
     }
 }

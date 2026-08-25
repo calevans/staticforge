@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\RobotsTxt\Services;
 
+use EICC\StaticForge\Core\Events\RobotsTxtBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Core\PathGuard;
@@ -15,6 +16,8 @@ class RobotsTxtService
     private Log $logger;
     private RobotsTxtGenerator $generator;
     private OutputWriter $outputWriter;
+    private EventManager $eventManager;
+    private Container $container;
 
     /**
      * Paths to disallow in robots.txt
@@ -22,24 +25,27 @@ class RobotsTxtService
      */
     private array $disallowedPaths = [];
 
-    public function __construct(Log $logger, RobotsTxtGenerator $generator, OutputWriter $outputWriter)
-    {
+    public function __construct(
+        Log $logger,
+        RobotsTxtGenerator $generator,
+        OutputWriter $outputWriter,
+        EventManager $eventManager,
+        Container $container
+    ) {
         $this->logger = $logger;
         $this->generator = $generator;
         $this->outputWriter = $outputWriter;
+        $this->eventManager = $eventManager;
+        $this->container = $container;
     }
 
     /**
      * Scan all discovered files for robots metadata
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function scanForRobotsMetadata(Container $container, array $parameters): array
+    public function scanForRobotsMetadata(): void
     {
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
-        $sourceDir = $container->getVariable('SOURCE_DIR') ?? 'content';
+        $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
+        $sourceDir = $this->container->getVariable('SOURCE_DIR') ?? 'content';
 
         $this->logger->log('INFO', 'RobotsTxt: Scanning files for robots metadata');
 
@@ -48,37 +54,31 @@ class RobotsTxtService
         }
 
         // Also scan for category definition files
-        $this->scanCategoryFiles($container);
+        $this->scanCategoryFiles();
 
         $this->logger->log(
             'INFO',
             'RobotsTxt: Found ' . count($this->disallowedPaths) . ' paths to disallow'
         );
-
-        return $parameters;
     }
 
     /**
      * Generate robots.txt file
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function generateRobotsTxt(Container $container, array $parameters): array
+    public function generateRobotsTxt(): void
     {
-        $discoveredFiles = $container->getVariable('discovered_files');
+        $discoveredFiles = $this->container->getVariable('discovered_files');
         if (empty($discoveredFiles)) {
             $this->logger->log('INFO', 'RobotsTxt: No files discovered, skipping robots.txt generation');
-            return $parameters;
+            return;
         }
         $this->logger->log('INFO', 'RobotsTxt: Files discovered: ' . count($discoveredFiles));
 
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
-        $siteBaseUrl = $container->getVariable('SITE_BASE_URL');
+        $siteBaseUrl = $this->container->getVariable('SITE_BASE_URL');
         if ($siteBaseUrl === null) {
             throw new \RuntimeException('SITE_BASE_URL not set in container');
         }
@@ -95,9 +95,9 @@ class RobotsTxtService
             ]
         ];
 
-        $eventManager = $container->get(EventManager::class);
-        $eventResult = $eventManager->fire('ROBOTS_TXT_BUILDING', ['rules' => $rules]);
-        $finalRules = $eventResult['rules'] ?? $rules;
+        $buildingEvent = new RobotsTxtBuildingEvent('ROBOTS_TXT_BUILDING', $rules);
+        $this->eventManager->fire('ROBOTS_TXT_BUILDING', $buildingEvent);
+        $finalRules = $buildingEvent->rules;
 
         $robotsTxtContent = $this->generator->generate($siteBaseUrl, $finalRules);
 
@@ -110,8 +110,6 @@ class RobotsTxtService
         } catch (\Throwable $e) {
             $this->logger->log('ERROR', "Failed to write robots.txt to {$robotsTxtPath}: " . $e->getMessage());
         }
-
-        return $parameters;
     }
 
     /**
@@ -141,11 +139,11 @@ class RobotsTxtService
     /**
      * Scan for category definition files and check their robots metadata
      */
-    private function scanCategoryFiles(Container $container): void
+    private function scanCategoryFiles(): void
     {
         // Category files are typically named like "category-slug.md" or "category-slug.html"
         // with type=category in frontmatter
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
 
         foreach ($discoveredFiles as $fileData) {
             $metadata = $fileData['metadata'];
