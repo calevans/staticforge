@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\Forms;
 
 use EICC\StaticForge\Core\BaseFeature;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\TableOfContents;
 
 use EICC\StaticForge\Core\BaseFeature;
@@ -48,4 +50,3 @@ class Feature extends BaseFeature implements FeatureInterface
         return $this->service->handleMarkdownConverted($container, $parameters);
     }
 }
-

@@ -4,6 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\HtmlRenderer;
 
 use EICC\StaticForge\Features\HtmlRenderer\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use org\bovigo\vfs\vfsStream;
@@ -56,8 +57,9 @@ class FeatureTest extends UnitTestCase
         $this->eventManager = new EventManager($this->container);
 
         // Create feature
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
 
         // Create test templates
@@ -248,8 +250,8 @@ HTML;
 
         // Set up event manager and register feature
         $eventManager = new EventManager($this->container);
-        $feature = new Feature();
-        $feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($eventManager);
 
         $htmlContent = <<<HTML

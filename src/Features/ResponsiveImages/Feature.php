@@ -9,7 +9,6 @@ use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Features\ResponsiveImages\Services\HtmlImageRewriterService;
-use EICC\StaticForge\Features\ResponsiveImages\Services\ImageVariantGenerator;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -24,7 +23,8 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
 {
     protected string $name = 'ResponsiveImages';
     protected Log $logger;
-    private ?HtmlImageRewriterService $service = null;
+    private HtmlImageRewriterService $service;
+    private ResponsiveImageConfig $config;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -43,21 +43,21 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
+    public function __construct(Log $logger, HtmlImageRewriterService $service, ResponsiveImageConfig $config)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+        $this->config = $config;
+    }
+
     public function register(EventManager $eventManager): void
     {
         $this->eventManager = $eventManager;
-        $this->logger = $this->container->get('logger');
 
-        $siteConfig = $this->container->getVariable('site_config') ?? [];
-        $config = ResponsiveImageConfig::fromSiteConfig(is_array($siteConfig) ? $siteConfig : []);
-
-        if (!$config->enabled) {
+        if (!$this->config->enabled) {
             $this->logger->log('INFO', 'ResponsiveImages Feature disabled via config');
             return;
         }
-
-        $generator = new ImageVariantGenerator($this->logger, $config);
-        $this->service = new HtmlImageRewriterService($this->logger, $generator, $config);
 
         $this->registerEventListeners();
         $this->logger->log('INFO', 'ResponsiveImages Feature registered');
@@ -69,7 +69,7 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
      */
     public function handlePostRender(Container $container, array $parameters): array
     {
-        if ($this->service === null) {
+        if (!$this->config->enabled) {
             return $parameters;
         }
 

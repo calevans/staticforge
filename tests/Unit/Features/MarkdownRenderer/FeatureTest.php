@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\MarkdownRenderer;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\MarkdownRenderer\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -60,8 +61,9 @@ class FeatureTest extends UnitTestCase
             $this->container->get('logger')
         ));
 
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($eventManager);
 
         // Create test templates

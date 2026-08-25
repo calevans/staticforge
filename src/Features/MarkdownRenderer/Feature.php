@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\MarkdownRenderer;
 
 use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
-use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Features\MarkdownRenderer\Services\MarkdownRendererService;
-use EICC\StaticForge\Services\TemplateRenderer;
-use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -22,6 +21,7 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     protected string $name = 'MarkdownRenderer';
     protected Log $logger;
     private MarkdownRendererService $service;
+    private ExtensionRegistry $extensionRegistry;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -30,29 +30,19 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
     ];
 
+    public function __construct(Log $logger, MarkdownRendererService $service, ExtensionRegistry $extensionRegistry)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+        $this->extensionRegistry = $extensionRegistry;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
 
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        // Initialize dependencies from container
-        $markdownProcessor = $this->container->get(MarkdownProcessor::class);
-        $contentExtractor = $this->container->get(ContentExtractor::class);
-        $templateRenderer = $this->container->get(TemplateRenderer::class);
-
-        // Initialize service
-        $this->service = new MarkdownRendererService(
-            $this->logger,
-            $markdownProcessor,
-            $contentExtractor,
-            $templateRenderer
-        );
-
         // Register .md extension for processing
-        $extensionRegistry = $this->container->get(ExtensionRegistry::class);
-        $extensionRegistry->registerExtension('.md');
+        $this->extensionRegistry->registerExtension('.md');
 
         $this->logger->log('INFO', 'Markdown Renderer Feature registered');
     }

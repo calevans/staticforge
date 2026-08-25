@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\HtmlRenderer;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
-use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Features\HtmlRenderer\Services\HtmlRendererService;
-use EICC\StaticForge\Services\TemplateRenderer;
-use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -22,6 +21,7 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'HtmlRenderer';
     protected Log $logger;
     private HtmlRendererService $service;
+    private ExtensionRegistry $extensionRegistry;
 
     /**
      * @var array<string, array{method: string, priority: int}>
@@ -30,31 +30,19 @@ class Feature extends BaseFeature implements FeatureInterface
         'RENDER' => ['method' => 'handleRender', 'priority' => 100]
     ];
 
+    public function __construct(Log $logger, HtmlRendererService $service, ExtensionRegistry $extensionRegistry)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+        $this->extensionRegistry = $extensionRegistry;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
 
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        // Get AssetManager (optional)
-        $assetManager = null;
-        if ($this->container->has(AssetManager::class)) {
-            $assetManager = $this->container->get(AssetManager::class);
-        }
-
-        // Initialize helpers
-        $templateRenderer = new TemplateRenderer(
-            new TemplateVariableBuilder(),
-            $this->logger,
-            $assetManager
-        );
-
-        $this->service = new HtmlRendererService($this->logger, $templateRenderer);
-
         // Register .html extension for processing
-        $extensionRegistry = $this->container->get(ExtensionRegistry::class);
-        $extensionRegistry->registerExtension('.html');
+        $this->extensionRegistry->registerExtension('.html');
 
         $this->logger->log('INFO', 'HTML Renderer Feature registered');
     }

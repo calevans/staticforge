@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\MenuBuilder;
 
 use EICC\StaticForge\Core\BaseFeature;

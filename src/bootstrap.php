@@ -66,6 +66,7 @@ use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService as Catego
 use EICC\StaticForge\Features\Tags\Services\PaginationService as TagsPaginationService;
 use EICC\StaticForge\Features\Tags\Services\TagPageService;
 use EICC\StaticForge\Features\Tags\Services\TagsService;
+use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\StaticForge\Services\TemplateRenderer;
 use Twig\Loader\FilesystemLoader;
@@ -294,23 +295,35 @@ $container->stuff(TemplateRenderer::class, function () use ($container) {
 // CategoryIndex Feature: CategoryService holds scan state (scanCategories() ->
 // getCategories()/getCategory()) that the Feature and CategoryPageService must
 // see as the same instance, so both are registered here rather than left to
-// independent autowiring.
-$container->stuff(ImageService::class, function () use ($container) {
-    return new ImageService($container->get('logger'));
+// independent autowiring. Registered via add() with a self-memoizing closure
+// (not stuff(), which runs immediately at registration time) so site_config
+// is read lazily on first use instead of whatever it happened to be when
+// bootstrap.php ran — tests override site_config via setContainerVariable()
+// after the container is built, and stuff() would silently ignore that.
+$container->add(ImageService::class, function () use ($container) {
+    static $instance = null;
+    return $instance ??= new ImageService($container->get('logger'));
 });
 
-$container->stuff(CategoryService::class, function () use ($container) {
-    return new CategoryService($container->get('logger'), $container->get(ImageService::class));
+$container->add(CategoryService::class, function () use ($container) {
+    static $instance = null;
+    return $instance ??= new CategoryService($container->get('logger'), $container->get(ImageService::class));
 });
 
-$container->stuff(CategoryIndexPaginationService::class, function () {
-    return new CategoryIndexPaginationService();
+$container->add(CategoryIndexPaginationService::class, function () {
+    static $instance = null;
+    return $instance ??= new CategoryIndexPaginationService();
 });
 
-$container->stuff(CategoryPageService::class, function () use ($container) {
+$container->add(CategoryPageService::class, function () use ($container) {
+    static $instance = null;
+    if ($instance !== null) {
+        return $instance;
+    }
+
     $siteConfig = $container->getVariable('site_config') ?? [];
 
-    return new CategoryPageService(
+    return $instance = new CategoryPageService(
         $container->get('logger'),
         $container->get(CategoryService::class),
         $container->get(CategoryIndexPaginationService::class),
@@ -321,24 +334,41 @@ $container->stuff(CategoryPageService::class, function () use ($container) {
 // Tags Feature: same sharing requirement as CategoryIndex above — TagsService
 // accumulates scanned tag data that the Feature and TagPageService must see
 // as the same instance.
-$container->stuff(TagsService::class, function () use ($container) {
-    return new TagsService($container->get('logger'));
+$container->add(TagsService::class, function () use ($container) {
+    static $instance = null;
+    return $instance ??= new TagsService($container->get('logger'));
 });
 
-$container->stuff(TagsPaginationService::class, function () {
-    return new TagsPaginationService();
+$container->add(TagsPaginationService::class, function () {
+    static $instance = null;
+    return $instance ??= new TagsPaginationService();
 });
 
-$container->stuff(TagPageService::class, function () use ($container) {
+$container->add(TagPageService::class, function () use ($container) {
+    static $instance = null;
+    if ($instance !== null) {
+        return $instance;
+    }
+
     $siteConfig = $container->getVariable('site_config') ?? [];
 
-    return new TagPageService(
+    return $instance = new TagPageService(
         $container->get('logger'),
         $container->get(TagsService::class),
         $container->get(TagsPaginationService::class),
         $container->get(TemplateRenderer::class),
         TagPageService::resolveItemsPerPage($siteConfig)
     );
+});
+
+$container->add(ResponsiveImageConfig::class, function () use ($container) {
+    static $instance = null;
+    if ($instance !== null) {
+        return $instance;
+    }
+
+    $siteConfig = $container->getVariable('site_config') ?? [];
+    return $instance = ResponsiveImageConfig::fromSiteConfig(is_array($siteConfig) ? $siteConfig : []);
 });
 
 // Return fully configured container
