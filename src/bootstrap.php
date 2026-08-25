@@ -307,7 +307,11 @@ $container->add(ImageService::class, function () use ($container) {
 
 $container->add(CategoryService::class, function () use ($container) {
     static $instance = null;
-    return $instance ??= new CategoryService($container->get('logger'), $container->get(ImageService::class));
+    return $instance ??= new CategoryService(
+        $container->get('logger'),
+        $container->get(ImageService::class),
+        $container
+    );
 });
 
 $container->add(CategoryIndexPaginationService::class, function () {

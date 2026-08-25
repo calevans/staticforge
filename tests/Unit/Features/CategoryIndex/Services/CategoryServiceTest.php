@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
 use EICC\StaticForge\Features\CategoryIndex\Services\ImageService;
 use EICC\Utils\Log;
@@ -19,7 +20,7 @@ class CategoryServiceTest extends UnitTestCase
         parent::setUp();
         $this->logger = $this->createMock(Log::class);
         $this->imageService = $this->createMock(ImageService::class);
-        $this->service = new CategoryService($this->logger, $this->imageService);
+        $this->service = new CategoryService($this->logger, $this->imageService, $this->container);
     }
 
     public function testScanCategories(): void
@@ -37,7 +38,7 @@ class CategoryServiceTest extends UnitTestCase
 
         $this->setContainerVariable('discovered_files', $discoveredFiles);
 
-        $this->service->scanCategories($this->container);
+        $this->service->scanCategories();
         $categories = $this->service->getCategories();
 
         $this->assertArrayHasKey('tech', $categories);
@@ -52,14 +53,16 @@ class CategoryServiceTest extends UnitTestCase
 
         $this->setContainerVariable('OUTPUT_DIR', '/output');
 
-        $parameters = [
-            'metadata' => ['title' => 'Post 1', 'category' => 'Tech'],
-            'output_path' => '/output/tech/post1.html',
-            'file_path' => '/source/post1.md',
-            'rendered_content' => '<html>...</html>'
-        ];
+        $event = new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '/source/post1.md',
+            fileUrl: '',
+            metadata: ['title' => 'Post 1', 'category' => 'Tech'],
+            renderedContent: '<html>...</html>',
+            outputPath: '/output/tech/post1.html',
+        );
 
-        $this->service->collectFile($this->container, $parameters);
+        $this->service->collectFile($event);
 
         $category = $this->service->getCategory('tech');
 

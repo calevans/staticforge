@@ -7,6 +7,10 @@ namespace EICC\StaticForge\Features\CategoryIndex;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\CollectMenuItemsEvent;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
 use EICC\StaticForge\Features\CategoryIndex\Services\MenuService;
@@ -25,28 +29,20 @@ class Feature extends BaseFeature implements FeatureInterface
     private CategoryService $categoryService;
     private CategoryPageService $pageService;
     private MenuService $menuService;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 50],
-        'COLLECT_MENU_ITEMS' => ['method' => 'handleCollectMenuItems', 'priority' => 100],
-        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 150],
-        'POST_RENDER' => ['method' => 'collectCategoryFiles', 'priority' => 150],
-        'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 50]
-    ];
+    private Container $applicationContainer;
 
     public function __construct(
         Log $logger,
         CategoryService $categoryService,
         CategoryPageService $pageService,
-        MenuService $menuService
+        MenuService $menuService,
+        Container $applicationContainer
     ) {
         $this->logger = $logger;
         $this->categoryService = $categoryService;
         $this->pageService = $pageService;
         $this->menuService = $menuService;
+        $this->applicationContainer = $applicationContainer;
     }
 
     public function register(EventManager $eventManager): void
@@ -55,76 +51,52 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'CategoryIndex Feature registered');
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostGlob(Container $container, array $parameters): array
+    #[EventListener('POST_GLOB', priority: 50)]
+    public function handlePostGlob(Event $event): void
     {
         $this->logger->log('INFO', 'CategoryIndex: Scanning for category files');
 
-        $this->categoryService->scanCategories($container);
-
-        return $parameters;
+        $this->categoryService->scanCategories();
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleCollectMenuItems(Container $container, array $parameters): array
+    #[EventListener('COLLECT_MENU_ITEMS', priority: 100)]
+    public function handleCollectMenuItems(CollectMenuItemsEvent $event): void
     {
-        $menuData = $parameters['menu_data'] ?? [];
         $categories = $this->categoryService->getCategories();
 
-        $parameters['menu_data'] = $this->menuService->addCategoriesToMenu($categories, $menuData);
-
-        return $parameters;
+        $event->menuData = $this->menuService->addCategoriesToMenu($categories, $event->menuData);
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePreRender(Container $container, array $parameters): array
+    #[EventListener('PRE_RENDER', priority: 150)]
+    public function handlePreRender(RenderEvent $event): void
     {
-        if (!empty($parameters['bypass_category_defer'])) {
-            return $parameters;
+        if (!empty($event->extra['bypass_category_defer'])) {
+            return;
         }
 
-        $filePath = $parameters['file_path'] ?? null;
-        if (!$filePath) {
-            return $parameters;
+        $filePath = $event->filePath;
+        if ($filePath === '') {
+            return;
         }
 
         $slug = pathinfo($filePath, PATHINFO_FILENAME);
         $category = $this->categoryService->getCategory($slug);
 
         if ($category) {
-            $this->pageService->deferFile($filePath, $category->metadata, $container);
-            $parameters['skip_file'] = true;
+            $this->pageService->deferFile($filePath, $category->metadata, $this->applicationContainer);
+            $event->skipFile = true;
         }
-
-        return $parameters;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function collectCategoryFiles(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 150)]
+    public function collectCategoryFiles(RenderEvent $event): void
     {
-        $this->categoryService->collectFile($container, $parameters);
-        return $parameters;
+        $this->categoryService->collectFile($event);
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function processDeferredCategoryFiles(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 50)]
+    public function processDeferredCategoryFiles(Event $event): void
     {
-        $this->pageService->processDeferredFiles($container);
-        return $parameters;
+        $this->pageService->processDeferredFiles($this->applicationContainer);
     }
 }

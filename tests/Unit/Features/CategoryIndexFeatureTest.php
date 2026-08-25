@@ -2,6 +2,8 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\CategoryIndex\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\Application;
@@ -103,6 +105,25 @@ class CategoryIndexFeatureTest extends UnitTestCase
         rmdir($dir);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(
+        string $filePath,
+        ?string $outputPath,
+        array $metadata = [],
+        string $renderedContent = ''
+    ): RenderEvent {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: $metadata,
+            renderedContent: $renderedContent,
+            outputPath: $outputPath,
+        );
+    }
+
     public function testFeatureRegistration(): void
     {
         $this->assertInstanceOf(Feature::class, $this->feature);
@@ -110,32 +131,22 @@ class CategoryIndexFeatureTest extends UnitTestCase
 
     public function testCollectsCategoryFiles(): void
     {
-        $parameters = [
-        'metadata' => [
-        'title' => 'Test Page',
-        'category' => 'Technology'
-        ],
-        'output_path' => $this->tempDir . '/technology/test.html'
-        ];
+        $event = $this->makeEvent(
+            '',
+            $this->tempDir . '/technology/test.html',
+            ['title' => 'Test Page', 'category' => 'Technology'],
+        );
 
-        $result = $this->feature->collectCategoryFiles($this->container, $parameters);
-
-      // Should return parameters unchanged
-        $this->assertEquals($parameters, $result);
+        // Should not throw
+        $this->feature->collectCategoryFiles($event);
     }
 
     public function testIgnoresFilesWithoutCategory(): void
     {
-        $parameters = [
-        'metadata' => [
-        'title' => 'Test Page'
-        ],
-        'output_path' => $this->tempDir . '/test.html'
-        ];
+        $event = $this->makeEvent('', $this->tempDir . '/test.html', ['title' => 'Test Page']);
 
-        $result = $this->feature->collectCategoryFiles($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        // Should not throw
+        $this->feature->collectCategoryFiles($event);
     }
 
     public function testGeneratesCategoryIndex(): void
@@ -157,19 +168,16 @@ class CategoryIndexFeatureTest extends UnitTestCase
         ];
 
         foreach ($files as $file) {
-            $this->feature->collectCategoryFiles($this->container, [
-            'metadata' => [
-            'title' => $file['title'],
-            'category' => $file['category']
-            ],
-            'output_path' => $this->tempDir . $file['path'],
-            'file_path' => $this->tempDir . $file['path'],
-            'rendered_content' => '<p>Test content</p>'
-            ]);
+            $this->feature->collectCategoryFiles($this->makeEvent(
+                $this->tempDir . $file['path'],
+                $this->tempDir . $file['path'],
+                ['title' => $file['title'], 'category' => $file['category']],
+                '<p>Test content</p>',
+            ));
         }
 
       // Generate indexes (simulating POST_LOOP)
-        $this->feature->processDeferredCategoryFiles($this->container, []);
+        $this->feature->processDeferredCategoryFiles(new Event('POST_LOOP'));
 
       // Check that index file was created
         $indexPath = $this->tempDir . '/tech/index.html';
@@ -204,18 +212,15 @@ class CategoryIndexFeatureTest extends UnitTestCase
         ];
 
         foreach ($files as $file) {
-            $this->feature->collectCategoryFiles($this->container, [
-            'metadata' => [
-            'title' => $file['title'],
-            'category' => $file['category']
-            ],
-            'output_path' => $this->tempDir . $file['path'],
-            'file_path' => $this->tempDir . $file['path'],
-            'rendered_content' => '<p>Test content</p>'
-            ]);
+            $this->feature->collectCategoryFiles($this->makeEvent(
+                $this->tempDir . $file['path'],
+                $this->tempDir . $file['path'],
+                ['title' => $file['title'], 'category' => $file['category']],
+                '<p>Test content</p>',
+            ));
         }
 
-        $this->feature->processDeferredCategoryFiles($this->container, []);
+        $this->feature->processDeferredCategoryFiles(new Event('POST_LOOP'));
 
       // Both category indexes should exist
         $this->assertFileExists($this->tempDir . '/technology/index.html');
@@ -244,18 +249,15 @@ class CategoryIndexFeatureTest extends UnitTestCase
 
       // Add 15 files to trigger pagination (perPage is 5)
         for ($i = 1; $i <= 15; $i++) {
-            $this->feature->collectCategoryFiles($this->container, [
-            'metadata' => [
-            'title' => "File {$i}",
-            'category' => 'Test'
-            ],
-            'output_path' => $this->tempDir . "/test/file{$i}.html",
-            'file_path' => $this->tempDir . "/test/file{$i}.html",
-            'rendered_content' => '<p>Content</p>'
-            ]);
+            $this->feature->collectCategoryFiles($this->makeEvent(
+                $this->tempDir . "/test/file{$i}.html",
+                $this->tempDir . "/test/file{$i}.html",
+                ['title' => "File {$i}", 'category' => 'Test'],
+                '<p>Content</p>',
+            ));
         }
 
-        $this->feature->processDeferredCategoryFiles($this->container, []);
+        $this->feature->processDeferredCategoryFiles(new Event('POST_LOOP'));
 
         $indexPath = $this->tempDir . '/test/index.html';
         $this->assertFileExists($indexPath);
@@ -273,10 +275,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
     public function testSkipsGenerationWhenNoCategories(): void
     {
       // Don't collect any files
-        $result = $this->feature->processDeferredCategoryFiles($this->container, []);
-
-      // Should return parameters unchanged
-        $this->assertEquals([], $result);
+        $this->feature->processDeferredCategoryFiles(new Event('POST_LOOP'));
 
       // Should not create any index files
         $files = glob($this->tempDir . '/*/index.html');

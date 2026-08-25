@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Categories\Feature as CategoriesFeature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
@@ -29,6 +30,20 @@ class CategoriesFeatureTest extends UnitTestCase
         $this->feature->register($this->eventManager);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(string $outputPath, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: $metadata,
+            outputPath: $outputPath,
+        );
+    }
+
     public function testRegisterFeature(): void
     {
         $listeners = $this->eventManager->getListeners('POST_RENDER');
@@ -37,67 +52,50 @@ class CategoriesFeatureTest extends UnitTestCase
 
     public function testHandlePostRenderWithCategory(): void
     {
-        $parameters = [
-        'output_path' => '/var/www/public/test.html',
-        'metadata' => [
-        'category' => 'Blog Posts'
-        ]
-        ];
+        $event = $this->makeEvent('/var/www/public/test.html', ['category' => 'Blog Posts']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertStringContainsString('blog-posts', $result['output_path']);
-        $this->assertStringEndsWith('test.html', $result['output_path']);
+        $this->assertNotNull($event->outputPath);
+        $this->assertStringContainsString('blog-posts', $event->outputPath);
+        $this->assertStringEndsWith('test.html', $event->outputPath);
     }
 
     public function testHandlePostRenderWithoutCategory(): void
     {
-        $parameters = [
-        'output_path' => '/var/www/public/test.html',
-        'metadata' => []
-        ];
+        $event = $this->makeEvent('/var/www/public/test.html');
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertEquals('/var/www/public/test.html', $result['output_path']);
+        $this->assertEquals('/var/www/public/test.html', $event->outputPath);
     }
 
     public function testHandlePostRenderWithoutMetadata(): void
     {
-        $parameters = [
-        'output_path' => '/var/www/public/test.html'
-        ];
+        $event = $this->makeEvent('/var/www/public/test.html');
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertEquals('/var/www/public/test.html', $result['output_path']);
+        $this->assertEquals('/var/www/public/test.html', $event->outputPath);
     }
 
     public function testCategorySanitization(): void
     {
-        $parameters = [
-        'output_path' => '/var/www/public/test.html',
-        'metadata' => [
-        'category' => 'Blog & News!!'
-        ]
-        ];
+        $event = $this->makeEvent('/var/www/public/test.html', ['category' => 'Blog & News!!']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertStringContainsString('blog-news', $result['output_path']);
+        $this->assertNotNull($event->outputPath);
+        $this->assertStringContainsString('blog-news', $event->outputPath);
     }
 
     public function testCategoryWithSpaces(): void
     {
-        $parameters = [
-        'output_path' => '/var/www/public/test.html',
-        'metadata' => [
-        'category' => 'Product Reviews'
-        ]
-        ];
+        $event = $this->makeEvent('/var/www/public/test.html', ['category' => 'Product Reviews']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertStringContainsString('product-reviews', $result['output_path']);
+        $this->assertNotNull($event->outputPath);
+        $this->assertStringContainsString('product-reviews', $event->outputPath);
     }
 }

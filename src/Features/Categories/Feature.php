@@ -7,6 +7,9 @@ namespace EICC\StaticForge\Features\Categories;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Categories\Services\CategoriesService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -20,20 +23,13 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'Categories';
     protected Log $logger;
     private CategoriesService $service;
+    private Container $applicationContainer;
 
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 250],
-        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 200],
-        'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
-    ];
-
-    public function __construct(Log $logger, CategoriesService $service)
+    public function __construct(Log $logger, CategoriesService $service, Container $applicationContainer)
     {
         $this->logger = $logger;
         $this->service = $service;
+        $this->applicationContainer = $applicationContainer;
     }
 
     public function register(EventManager $eventManager): void
@@ -44,78 +40,50 @@ class Feature extends BaseFeature implements FeatureInterface
 
     /**
      * Handle POST_GLOB event to scan category files and store their templates
-     *
-     * Called dynamically by EventManager when POST_GLOB event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePostGlob(Container $container, array $parameters): array
+    #[EventListener('POST_GLOB', priority: 250)]
+    public function handlePostGlob(Event $event): void
     {
-        $this->service->processCategoryTemplates($container);
-        return $parameters;
+        $this->service->processCategoryTemplates($this->applicationContainer);
     }
 
     /**
      * Handle PRE_RENDER event to pre-compute the categorized output path before
      * RENDER runs, so FileProcessor's incremental-build cache check can compare
      * against the actual file that will be written, not the un-categorized path.
-     *
-     * Called dynamically by EventManager when PRE_RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePreRender(Container $container, array $parameters): array
+    #[EventListener('PRE_RENDER', priority: 200)]
+    public function handlePreRender(RenderEvent $event): void
     {
-        $metadata = $parameters['file_metadata'] ?? $parameters['metadata'] ?? [];
-        $category = $metadata['category'] ?? null;
-        $filePath = $parameters['file_path'] ?? null;
+        $category = $event->metadata['category'] ?? null;
+        $filePath = $event->filePath;
 
-        if (!$category || !$filePath) {
-            return $parameters;
+        if (!$category || $filePath === '') {
+            return;
         }
 
-        $uncategorizedOutputPath = $this->service->calculateUncategorizedOutputPath($filePath, $container);
-        $parameters['expected_output_path'] = $this->service->categorizeOutputPath($uncategorizedOutputPath, $category);
-
-        return $parameters;
+        $uncategorizedOutputPath = $this->service->calculateUncategorizedOutputPath(
+            $filePath,
+            $this->applicationContainer
+        );
+        $event->extra['expected_output_path'] = $this->service->categorizeOutputPath(
+            $uncategorizedOutputPath,
+            $category
+        );
     }
 
     /**
      * Handle POST_RENDER event to modify output path based on category
-     *
-     * Called dynamically by EventManager when POST_RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePostRender(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 100)]
+    public function handlePostRender(RenderEvent $event): void
     {
-        // Only process if there's metadata with a category
-        $metadata = $parameters['metadata'] ?? [];
-        $category = $metadata['category'] ?? null;
+        $category = $event->metadata['category'] ?? null;
 
-        if (!$category) {
-            return $parameters;
+        if (!$category || $event->outputPath === null) {
+            return;
         }
 
-        // Get current output path
-        $outputPath = $parameters['output_path'] ?? null;
-
-        if (!$outputPath) {
-            return $parameters;
-        }
-
-        // Modify output path to include category subdirectory
-        $newOutputPath = $this->service->categorizeOutputPath($outputPath, $category);
-
-        // Update the output path in parameters
-        $parameters['output_path'] = $newOutputPath;
-
-        return $parameters;
+        $event->outputPath = $this->service->categorizeOutputPath($event->outputPath, $category);
     }
 }

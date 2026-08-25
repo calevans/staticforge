@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Categories;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\Categories\Feature;
@@ -28,6 +30,20 @@ class FeatureTest extends UnitTestCase
         $this->feature->register($this->eventManager);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(?string $outputPath, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: $metadata,
+            outputPath: $outputPath,
+        );
+    }
+
     public function testRegisterAddsExpectedListeners(): void
     {
         $this->assertNotEmpty($this->eventManager->getListeners('POST_GLOB'));
@@ -36,32 +52,29 @@ class FeatureTest extends UnitTestCase
 
     public function testHandlePostRenderSkipsWhenNoCategory(): void
     {
-        $parameters = ['metadata' => ['title' => 'No category'], 'output_path' => '/out/file.html'];
+        $event = $this->makeEvent('/out/file.html', ['title' => 'No category']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertEquals($parameters, $result);
+        $this->assertEquals('/out/file.html', $event->outputPath);
     }
 
     public function testHandlePostRenderSkipsWhenNoOutputPath(): void
     {
-        $parameters = ['metadata' => ['category' => 'Tech']];
+        $event = $this->makeEvent(null, ['category' => 'Tech']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertEquals($parameters, $result);
+        $this->assertNull($event->outputPath);
     }
 
     public function testHandlePostRenderCategorizesOutputPath(): void
     {
-        $parameters = [
-            'metadata' => ['category' => 'Tech'],
-            'output_path' => '/out/article.html',
-        ];
+        $event = $this->makeEvent('/out/article.html', ['category' => 'Tech']);
 
-        $result = $this->feature->handlePostRender($this->container, $parameters);
+        $this->feature->handlePostRender($event);
 
-        $this->assertEquals('/out/tech/article.html', $result['output_path']);
+        $this->assertEquals('/out/tech/article.html', $event->outputPath);
     }
 
     public function testHandlePostGlobProcessesDiscoveredFiles(): void
@@ -77,10 +90,7 @@ class FeatureTest extends UnitTestCase
             ],
         ]);
 
-        $parameters = [];
-        $result = $this->feature->handlePostGlob($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        $this->feature->handlePostGlob(new Event('POST_GLOB'));
 
         $updated = $this->container->getVariable('discovered_files');
         $this->assertEquals('tech-layout', $updated[1]['metadata']['template']);

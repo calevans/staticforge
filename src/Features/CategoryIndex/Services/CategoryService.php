@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\CategoryIndex\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
 use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\Utils\Container;
@@ -13,19 +14,21 @@ class CategoryService
 {
     private Log $logger;
     private ImageService $imageService;
+    private Container $container;
     /** @var array<string, Category> */
     private array $categories = [];
 
-    public function __construct(Log $logger, ImageService $imageService)
+    public function __construct(Log $logger, ImageService $imageService, Container $container)
     {
         $this->logger = $logger;
         $this->imageService = $imageService;
+        $this->container = $container;
     }
 
-    public function scanCategories(Container $container): void
+    public function scanCategories(): void
     {
         /** @var array<int, array{path: string, metadata: array<string, mixed>}> $discoveredFiles */
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
 
         foreach ($discoveredFiles as $fileData) {
             $metadata = $fileData['metadata'];
@@ -51,21 +54,18 @@ class CategoryService
         return $this->categories[$slug] ?? null;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
-    public function collectFile(Container $container, array $parameters): void
+    public function collectFile(RenderEvent $event): void
     {
-        $metadata = $parameters['metadata'] ?? [];
+        $metadata = $event->metadata;
         $categoryName = $metadata['category'] ?? null;
 
         if (!$categoryName) {
             return;
         }
 
-        $outputPath = $parameters['output_path'] ?? null;
-        $filePath = $parameters['file_path'] ?? null;
-        $renderedContent = $parameters['rendered_content'] ?? '';
+        $outputPath = $event->outputPath;
+        $filePath = $event->filePath;
+        $renderedContent = $event->renderedContent ?? '';
         $title = $metadata['title'] ?? 'Untitled';
 
         if (!$outputPath || !$filePath || !$renderedContent) {
@@ -82,11 +82,11 @@ class CategoryService
         $category = $this->categories[$slug];
 
         // Process Image
-        $imageUrl = $this->imageService->extractHeroImage($renderedContent, $metadata, $filePath, $container);
+        $imageUrl = $this->imageService->extractHeroImage($renderedContent, $metadata, $filePath, $this->container);
         $date = $this->getFileDate($metadata, $filePath);
 
         // Calculate URL relative to output dir
-        $outputDir = $container->getVariable('OUTPUT_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
 
         // Normalize paths to ensure consistent separators
         $normalizedOutputDir = rtrim($outputDir, '/\\') . DIRECTORY_SEPARATOR;
