@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Tags;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
+use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\Tags\Feature;
 use EICC\StaticForge\Features\Tags\Services\TagPageService;
@@ -12,6 +14,7 @@ use EICC\StaticForge\Tests\Unit\UnitTestCase;
 class FeatureTest extends UnitTestCase
 {
     private Feature $feature;
+    private EventManager $eventManager;
 
     protected function setUp(): void
     {
@@ -19,6 +22,8 @@ class FeatureTest extends UnitTestCase
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);
         $this->feature = $feature;
+        $this->eventManager = new EventManager();
+        $this->feature->register($this->eventManager);
     }
 
     public function testDefaultsToTenWhenSiteConfigMissing(): void
@@ -57,25 +62,25 @@ class FeatureTest extends UnitTestCase
 
     public function testEventListenersIncludePostLoop(): void
     {
-        $reflection = new \ReflectionClass($this->feature);
-        $prop = $reflection->getProperty('eventListeners');
-        $listeners = $prop->getValue($this->feature);
+        $listeners = $this->eventManager->getListeners('POST_LOOP');
 
-        $this->assertArrayHasKey('POST_LOOP', $listeners);
-        $this->assertSame('generateTagPages', $listeners['POST_LOOP']['method']);
-        $this->assertSame(110, $listeners['POST_LOOP']['priority']);
+        $this->assertCount(1, $listeners);
+        $this->assertSame([$this->feature, 'generateTagPages'], $listeners[0]['callback']);
+        $this->assertSame(110, $listeners[0]['priority']);
     }
 
     public function testHandlePreRenderReturnsParametersUnchangedWhenBypassFlagSet(): void
     {
-        $parameters = [
-            'bypass_tag_defer' => true,
-            'file_path' => '__tag__:php',
-            'some_other_key' => 'value',
-        ];
+        $event = new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: '__tag__:php',
+            fileUrl: '',
+            metadata: [],
+            extra: ['bypass_tag_defer' => true, 'some_other_key' => 'value'],
+        );
 
-        $result = $this->feature->handlePreRender($this->container, $parameters);
+        $this->feature->handlePreRender($event);
 
-        $this->assertSame($parameters, $result);
+        $this->assertArrayNotHasKey('tag_data', $event->extra);
     }
 }

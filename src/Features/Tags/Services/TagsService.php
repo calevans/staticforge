@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Tags\Services;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class TagsService
 {
     private Log $logger;
+    private Container $container;
 
     /**
      * Collection of all unique tags found across files
@@ -23,56 +26,36 @@ class TagsService
      */
     private array $tagIndex = []; // tag => [file paths]
 
-    public function __construct(Log $logger)
+    public function __construct(Log $logger, Container $container)
     {
         $this->logger = $logger;
+        $this->container = $container;
     }
 
     /**
      * Handle POST_GLOB event - scan all discovered files for tags
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePostGlob(Container $container, array $parameters): array
+    public function handlePostGlob(Event $event): void
     {
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $discoveredFiles = $this->container->getVariable('discovered_files') ?? [];
 
         foreach ($discoveredFiles as $fileData) {
             $this->extractTagsFromFile($fileData);
         }
 
-        // Store tag data in features array
-        if (!isset($parameters['features'])) {
-            $parameters['features'] = [];
-        }
-
-        $parameters['features']['Tags'] = [
-            'all_tags' => $this->getAllTagsSorted(),
-            'tag_index' => $this->tagIndex,
-            'tag_counts' => $this->getTagCounts()
-        ];
-
         $this->logger->log(
             'INFO',
             'Collected ' . count($this->allTags) . ' unique tags from ' . count($discoveredFiles) . ' files'
         );
-
-        return $parameters;
     }
 
     /**
      * Handle PRE_RENDER event - add tag data to template parameters
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handlePreRender(Container $container, array $parameters): array
+    public function handlePreRender(RenderEvent $event): void
     {
-        $filePath = $parameters['file_path'] ?? '';
-        $metadata = $parameters['metadata'] ?? [];
+        $filePath = $event->filePath;
+        $metadata = $event->metadata;
 
         // Add tag-specific data to parameters for template rendering
         $fileTags = $metadata['tags'] ?? [];
@@ -85,14 +68,12 @@ class TagsService
         // Get related files by tags (files that share tags)
         $relatedFiles = $this->getRelatedFilesByTags($filePath, $fileTags);
 
-        $parameters['tag_data'] = [
+        $event->extra['tag_data'] = [
             'tags' => $fileTags,
             'related_files' => $relatedFiles,
             'all_tags' => $this->getAllTagsSorted(),
             'tag_counts' => $this->getTagCounts()
         ];
-
-        return $parameters;
     }
 
     /**

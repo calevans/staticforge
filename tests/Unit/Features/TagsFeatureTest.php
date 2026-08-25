@@ -3,6 +3,8 @@
 namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Tags\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
@@ -52,21 +54,21 @@ class TagsFeatureTest extends UnitTestCase
         $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($this->eventManager);
 
-        // Test POST_GLOB delegation
-        $parameters = ['features' => []];
-        $result = $feature->handlePostGlob($this->container, $parameters);
+        // Test POST_GLOB delegation - collects tags from discovered_files
+        $feature->handlePostGlob(new Event('POST_GLOB'));
 
-        $this->assertArrayHasKey('Tags', $result['features']);
-        $this->assertContains('php', $result['features']['Tags']['all_tags']);
+        // Test PRE_RENDER delegation - the collected tags should now surface
+        // in tag_data, proving POST_GLOB's collection actually happened.
+        $event = new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: $file->url(),
+            fileUrl: '',
+            metadata: ['tags' => ['php']],
+        );
 
-        // Test PRE_RENDER delegation
-        $parameters = [
-            'file_path' => $file->url(),
-            'metadata' => ['tags' => ['php']]
-        ];
-
-        $result = $feature->handlePreRender($this->container, $parameters);
-        $this->assertArrayHasKey('tag_data', $result);
-        $this->assertContains('php', $result['tag_data']['tags']);
+        $feature->handlePreRender($event);
+        $this->assertArrayHasKey('tag_data', $event->extra);
+        $this->assertContains('php', $event->extra['tag_data']['tags']);
+        $this->assertContains('php', $event->extra['tag_data']['all_tags']);
     }
 }

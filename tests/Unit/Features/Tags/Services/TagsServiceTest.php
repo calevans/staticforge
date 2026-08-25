@@ -2,6 +2,8 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features\Tags\Services;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\Utils\Container;
@@ -22,7 +24,7 @@ class TagsServiceTest extends UnitTestCase
         // Create virtual filesystem
         $this->root = vfsStream::setup('test');
         $this->logger = $this->container->get('logger');
-        $this->service = new TagsService($this->logger);
+        $this->service = new TagsService($this->logger, $this->container);
     }
 
     public function testExtractsTagsFromMarkdownFiles(): void
@@ -46,13 +48,9 @@ MD;
             ['path' => $mdFile->url(), 'url' => 'test.md', 'metadata' => ['tags' => ['php', 'testing', 'unit-tests']]]
         ]);
 
-        $parameters = ['features' => []];
-        $result = $this->service->handlePostGlob($this->container, $parameters);
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
-        $this->assertArrayHasKey('Tags', $result['features']);
-        $this->assertArrayHasKey('all_tags', $result['features']['Tags']);
-
-        $allTags = $result['features']['Tags']['all_tags'];
+        $allTags = $this->service->getAllTagsSorted();
         $this->assertContains('php', $allTags);
         $this->assertContains('testing', $allTags);
         $this->assertContains('unit-tests', $allTags);
@@ -86,10 +84,9 @@ HTML;
             ['path' => $htmlFile->url(), 'url' => 'test.html', 'metadata' => ['tags' => ['web', 'html', 'frontend']]]
         ]);
 
-        $parameters = ['features' => []];
-        $result = $this->service->handlePostGlob($this->container, $parameters);
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
-        $allTags = $result['features']['Tags']['all_tags'];
+        $allTags = $this->service->getAllTagsSorted();
         $this->assertContains('web', $allTags);
         $this->assertContains('html', $allTags);
         $this->assertContains('frontend', $allTags);
@@ -112,10 +109,9 @@ MD;
             ['path' => $mdFile->url(), 'url' => 'test.md', 'metadata' => ['tags' => 'php, testing, unit-tests']]
         ]);
 
-        $parameters = ['features' => []];
-        $result = $this->service->handlePostGlob($this->container, $parameters);
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
-        $allTags = $result['features']['Tags']['all_tags'];
+        $allTags = $this->service->getAllTagsSorted();
         $this->assertContains('php', $allTags);
         $this->assertContains('testing', $allTags);
         $this->assertContains('unit-tests', $allTags);
@@ -137,10 +133,9 @@ MD;
             ['path' => $mdFile->url(), 'url' => 'test.md', 'metadata' => ['tags' => ['PHP', ' Testing ', 'Unit-Tests']]]
         ]);
 
-        $parameters = ['features' => []];
-        $result = $this->service->handlePostGlob($this->container, $parameters);
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
-        $allTags = $result['features']['Tags']['all_tags'];
+        $allTags = $this->service->getAllTagsSorted();
         $this->assertContains('php', $allTags);
         $this->assertContains('testing', $allTags);
         $this->assertContains('unit-tests', $allTags);
@@ -161,14 +156,10 @@ MD;
 
         $this->setContainerVariable('discovered_files', $files);
 
-        $parameters = ['features' => []];
-        $result = $this->service->handlePostGlob($this->container, $parameters);
-
-        $tagData = $result['features']['Tags'];
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
         // Check tag index
-        $this->assertArrayHasKey('tag_index', $tagData);
-        $index = $tagData['tag_index'];
+        $index = $this->service->getTagIndex();
 
         $this->assertCount(2, $index['php']);
         $this->assertContains($file1->url(), $index['php']);
@@ -182,8 +173,7 @@ MD;
         $this->assertContains($file2->url(), $index['testing']);
 
         // Check tag counts
-        $this->assertArrayHasKey('tag_counts', $tagData);
-        $counts = $tagData['tag_counts'];
+        $counts = $this->service->getTagCounts();
 
         $this->assertEquals(2, $counts['php']);
         $this->assertEquals(2, $counts['web']);
@@ -207,18 +197,20 @@ MD;
         $this->setContainerVariable('discovered_files', $files);
 
         // Run POST_GLOB first to build index
-        $this->service->handlePostGlob($this->container, ['features' => []]);
+        $this->service->handlePostGlob(new Event('POST_GLOB'));
 
         // Test PRE_RENDER for post1.md (should be related to post2 via 'php' and post3 via 'web')
-        $parameters = [
-            'file_path' => $file1->url(),
-            'metadata' => ['tags' => ['php', 'web']]
-        ];
+        $event = new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: $file1->url(),
+            fileUrl: '',
+            metadata: ['tags' => ['php', 'web']],
+        );
 
-        $result = $this->service->handlePreRender($this->container, $parameters);
+        $this->service->handlePreRender($event);
 
-        $this->assertArrayHasKey('tag_data', $result);
-        $tagData = $result['tag_data'];
+        $this->assertArrayHasKey('tag_data', $event->extra);
+        $tagData = $event->extra['tag_data'];
 
         $this->assertArrayHasKey('related_files', $tagData);
         $related = $tagData['related_files'];

@@ -7,6 +7,9 @@ namespace EICC\StaticForge\Features\Tags;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Tags\Services\TagPageService;
 use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\Utils\Container;
@@ -21,24 +24,21 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'Tags';
 
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150],
-        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 100],
-        'POST_LOOP' => ['method' => 'generateTagPages', 'priority' => 110]
-    ];
-
     private TagsService $service;
     private TagPageService $pageService;
     private Log $logger;
+    private Container $applicationContainer;
 
-    public function __construct(Log $logger, TagsService $service, TagPageService $pageService)
-    {
+    public function __construct(
+        Log $logger,
+        TagsService $service,
+        TagPageService $pageService,
+        Container $applicationContainer
+    ) {
         $this->logger = $logger;
         $this->service = $service;
         $this->pageService = $pageService;
+        $this->applicationContainer = $applicationContainer;
     }
 
     public function register(EventManager $eventManager): void
@@ -47,53 +47,25 @@ class Feature extends BaseFeature implements FeatureInterface
         $this->logger->log('INFO', 'Tags Feature registered');
     }
 
-    /**
-     * Handle POST_GLOB event - scan all discovered files for tags
-     *
-     * Called dynamically by EventManager when POST_GLOB event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostGlob(Container $container, array $parameters): array
+    #[EventListener('POST_GLOB', priority: 150)]
+    public function handlePostGlob(Event $event): void
     {
-        return $this->service->handlePostGlob($container, $parameters);
+        $this->service->handlePostGlob($event);
     }
 
-    /**
-     * Handle PRE_RENDER event - add tag data to template parameters
-     *
-     * Called dynamically by EventManager when PRE_RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePreRender(Container $container, array $parameters): array
+    #[EventListener('PRE_RENDER', priority: 100)]
+    public function handlePreRender(RenderEvent $event): void
     {
-        if (!empty($parameters['bypass_tag_defer'])) {
-            return $parameters;
+        if (!empty($event->extra['bypass_tag_defer'])) {
+            return;
         }
 
-        return $this->service->handlePreRender($container, $parameters);
+        $this->service->handlePreRender($event);
     }
 
-    /**
-     * Handle POST_LOOP event - generate tag archive pages
-     *
-     * Called dynamically by EventManager when POST_LOOP event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function generateTagPages(Container $container, array $parameters): array
+    #[EventListener('POST_LOOP', priority: 110)]
+    public function generateTagPages(Event $event): void
     {
-        $this->pageService->generateTagPages($container);
-        return $parameters;
+        $this->pageService->generateTagPages($this->applicationContainer);
     }
 }

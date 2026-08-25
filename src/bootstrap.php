@@ -340,7 +340,7 @@ $container->add(CategoryPageService::class, function () use ($container) {
 // as the same instance.
 $container->add(TagsService::class, function () use ($container) {
     static $instance = null;
-    return $instance ??= new TagsService($container->get('logger'));
+    return $instance ??= new TagsService($container->get('logger'), $container);
 });
 
 $container->add(TagsPaginationService::class, function () {
