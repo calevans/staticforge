@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Features\MenuBuilder\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +20,7 @@ class MenuBuilderStaticMenusTest extends TestCase
     protected function setUp(): void
     {
         $this->container = new Container();
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         // Create mock logger
         $logger = $this->createMock(\EICC\Utils\Log::class);
@@ -55,8 +56,7 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->container->setVariable('discovered_files', []);
 
         // Trigger POST_GLOB event
-        $parameters = ['features' => []];
-        $result = $this->menuBuilder->handlePostGlob($this->container, $parameters);
+        $this->menuBuilder->handlePostGlob(new Event('POST_GLOB'));
 
         // Verify menu_top was created
         $this->assertTrue($this->container->hasVariable('menu_top'));
@@ -87,8 +87,7 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->container->setVariable('discovered_files', []);
 
         // Should not crash
-        $parameters = ['features' => []];
-        $result = $this->menuBuilder->handlePostGlob($this->container, $parameters);
+        $this->menuBuilder->handlePostGlob(new Event('POST_GLOB'));
 
         // Should not create static menus
         $this->assertFalse($this->container->hasVariable('menu_top'));
@@ -104,8 +103,7 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->container->setVariable('site_config', $siteConfig);
         $this->container->setVariable('discovered_files', []);
 
-        $parameters = ['features' => []];
-        $result = $this->menuBuilder->handlePostGlob($this->container, $parameters);
+        $this->menuBuilder->handlePostGlob(new Event('POST_GLOB'));
 
         // Should not create any menus
         $this->assertFalse($this->container->hasVariable('menu_top'));
@@ -126,8 +124,7 @@ class MenuBuilderStaticMenusTest extends TestCase
         $this->container->setVariable('site_config', $siteConfig);
         $this->container->setVariable('discovered_files', []);
 
-        $parameters = ['features' => []];
-        $result = $this->menuBuilder->handlePostGlob($this->container, $parameters);
+        $this->menuBuilder->handlePostGlob(new Event('POST_GLOB'));
 
         $menuTop = $this->container->getVariable('menu_top');
         $this->assertStringContainsString('href="https://shop.example.com"', $menuTop);

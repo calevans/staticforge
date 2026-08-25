@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\MarkdownRenderer\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
@@ -19,52 +20,48 @@ class MarkdownRendererService extends BaseRendererService
     private MarkdownProcessor $markdownProcessor;
     private ContentExtractor $contentExtractor;
     private TemplateRenderer $templateRenderer;
+    private EventManager $eventManager;
+    private Container $container;
 
     public function __construct(
         Log $logger,
         MarkdownProcessor $markdownProcessor,
         ContentExtractor $contentExtractor,
-        TemplateRenderer $templateRenderer
+        TemplateRenderer $templateRenderer,
+        EventManager $eventManager,
+        Container $container
     ) {
         parent::__construct($logger);
         $this->markdownProcessor = $markdownProcessor;
         $this->contentExtractor = $contentExtractor;
         $this->templateRenderer = $templateRenderer;
+        $this->eventManager = $eventManager;
+        $this->container = $container;
     }
 
     /**
-     * Process Markdown file content and render it
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Process Markdown file content and render it, mutating $event in place.
      */
-    public function processMarkdownFile(Container $container, array $parameters): array
+    public function processMarkdownFile(RenderEvent $event): void
     {
-        $filePath = $parameters['file_path'] ?? null;
-
-        if (!$filePath) {
-            return $parameters;
-        }
+        $filePath = $event->filePath;
 
         // Only process .md files
-        if (pathinfo($filePath, PATHINFO_EXTENSION) !== 'md') {
-            return $parameters;
+        if ($filePath === '' || pathinfo($filePath, PATHINFO_EXTENSION) !== 'md') {
+            return;
         }
 
         try {
             $this->logger->log('INFO', "Processing Markdown file: {$filePath}");
 
-            // Get pre-parsed metadata from file discovery
-            $metadata = $parameters['file_metadata'] ?? [];
+            $metadata = $event->metadata;
 
-            // Read file content
-            // Use provided content if available (e.g., from CategoryIndex)
-            if (isset($parameters['file_content'])) {
-                $content = $parameters['file_content'];
+            // Read file content. Use provided content if available (e.g., from CategoryIndex)
+            if (isset($event->extra['file_content'])) {
+                $content = $event->extra['file_content'];
             } else {
                 // Security: Validate that the file path is within the source directory
-                $sourceDir = $container->getVariable('SOURCE_DIR');
+                $sourceDir = $this->container->getVariable('SOURCE_DIR');
                 if (!$sourceDir) {
                     throw new \RuntimeException('SOURCE_DIR not set in container');
                 }
@@ -97,15 +94,17 @@ class MarkdownRendererService extends BaseRendererService
             $htmlContent = $this->fixHeadingIds($htmlContent);
 
             // Fire MARKDOWN_CONVERTED event to allow modification (e.g., Table of Contents)
-            $eventManager = $container->get(EventManager::class);
-            $eventResult = $eventManager->fire('MARKDOWN_CONVERTED', [
-                'html_content' => $htmlContent,
-                'metadata' => $metadata,
-                'file_path' => $filePath
-            ]);
+            $convertedEvent = new RenderEvent(
+                name: 'MARKDOWN_CONVERTED',
+                filePath: $filePath,
+                fileUrl: $event->fileUrl,
+                metadata: $metadata,
+                renderedContent: $htmlContent,
+            );
+            $this->eventManager->fire('MARKDOWN_CONVERTED', $convertedEvent);
 
-            $htmlContent = $eventResult['html_content'];
-            $metadata = $eventResult['metadata'];
+            $htmlContent = $convertedEvent->renderedContent ?? $htmlContent;
+            $metadata = $convertedEvent->metadata;
 
             // Extract title from metadata or first heading
             if (!isset($metadata['title'])) {
@@ -117,14 +116,14 @@ class MarkdownRendererService extends BaseRendererService
 
             // Generate output file path (change .md to .html)
             // Use existing output_path if already set (e.g., by CategoryIndex)
-            $outputPath = $parameters['output_path'] ?? $this->generateOutputPath($filePath, $container, 'html');
+            $outputPath = $event->outputPath ?? $this->generateOutputPath($filePath, $this->container, 'html');
 
             // Apply template (pass source file path)
             $renderedContent = $this->templateRenderer->render([
                 'metadata' => $metadata,
                 'content' => $htmlContent,
                 'title' => $metadata['title'],
-            ], $container, $filePath);
+            ], $this->container, $filePath);
 
             // Beautify HTML output
             $renderedContent = $this->beautifyHtml($renderedContent);
@@ -132,18 +131,16 @@ class MarkdownRendererService extends BaseRendererService
             $this->logger->log('INFO', "Markdown file rendered: {$filePath}");
 
             // Store rendered content and metadata for Core to write
-            $parameters['rendered_content'] = $renderedContent;
-            $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $metadata;
+            $event->renderedContent = $renderedContent;
+            $event->outputPath = $outputPath;
+            $event->metadata = $metadata;
         } catch (\RuntimeException $e) {
             // Re-throw RuntimeExceptions (like missing templates) so they fail the build
             throw $e;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process Markdown file {$filePath}: " . $e->getMessage());
-            $parameters['error'] = $e->getMessage();
+            $event->extra['error'] = $e->getMessage();
         }
-
-        return $parameters;
     }
 
     /**

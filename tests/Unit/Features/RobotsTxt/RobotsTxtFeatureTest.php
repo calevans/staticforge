@@ -27,7 +27,7 @@ class RobotsTxtFeatureTest extends UnitTestCase
         $this->root = vfsStream::setup('test');
 
       // Use bootstrapped container from parent::setUp()
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         $feature = (new FeatureFactory($this->container))->make(RobotsTxtFeature::class);
         $this->assertInstanceOf(RobotsTxtFeature::class, $feature);

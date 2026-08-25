@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\FeatureTools;
 
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Features\FeatureTools\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -16,15 +18,14 @@ class FeatureTest extends UnitTestCase
         $featureManager = $this->createMock(FeatureManager::class);
         $this->addToContainer(FeatureManager::class, $featureManager);
 
-        $feature = new Feature();
-        $feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
 
         $application = new Application();
-        $parameters = ['application' => $application];
+        $event = new ConsoleInitEvent('CONSOLE_INIT', $application);
 
-        $result = $feature->registerCommands($this->container, $parameters);
+        $feature->registerCommands($event);
 
-        $this->assertSame($parameters, $result);
         $this->assertTrue($application->has('feature:create'));
         $this->assertTrue($application->has('feature:setup'));
         $this->assertTrue($application->has('feature:list'));

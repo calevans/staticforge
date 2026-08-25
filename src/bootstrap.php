@@ -242,7 +242,7 @@ $container->stuff('twig', function () use ($container) {
 });
 
 // Register Core Services
-$eventManager = new EventManager($container);
+$eventManager = new EventManager();
 $container->add(EventManager::class, $eventManager);
 
 $assetManager = new AssetManager();

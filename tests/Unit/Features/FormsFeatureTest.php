@@ -18,7 +18,7 @@ class FormsFeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         // Mock Twig
         $loader = new ArrayLoader([

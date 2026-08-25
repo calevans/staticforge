@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Deployment;
 
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\Deployment\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
@@ -15,8 +17,9 @@ class FeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
     }
 
     public function testGetRequiredConfigReturnsEmptyArray(): void
@@ -32,11 +35,10 @@ class FeatureTest extends UnitTestCase
     public function testRegisterCommandsAddsUploadSiteCommand(): void
     {
         $application = new Application();
-        $parameters = ['application' => $application];
+        $event = new ConsoleInitEvent('CONSOLE_INIT', $application);
 
-        $result = $this->feature->registerCommands($this->container, $parameters);
+        $this->feature->registerCommands($event);
 
-        $this->assertSame($parameters, $result);
         $this->assertTrue($application->has('site:upload'));
     }
 }

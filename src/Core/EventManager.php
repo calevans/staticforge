@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Core;
 
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\Event;
 
 /**
  * Manages event registration, firing, and listener coordination
@@ -12,34 +12,11 @@ use EICC\Utils\Container;
  */
 class EventManager
 {
-    private Container $container;
-
     /**
      * Registered event listeners
      * @var array<string, array<int, array{callback: array{object, string}, priority: int}>>
      */
     private array $listeners = [];
-
-    /**
-     * List of registered event names
-     * @var array<string>
-     */
-    private array $registeredEvents = [];
-
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * Register an event that can be fired
-     */
-    public function registerEvent(string $eventName): void
-    {
-        if (!in_array($eventName, $this->registeredEvents)) {
-            $this->registeredEvents[] = $eventName;
-        }
-    }
 
     /**
      * Register a listener for an event with priority
@@ -83,69 +60,24 @@ class EventManager
     }
 
     /**
-     * Fire an event and pass parameters through listener chain
-     *
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Fire an event, passing it through the listener chain for $eventName.
+     * Listeners mutate $event in place; the same instance is returned.
      */
-    public function fire(string $eventName, array $parameters = []): array
+    public function fire(string $eventName, Event $event): Event
     {
         if (!isset($this->listeners[$eventName])) {
-            return $parameters;
+            return $event;
         }
-
-        $currentParameters = $parameters;
 
         foreach ($this->listeners[$eventName] as $listener) {
             $callback = $listener['callback'];
 
             if (is_callable($callback)) {
-                $result = call_user_func($callback, $this->container, $currentParameters);
-                if (is_array($result)) {
-                    $currentParameters = $result;
-                }
+                call_user_func($callback, $event);
             }
         }
 
-        // If features data was returned, store it in the container
-        if (isset($currentParameters['features']) && is_array($currentParameters['features'])) {
-            $this->updateFeaturesInContainer($currentParameters['features']);
-        }
-
-        return $currentParameters;
-    }
-
-    /**
-     * Update features data in container
-     *
-     * @param array<string, mixed> $newFeaturesData
-     */
-    private function updateFeaturesInContainer(array $newFeaturesData): void
-    {
-        // Get existing features or initialize empty array
-        $features = $this->container->getVariable('features') ?? [];
-
-        // Merge new feature data
-        foreach ($newFeaturesData as $featureName => $featureData) {
-            $features[$featureName] = $featureData;
-        }
-
-        // Update or set the features variable
-        if ($this->container->hasVariable('features')) {
-            $this->container->updateVariable('features', $features);
-        } else {
-            $this->container->setVariable('features', $features);
-        }
-    }
-
-    /**
-     * List all registered events
-     *
-     * @return array<string>
-     */
-    public function list(): array
-    {
-        return $this->registeredEvents;
+        return $event;
     }
 
     /**

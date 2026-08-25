@@ -54,7 +54,7 @@ class FeatureTest extends UnitTestCase
         $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Set up event manager
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         // Create feature
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
@@ -249,7 +249,7 @@ HTML;
         $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Set up event manager and register feature
-        $eventManager = new EventManager($this->container);
+        $eventManager = new EventManager();
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($eventManager);

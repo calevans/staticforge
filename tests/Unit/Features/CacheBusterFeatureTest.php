@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 use EICC\StaticForge\Features\CacheBuster\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
 use EICC\StaticForge\Core\FeatureFactory;
 
 class CacheBusterFeatureTest extends UnitTestCase
@@ -16,7 +17,7 @@ class CacheBusterFeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);
         $this->feature = $feature;
@@ -33,10 +34,7 @@ class CacheBusterFeatureTest extends UnitTestCase
 
     public function testHandleCreateSetsBuildId(): void
     {
-        $parameters = [];
-        $result = $this->feature->handleCreate($this->container, $parameters);
-
-        $this->assertEquals($parameters, $result);
+        $this->feature->handleCreate(new Event('CREATE'));
 
         $buildId = $this->container->getVariable('build_id');
         $this->assertNotNull($buildId);

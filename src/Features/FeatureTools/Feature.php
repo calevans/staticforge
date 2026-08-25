@@ -1,36 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\FeatureTools;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
-use EICC\StaticForge\Core\EventManager;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Features\FeatureTools\Commands\FeatureCreateCommand;
 use EICC\StaticForge\Features\FeatureTools\Commands\FeatureSetupCommand;
 use EICC\StaticForge\Features\FeatureTools\Commands\ListFeaturesCommand;
-use Symfony\Component\Console\Application;
 
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'FeatureTools';
+    private FeatureManager $featureManager;
 
-    protected array $eventListeners = [
-        'CONSOLE_INIT' => ['method' => 'registerCommands', 'priority' => 0]
-    ];
-
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function registerCommands(Container $container, array $parameters): array
+    public function __construct(FeatureManager $featureManager)
     {
-        /** @var Application $application */
-        $application = $parameters['application'];
-        $application->addCommand(new FeatureCreateCommand());
-        $application->addCommand(new FeatureSetupCommand());
-        $application->addCommand(new ListFeaturesCommand($this->container->get(\EICC\StaticForge\Core\FeatureManager::class)));
+        $this->featureManager = $featureManager;
+    }
 
-        return $parameters;
+    #[EventListener('CONSOLE_INIT', priority: 0)]
+    public function registerCommands(ConsoleInitEvent $event): void
+    {
+        $event->application->addCommand(new FeatureCreateCommand());
+        $event->application->addCommand(new FeatureSetupCommand());
+        $event->application->addCommand(new ListFeaturesCommand($this->featureManager));
     }
 }

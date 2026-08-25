@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features\TableOfContents;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\TableOfContents\Services\TableOfContentsService;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
@@ -17,6 +18,17 @@ class TableOfContentsServiceTest extends UnitTestCase
         $this->service = new TableOfContentsService($logger);
     }
 
+    private function makeEvent(string $htmlContent, string $filePath = 'test.md'): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'MARKDOWN_CONVERTED',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: [],
+            renderedContent: $htmlContent,
+        );
+    }
+
     public function testHandleMarkdownConvertedGeneratesToc(): void
     {
         $htmlContent = <<<HTML
@@ -30,18 +42,12 @@ class TableOfContentsServiceTest extends UnitTestCase
 <p>Content 2</p>
 HTML;
 
-        $parameters = [
-            'html_content' => $htmlContent,
-            'metadata' => [],
-            'file_path' => 'test.md'
-        ];
+        $event = $this->makeEvent($htmlContent);
+        $this->service->handleMarkdownConverted($event);
 
-        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
+        $this->assertArrayHasKey('toc', $event->metadata);
 
-        $this->assertArrayHasKey('metadata', $result);
-        $this->assertArrayHasKey('toc', $result['metadata']);
-
-        $toc = $result['metadata']['toc'];
+        $toc = $event->metadata['toc'];
 
         // Check structure
         $this->assertStringContainsString('<ul class="toc-list">', $toc);
@@ -62,14 +68,9 @@ HTML;
 <h3>Subsection 1.1<a id="content-subsection-1-1" href="#content-subsection-1-1" class="heading-permalink" aria-hidden="true" title="Permalink"></a></h3>
 HTML;
 
-        $parameters = [
-            'html_content' => $htmlContent,
-            'metadata' => [],
-            'file_path' => 'test.md'
-        ];
-
-        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
-        $toc = $result['metadata']['toc'];
+        $event = $this->makeEvent($htmlContent);
+        $this->service->handleMarkdownConverted($event);
+        $toc = $event->metadata['toc'];
 
         // Should use the permalink ID
         $this->assertStringContainsString('href="#content-section-1"', $toc);
@@ -82,15 +83,8 @@ HTML;
 
     public function testHandleMarkdownConvertedNoHeadings(): void
     {
-        $htmlContent = '<p>Just text</p>';
-
-        $parameters = [
-            'html_content' => $htmlContent,
-            'metadata' => [],
-            'file_path' => 'test.md'
-        ];
-
-        $result = $this->service->handleMarkdownConverted($this->container, $parameters);
-        $this->assertEmpty($result['metadata']['toc']);
+        $event = $this->makeEvent('<p>Just text</p>');
+        $this->service->handleMarkdownConverted($event);
+        $this->assertEmpty($event->metadata['toc']);
     }
 }

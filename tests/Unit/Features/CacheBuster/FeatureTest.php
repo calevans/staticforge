@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Features\CacheBuster;
 
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\CacheBuster\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -18,7 +19,7 @@ class FeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);
         $this->feature = $feature;
@@ -31,13 +32,13 @@ class FeatureTest extends UnitTestCase
         $this->assertNotEmpty($listeners);
         $this->assertCount(1, $listeners);
         $this->assertEquals([$this->feature, 'handleCreate'], $listeners[0]['callback']);
+        $this->assertSame(10, $listeners[0]['priority']);
     }
 
     public function testHandleCreateSetsBuildIdAndCacheBuster(): void
     {
-        $result = $this->feature->handleCreate($this->container, []);
+        $this->feature->handleCreate(new Event('CREATE'));
 
-        $this->assertSame([], $result);
         $this->assertTrue($this->container->hasVariable('build_id'));
         $this->assertTrue($this->container->hasVariable('cache_buster'));
 
@@ -46,13 +47,5 @@ class FeatureTest extends UnitTestCase
 
         $this->assertTrue(is_numeric($buildId));
         $this->assertSame("sfcb={$buildId}", $cacheBuster);
-    }
-
-    public function testHandleCreateReturnsParametersUnchangedOtherwise(): void
-    {
-        $parameters = ['foo' => 'bar'];
-        $result = $this->feature->handleCreate($this->container, $parameters);
-
-        $this->assertSame(['foo' => 'bar'], $result);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\MenuBuilder\Services;
 
+use EICC\StaticForge\Core\Events\CollectMenuItemsEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -34,13 +35,13 @@ class MenuBuilderService
     }
 
     /**
-     * Build menu structure from discovered files and static config
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Build menu structure from discovered files and static config. Writes
+     * directly to $container (menu{N} template variables, plus the
+     * 'features' entry templates read as features.MenuBuilder.html.{N} /
+     * features.MenuBuilder.files[{N}]) since typed events no longer carry
+     * an array that EventManager centrally merges back into the container.
      */
-    public function buildMenus(Container $container, array $parameters): array
+    public function buildMenus(Container $container): void
     {
         // Process static menus from siteconfig.yaml first
         $this->staticMenuProcessor->processStaticMenus($container);
@@ -57,8 +58,9 @@ class MenuBuilderService
         );
 
         // Allow other features to inject menu items
-        $eventResult = $this->eventManager->fire('COLLECT_MENU_ITEMS', ['menu_data' => $menuData]);
-        $menuData = $eventResult['menu_data'] ?? $menuData;
+        $collectEvent = new CollectMenuItemsEvent('COLLECT_MENU_ITEMS', $menuData);
+        $this->eventManager->fire('COLLECT_MENU_ITEMS', $collectEvent);
+        $menuData = $collectEvent->menuData;
 
         // Generate HTML from menu data
         $menuHtml = $this->htmlGenerator->buildMenuHtml($menuData);
@@ -76,16 +78,16 @@ class MenuBuilderService
         // Sort menu data by position for template iteration
         $sortedMenuData = $this->structureBuilder->sortMenuData($menuData);
 
-        // Add to parameters for return to event system
-        if (!isset($parameters['features'])) {
-            $parameters['features'] = [];
-        }
-
-        $parameters['features']['MenuBuilder'] = [
+        $features = $container->getVariable('features') ?? [];
+        $features['MenuBuilder'] = [
             'files' => $sortedMenuData,
             'html' => $menuHtml
         ];
 
-        return $parameters;
+        if ($container->hasVariable('features')) {
+            $container->updateVariable('features', $features);
+        } else {
+            $container->setVariable('features', $features);
+        }
     }
 }

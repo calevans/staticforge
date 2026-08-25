@@ -19,7 +19,7 @@ class CategoriesFeatureTest extends UnitTestCase
     {
         parent::setUp();
       // Use bootstrapped container from parent::setUp()
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
       // Logger already registered by bootstrap
 

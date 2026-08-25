@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\Deployment;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
-use EICC\StaticForge\Core\EventManager;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Features\Deployment\Commands\UploadSiteCommand;
-use Symfony\Component\Console\Application;
+use EICC\Utils\Container;
 
 class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatureInterface
 {
     protected string $name = 'Deployment';
+    private Container $applicationContainer;
 
-    protected array $eventListeners = [
-        'CONSOLE_INIT' => ['method' => 'registerCommands', 'priority' => 0]
-    ];
+    public function __construct(Container $applicationContainer)
+    {
+        $this->applicationContainer = $applicationContainer;
+    }
 
     public function getRequiredConfig(): array
     {
@@ -28,16 +32,9 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return ['UPLOAD_URL'];
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function registerCommands(Container $container, array $parameters): array
+    #[EventListener('CONSOLE_INIT', priority: 0)]
+    public function registerCommands(ConsoleInitEvent $event): void
     {
-        /** @var Application $application */
-        $application = $parameters['application'];
-        $application->addCommand(new UploadSiteCommand($container));
-
-        return $parameters;
+        $event->application->addCommand(new UploadSiteCommand($this->applicationContainer));
     }
 }

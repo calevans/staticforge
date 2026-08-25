@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\MenuBuilder\Services;
 
+use EICC\StaticForge\Core\Events\CollectMenuItemsEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuBuilderService;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuHtmlGenerator;
@@ -67,8 +68,8 @@ class MenuBuilderServiceTest extends UnitTestCase
         // Mock EventManager
         $this->eventManager->expects($this->once())
             ->method('fire')
-            ->with('COLLECT_MENU_ITEMS', ['menu_data' => $menuData])
-            ->willReturn(['menu_data' => $menuData]);
+            ->with('COLLECT_MENU_ITEMS', $this->isInstanceOf(CollectMenuItemsEvent::class))
+            ->willReturnArgument(1);
 
         // Mock MenuHtmlGenerator
         $this->htmlGenerator->expects($this->once())
@@ -82,13 +83,13 @@ class MenuBuilderServiceTest extends UnitTestCase
             ->with($menuData)
             ->willReturn($sortedMenuData);
 
-        $parameters = [];
-        $result = $this->service->buildMenus($this->container, $parameters);
+        $this->service->buildMenus($this->container);
 
-        $this->assertArrayHasKey('features', $result);
-        $this->assertArrayHasKey('MenuBuilder', $result['features']);
-        $this->assertEquals($sortedMenuData, $result['features']['MenuBuilder']['files']);
-        $this->assertEquals($menuHtml, $result['features']['MenuBuilder']['html']);
+        $features = $this->container->getVariable('features');
+        $this->assertIsArray($features);
+        $this->assertArrayHasKey('MenuBuilder', $features);
+        $this->assertEquals($sortedMenuData, $features['MenuBuilder']['files']);
+        $this->assertEquals($menuHtml, $features['MenuBuilder']['html']);
 
         // Verify container variables
         $this->assertEquals('<ul>...</ul>', $this->container->getVariable('menu1'));

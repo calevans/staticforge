@@ -7,6 +7,8 @@ namespace EICC\StaticForge\Features\MenuBuilder;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuBuilderService;
 use EICC\Utils\Container;
@@ -17,13 +19,7 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     protected string $name = 'MenuBuilder';
     private Log $logger;
     private MenuBuilderService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 100]
-    ];
+    private Container $applicationContainer;
 
     public function getRequiredConfig(): array
     {
@@ -35,33 +31,22 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
-    public function __construct(Log $logger, MenuBuilderService $service)
+    public function __construct(Log $logger, MenuBuilderService $service, Container $applicationContainer)
     {
         $this->logger = $logger;
         $this->service = $service;
+        $this->applicationContainer = $applicationContainer;
     }
 
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        // Register new event for other features to inject menu items
-        $eventManager->registerEvent('COLLECT_MENU_ITEMS');
-
         $this->logger->log('INFO', 'MenuBuilder Feature registered');
     }
 
-    /**
-     * Handle POST_GLOB event - build menu structure from discovered files
-     *
-     * Called dynamically by EventManager when POST_GLOB event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostGlob(Container $container, array $parameters): array
+    #[EventListener('POST_GLOB', priority: 100)]
+    public function handlePostGlob(Event $event): void
     {
-        return $this->service->buildMenus($container, $parameters);
+        $this->service->buildMenus($this->applicationContainer);
     }
 }

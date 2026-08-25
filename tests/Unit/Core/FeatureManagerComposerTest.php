@@ -19,7 +19,7 @@ class FeatureManagerComposerTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $this->tempDir = sys_get_temp_dir() . '/staticforge_composer_test_' . uniqid();
         mkdir($this->tempDir, 0777, true);
         $this->installedJsonPath = $this->tempDir . '/installed.json';

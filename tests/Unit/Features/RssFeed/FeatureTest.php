@@ -18,7 +18,7 @@ class FeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);
         $this->feature = $feature;

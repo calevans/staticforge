@@ -16,7 +16,7 @@ class FeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
     }
 
     public function testDisabledByDefaultDoesNotRegisterListener(): void

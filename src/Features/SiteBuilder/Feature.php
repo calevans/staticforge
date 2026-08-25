@@ -1,32 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Features\SiteBuilder;
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
-use EICC\StaticForge\Core\EventManager;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Features\SiteBuilder\Commands\RenderSiteCommand;
-use Symfony\Component\Console\Application;
+use EICC\Utils\Container;
 
 class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'SiteBuilder';
+    private Container $applicationContainer;
 
-    protected array $eventListeners = [
-        'CONSOLE_INIT' => ['method' => 'registerCommands', 'priority' => 0]
-    ];
-
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function registerCommands(Container $container, array $parameters): array
+    public function __construct(Container $applicationContainer)
     {
-        /** @var Application $application */
-        $application = $parameters['application'];
-        $application->addCommand(new RenderSiteCommand($container));
+        $this->applicationContainer = $applicationContainer;
+    }
 
-        return $parameters;
+    #[EventListener('CONSOLE_INIT', priority: 0)]
+    public function registerCommands(ConsoleInitEvent $event): void
+    {
+        $event->application->addCommand(new RenderSiteCommand($this->applicationContainer));
     }
 }

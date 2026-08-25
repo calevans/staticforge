@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Core;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Exceptions\FileProcessingException;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -128,22 +129,18 @@ class FileProcessor
             );
         }
 
-        // Initialize render context with pre-parsed metadata
-        $renderContext = [
-            'file_path' => $filePath,
-            'file_url' => $fileData['url'],
-            'file_metadata' => $fileData['metadata'],
-            'rendered_content' => null,
-            'metadata' => $fileData['metadata'], // Legacy for backwards compatibility
-            'output_path' => null,
-            'skip_file' => false,
-            'cache_hit' => false,
-        ];
+        // Initialize render event with pre-parsed metadata
+        $event = new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: $filePath,
+            fileUrl: $fileData['url'],
+            metadata: $fileData['metadata'],
+        );
 
         // PRE-RENDER event
-        $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
+        $this->eventManager->fire('PRE_RENDER', $event);
 
-        if ($renderContext['skip_file'] ?? false) {
+        if ($event->skipFile) {
             $this->logger->log('INFO', "Skipping file: {$filePath}");
             return;
         }
@@ -153,18 +150,18 @@ class FileProcessor
         // predict that final path during PRE_RENDER and publish it as
         // 'expected_output_path', so the cache check below compares against the file that
         // will actually exist on disk rather than the un-rewritten path.
-        $cacheCheckPath = $renderContext['expected_output_path'] ?? $expectedOutputPath;
+        $cacheCheckPath = $event->extra['expected_output_path'] ?? $expectedOutputPath;
 
         if ($this->isIncrementalEnabled() && $this->canReuseCachedOutput($filePath, $cacheCheckPath)) {
-            $renderContext = $this->substituteCachedRender($renderContext, $cacheCheckPath);
+            $this->substituteCachedRender($event, $cacheCheckPath);
         } else {
             // RENDER event
-            $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+            $this->eventManager->fire('RENDER', $event);
         }
 
         // If rendering failed (e.g. missing template), output_path might be null
         // We should not proceed to POST_RENDER or write if rendering failed
-        if (!isset($renderContext['rendered_content']) || !isset($renderContext['output_path'])) {
+        if ($event->renderedContent === null || $event->outputPath === null) {
             throw new FileProcessingException(
                 "Rendering failed or produced no output",
                 $filePath,
@@ -173,22 +170,17 @@ class FileProcessor
         }
 
         // Track the actual output path after processing
-        if (isset($renderContext['output_path']) && $renderContext['output_path']) {
-            $this->processedOutputPaths[$renderContext['output_path']] = $filePath;
-        }
+        $this->processedOutputPaths[$event->outputPath] = $filePath;
 
         // POST-RENDER event (always fires, cache hit or not - this is the safety invariant
         // that keeps Sitemap/RssFeed/CategoryIndex/Search aggregate output correct)
-        $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
+        $this->eventManager->fire('POST_RENDER', $event);
 
         // Write file to disk after POST-RENDER (Core responsibility).
         // Skip the write on a cache hit - the output file on disk is already correct.
-        if (
-            !($renderContext['cache_hit'] ?? false)
-            && isset($renderContext['rendered_content'])
-            && isset($renderContext['output_path'])
-        ) {
-            $this->writeOutputFile($renderContext['output_path'], $renderContext['rendered_content']);
+        // renderedContent/outputPath are guaranteed non-null past the throw above.
+        if (!$event->cacheHit) {
+            $this->writeOutputFile($event->outputPath, $event->renderedContent);
         }
     }
 
@@ -219,24 +211,20 @@ class FileProcessor
     /**
      * Substitute the RENDER step with the previously-written output file's contents,
      * read back from disk. Falls back to a full render if the cached file is unreadable.
-     *
-     * @param array<string, mixed> $renderContext
-     * @return array<string, mixed>
      */
-    private function substituteCachedRender(array $renderContext, string $outputPath): array
+    private function substituteCachedRender(RenderEvent $event, string $outputPath): void
     {
         $cachedHtml = file_get_contents($outputPath);
 
         if ($cachedHtml === false) {
             // Fail safe: if we can't read it back, do a full render instead.
-            return $this->eventManager->fire('RENDER', $renderContext);
+            $this->eventManager->fire('RENDER', $event);
+            return;
         }
 
-        $renderContext['rendered_content'] = $cachedHtml;
-        $renderContext['output_path'] = $outputPath;
-        $renderContext['cache_hit'] = true;
-
-        return $renderContext;
+        $event->renderedContent = $cachedHtml;
+        $event->outputPath = $outputPath;
+        $event->cacheHit = true;
     }
 
     /**

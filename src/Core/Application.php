@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Core;
 
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
@@ -157,44 +159,40 @@ class Application
     private function executeEventPipeline(): void
     {
         // Step 1: CREATE event (feature initialization)
-        $this->fireEvent('CREATE', []);
+        $this->fireEvent('CREATE');
 
         // Step 2: PRE_GLOB event (pre-discovery hooks)
-        $this->fireEvent('PRE_GLOB', []);
+        $this->fireEvent('PRE_GLOB');
 
         // Step 3: Discover content files
         $this->discoverFiles();
 
         // Step 4: POST_GLOB event (post-discovery processing)
-        $this->fireEvent('POST_GLOB', []);
+        $this->fireEvent('POST_GLOB');
 
         // Step 5: PRE_LOOP event (pre-processing initialization)
-        $this->fireEvent('PRE_LOOP', []);
+        $this->fireEvent('PRE_LOOP');
 
         // Step 6: Process each content file
         $this->processFiles();
 
         // Step 7: POST_LOOP event (post-processing cleanup)
-        $this->fireEvent('POST_LOOP', []);
+        $this->fireEvent('POST_LOOP');
 
         // Step 8: DESTROY event (final cleanup)
-        $this->fireEvent('DESTROY', []);
+        $this->fireEvent('DESTROY');
     }
 
     /**
-     * Fire an event with error handling
-     *
-     * @param string $eventName Name of the event to fire
-     * @param array<string, mixed> $parameters Event parameters
+     * Fire a bare lifecycle event (no payload) with error handling
      */
-    private function fireEvent(string $eventName, array $parameters): void
+    private function fireEvent(string $eventName): void
     {
         try {
             $this->logger->log('INFO', "Firing event: {$eventName}", [
                 'event' => $eventName,
-                'parameter_keys' => array_keys($parameters),
             ]);
-            $this->eventManager->fire($eventName, $parameters);
+            $this->eventManager->fire($eventName, new Event($eventName));
         } catch (Exception $e) {
             // Feature failures should not stop generation
             $this->errorHandler->handleFeatureError($e, 'Unknown', $eventName);
@@ -286,14 +284,19 @@ class Application
      */
     public function renderSingleFile(string $filePath, array $additionalContext = []): array
     {
-        // Build initial render context
-        $renderContext = array_merge([
-            'file_path' => $filePath,
-            'rendered_content' => null,
-            'metadata' => [],
-            'output_path' => null,
-            'skip_file' => false
-        ], $additionalContext);
+        $metadata = $additionalContext['file_metadata'] ?? $additionalContext['metadata'] ?? [];
+        unset($additionalContext['file_metadata'], $additionalContext['metadata']);
+
+        $event = new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: (string) ($additionalContext['file_url'] ?? ''),
+            metadata: $metadata,
+            renderedContent: $additionalContext['rendered_content'] ?? null,
+            outputPath: $additionalContext['output_path'] ?? null,
+            skipFile: (bool) ($additionalContext['skip_file'] ?? false),
+            extra: $additionalContext,
+        );
 
         try {
             $this->logger->log('DEBUG', "Rendering file: {$filePath}", [
@@ -302,32 +305,46 @@ class Application
             ]);
 
             // Fire PRE_RENDER event
-            $renderContext = $this->eventManager->fire('PRE_RENDER', $renderContext);
+            $this->eventManager->fire('PRE_RENDER', $event);
 
-            if ($renderContext['skip_file'] ?? false) {
+            if ($event->skipFile) {
                 $this->logger->log('INFO', "File skipped by PRE_RENDER: {$filePath}");
-                return $renderContext;
+                return $this->eventToArray($event);
             }
 
             // Fire RENDER event
-            $renderContext = $this->eventManager->fire('RENDER', $renderContext);
+            $this->eventManager->fire('RENDER', $event);
 
             // Fire POST_RENDER event
-            $renderContext = $this->eventManager->fire('POST_RENDER', $renderContext);
+            $this->eventManager->fire('POST_RENDER', $event);
 
             // Write the rendered output if content and path are available
-            if (isset($renderContext['rendered_content']) && isset($renderContext['output_path'])) {
-                $this->outputWriter->write($renderContext['output_path'], $renderContext['rendered_content']);
-                $this->logger->log('INFO', "File rendered: {$renderContext['output_path']}", [
-                    'output' => $renderContext['output_path'],
-                    'size' => strlen($renderContext['rendered_content']),
+            if ($event->renderedContent !== null && $event->outputPath !== null) {
+                $this->outputWriter->write($event->outputPath, $event->renderedContent);
+                $this->logger->log('INFO', "File rendered: {$event->outputPath}", [
+                    'output' => $event->outputPath,
+                    'size' => strlen($event->renderedContent),
                 ]);
             }
 
-            return $renderContext;
+            return $this->eventToArray($event);
         } catch (Exception $e) {
             $this->errorHandler->handleFileError($e, $filePath, 'render');
             throw $e;
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function eventToArray(RenderEvent $event): array
+    {
+        return array_merge($event->extra, [
+            'file_path' => $event->filePath,
+            'rendered_content' => $event->renderedContent,
+            'metadata' => $event->metadata,
+            'output_path' => $event->outputPath,
+            'skip_file' => $event->skipFile,
+        ]);
     }
 }

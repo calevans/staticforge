@@ -3,9 +3,10 @@
 namespace EICC\StaticForge\Tests\Unit\Features\MarkdownRenderer;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
-use EICC\StaticForge\Features\MarkdownRenderer\Feature;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
+use EICC\StaticForge\Features\MarkdownRenderer\Feature;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -49,7 +50,7 @@ class FeatureTest extends UnitTestCase
         $this->addToContainer(\EICC\StaticForge\Core\ExtensionRegistry::class, $extensionRegistry);
 
         // Create EventManager and test feature
-        $eventManager = new EventManager($this->container);
+        $eventManager = new EventManager();
         $this->addToContainer(EventManager::class, $eventManager);
 
         // Register dependencies in container for DI
@@ -81,6 +82,19 @@ class FeatureTest extends UnitTestCase
     }
 
     /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(string $filePath, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: $metadata,
+        );
+    }
+
+    /**
      * Test basic Markdown processing without frontmatter
      */
     public function testBasicMarkdownProcessing(): void
@@ -89,14 +103,13 @@ class FeatureTest extends UnitTestCase
         $testFile = $this->testSourceDir . '/test.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
-        $this->assertArrayHasKey('output_path', $result);
+        $this->assertNotNull($event->renderedContent);
+        $this->assertNotNull($event->outputPath);
 
-        $outputContent = $result['rendered_content'];
+        $outputContent = $event->renderedContent;
         // Updated regex to handle attributes on h1 (e.g. id)
         $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Test Heading/', $outputContent);
         $this->assertStringContainsString('<strong>bold</strong>', $outputContent);
@@ -129,22 +142,18 @@ MD;
         $testFile = $this->testSourceDir . '/frontmatter.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = [
-            'file_path' => $testFile,
-            'file_metadata' => [
-                'title' => 'Custom Title',
-                'description' => 'This is a test page description',
-                'author' => 'Test Author',
-                'tags' => ['test', 'markdown', 'yaml'],
-                'template' => 'base'
-            ]
-        ];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile, [
+            'title' => 'Custom Title',
+            'description' => 'This is a test page description',
+            'author' => 'Test Author',
+            'tags' => ['test', 'markdown', 'yaml'],
+            'template' => 'base'
+        ]);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
+        $this->assertNotNull($event->renderedContent);
 
-        $outputContent = $result['rendered_content'];
+        $outputContent = $event->renderedContent;
         $this->assertStringContainsString('<title>Custom Title | Test Site</title>', $outputContent);
         $this->assertStringContainsString('This is a test page description', $outputContent);
         $this->assertStringContainsString('Test Author', $outputContent);
@@ -161,13 +170,12 @@ MD;
         $testFile = $this->testSourceDir . '/title-extract.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
+        $this->assertNotNull($event->renderedContent);
 
-        $outputContent = $result['rendered_content'];
+        $outputContent = $event->renderedContent;
         $this->assertStringContainsString('<title>Main Heading | Test Site</title>', $outputContent);
     }
 
@@ -190,18 +198,15 @@ MD;
         $testFile = $this->testSourceDir . '/fallback.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = [
-            'file_path' => $testFile,
-            'file_metadata' => [
-                'title' => 'Fallback Test',
-                'template' => 'nonexistent'
-            ]
-        ];
+        $event = $this->makeEvent($testFile, [
+            'title' => 'Fallback Test',
+            'template' => 'nonexistent'
+        ]);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Template file not found: test/nonexistent.html.twig');
 
-        $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
     }
 
     /**
@@ -254,19 +259,15 @@ MD;
         $testFile = $this->testSourceDir . '/complex.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = [
-            'file_path' => $testFile,
-            'file_metadata' => [
-                'title' => 'Complex Markdown',
-                'description' => 'Testing various Markdown features'
-            ]
-        ];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile, [
+            'title' => 'Complex Markdown',
+            'description' => 'Testing various Markdown features'
+        ]);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
+        $this->assertNotNull($event->renderedContent);
 
-        $outputContent = $result['rendered_content'];
+        $outputContent = $event->renderedContent;
         // Updated regexes to handle attributes on headers
         $this->assertMatchesRegularExpression('/<h1[^>]*>\s*Main Title/', $outputContent);
         $this->assertMatchesRegularExpression('/<h2[^>]*>\s*Subtitle/', $outputContent);
@@ -283,11 +284,12 @@ MD;
      */
     public function testIgnoresNonMarkdownFiles(): void
     {
-        $parameters = ['file_path' => 'test.html'];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent('test.html');
+        $this->feature->handleRender($event);
 
-        $this->assertArrayNotHasKey('processed', $result);
-        $this->assertEquals(['file_path' => 'test.html'], $result);
+        $this->assertNull($event->renderedContent);
+        $this->assertNull($event->outputPath);
+        $this->assertSame([], $event->metadata);
     }
 
     /**
@@ -295,12 +297,12 @@ MD;
      */
     public function testErrorHandlingOutsideSourceDir(): void
     {
-        $parameters = ['file_path' => '/nonexistent/file.md'];
+        $event = $this->makeEvent('/nonexistent/file.md');
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Security Error: File path is outside the allowed source directory');
 
-        $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
     }
 
     /**
@@ -312,13 +314,13 @@ MD;
         file_put_contents($testFile, '# Test');
         chmod($testFile, 0000); // Make unreadable
 
-        $parameters = ['file_path' => $testFile];
+        $event = $this->makeEvent($testFile);
 
         try {
             $this->expectException(\RuntimeException::class);
             $this->expectExceptionMessage('Failed to read file');
 
-            $this->feature->handleRender($this->container, $parameters);
+            $this->feature->handleRender($event);
         } finally {
             // Restore permissions so it can be deleted during tearDown
             chmod($testFile, 0644);
@@ -336,12 +338,12 @@ MD;
         $testFile = $subDir . '/nested.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = ['file_path' => $testFile];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
-        $this->assertStringEndsWith('/subdir/nested.html', $result['output_path']);
+        $this->assertNotNull($event->renderedContent);
+        $this->assertNotNull($event->outputPath);
+        $this->assertStringEndsWith('/subdir/nested.html', $event->outputPath);
         // Core writes files, not renderer - just verify output_path is correct
     }
 
@@ -364,21 +366,17 @@ MD;
         $testFile = $this->testSourceDir . '/variables.md';
         file_put_contents($testFile, $markdownContent);
 
-        $parameters = [
-            'file_path' => $testFile,
-            'file_metadata' => [
-                'title' => 'Variable Test',
-                'custom_var' => 'Custom Value',
-                'keywords' => 'test, variables',
-                'template' => 'variables'
-            ]
-        ];
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $event = $this->makeEvent($testFile, [
+            'title' => 'Variable Test',
+            'custom_var' => 'Custom Value',
+            'keywords' => 'test, variables',
+            'template' => 'variables'
+        ]);
+        $this->feature->handleRender($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('metadata', $result);
+        $this->assertNotNull($event->renderedContent);
 
-        $outputContent = $result['rendered_content'];
+        $outputContent = $event->renderedContent;
         $this->assertStringContainsString('Variable Test', $outputContent);
         $this->assertStringContainsString('Custom Value', $outputContent);
         $this->assertStringContainsString('test, variables', $outputContent);

@@ -46,6 +46,7 @@ use EICC\StaticForge\Commands\Audit\LiveCommand;
 use EICC\StaticForge\Commands\Audit\SeoCommand;
 use EICC\StaticForge\Commands\Make\ContentCreatorCommand;
 use EICC\StaticForge\Commands\Make\HtaccessCommand;
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\EventManager;
 use Symfony\Component\Console\Application;
@@ -75,7 +76,7 @@ $app->addCommand(new HtaccessCommand($container));
 $container->get(FeatureManager::class)->loadFeatures();
 
 // Dispatch CONSOLE_INIT event to allow features to register commands
-$container->get(EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
+$container->get(EventManager::class)->fire('CONSOLE_INIT', new ConsoleInitEvent('CONSOLE_INIT', $app));
 
 // Run the application
 $app->run();

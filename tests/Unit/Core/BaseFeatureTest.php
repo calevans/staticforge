@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\Utils\Container;
 
 class BaseFeatureTest extends UnitTestCase
@@ -17,11 +21,11 @@ class BaseFeatureTest extends UnitTestCase
     {
         parent::setUp();
         // Use bootstrapped container from parent::setUp()
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $this->feature = new TestFeature();
     }
 
-    public function testRegisterEventListeners(): void
+    public function testRegisterEventListenersDiscoversEventListenerAttributes(): void
     {
         $this->feature->setContainer($this->container);
         $this->feature->register($this->eventManager);
@@ -41,11 +45,12 @@ class BaseFeatureTest extends UnitTestCase
         $this->feature->setContainer($this->container);
         $this->feature->register($this->eventManager);
 
-        // Test that event listeners are properly callable and modify parameters
-        $parameters = ['test' => 'value'];
-        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
+        // Test that event listeners are properly callable and mutate the event
+        $event = new TestFeatureEvent('TEST_EVENT');
+        $result = $this->eventManager->fire('TEST_EVENT', $event);
 
-        $this->assertEquals(['test' => 'value', 'processed' => true], $result);
+        $this->assertSame($event, $result);
+        $this->assertTrue($result->processed);
     }
 
     public function testRequireFeatures(): void
@@ -115,31 +120,24 @@ class BaseFeatureTest extends UnitTestCase
     }
 }
 
+class TestFeatureEvent extends Event
+{
+    public bool $processed = false;
+    public bool $another = false;
+}
+
 class TestFeature extends BaseFeature
 {
-    protected array $eventListeners = [
-        'TEST_EVENT' => ['method' => 'handleTestEvent', 'priority' => 100],
-        'ANOTHER_EVENT' => ['method' => 'handleAnotherEvent', 'priority' => 50]
-    ];
-
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleTestEvent(Container $container, array $parameters): array
+    #[EventListener('TEST_EVENT', priority: 100)]
+    public function handleTestEvent(TestFeatureEvent $event): void
     {
-        $parameters['processed'] = true;
-        return $parameters;
+        $event->processed = true;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleAnotherEvent(Container $container, array $parameters): array
+    #[EventListener('ANOTHER_EVENT', priority: 50)]
+    public function handleAnotherEvent(TestFeatureEvent $event): void
     {
-        $parameters['another'] = true;
-        return $parameters;
+        $event->another = true;
     }
 
     /**

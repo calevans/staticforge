@@ -1,38 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\EventManager;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\Event;
 
 class EventManagerTest extends UnitTestCase
 {
     private EventManager $eventManager;
 
-
     protected function setUp(): void
     {
         parent::setUp();
-        // Use bootstrapped container from parent::setUp()
-        $this->eventManager = new EventManager($this->container);
-    }
-
-    public function testRegisterEvent(): void
-    {
-        $this->eventManager->registerEvent('TEST_EVENT');
-
-        $events = $this->eventManager->list();
-        $this->assertContains('TEST_EVENT', $events);
-    }
-
-    public function testRegisterEventDuplicateIgnored(): void
-    {
-        $this->eventManager->registerEvent('TEST_EVENT');
-        $this->eventManager->registerEvent('TEST_EVENT');
-
-        $events = $this->eventManager->list();
-        $this->assertEquals(1, array_count_values($events)['TEST_EVENT']);
+        $this->eventManager = new EventManager();
     }
 
     public function testRegisterListener(): void
@@ -93,41 +76,6 @@ class EventManagerTest extends UnitTestCase
         $this->assertEmpty($listeners);
     }
 
-    public function testFireEventWithNoListeners(): void
-    {
-        $parameters = ['key' => 'value'];
-        $result = $this->eventManager->fire('NONEXISTENT_EVENT', $parameters);
-
-        $this->assertEquals($parameters, $result);
-    }
-
-    public function testFireEventParameterChaining(): void
-    {
-        $listener1 = new ParameterModifyingListener('step1');
-        $listener2 = new ParameterModifyingListener('step2');
-
-        $this->eventManager->registerListener('TEST_EVENT', [$listener1, 'handle'], 100);
-        $this->eventManager->registerListener('TEST_EVENT', [$listener2, 'handle'], 200);
-
-        $parameters = ['steps' => []];
-        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
-
-        $this->assertEquals(['steps' => ['step1', 'step2']], $result);
-    }
-
-    public function testFireEventWithContainerParameter(): void
-    {
-        $this->setContainerVariable('test_value', 'container_data');
-        $listener = new ContainerAwareListener();
-
-        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);
-
-        $parameters = ['data' => 'original'];
-        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
-
-        $this->assertEquals(['data' => 'container_data'], $result);
-    }
-
     public function testUnregisterListenerForUnknownEventIsNoOp(): void
     {
         $callback = [new TestListener(), 'handle'];
@@ -138,32 +86,28 @@ class EventManagerTest extends UnitTestCase
         $this->assertEmpty($this->eventManager->getListeners('NEVER_REGISTERED'));
     }
 
-    public function testFireEventStoresReturnedFeaturesInContainerWhenNotPreviouslySet(): void
+    public function testFireEventWithNoListenersReturnsSameEventUnchanged(): void
     {
-        $listener = new FeaturesReturningListener(['NewFeature' => ['type' => 'Custom']]);
-        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);
+        $event = new TestPayloadEvent('NONEXISTENT_EVENT');
+        $result = $this->eventManager->fire('NONEXISTENT_EVENT', $event);
 
-        $this->eventManager->fire('TEST_EVENT', []);
-
-        $features = $this->container->getVariable('features');
-        $this->assertIsArray($features);
-        $this->assertArrayHasKey('NewFeature', $features);
-        $this->assertEquals(['type' => 'Custom'], $features['NewFeature']);
+        $this->assertSame($event, $result);
+        $this->assertSame([], $event->steps);
     }
 
-    public function testFireEventMergesReturnedFeaturesWithExistingContainerFeatures(): void
+    public function testFireEventChainsMutationsAcrossListenersInPriorityOrder(): void
     {
-        $this->setContainerVariable('features', ['ExistingFeature' => ['type' => 'Standard']]);
+        $listener1 = new StepAppendingListener('step1');
+        $listener2 = new StepAppendingListener('step2');
 
-        $listener = new FeaturesReturningListener(['NewFeature' => ['type' => 'Custom']]);
-        $this->eventManager->registerListener('TEST_EVENT', [$listener, 'handle']);
+        $this->eventManager->registerListener('TEST_EVENT', [$listener1, 'handle'], 100);
+        $this->eventManager->registerListener('TEST_EVENT', [$listener2, 'handle'], 200);
 
-        $this->eventManager->fire('TEST_EVENT', []);
+        $event = new TestPayloadEvent('TEST_EVENT');
+        $result = $this->eventManager->fire('TEST_EVENT', $event);
 
-        $features = $this->container->getVariable('features');
-        $this->assertIsArray($features);
-        $this->assertArrayHasKey('ExistingFeature', $features);
-        $this->assertArrayHasKey('NewFeature', $features);
+        $this->assertSame($event, $result);
+        $this->assertSame(['step1', 'step2'], $result->steps);
     }
 
     public function testFireEventWithNonCallableListenerIsSkipped(): void
@@ -173,12 +117,25 @@ class EventManagerTest extends UnitTestCase
         $listener = new TestListener();
         $this->eventManager->registerListener('TEST_EVENT', [$listener, 'nonexistentMethod']);
 
-        $parameters = ['key' => 'value'];
-        $result = $this->eventManager->fire('TEST_EVENT', $parameters);
+        $event = new TestPayloadEvent('TEST_EVENT');
+        $result = $this->eventManager->fire('TEST_EVENT', $event);
 
-        // Parameters pass through unchanged since the only listener was skipped
-        $this->assertEquals($parameters, $result);
+        // Event passes through unchanged since the only listener was skipped
+        $this->assertInstanceOf(TestPayloadEvent::class, $result);
+        $this->assertSame([], $result->steps);
     }
+}
+
+/**
+ * Local test-only Event carrying a mutable list, standing in for whatever
+ * typed properties a real Event subclass would expose.
+ */
+class TestPayloadEvent extends Event
+{
+    /**
+     * @var array<int, string>
+     */
+    public array $steps = [];
 }
 
 class TestListener
@@ -195,71 +152,19 @@ class TestListener
         return $this->name;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handle(Container $container, array $parameters): array
+    public function handle(Event $event): void
     {
-        return $parameters;
     }
 }
 
-class ParameterModifyingListener
+class StepAppendingListener
 {
-    private string $step;
-
-    public function __construct(string $step)
+    public function __construct(private readonly string $step)
     {
-        $this->step = $step;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handle(Container $container, array $parameters): array
+    public function handle(TestPayloadEvent $event): void
     {
-        $parameters['steps'][] = $this->step;
-        return $parameters;
-    }
-}
-
-class ContainerAwareListener
-{
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handle(Container $container, array $parameters): array
-    {
-        $value = $container->getVariable('test_value');
-        return ['data' => $value];
-    }
-}
-
-class FeaturesReturningListener
-{
-    /**
-     * @var array<string, mixed>
-     */
-    private array $features;
-
-    /**
-     * @param array<string, mixed> $features
-     */
-    public function __construct(array $features)
-    {
-        $this->features = $features;
-    }
-
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handle(Container $container, array $parameters): array
-    {
-        $parameters['features'] = $this->features;
-        return $parameters;
+        $event->steps[] = $this->step;
     }
 }

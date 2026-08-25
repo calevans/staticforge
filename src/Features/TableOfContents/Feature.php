@@ -7,8 +7,9 @@ namespace EICC\StaticForge\Features\TableOfContents;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\TableOfContents\Services\TableOfContentsService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 class Feature extends BaseFeature implements FeatureInterface
@@ -16,13 +17,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string $name = 'TableOfContents';
     protected Log $logger;
     private TableOfContentsService $service;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'MARKDOWN_CONVERTED' => ['method' => 'handleMarkdownConverted', 'priority' => 500]
-    ];
 
     public function __construct(Log $logger, TableOfContentsService $service)
     {
@@ -33,20 +27,12 @@ class Feature extends BaseFeature implements FeatureInterface
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-        $eventManager->registerEvent('MARKDOWN_CONVERTED');
         $this->logger->log('INFO', 'TableOfContents Feature registered');
     }
 
-    /**
-     * Handle MARKDOWN_CONVERTED event
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-
-    public function handleMarkdownConverted(Container $container, array $parameters): array
+    #[EventListener('MARKDOWN_CONVERTED', priority: 500)]
+    public function handleMarkdownConverted(RenderEvent $event): void
     {
-        return $this->service->handleMarkdownConverted($container, $parameters);
+        $this->service->handleMarkdownConverted($event);
     }
 }

@@ -5,6 +5,8 @@ namespace EICC\StaticForge\Tests\Unit\Core;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\Utils\Container;
@@ -137,14 +139,9 @@ class ApplicationTest extends UnitTestCase
             /** @var array<string> */
             public array $firedEvents = [];
 
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handleEvent(Container $container, array $parameters): array
+            public function handleEvent(Event $event): void
             {
                 $this->firedEvents[] = 'EVENT_FIRED';
-                return $parameters;
             }
         };
 
@@ -165,11 +162,7 @@ class ApplicationTest extends UnitTestCase
         // Register an event listener that throws an exception
         $eventManager = $this->application->getEventManager();
         $errorListener = new class {
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handleEvent(Container $container, array $parameters): array
+            public function handleEvent(Event $event): void
             {
                 throw new \Exception('Test feature error');
             }
@@ -245,33 +238,18 @@ class ApplicationTest extends UnitTestCase
     public function testRenderSingleFileWritesOutputAndReturnsContext(): void
     {
         $renderListener = new class {
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handlePreRender(Container $container, array $parameters): array
+            public function handlePreRender(RenderEvent $event): void
             {
-                return $parameters;
             }
 
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handleRender(Container $container, array $parameters): array
+            public function handleRender(RenderEvent $event): void
             {
-                $parameters['rendered_content'] = '<h1>Rendered</h1>';
-                $parameters['output_path'] = $parameters['additional'] ?? '/tmp/should-not-happen.html';
-                return $parameters;
+                $event->renderedContent = '<h1>Rendered</h1>';
+                $event->outputPath = $event->extra['additional'] ?? '/tmp/should-not-happen.html';
             }
 
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handlePostRender(Container $container, array $parameters): array
+            public function handlePostRender(RenderEvent $event): void
             {
-                return $parameters;
             }
         };
 
@@ -291,14 +269,9 @@ class ApplicationTest extends UnitTestCase
     public function testRenderSingleFileReturnsEarlyWhenSkipped(): void
     {
         $skipListener = new class {
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handlePreRender(Container $container, array $parameters): array
+            public function handlePreRender(RenderEvent $event): void
             {
-                $parameters['skip_file'] = true;
-                return $parameters;
+                $event->skipFile = true;
             }
         };
 
@@ -314,11 +287,7 @@ class ApplicationTest extends UnitTestCase
     public function testRenderSingleFilePropagatesExceptionFromListener(): void
     {
         $throwingListener = new class {
-            /**
-             * @param array<string, mixed> $parameters
-             * @return array<string, mixed>
-             */
-            public function handlePreRender(Container $container, array $parameters): array
+            public function handlePreRender(RenderEvent $event): void
             {
                 throw new \RuntimeException('Listener failure during render');
             }

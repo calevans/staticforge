@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ErrorHandler;
@@ -31,7 +32,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', $this->sourceDir);
         $this->setContainerVariable('OUTPUT_DIR', $this->outputDir);
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         $this->errorHandler = $this->container->get(ErrorHandler::class);
 
         $this->fileProcessor = new FileProcessor(
@@ -62,7 +63,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->setContainerVariable('INCREMENTAL_BUILD', true);
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -75,9 +76,9 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->assertSame(0, $tracker->renderCount, 'RENDER should not fire on a cache hit');
         $this->assertSame(1, $tracker->postRenderCount, 'POST_RENDER must always fire');
-        $this->assertNotNull($tracker->lastPostRenderParameters);
-        $this->assertSame('cached output content', $tracker->lastPostRenderParameters['rendered_content']);
-        $this->assertTrue($tracker->lastPostRenderParameters['cache_hit'] ?? false);
+        $this->assertNotNull($tracker->lastPostRenderEvent);
+        $this->assertSame('cached output content', $tracker->lastPostRenderEvent->renderedContent);
+        $this->assertTrue($tracker->lastPostRenderEvent->cacheHit);
 
         $stats = $this->errorHandler->getErrorStats();
         $this->assertSame(1, $stats['files_processed']);
@@ -96,7 +97,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->setContainerVariable('INCREMENTAL_BUILD', true);
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -109,7 +110,8 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->assertSame(1, $tracker->renderCount, 'RENDER must fire when source is newer than output');
         $this->assertSame(1, $tracker->postRenderCount);
-        $this->assertSame('freshly rendered content', $tracker->lastPostRenderParameters['rendered_content']);
+        $this->assertNotNull($tracker->lastPostRenderEvent);
+        $this->assertSame('freshly rendered content', $tracker->lastPostRenderEvent->renderedContent);
 
         $this->assertSame('freshly rendered content', file_get_contents($outputPath));
     }
@@ -121,7 +123,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->setContainerVariable('INCREMENTAL_BUILD', true);
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -154,7 +156,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->setContainerVariable('INCREMENTAL_BUILD', true);
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -188,7 +190,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         // INCREMENTAL_BUILD is intentionally left unset.
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -220,7 +222,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         file_put_contents($sourcePath, 'new source content');
 
-        $tracker = new IncrementalEventTrackingListener();
+        $tracker = new IncrementalEventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -254,41 +256,27 @@ class IncrementalEventTrackingListener
     public int $renderCount = 0;
     public int $postRenderCount = 0;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $lastPostRenderParameters = null;
+    public ?RenderEvent $lastPostRenderEvent = null;
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePreRender(Container $container, array $parameters): array
+    public function __construct(private readonly Container $container)
     {
-        return $parameters;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleRender(Container $container, array $parameters): array
+    public function handlePreRender(RenderEvent $event): void
+    {
+    }
+
+    public function handleRender(RenderEvent $event): void
     {
         $this->renderCount++;
-        $outputDir = $container->getVariable('OUTPUT_DIR');
-        $parameters['rendered_content'] = 'freshly rendered content';
-        $parameters['output_path'] = $outputDir . '/test.html';
-        return $parameters;
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
+        $event->renderedContent = 'freshly rendered content';
+        $event->outputPath = $outputDir . '/test.html';
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    public function handlePostRender(RenderEvent $event): void
     {
         $this->postRenderCount++;
-        $this->lastPostRenderParameters = $parameters;
-        return $parameters;
+        $this->lastPostRenderEvent = $event;
     }
 }

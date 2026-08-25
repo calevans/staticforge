@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\SiteBuilder;
 
+use EICC\StaticForge\Core\Events\ConsoleInitEvent;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\SiteBuilder\Commands\RenderSiteCommand;
 use EICC\StaticForge\Features\SiteBuilder\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -22,9 +24,10 @@ class FeatureTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $this->eventManager = new EventManager();
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 
@@ -38,11 +41,10 @@ class FeatureTest extends UnitTestCase
     public function testRegisterCommandsAddsRenderSiteCommandToApplication(): void
     {
         $application = new Application();
-        $parameters = ['application' => $application];
+        $event = new ConsoleInitEvent('CONSOLE_INIT', $application);
 
-        $result = $this->feature->registerCommands($this->container, $parameters);
+        $this->feature->registerCommands($event);
 
-        $this->assertSame($parameters, $result);
         $this->assertTrue($application->has('site:render'));
         $this->assertInstanceOf(RenderSiteCommand::class, $application->find('site:render'));
     }
@@ -50,11 +52,12 @@ class FeatureTest extends UnitTestCase
     public function testHandleConsoleInitEventDispatchesToRegisterCommands(): void
     {
         $application = new Application();
+        $event = new ConsoleInitEvent('CONSOLE_INIT', $application);
 
-        $result = $this->eventManager->fire('CONSOLE_INIT', ['application' => $application]);
+        $result = $this->eventManager->fire('CONSOLE_INIT', $event);
 
         $this->assertTrue($application->has('site:render'));
-        $this->assertArrayHasKey('application', $result);
+        $this->assertSame($event, $result);
     }
 
     public function testGetNameReturnsSiteBuilder(): void

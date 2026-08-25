@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\TableOfContents\Services;
 
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\Utils\Log;
 use DOMDocument;
 use DOMXPath;
@@ -18,24 +18,15 @@ class TableOfContentsService
         $this->logger = $logger;
     }
 
-    /**
-     * Handle MARKDOWN_CONVERTED event
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleMarkdownConverted(Container $container, array $parameters): array
+    public function handleMarkdownConverted(RenderEvent $event): void
     {
-        $htmlContent = $parameters['html_content'] ?? '';
-        $metadata = $parameters['metadata'] ?? [];
-        $filePath = $parameters['file_path'] ?? 'unknown';
+        $htmlContent = $event->renderedContent ?? '';
+        $filePath = $event->filePath !== '' ? $event->filePath : 'unknown';
 
-        if (empty($htmlContent)) {
-            return $parameters;
+        if ($htmlContent === '') {
+            return;
         }
 
-        // Generate TOC
         $toc = $this->generateToc($htmlContent);
 
         if (!empty($toc)) {
@@ -44,11 +35,7 @@ class TableOfContentsService
             $this->logger->log('INFO', "No TOC generated for {$filePath} (no headings found?)");
         }
 
-        // Add to metadata
-        $metadata['toc'] = $toc;
-        $parameters['metadata'] = $metadata;
-
-        return $parameters;
+        $event->metadata['toc'] = $toc;
     }
 
     public function generateToc(string $html): string

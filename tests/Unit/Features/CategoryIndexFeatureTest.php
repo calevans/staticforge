@@ -41,7 +41,7 @@ class CategoryIndexFeatureTest extends UnitTestCase
         $this->setContainerVariable('TEMPLATE', 'sample');
         $this->setContainerVariable('features', []); // Initialize features array
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         // Mock Application with renderSingleFile method
         $mockApp = $this->createMock(Application::class);
@@ -76,7 +76,8 @@ class CategoryIndexFeatureTest extends UnitTestCase
             file_put_contents($outputPath, $content);
 
             return $context;
-        });        $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
+        });
+        $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
 
         $feature = (new FeatureFactory($this->container))->make(Feature::class);
         $this->assertInstanceOf(Feature::class, $feature);

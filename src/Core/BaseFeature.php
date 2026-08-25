@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Core;
 
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\Utils\Container;
+use ReflectionClass;
 
 /**
  * Base class providing common functionality for all features
@@ -13,12 +15,6 @@ abstract class BaseFeature implements FeatureInterface
 {
     protected EventManager $eventManager;
     protected Container $container;
-
-    /**
-     * Event listener registrations
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [];
 
     /**
      * Simple name for this feature (used as key in FEATURES array)
@@ -83,8 +79,10 @@ abstract class BaseFeature implements FeatureInterface
             if (!$featureManager->isFeatureEnabled($feature)) {
                 // Log a warning so the developer knows why this feature is skipping its logic
                 $logger = $container->get('logger');
-                $logger->log('WARNING',
-                    "Feature '{$this->getName()}' requires feature '{$feature}' which is disabled. Skipping functionality."
+                $logger->log(
+                    'WARNING',
+                    "Feature '{$this->getName()}' requires feature '{$feature}' which is disabled. " .
+                    "Skipping functionality."
                 );
                 return false;
             }
@@ -96,16 +94,25 @@ abstract class BaseFeature implements FeatureInterface
 
 
     /**
-     * Register event listeners for this feature
-     * Override in concrete features to define event handling
+     * Register event listeners for this feature by scanning its public
+     * methods for #[EventListener] attributes — the event name and priority
+     * live on the handler method itself rather than a separately maintained
+     * array property.
      */
     protected function registerEventListeners(): void
     {
-        foreach ($this->eventListeners as $eventName => $config) {
-            $callback = [$this, $config['method']];
-            $priority = $config['priority'] ?? 100;
+        $reflection = new ReflectionClass($this);
 
-            $this->eventManager->registerListener($eventName, $callback, $priority);
+        foreach ($reflection->getMethods() as $method) {
+            foreach ($method->getAttributes(EventListener::class) as $attribute) {
+                /** @var EventListener $listener */
+                $listener = $attribute->newInstance();
+                $this->eventManager->registerListener(
+                    $listener->eventName,
+                    [$this, $method->getName()],
+                    $listener->priority
+                );
+            }
         }
     }
 }

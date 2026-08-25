@@ -7,9 +7,10 @@ namespace EICC\StaticForge\Features\MarkdownRenderer;
 use EICC\StaticForge\Core\BaseRendererFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Features\MarkdownRenderer\Services\MarkdownRendererService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -22,13 +23,6 @@ class Feature extends BaseRendererFeature implements FeatureInterface
     protected Log $logger;
     private MarkdownRendererService $service;
     private ExtensionRegistry $extensionRegistry;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'RENDER' => ['method' => 'handleRender', 'priority' => 100]
-    ];
 
     public function __construct(Log $logger, MarkdownRendererService $service, ExtensionRegistry $extensionRegistry)
     {
@@ -47,17 +41,9 @@ class Feature extends BaseRendererFeature implements FeatureInterface
         $this->logger->log('INFO', 'Markdown Renderer Feature registered');
     }
 
-    /**
-     * Handle RENDER event for Markdown files
-     *
-     * Called dynamically by EventManager when RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleRender(Container $container, array $parameters): array
+    #[EventListener('RENDER', priority: 100)]
+    public function handleRender(RenderEvent $event): void
     {
-        return $this->service->processMarkdownFile($container, $parameters);
+        $this->service->processMarkdownFile($event);
     }
 }

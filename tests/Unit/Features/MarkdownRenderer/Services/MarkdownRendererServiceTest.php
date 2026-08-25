@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\MarkdownRenderer\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
 use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
@@ -41,7 +42,9 @@ class MarkdownRendererServiceTest extends UnitTestCase
             $this->container->get('logger'),
             $this->markdownProcessor,
             $this->contentExtractor,
-            $this->templateRenderer
+            $this->templateRenderer,
+            $this->eventManager,
+            $this->container
         );
     }
 
@@ -50,16 +53,8 @@ class MarkdownRendererServiceTest extends UnitTestCase
         $filePath = '/tmp/test.md';
         $content = '# Hello';
         $htmlContent = '<h1>Hello</h1>';
-        $metadata = ['title' => 'Hello'];
         $renderedContent = '<html><h1>Hello</h1></html>';
         $expectedContent = "<html>\n    <h1>\n        Hello\n    </h1>\n</html>";
-
-        // Mock file reading (using parameters to bypass file_get_contents)
-        $parameters = [
-            'file_path' => $filePath,
-            'file_content' => $content,
-            'file_metadata' => []
-        ];
 
         // Mock ContentExtractor
         $this->contentExtractor->expects($this->once())
@@ -73,18 +68,14 @@ class MarkdownRendererServiceTest extends UnitTestCase
             ->with($content)
             ->willReturn($htmlContent);
 
-        // Mock EventManager
+        // Mock EventManager: mutate the sub-event's metadata as a real listener would
         $this->eventManager->expects($this->once())
             ->method('fire')
-            ->with('MARKDOWN_CONVERTED', [
-                'html_content' => $htmlContent,
-                'metadata' => [],
-                'file_path' => $filePath
-            ])
-            ->willReturn([
-                'html_content' => $htmlContent,
-                'metadata' => $metadata
-            ]);
+            ->with('MARKDOWN_CONVERTED', $this->isInstanceOf(RenderEvent::class))
+            ->willReturnCallback(function (string $name, RenderEvent $event) {
+                $event->metadata['title'] = 'Hello';
+                return $event;
+            });
 
         // Mock TemplateRenderer
         $this->templateRenderer->expects($this->once())
@@ -95,11 +86,17 @@ class MarkdownRendererServiceTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', '/tmp');
         $this->setContainerVariable('OUTPUT_DIR', '/tmp/output');
 
-        $result = $this->service->processMarkdownFile($this->container, $parameters);
+        $event = new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: '/test/',
+            metadata: [],
+            extra: ['file_content' => $content],
+        );
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertEquals($expectedContent, $result['rendered_content']);
-        $this->assertArrayHasKey('output_path', $result);
-        $this->assertEquals('/tmp/output/test.html', $result['output_path']);
+        $this->service->processMarkdownFile($event);
+
+        $this->assertSame($expectedContent, $event->renderedContent);
+        $this->assertSame('/tmp/output/test.html', $event->outputPath);
     }
 }

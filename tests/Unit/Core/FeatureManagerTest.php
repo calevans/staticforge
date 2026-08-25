@@ -23,7 +23,7 @@ class FeatureManagerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
 
         // Create temporary directory for test features
         $this->tempDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();

@@ -3,6 +3,7 @@
 namespace EICC\StaticForge\Tests\Unit\Core;
 
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\ErrorHandler;
@@ -20,7 +21,7 @@ class FileProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->eventManager = new EventManager($this->container);
+        $this->eventManager = new EventManager();
         // FileProcessor resolves ErrorHandler from the container internally, so we must
         // use the same bootstrapped instance here to observe its error statistics.
         $this->errorHandler = $this->container->get(ErrorHandler::class);
@@ -61,7 +62,7 @@ class FileProcessorTest extends UnitTestCase
         $this->setContainerVariable('discovered_files', $testFiles);
 
         // Track events fired
-        $tracker = new EventTrackingListener();
+        $tracker = new EventTrackingListener($this->container);
 
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
@@ -72,12 +73,12 @@ class FileProcessorTest extends UnitTestCase
         // Should have fired 6 events (3 per file)
         $eventsTracked = $tracker->eventsTracked;
         $this->assertCount(6, $eventsTracked);
-        $this->assertEquals('PRE_RENDER', $eventsTracked[0]['event']);
-        $this->assertEquals('RENDER', $eventsTracked[1]['event']);
-        $this->assertEquals('POST_RENDER', $eventsTracked[2]['event']);
-        $this->assertEquals('PRE_RENDER', $eventsTracked[3]['event']);
-        $this->assertEquals('RENDER', $eventsTracked[4]['event']);
-        $this->assertEquals('POST_RENDER', $eventsTracked[5]['event']);
+        $this->assertEquals('PRE_RENDER', $eventsTracked[0]);
+        $this->assertEquals('RENDER', $eventsTracked[1]);
+        $this->assertEquals('POST_RENDER', $eventsTracked[2]);
+        $this->assertEquals('PRE_RENDER', $eventsTracked[3]);
+        $this->assertEquals('RENDER', $eventsTracked[4]);
+        $this->assertEquals('POST_RENDER', $eventsTracked[5]);
     }
 
     public function testProcessFileWithSkipFlag(): void
@@ -85,7 +86,7 @@ class FileProcessorTest extends UnitTestCase
         $testFiles = [['path' => '/tmp/test.html', 'url' => 'test.html', 'metadata' => []]];
         $this->setContainerVariable('discovered_files', $testFiles);
 
-        $tracker = new EventTrackingListener();
+        $tracker = new EventTrackingListener($this->container);
 
         // Listener that sets skip_file flag in PRE_RENDER
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRenderAndSkip'], 100);
@@ -97,7 +98,7 @@ class FileProcessorTest extends UnitTestCase
         // Should only have PRE_RENDER event, not RENDER or POST_RENDER
         $eventsTracked = $tracker->eventsTracked;
         $this->assertCount(1, $eventsTracked);
-        $this->assertEquals('PRE_RENDER', $eventsTracked[0]['event']);
+        $this->assertEquals('PRE_RENDER', $eventsTracked[0]);
     }
 
     public function testProcessFilesThrowsWhenOutputDirNotSet(): void
@@ -153,7 +154,7 @@ class FileProcessorTest extends UnitTestCase
         $this->setContainerVariable('SOURCE_DIR', '/tmp/source');
         $this->setContainerVariable('discovered_files', $testFiles);
 
-        $tracker = new EventTrackingListener();
+        $tracker = new EventTrackingListener($this->container);
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
         $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
         $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
@@ -172,25 +173,20 @@ class FileProcessorTest extends UnitTestCase
         $testFiles = [['path' => '/tmp/test.html', 'url' => 'test.html', 'metadata' => []]];
         $this->setContainerVariable('discovered_files', $testFiles);
 
-        $tracker = new EventTrackingListener();
+        $tracker = new EventTrackingListener($this->container);
 
         $this->eventManager->registerListener('PRE_RENDER', [$tracker, 'handlePreRender'], 100);
 
         $this->fileProcessor->processFiles();
 
-        $contextData = $tracker->lastParameters;
-        $this->assertNotNull($contextData);
-        $this->assertArrayHasKey('file_path', $contextData);
-        $this->assertArrayHasKey('rendered_content', $contextData);
-        $this->assertArrayHasKey('metadata', $contextData);
-        $this->assertArrayHasKey('output_path', $contextData);
-        $this->assertArrayHasKey('skip_file', $contextData);
+        $event = $tracker->lastEvent;
+        $this->assertNotNull($event);
 
-        $this->assertEquals('/tmp/test.html', $contextData['file_path']);
-        $this->assertNull($contextData['rendered_content']);
-        $this->assertIsArray($contextData['metadata']);
-        $this->assertNull($contextData['output_path']);
-        $this->assertFalse($contextData['skip_file']);
+        $this->assertEquals('/tmp/test.html', $event->filePath);
+        $this->assertNull($event->renderedContent);
+        $this->assertSame([], $event->metadata);
+        $this->assertNull($event->outputPath);
+        $this->assertFalse($event->skipFile);
     }
 }
 
@@ -200,67 +196,42 @@ class FileProcessorTest extends UnitTestCase
 class EventTrackingListener
 {
     /**
-     * @var array<int, array{event: string, parameters: array<string, mixed>}>
+     * @var array<int, string>
      */
     public array $eventsTracked = [];
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $lastParameters = null;
+    public ?RenderEvent $lastEvent = null;
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePreRender(Container $container, array $parameters): array
+    public function __construct(private readonly Container $container)
     {
-        $this->record('PRE_RENDER', $parameters);
-        return $parameters;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePreRenderAndSkip(Container $container, array $parameters): array
+    public function handlePreRender(RenderEvent $event): void
     {
-        $this->record('PRE_RENDER', $parameters);
-        $parameters['skip_file'] = true;
-        return $parameters;
+        $this->record('PRE_RENDER', $event);
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handleRender(Container $container, array $parameters): array
+    public function handlePreRenderAndSkip(RenderEvent $event): void
     {
-        $this->record('RENDER', $parameters);
-        $parameters['rendered_content'] = 'mock content';
-        $parameters['output_path'] = rtrim((string) $container->getVariable('OUTPUT_DIR'), '/') . '/output.html';
-        return $parameters;
+        $this->record('PRE_RENDER', $event);
+        $event->skipFile = true;
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    public function handleRender(RenderEvent $event): void
     {
-        $this->record('POST_RENDER', $parameters);
-        return $parameters;
+        $this->record('RENDER', $event);
+        $event->renderedContent = 'mock content';
+        $event->outputPath = rtrim((string) $this->container->getVariable('OUTPUT_DIR'), '/') . '/output.html';
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     */
-    private function record(string $eventName, array $parameters): void
+    public function handlePostRender(RenderEvent $event): void
     {
-        $this->eventsTracked[] = [
-            'event' => $eventName,
-            'parameters' => $parameters,
-        ];
-        $this->lastParameters = $parameters;
+        $this->record('POST_RENDER', $event);
+    }
+
+    private function record(string $eventName, RenderEvent $event): void
+    {
+        $this->eventsTracked[] = $eventName;
+        $this->lastEvent = $event;
     }
 }
