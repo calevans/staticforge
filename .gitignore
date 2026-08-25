@@ -8,7 +8,6 @@ logs/
 example_code/
 
 # Files
-composer.lock
 .phpunit.result.cache
 package.json
 package-lock.json

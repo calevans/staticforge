@@ -6,17 +6,19 @@ namespace EICC\StaticForge\Commands\Audit;
 
 use EICC\StaticForge\Services\UrlSafetyValidator;
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'audit:live',
+    description: 'Audit a live deployed site for security and best practices'
+)]
 class LiveCommand extends Command
 {
-    protected static $defaultName = 'audit:live';
-    protected static $defaultDescription = 'Audit a live deployed site for security and best practices';
-
     protected Container $container;
     protected SymfonyStyle $io;
     protected bool $insecure = false;

@@ -22,7 +22,6 @@ class FeatureTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($this->feature);
         $method = $reflection->getMethod('resolveItemsPerPage');
-        $method->setAccessible(true);
         return $method->invoke($this->feature);
     }
 
@@ -66,7 +65,6 @@ class FeatureTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($this->feature);
         $prop = $reflection->getProperty('eventListeners');
-        $prop->setAccessible(true);
         $listeners = $prop->getValue($this->feature);
 
         $this->assertArrayHasKey('POST_LOOP', $listeners);

@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Commands\Make;
 
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'make:htaccess',
+    description: 'Generate a production-ready .htaccess file'
+)]
 class HtaccessCommand extends Command
 {
-    protected static $defaultName = 'make:htaccess';
-    protected static $defaultDescription = 'Generate a production-ready .htaccess file';
-
     protected Container $container;
     protected SymfonyStyle $io;
 

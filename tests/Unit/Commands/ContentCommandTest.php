@@ -34,7 +34,7 @@ class ContentCommandTest extends UnitTestCase
     private function makeCommandTester(): CommandTester
     {
         $application = new Application();
-        $application->add(new ContentCommand($this->container));
+        $application->addCommand(new ContentCommand($this->container));
         $command = $application->find('audit:content');
 
         return new CommandTester($command);

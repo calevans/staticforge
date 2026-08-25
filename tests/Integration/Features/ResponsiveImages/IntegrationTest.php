@@ -60,7 +60,6 @@ TWIG;
         $color = imagecolorallocate($im, 10, 20, 30);
         imagefill($im, 0, 0, $color === false ? 0 : $color);
         imagejpeg($im, $this->sourceDir . '/assets/images/hero.jpg');
-        imagedestroy($im);
     }
 
     protected function tearDown(): void

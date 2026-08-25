@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Commands\Audit;
 
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,11 +15,12 @@ use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use SplFileInfo;
 
+#[AsCommand(
+    name: 'audit:content',
+    description: 'Validate source content integrity (Frontmatter, Taxonomies, Links)'
+)]
 class ContentCommand extends Command
 {
-    protected static $defaultName = 'audit:content';
-    protected static $defaultDescription = 'Validate source content integrity (Frontmatter, Taxonomies, Links)';
-
     protected Container $container;
     protected SymfonyStyle $io;
     protected string $contentDir;
@@ -91,14 +93,14 @@ class ContentCommand extends Command
 
          // Group by file
          $groupedIssues = [];
-         foreach ($issues as $issue) {
-             $groupedIssues[$issue['file']][] = $issue;
-         }
+        foreach ($issues as $issue) {
+            $groupedIssues[$issue['file']][] = $issue;
+        }
          ksort($groupedIssues);
 
          $this->io->section('Content Issues');
 
-         foreach ($groupedIssues as $file => $fileIssues) {
+        foreach ($groupedIssues as $file => $fileIssues) {
             $this->io->writeln("<fg=cyan;options=bold>{$file}</>");
             foreach ($fileIssues as $issue) {
                 $typeColor = $issue['type'] === 'error' ? 'red' : 'yellow';
@@ -178,9 +180,8 @@ class ContentCommand extends Command
                         'file' => $relativePath,
                         'type' => 'warning',
                         'message' => "Post is marked as draft"
-                    ];
+                     ];
                 }
-
             } catch (\Exception $e) {
                 $issues[] = [
                     'file' => $relativePath,
@@ -279,7 +280,7 @@ class ContentCommand extends Command
                             'file' => $relativePath,
                             'type' => 'error',
                             'message' => "Link target not found: {$link}"
-                        ];
+                         ];
                     }
                 }
             }

@@ -14,7 +14,6 @@ class FeatureCreateCommandTest extends UnitTestCase
     {
         $command = new FeatureCreateCommand();
         $method = new ReflectionMethod($command, 'getFeatureTemplate');
-        $method->setAccessible(true);
 
         $content = $method->invoke($command, 'MyFeature');
 
@@ -27,7 +26,6 @@ class FeatureCreateCommandTest extends UnitTestCase
     {
         $command = new FeatureCreateCommand();
         $method = new ReflectionMethod($command, 'getServiceTemplate');
-        $method->setAccessible(true);
 
         $content = $method->invoke($command, 'MyFeature');
 

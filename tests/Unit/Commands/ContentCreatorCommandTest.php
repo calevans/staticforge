@@ -33,7 +33,7 @@ class ContentCreatorCommandTest extends UnitTestCase
     private function makeCommandTester(): CommandTester
     {
         $application = new Application();
-        $application->add(new ContentCreatorCommand($this->container));
+        $application->addCommand(new ContentCreatorCommand($this->container));
         $command = $application->find('make:content');
 
         return new CommandTester($command);

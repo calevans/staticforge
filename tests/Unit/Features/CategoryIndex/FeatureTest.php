@@ -22,7 +22,6 @@ class FeatureTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($this->feature);
         $method = $reflection->getMethod('resolveItemsPerPage');
-        $method->setAccessible(true);
         return $method->invoke($this->feature);
     }
 

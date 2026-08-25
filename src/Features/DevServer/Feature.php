@@ -25,7 +25,7 @@ class Feature extends BaseFeature implements FeatureInterface
     {
         /** @var Application $application */
         $application = $parameters['application'];
-        $application->add(new DevServerCommand());
+        $application->addCommand(new DevServerCommand());
 
         return $parameters;
     }

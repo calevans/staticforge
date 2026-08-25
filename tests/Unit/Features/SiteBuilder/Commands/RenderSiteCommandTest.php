@@ -67,7 +67,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'cleanOutputDirectory');
-        $method->setAccessible(true);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('OUTPUT_DIR not set in container');
@@ -87,7 +86,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'cleanOutputDirectory');
-        $method->setAccessible(true);
         $method->invoke($command, $container);
 
         $this->assertDirectoryExists($this->outputDir);
@@ -103,7 +101,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'cleanOutputDirectory');
-        $method->setAccessible(true);
         $method->invoke($command, $container);
 
         $this->assertDirectoryExists($this->outputDir);
@@ -112,7 +109,6 @@ class RenderSiteCommandTest extends UnitTestCase
     public function testRemoveDirectoryReturnsFalseForNonDirectory(): void
     {
         $method = new ReflectionMethod(RenderSiteCommand::class, 'removeDirectory');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, '/path/does/not/exist');
 
@@ -127,7 +123,6 @@ class RenderSiteCommandTest extends UnitTestCase
         file_put_contents($this->outputDir . '/top.txt', 'y');
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'removeDirectory');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->command, $this->outputDir);
 
@@ -141,7 +136,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'displayConfiguration');
-        $method->setAccessible(true);
 
         $output = new BufferedOutput();
         $method->invoke($command, $container, $output);
@@ -162,7 +156,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'displayConfiguration');
-        $method->setAccessible(true);
 
         $output = new BufferedOutput();
         $method->invoke($command, $container, $output);
@@ -180,7 +173,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'displayStats');
-        $method->setAccessible(true);
 
         $output = new BufferedOutput();
         $method->invoke($command, $container, $output, 1.23);
@@ -204,7 +196,6 @@ class RenderSiteCommandTest extends UnitTestCase
         $command = new RenderSiteCommand($container);
 
         $method = new ReflectionMethod(RenderSiteCommand::class, 'displayStats');
-        $method->setAccessible(true);
 
         $output = new BufferedOutput();
         $method->invoke($command, $container, $output, 2.0);

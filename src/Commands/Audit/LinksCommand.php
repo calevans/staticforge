@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Commands\Audit;
 
 use EICC\StaticForge\Services\UrlSafetyValidator;
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,11 +20,12 @@ use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use InvalidArgumentException;
 
+#[AsCommand(
+    name: 'audit:links',
+    description: 'Validate internal and external links in the generated site'
+)]
 class LinksCommand extends Command
 {
-    protected static $defaultName = 'audit:links';
-    protected static $defaultDescription = 'Validate internal and external links in the generated site';
-
     protected Container $container;
     protected HttpClientInterface $httpClient;
     protected string $outputDir;

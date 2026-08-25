@@ -48,7 +48,6 @@ class ImageVariantGeneratorTest extends UnitTestCase
         $color = imagecolorallocate($im, 100, 150, 200);
         imagefill($im, 0, 0, $color === false ? 0 : $color);
         imagejpeg($im, $path);
-        imagedestroy($im);
     }
 
     /**

@@ -59,7 +59,7 @@ class LinksCommandTest extends UnitTestCase
         $this->setContainerVariable('OUTPUT_DIR', '/nonexistent/staticforge-output-dir-' . uniqid());
 
         $application = new Application();
-        $application->add(new LinksCommand($this->container));
+        $application->addCommand(new LinksCommand($this->container));
         $command = $application->find('audit:links');
         $tester = new CommandTester($command);
 
@@ -97,7 +97,6 @@ class LinksCommandTest extends UnitTestCase
             public function validateExternalLinksForTest(array $urls, array $urlMap): array
             {
                 $reflection = new \ReflectionMethod($this, 'validateExternalLinks');
-                $reflection->setAccessible(true);
                 return $reflection->invoke($this, $urls, 1, $urlMap);
             }
         };
@@ -107,7 +106,6 @@ class LinksCommandTest extends UnitTestCase
             new \Symfony\Component\Console\Output\NullOutput()
         );
         $ioProp = new \ReflectionProperty($command, 'io');
-        $ioProp->setAccessible(true);
         $ioProp->setValue($command, $io);
 
         $url = 'http://127.0.0.1/admin';
@@ -125,7 +123,6 @@ class LinksCommandTest extends UnitTestCase
             public function isExternalForTest(string $href): bool
             {
                 $reflection = new \ReflectionMethod($this, 'isExternal');
-                $reflection->setAccessible(true);
                 return $reflection->invoke($this, $href);
             }
         };

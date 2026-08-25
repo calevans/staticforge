@@ -68,7 +68,6 @@ class CategoryPageServiceTest extends UnitTestCase
         // Use reflection to verify state
         $reflection = new \ReflectionClass($this->service);
         $prop = $reflection->getProperty('deferredFiles');
-        $prop->setAccessible(true);
         $deferred = $prop->getValue($this->service);
 
         $this->assertCount(1, $deferred);

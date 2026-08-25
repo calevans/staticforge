@@ -83,7 +83,7 @@ title: "Test Page"
     {
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -104,7 +104,7 @@ title: "Test Page"
     {
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -131,7 +131,7 @@ title: "Test Page"
 
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -166,7 +166,7 @@ title: "Test Page"
 
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -189,7 +189,7 @@ title: "Test Page"
     {
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -263,7 +263,7 @@ title: "Alt Page"
 
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -296,7 +296,7 @@ title: "Alt Page"
 
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -340,7 +340,7 @@ title: "Both Override"
 
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -375,7 +375,7 @@ title: "Both Override"
     {
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);
@@ -398,7 +398,7 @@ title: "Both Override"
     {
         $application = new Application();
         $container = $this->container;
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);

@@ -153,7 +153,7 @@ class DevServerCommand extends Command
         return false;
     }
 
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
         echo "\nShutting down development server...\n";
         $this->cleanup();

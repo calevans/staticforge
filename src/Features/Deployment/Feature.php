@@ -36,7 +36,7 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     {
         /** @var Application $application */
         $application = $parameters['application'];
-        $application->add(new UploadSiteCommand($container));
+        $application->addCommand(new UploadSiteCommand($container));
 
         return $parameters;
     }

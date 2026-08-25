@@ -52,7 +52,7 @@ class DevServerCommandTest extends UnitTestCase
     {
         // No /public directory created under tempCwd
         $application = new Application();
-        $application->add(new DevServerCommand());
+        $application->addCommand(new DevServerCommand());
 
         $command = $application->find('site:devserver');
         $commandTester = new CommandTester($command);
@@ -77,7 +77,7 @@ class DevServerCommandTest extends UnitTestCase
         $port = (int) substr($name, strrpos($name, ':') + 1);
 
         $application = new Application();
-        $application->add(new DevServerCommand());
+        $application->addCommand(new DevServerCommand());
 
         $command = $application->find('site:devserver');
         $commandTester = new CommandTester($command);
@@ -95,7 +95,6 @@ class DevServerCommandTest extends UnitTestCase
     {
         $command = new DevServerCommand();
         $method = new ReflectionMethod($command, 'isPortInUse');
-        $method->setAccessible(true);
 
         // Port 0 / an arbitrarily high unlikely-to-be-bound port
         $result = $method->invoke($command, '127.0.0.1', 65530);
@@ -109,7 +108,6 @@ class DevServerCommandTest extends UnitTestCase
 
         $command = new DevServerCommand();
         $method = new ReflectionMethod($command, 'initialize');
-        $method->setAccessible(true);
 
         $input = new \Symfony\Component\Console\Input\ArrayInput([]);
         $input->bind($command->getDefinition());
@@ -117,17 +115,17 @@ class DevServerCommandTest extends UnitTestCase
         $method->invoke($command, $input, $output);
 
         $publicDirProp = new ReflectionProperty($command, 'publicDir');
-        $publicDirProp->setAccessible(true);
         $routerFileProp = new ReflectionProperty($command, 'routerFile');
-        $routerFileProp->setAccessible(true);
 
         $publicDir = $publicDirProp->getValue($command);
         $routerFile = $routerFileProp->getValue($command);
 
         // Regression: a live site:render wipes and regenerates publicDir, which
         // would delete the router file out from under a running dev server.
+        $tempDir = sys_get_temp_dir();
+        $this->assertNotEmpty($tempDir);
         $this->assertStringStartsNotWith($publicDir, $routerFile);
-        $this->assertStringStartsWith(sys_get_temp_dir(), $routerFile);
+        $this->assertStringStartsWith($tempDir, $routerFile);
     }
 
     public function testGetRouterTemplateResolvesFilesRelativeToWorkingDirectory(): void
@@ -137,7 +135,6 @@ class DevServerCommandTest extends UnitTestCase
         // but the router script itself now lives outside that docroot.
         $command = new DevServerCommand();
         $method = new ReflectionMethod($command, 'getRouterTemplate');
-        $method->setAccessible(true);
 
         $template = $method->invoke($command);
 
@@ -149,7 +146,6 @@ class DevServerCommandTest extends UnitTestCase
     {
         $command = new DevServerCommand();
         $method = new ReflectionMethod($command, 'getRouterTemplate');
-        $method->setAccessible(true);
 
         $template = $method->invoke($command);
 
@@ -167,11 +163,9 @@ class DevServerCommandTest extends UnitTestCase
         $command = new DevServerCommand();
 
         $publicDirProp = new ReflectionProperty($command, 'publicDir');
-        $publicDirProp->setAccessible(true);
         $publicDirProp->setValue($command, $this->tempCwd . '/public');
 
         $routerFileProp = new ReflectionProperty($command, 'routerFile');
-        $routerFileProp->setAccessible(true);
         $routerFileProp->setValue($command, $routerFile);
 
         $this->assertFileExists($routerFile);
@@ -184,7 +178,6 @@ class DevServerCommandTest extends UnitTestCase
         $command = new DevServerCommand();
 
         $routerFileProp = new ReflectionProperty($command, 'routerFile');
-        $routerFileProp->setAccessible(true);
         $missingRouterFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
         $routerFileProp->setValue($command, $missingRouterFile);
 

@@ -98,7 +98,6 @@ class ImageServiceTest extends UnitTestCase
         // Create a minimal valid JPEG using GD so Imagick can read it
         $im = imagecreatetruecolor(10, 10);
         imagejpeg($im, $imagePath);
-        imagedestroy($im);
 
         $html = '<p><img src="/images/photo.jpg"></p>';
 

@@ -27,7 +27,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testSanitizeCategoryName(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'sanitizeCategoryName');
-        $method->setAccessible(true);
 
         $this->assertEquals('tech', $method->invoke($this->service, 'Tech'));
         $this->assertEquals('web-development', $method->invoke($this->service, 'Web Development'));
@@ -38,7 +37,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testExtractDescriptionFromMetadata(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'extractDescription');
-        $method->setAccessible(true);
 
         $metadata = ['description' => 'Metadata description'];
         $html = '<p>Content description</p>';
@@ -49,7 +47,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testExtractDescriptionFromContent(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'extractDescription');
-        $method->setAccessible(true);
 
         $metadata = [];
         $html = '<p>Content description</p>';
@@ -60,7 +57,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testExtractDescriptionTruncatesLongContent(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'extractDescription');
-        $method->setAccessible(true);
 
         $metadata = [];
         $longContent = str_repeat('word ', 50); // > 200 chars
@@ -75,7 +71,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testGetFileDateFromPublishedDate(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'getFileDate');
-        $method->setAccessible(true);
 
         $metadata = ['published_date' => '2023-01-01'];
         $this->assertEquals('2023-01-01', $method->invoke($this->service, $metadata, ''));
@@ -84,7 +79,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testGetFileDateFromDate(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'getFileDate');
-        $method->setAccessible(true);
 
         $metadata = ['date' => '2023-02-01'];
         $this->assertEquals('2023-02-01', $method->invoke($this->service, $metadata, ''));
@@ -93,7 +87,6 @@ class RssFeedServiceTest extends UnitTestCase
     public function testGetFileUrl(): void
     {
         $method = new ReflectionMethod(RssFeedService::class, 'getFileUrl');
-        $method->setAccessible(true);
 
         $outputDir = '/var/www/html/output';
         $outputPath = '/var/www/html/output/blog/post.html';

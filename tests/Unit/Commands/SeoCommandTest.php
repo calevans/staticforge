@@ -30,7 +30,7 @@ class SeoCommandTest extends UnitTestCase
     private function makeCommandTester(): CommandTester
     {
         $application = new Application();
-        $application->add(new SeoCommand($this->container));
+        $application->addCommand(new SeoCommand($this->container));
         $command = $application->find('audit:seo');
 
         return new CommandTester($command);

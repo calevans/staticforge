@@ -39,7 +39,7 @@ class UploadSiteCommandTest extends UnitTestCase
     public function testExecuteFailsWhenNoUploadUrlProvided(): void
     {
         $application = new Application();
-        $application->add(new UploadSiteCommand($this->container));
+        $application->addCommand(new UploadSiteCommand($this->container));
 
         $command = $application->find('site:upload');
         $commandTester = new CommandTester($command);
@@ -64,7 +64,7 @@ class UploadSiteCommandTest extends UnitTestCase
         $this->setContainerVariable('OUTPUT_DIR', $outputDir);
 
         $application = new Application();
-        $application->add(new UploadSiteCommand($this->container));
+        $application->addCommand(new UploadSiteCommand($this->container));
 
         $command = $application->find('site:upload');
         $commandTester = new CommandTester($command);

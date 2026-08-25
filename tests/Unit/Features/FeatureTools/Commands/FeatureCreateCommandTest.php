@@ -33,7 +33,7 @@ class FeatureCreateCommandTest extends UnitTestCase
     public function testExecuteFailsWithInvalidFeatureName(): void
     {
         $application = new Application();
-        $application->add(new FeatureCreateCommand());
+        $application->addCommand(new FeatureCreateCommand());
 
         $command = $application->find('feature:create');
         $commandTester = new CommandTester($command);
@@ -50,7 +50,7 @@ class FeatureCreateCommandTest extends UnitTestCase
         mkdir($this->tempCwd . '/src/Features/Existing', 0755, true);
 
         $application = new Application();
-        $application->add(new FeatureCreateCommand());
+        $application->addCommand(new FeatureCreateCommand());
 
         $command = $application->find('feature:create');
         $commandTester = new CommandTester($command);
@@ -65,7 +65,7 @@ class FeatureCreateCommandTest extends UnitTestCase
     public function testExecuteSucceedsAndScaffoldsFeature(): void
     {
         $application = new Application();
-        $application->add(new FeatureCreateCommand());
+        $application->addCommand(new FeatureCreateCommand());
 
         $command = $application->find('feature:create');
         $commandTester = new CommandTester($command);

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\FeatureTools\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'feature:setup',
+    description: 'Setup configuration examples for a Composer-installed feature'
+)]
 class FeatureSetupCommand extends Command
 {
-    protected static $defaultName = 'feature:setup';
-    protected static $defaultDescription = 'Setup configuration examples for a Composer-installed feature';
-
     protected function configure(): void
     {
         $this

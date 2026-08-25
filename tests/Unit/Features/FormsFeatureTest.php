@@ -31,7 +31,6 @@ class FormsFeatureTest extends UnitTestCase
         // we use reflection to modify the protected $data property.
         $reflection = new \ReflectionClass($this->container);
         $dataProp = $reflection->getProperty('data');
-        $dataProp->setAccessible(true);
         $data = $dataProp->getValue($this->container);
 
         // Replace the existing twig service

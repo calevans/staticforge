@@ -37,7 +37,7 @@ class ConfigCommandTest extends UnitTestCase
     private function makeCommandTester(): CommandTester
     {
         $application = new Application();
-        $application->add(new ConfigCommand($this->container));
+        $application->addCommand(new ConfigCommand($this->container));
         $command = $application->find('audit:config');
 
         return new CommandTester($command);
@@ -118,7 +118,6 @@ class ConfigCommandTest extends UnitTestCase
     {
         $command = new ConfigCommand($this->container);
         $reflection = new \ReflectionMethod($command, 'hasConfigKey');
-        $reflection->setAccessible(true);
 
         $config = ['forms' => ['contact' => ['provider_url' => 'https://example.com']]];
 

@@ -133,7 +133,7 @@ HTML;
         $container->updateVariable('TEMPLATE_DIR', $this->testTemplateDir);
 
         $application = new Application();
-        $application->add(new RenderSiteCommand($container));
+        $application->addCommand(new RenderSiteCommand($container));
 
         $command = $application->find('site:render');
         $commandTester = new CommandTester($command);

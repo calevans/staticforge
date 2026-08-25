@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'site:init',
+    description: 'Initialize a new StaticForge project'
+)]
 class InitCommand extends Command
 {
-    protected static $defaultName = 'site:init';
-    protected static $defaultDescription = 'Initialize a new StaticForge project';
-
     protected function configure(): void
     {
         $this

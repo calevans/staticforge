@@ -40,7 +40,6 @@ class SftpClientTest extends UnitTestCase
     private function invokeVerifyHostKey(SFTP $sftp, array $config): bool
     {
         $method = new ReflectionMethod($this->client, 'verifyHostKey');
-        $method->setAccessible(true);
         return $method->invoke($this->client, $sftp, $config);
     }
 

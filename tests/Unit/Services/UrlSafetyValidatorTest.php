@@ -12,14 +12,14 @@ class UrlSafetyValidatorTest extends TestCase
 {
     public function testAllowsPublicHttpsUrl(): void
     {
+        $this->expectNotToPerformAssertions();
         UrlSafetyValidator::assertSafe('https://93.184.216.34/path');
-        $this->addToAssertionCount(1);
     }
 
     public function testAllowsPublicHttpUrl(): void
     {
+        $this->expectNotToPerformAssertions();
         UrlSafetyValidator::assertSafe('http://8.8.8.8/');
-        $this->addToAssertionCount(1);
     }
 
     public function testRejectsFileScheme(): void

@@ -7,16 +7,18 @@ namespace EICC\StaticForge\Commands\Audit;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'audit:config',
+    description: 'Validate project configuration (audit:config)'
+)]
 class ConfigCommand extends Command
 {
-    protected static $defaultName = 'audit:config';
-    protected static $defaultDescription = 'Validate project configuration (audit:config)';
-
     protected Container $container;
 
     public function __construct(Container $container)
@@ -47,7 +49,7 @@ class ConfigCommand extends Command
                 'scope' => 'Core',
                 'type' => 'Missing Config',
                 'message' => "Missing 'SITE_BASE_URL' in environment (.env).",
-            ];
+             ];
         }
 
         // Check for Template (Expected in siteconfig or ENV)
@@ -57,7 +59,7 @@ class ConfigCommand extends Command
                 'scope' => 'Core',
                 'type' => 'Missing Config',
                 'message' => "Missing 'site.template' in siteconfig.yaml or 'TEMPLATE' in .env.",
-            ];
+             ];
         }
 
         // Check for Site Name (Best practice)
@@ -66,7 +68,7 @@ class ConfigCommand extends Command
                 'scope' => 'Core',
                 'type' => 'Missing Config',
                 'message' => "Missing 'site.name' in siteconfig.yaml.",
-            ];
+             ];
         }
 
         // Validate Paths (if they exist in config, or verify defaults exist)
@@ -88,7 +90,7 @@ class ConfigCommand extends Command
                     'scope' => 'Filesystem',
                     'type' => 'Missing Directory',
                     'message' => "{$label} not found at: {$path}",
-                ];
+                 ];
             }
         }
 
@@ -99,7 +101,7 @@ class ConfigCommand extends Command
                 'scope' => 'Environment',
                 'type' => 'Missing File',
                 'message' => ".env file not found in project root.",
-            ];
+             ];
         } else {
             $io->text("Found .env file.");
         }

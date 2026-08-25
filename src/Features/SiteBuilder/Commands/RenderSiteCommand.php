@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\SiteBuilder\Commands;
 
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -15,11 +16,12 @@ use Exception;
 /**
  * Command to render the entire static site
  */
+#[AsCommand(
+    name: 'site:render',
+    description: 'Generate the complete static site from content files'
+)]
 class RenderSiteCommand extends Command
 {
-    protected static $defaultName = 'site:render';
-    protected static $defaultDescription = 'Generate the complete static site from content files';
-
     protected Container $container;
 
     public function __construct(Container $container)

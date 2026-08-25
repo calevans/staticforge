@@ -33,7 +33,7 @@ class HtaccessCommandTest extends UnitTestCase
     private function makeCommandTester(): CommandTester
     {
         $application = new Application();
-        $application->add(new HtaccessCommand($this->container));
+        $application->addCommand(new HtaccessCommand($this->container));
         $command = $application->find('make:htaccess');
 
         return new CommandTester($command);

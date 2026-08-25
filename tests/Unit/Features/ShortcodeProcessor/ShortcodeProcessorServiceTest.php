@@ -60,7 +60,6 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
     public function testSplitFrontmatter(): void
     {
         $method = new ReflectionMethod(ShortcodeProcessorService::class, 'splitFrontmatter');
-        $method->setAccessible(true);
 
         $content = "---\ntitle: Test\n---\nBody content";
         $result = $method->invoke($this->service, $content);
@@ -72,7 +71,6 @@ class ShortcodeProcessorServiceTest extends UnitTestCase
     public function testSplitFrontmatterNoFrontmatter(): void
     {
         $method = new ReflectionMethod(ShortcodeProcessorService::class, 'splitFrontmatter');
-        $method->setAccessible(true);
 
         $content = "Body content only";
         $result = $method->invoke($this->service, $content);

@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\FeatureTools\Commands;
 
 use EICC\StaticForge\Core\FeatureManager;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Helper\Table;
 
+#[AsCommand(
+    name: 'feature:list',
+    description: 'List all available features and their status'
+)]
 class ListFeaturesCommand extends Command
 {
-    protected static $defaultName = 'feature:list';
-    protected static $defaultDescription = 'List all available features and their status';
-
     private FeatureManager $featureManager;
 
     public function __construct(FeatureManager $featureManager)

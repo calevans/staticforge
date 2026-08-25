@@ -287,12 +287,10 @@ class CategoryIndexFeatureTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($this->feature);
         $serviceProp = $reflection->getProperty('pageService');
-        $serviceProp->setAccessible(true);
         $service = $serviceProp->getValue($this->feature);
 
         $serviceReflection = new \ReflectionClass($service);
         $deferredProp = $serviceReflection->getProperty('deferredFiles');
-        $deferredProp->setAccessible(true);
         $deferredProp->setValue($service, $files);
     }
 }

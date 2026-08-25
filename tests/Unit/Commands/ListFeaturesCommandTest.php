@@ -37,7 +37,7 @@ class ListFeaturesCommandTest extends TestCase
             ->method('loadFeatures');
 
         $application = new Application();
-        $application->add(new ListFeaturesCommand($featureManager));
+        $application->addCommand(new ListFeaturesCommand($featureManager));
         $command = $application->find('feature:list');
         $commandTester = new CommandTester($command);
 
@@ -63,7 +63,7 @@ class ListFeaturesCommandTest extends TestCase
             ->willReturn([]);
 
         $application = new Application();
-        $application->add(new ListFeaturesCommand($featureManager));
+        $application->addCommand(new ListFeaturesCommand($featureManager));
         $command = $application->find('feature:list');
         $commandTester = new CommandTester($command);
 

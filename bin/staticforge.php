@@ -62,13 +62,13 @@ $container = require $bootstrapPath;
 $app = new Application('StaticForge', '2.1.0');
 
 // Add commands
-$app->add(new InitCommand());
-$app->add(new ConfigCommand($container));
-$app->add(new ContentCreatorCommand($container));
-$app->add(new LinksCommand($container));
-$app->add(new LiveCommand($container));
-$app->add(new SeoCommand($container));
-$app->add(new HtaccessCommand($container));
+$app->addCommand(new InitCommand());
+$app->addCommand(new ConfigCommand($container));
+$app->addCommand(new ContentCreatorCommand($container));
+$app->addCommand(new LinksCommand($container));
+$app->addCommand(new LiveCommand($container));
+$app->addCommand(new SeoCommand($container));
+$app->addCommand(new HtaccessCommand($container));
 
 // Load features
 $container->get(FeatureManager::class)->loadFeatures();

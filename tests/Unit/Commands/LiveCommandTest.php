@@ -75,7 +75,7 @@ class LiveCommandTest extends UnitTestCase
     public function testRejectsLoopbackUrl(): void
     {
         $application = new Application();
-        $application->add(new LiveCommand($this->container));
+        $application->addCommand(new LiveCommand($this->container));
         $command = $application->find('audit:live');
         $tester = new CommandTester($command);
 
@@ -88,7 +88,7 @@ class LiveCommandTest extends UnitTestCase
     public function testRejectsNonHttpScheme(): void
     {
         $application = new Application();
-        $application->add(new LiveCommand($this->container));
+        $application->addCommand(new LiveCommand($this->container));
         $command = $application->find('audit:live');
         $tester = new CommandTester($command);
 
@@ -103,7 +103,7 @@ class LiveCommandTest extends UnitTestCase
         $this->setContainerVariable('UPLOAD_URL', '');
 
         $application = new Application();
-        $application->add(new LiveCommand($this->container));
+        $application->addCommand(new LiveCommand($this->container));
         $command = $application->find('audit:live');
         $tester = new CommandTester($command);
 
@@ -122,7 +122,7 @@ class LiveCommandTest extends UnitTestCase
         $this->setContainerVariable('UPLOAD_URL', 'https://staticforge-test-invalid-host.invalid');
 
         $application = new Application();
-        $application->add(new LiveCommand($this->container));
+        $application->addCommand(new LiveCommand($this->container));
         $command = $application->find('audit:live');
         $tester = new CommandTester($command);
 

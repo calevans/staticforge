@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Commands\Audit;
 
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,11 +17,12 @@ use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use SplFileInfo;
 
+#[AsCommand(
+    name: 'audit:seo',
+    description: 'Validate SEO metadata and best practices'
+)]
 class SeoCommand extends Command
 {
-    protected static $defaultName = 'audit:seo';
-    protected static $defaultDescription = 'Validate SEO metadata and best practices';
-
     protected Container $container;
     protected string $outputDir;
     protected SymfonyStyle $io;

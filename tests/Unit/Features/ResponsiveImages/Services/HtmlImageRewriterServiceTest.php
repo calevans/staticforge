@@ -55,7 +55,6 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         $color = imagecolorallocate($im, 50, 60, 70);
         imagefill($im, 0, 0, $color === false ? 0 : $color);
         imagejpeg($im, $path);
-        imagedestroy($im);
     }
 
     /**

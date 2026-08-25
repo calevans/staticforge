@@ -74,7 +74,6 @@ class BaseFeatureTest extends UnitTestCase
         // Let's try to use reflection to replace the service in the container.
         $reflection = new \ReflectionClass($this->container);
         $property = $reflection->getProperty('data');
-        $property->setAccessible(true);
         $services = $property->getValue($this->container);
         $services[\EICC\StaticForge\Core\FeatureManager::class] = $featureManager;
         $property->setValue($this->container, $services);
@@ -102,7 +101,6 @@ class BaseFeatureTest extends UnitTestCase
         // failures in a RuntimeException).
         $reflection = new \ReflectionClass($this->container);
         $property = $reflection->getProperty('data');
-        $property->setAccessible(true);
         $services = $property->getValue($this->container);
         $services[\EICC\StaticForge\Core\FeatureManager::class] = function () {
             throw new \RuntimeException('Service unavailable');

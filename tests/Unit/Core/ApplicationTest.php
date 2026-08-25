@@ -223,7 +223,6 @@ class ApplicationTest extends UnitTestCase
         // service slot directly to simulate a bootstrap that never initialized the logger.
         $reflection = new \ReflectionClass($freshContainer);
         $property = $reflection->getProperty('data');
-        $property->setAccessible(true);
         $services = $property->getValue($freshContainer);
         unset($services['logger']);
         $property->setValue($freshContainer, $services);

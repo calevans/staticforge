@@ -17,7 +17,9 @@ class InitCommandTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->originalCwd = getcwd();
+        $cwd = getcwd();
+        $this->assertNotFalse($cwd, 'Could not determine current working directory');
+        $this->originalCwd = $cwd;
         $this->testDir = sys_get_temp_dir() . '/staticforge_init_test_' . uniqid();
         mkdir($this->testDir);
         chdir($this->testDir);
@@ -38,7 +40,7 @@ class InitCommandTest extends UnitTestCase
         file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: Test');
 
         $application = new Application();
-        $application->add(new InitCommand());
+        $application->addCommand(new InitCommand());
         $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
@@ -57,7 +59,7 @@ class InitCommandTest extends UnitTestCase
         file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=TestEnv');
 
         $application = new Application();
-        $application->add(new InitCommand());
+        $application->addCommand(new InitCommand());
         $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
@@ -76,7 +78,7 @@ class InitCommandTest extends UnitTestCase
         file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: Test');
 
         $application = new Application();
-        $application->add(new InitCommand());
+        $application->addCommand(new InitCommand());
         $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
@@ -98,7 +100,7 @@ class InitCommandTest extends UnitTestCase
         file_put_contents($this->testDir . '/.env', 'EXISTING_CONTENT');
 
         $application = new Application();
-        $application->add(new InitCommand());
+        $application->addCommand(new InitCommand());
         $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 
@@ -119,7 +121,7 @@ class InitCommandTest extends UnitTestCase
         file_put_contents($this->testDir . '/.env', 'OLD_CONTENT');
 
         $application = new Application();
-        $application->add(new InitCommand());
+        $application->addCommand(new InitCommand());
         $command = $application->find('site:init');
         $commandTester = new CommandTester($command);
 

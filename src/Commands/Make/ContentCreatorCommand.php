@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Commands\Make;
 
 use EICC\Utils\Container;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,11 +13,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'make:content',
+    description: 'Create a new content file with frontmatter'
+)]
 class ContentCreatorCommand extends Command
 {
-    protected static $defaultName = 'make:content';
-    protected static $defaultDescription = 'Create a new content file with frontmatter';
-
     protected Container $container;
     private SymfonyStyle $io;
 
@@ -54,7 +56,7 @@ class ContentCreatorCommand extends Command
         // 1. Determine Directory
         $baseDir = 'content';
         $targetDir = $baseDir . ($type ? '/' . $type : '');
-        
+
         // Ensure directory exists
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
@@ -140,7 +142,7 @@ class ContentCreatorCommand extends Command
             $yaml .= sprintf("%s: %s\n", $key, $valStr);
         }
         $yaml .= "---\n\n";
-        
+
         $yaml .= sprintf("# %s\n\nWrite your content here...", $title);
 
         return $yaml;
