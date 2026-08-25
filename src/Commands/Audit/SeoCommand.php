@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands\Audit;
 
+use EICC\StaticForge\Core\Events\SeoAuditPageEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -296,20 +297,13 @@ class SeoCommand extends Command
         }
 
         // 4. Fire SEO_AUDIT_PAGE event for plugins to add their own checks
-        $eventData = [
-            'crawler' => $crawler,
-            'filename' => $filename,
-            'issues' => $issues
-        ];
+        $event = new SeoAuditPageEvent('SEO_AUDIT_PAGE', $crawler, $filename, $issues);
 
         try {
             /** @var EventManager $eventManager */
             $eventManager = $this->container->get(EventManager::class);
-            $result = $eventManager->fire('SEO_AUDIT_PAGE', $eventData);
-
-            if (isset($result['issues']) && is_array($result['issues'])) {
-                $issues = $result['issues'];
-            }
+            $eventManager->fire('SEO_AUDIT_PAGE', $event);
+            $issues = $event->issues;
         } catch (\Exception $e) {
             $issues[] = [
                 'file' => $filename,
