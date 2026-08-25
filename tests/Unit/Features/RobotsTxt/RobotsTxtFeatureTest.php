@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\RobotsTxt;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\RobotsTxt\Feature as RobotsTxtFeature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
@@ -28,8 +29,9 @@ class RobotsTxtFeatureTest extends UnitTestCase
       // Use bootstrapped container from parent::setUp()
         $this->eventManager = new EventManager($this->container);
 
-        $this->feature = new RobotsTxtFeature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(RobotsTxtFeature::class);
+        $this->assertInstanceOf(RobotsTxtFeature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 

@@ -7,7 +7,6 @@ namespace EICC\StaticForge\Features\Sitemap;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
-use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\Sitemap\Services\SitemapService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -30,11 +29,15 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
     ];
 
+    public function __construct(Log $logger, SitemapService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-        $this->logger = $this->container->get('logger');
-        $this->service = new SitemapService($this->logger, $this->container->get(OutputWriter::class));
         $this->logger->log('INFO', 'Sitemap Feature registered');
     }
 

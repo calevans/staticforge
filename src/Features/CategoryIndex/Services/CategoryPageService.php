@@ -31,6 +31,18 @@ class CategoryPageService
     }
 
     /**
+     * @param array<string, mixed> $siteConfig
+     */
+    public static function resolveItemsPerPage(array $siteConfig): int
+    {
+        $configured = $siteConfig['category_index']['items_per_page'] ?? 10;
+
+        return is_numeric($configured) && (int) $configured > 0
+            ? (int) $configured
+            : 10;
+    }
+
+    /**
      * @param array<string, mixed> $metadata
      */
     public function deferFile(string $filePath, array $metadata, Container $container): void

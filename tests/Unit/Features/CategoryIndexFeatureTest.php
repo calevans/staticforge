@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 use EICC\StaticForge\Features\CategoryIndex\Feature;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\Application;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -77,8 +78,9 @@ class CategoryIndexFeatureTest extends UnitTestCase
             return $context;
         });        $this->container->add(\EICC\StaticForge\Core\Application::class, $mockApp);
 
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 

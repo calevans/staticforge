@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Features\RssFeed\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -20,8 +21,9 @@ class RssFeedFeatureTest extends UnitTestCase
     {
         parent::setUp();
         $this->eventManager = new EventManager($this->container);
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 

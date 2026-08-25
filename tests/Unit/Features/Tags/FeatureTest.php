@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Tags;
 
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\Tags\Feature;
+use EICC\StaticForge\Features\Tags\Services\TagPageService;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 
 class FeatureTest extends UnitTestCase
@@ -14,51 +16,43 @@ class FeatureTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
-    }
-
-    private function resolveItemsPerPage(): int
-    {
-        $reflection = new \ReflectionClass($this->feature);
-        $method = $reflection->getMethod('resolveItemsPerPage');
-        return $method->invoke($this->feature);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
     }
 
     public function testDefaultsToTenWhenSiteConfigMissing(): void
     {
-        $this->setContainerVariable('site_config', []);
-        $this->assertSame(10, $this->resolveItemsPerPage());
+        $this->assertSame(10, TagPageService::resolveItemsPerPage([]));
     }
 
     public function testDefaultsToTenWhenTagsKeyMissing(): void
     {
-        $this->setContainerVariable('site_config', ['site' => ['name' => 'Test']]);
-        $this->assertSame(10, $this->resolveItemsPerPage());
+        $this->assertSame(10, TagPageService::resolveItemsPerPage(['site' => ['name' => 'Test']]));
     }
 
     public function testDefaultsToTenWhenItemsPerPageIsZero(): void
     {
-        $this->setContainerVariable('site_config', ['tags' => ['items_per_page' => 0]]);
-        $this->assertSame(10, $this->resolveItemsPerPage());
+        $config = ['tags' => ['items_per_page' => 0]];
+        $this->assertSame(10, TagPageService::resolveItemsPerPage($config));
     }
 
     public function testDefaultsToTenWhenItemsPerPageIsNegative(): void
     {
-        $this->setContainerVariable('site_config', ['tags' => ['items_per_page' => -5]]);
-        $this->assertSame(10, $this->resolveItemsPerPage());
+        $config = ['tags' => ['items_per_page' => -5]];
+        $this->assertSame(10, TagPageService::resolveItemsPerPage($config));
     }
 
     public function testDefaultsToTenWhenItemsPerPageIsNonNumeric(): void
     {
-        $this->setContainerVariable('site_config', ['tags' => ['items_per_page' => 'abc']]);
-        $this->assertSame(10, $this->resolveItemsPerPage());
+        $config = ['tags' => ['items_per_page' => 'abc']];
+        $this->assertSame(10, TagPageService::resolveItemsPerPage($config));
     }
 
     public function testReturnsConfiguredValueWhenValid(): void
     {
-        $this->setContainerVariable('site_config', ['tags' => ['items_per_page' => 5]]);
-        $this->assertSame(5, $this->resolveItemsPerPage());
+        $config = ['tags' => ['items_per_page' => 5]];
+        $this->assertSame(5, TagPageService::resolveItemsPerPage($config));
     }
 
     public function testEventListenersIncludePostLoop(): void

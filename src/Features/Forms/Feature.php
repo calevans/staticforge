@@ -33,14 +33,15 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
+    public function __construct(Log $logger, FormsService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-        $this->logger = $this->container->get('logger');
-        $twig = $this->container->get('twig');
-
-        $this->service = new FormsService($this->logger, $twig);
-
         $this->logger->log('INFO', 'Forms Feature registered');
     }
 

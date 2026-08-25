@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Tags\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use org\bovigo\vfs\vfsStream;
@@ -21,8 +22,8 @@ class TagsFeatureTest extends UnitTestCase
 
     public function testFeatureRegistration(): void
     {
-        $feature = new Feature();
-        $feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($this->eventManager);
 
         $this->assertEquals('Tags', $feature->getName());
@@ -47,8 +48,8 @@ class TagsFeatureTest extends UnitTestCase
             ['path' => $file->url(), 'url' => 'test.md', 'metadata' => ['tags' => ['php']]]
         ]);
 
-        $feature = new Feature();
-        $feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($this->eventManager);
 
         // Test POST_GLOB delegation

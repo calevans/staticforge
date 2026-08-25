@@ -10,6 +10,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionParameter;
 use RuntimeException;
+use Twig\Environment;
 
 /**
  * Builds Feature (and, recursively, their constructor dependencies) via
@@ -71,6 +72,10 @@ class FeatureFactory
 
             if ($typeName === Log::class && $this->container->has('logger')) {
                 return $this->container->get('logger');
+            }
+
+            if ($typeName === Environment::class && $this->container->has('twig')) {
+                return $this->container->get('twig');
             }
 
             if ($this->container->has($typeName)) {

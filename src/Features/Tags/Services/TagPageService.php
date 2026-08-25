@@ -33,6 +33,18 @@ class TagPageService
         $this->itemsPerPage = $itemsPerPage;
     }
 
+    /**
+     * @param array<string, mixed> $siteConfig
+     */
+    public static function resolveItemsPerPage(array $siteConfig): int
+    {
+        $configured = $siteConfig['tags']['items_per_page'] ?? 10;
+
+        return is_numeric($configured) && (int) $configured > 0
+            ? (int) $configured
+            : 10;
+    }
+
     public function generateTagPages(Container $container): void
     {
         $tagIndex = $this->tagsService->getTagIndex();

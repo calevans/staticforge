@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Features\Categories\Feature as CategoriesFeature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -22,8 +23,9 @@ class CategoriesFeatureTest extends UnitTestCase
 
       // Logger already registered by bootstrap
 
-        $this->feature = new CategoriesFeature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(CategoriesFeature::class);
+        $this->assertInstanceOf(CategoriesFeature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 

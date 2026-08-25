@@ -7,8 +7,6 @@ namespace EICC\StaticForge\Features\RobotsTxt;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
-use EICC\StaticForge\Core\OutputWriter;
-use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtGenerator;
 use EICC\StaticForge\Features\RobotsTxt\Services\RobotsTxtService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -43,17 +41,15 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_LOOP' => ['method' => 'handlePostLoop', 'priority' => 100]
     ];
 
+    public function __construct(Log $logger, RobotsTxtService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        // Initialize services
-        $generator = new RobotsTxtGenerator();
-        $this->service = new RobotsTxtService($this->logger, $generator, $this->container->get(OutputWriter::class));
-
         $this->logger->log('INFO', 'RobotsTxt Feature registered');
     }
 

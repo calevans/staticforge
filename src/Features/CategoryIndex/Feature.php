@@ -9,9 +9,7 @@ use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
-use EICC\StaticForge\Features\CategoryIndex\Services\ImageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\MenuService;
-use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -39,35 +37,22 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_LOOP' => ['method' => 'processDeferredCategoryFiles', 'priority' => 50]
     ];
 
+    public function __construct(
+        Log $logger,
+        CategoryService $categoryService,
+        CategoryPageService $pageService,
+        MenuService $menuService
+    ) {
+        $this->logger = $logger;
+        $this->categoryService = $categoryService;
+        $this->pageService = $pageService;
+        $this->menuService = $menuService;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        $this->logger = $this->container->get('logger');
-
-        $imageService = new ImageService($this->logger);
-        $this->categoryService = new CategoryService($this->logger, $imageService);
-        $paginationService = new PaginationService();
-        $itemsPerPage = $this->resolveItemsPerPage();
-        $this->pageService = new CategoryPageService(
-            $this->logger,
-            $this->categoryService,
-            $paginationService,
-            $itemsPerPage
-        );
-        $this->menuService = new MenuService($this->logger);
-
         $this->logger->log('INFO', 'CategoryIndex Feature registered');
-    }
-
-    private function resolveItemsPerPage(): int
-    {
-        $siteConfig = $this->container->getVariable('site_config') ?? [];
-        $configured = $siteConfig['category_index']['items_per_page'] ?? 10;
-
-        return is_numeric($configured) && (int) $configured > 0
-            ? (int) $configured
-            : 10;
     }
 
     /**

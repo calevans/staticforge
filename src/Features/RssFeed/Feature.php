@@ -8,7 +8,6 @@ use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
-use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Features\RssFeed\Services\RssFeedService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -41,16 +40,15 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return ['SITE_BASE_URL'];
     }
 
+    public function __construct(Log $logger, RssFeedService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        // Initialize services
-        $this->service = new RssFeedService($this->logger, $eventManager, $this->container->get(OutputWriter::class));
-
         $this->logger->log('INFO', 'RssFeed Feature registered');
     }
 

@@ -22,13 +22,15 @@ class Feature extends BaseFeature implements FeatureInterface
         'CREATE' => ['method' => 'handleCreate', 'priority' => 10]
     ];
 
+    public function __construct(Log $logger, CacheBusterService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-        $this->logger = $this->container->get('logger');
-
-        $this->service = new CacheBusterService($this->logger);
-
         $this->logger->log('INFO', 'CacheBuster Feature registered');
     }
 

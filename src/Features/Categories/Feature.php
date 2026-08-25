@@ -30,15 +30,15 @@ class Feature extends BaseFeature implements FeatureInterface
         'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 100]
     ];
 
+    public function __construct(Log $logger, CategoriesService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        $this->service = new CategoriesService($this->logger);
-
         $this->logger->log('INFO', 'Categories Feature registered');
     }
 

@@ -5,6 +5,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 use EICC\StaticForge\Features\Forms\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 
@@ -40,8 +41,9 @@ class FormsFeatureTest extends UnitTestCase
 
         $dataProp->setValue($this->container, $data);
 
-        $this->feature = new Feature();
-        $this->feature->setContainer($this->container);
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
         $this->feature->register($this->eventManager);
     }
 

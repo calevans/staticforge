@@ -7,10 +7,6 @@ use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Features\MenuBuilder\Services\MenuBuilderService;
-use EICC\StaticForge\Features\MenuBuilder\Services\MenuHtmlGenerator;
-use EICC\StaticForge\Features\MenuBuilder\Services\MenuScanner;
-use EICC\StaticForge\Features\MenuBuilder\Services\MenuStructureBuilder;
-use EICC\StaticForge\Features\MenuBuilder\Services\StaticMenuProcessor;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -37,35 +33,15 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         return [];
     }
 
+    public function __construct(Log $logger, MenuBuilderService $service)
+    {
+        $this->logger = $logger;
+        $this->service = $service;
+    }
+
     public function register(EventManager $eventManager): void
     {
         parent::register($eventManager);
-
-        // Get logger from container
-        $this->logger = $this->container->get('logger');
-
-        // Initialize services
-        $structureBuilder = new MenuStructureBuilder();
-        $htmlGenerator = new MenuHtmlGenerator();
-        $menuScanner = new MenuScanner($structureBuilder);
-        $staticMenuProcessor = new StaticMenuProcessor($htmlGenerator, $this->logger);
-
-        // Register services in container for potential external use/testing
-        // Note: Keeping these for backward compatibility/testing, but they are now in Services namespace
-        $this->container->add(MenuStructureBuilder::class, $structureBuilder);
-        $this->container->add(MenuHtmlGenerator::class, $htmlGenerator);
-        $this->container->add(MenuScanner::class, $menuScanner);
-        $this->container->add(StaticMenuProcessor::class, $staticMenuProcessor);
-
-        // Initialize main service
-        $this->service = new MenuBuilderService(
-            $menuScanner,
-            $htmlGenerator,
-            $staticMenuProcessor,
-            $structureBuilder,
-            $eventManager,
-            $this->logger
-        );
 
         // Register new event for other features to inject menu items
         $eventManager->registerEvent('COLLECT_MENU_ITEMS');

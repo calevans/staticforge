@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\EstimatedReadingTime;
 
 use EICC\StaticForge\Core\BaseFeature;
-use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\Utils\Container;
 
@@ -21,10 +20,9 @@ class Feature extends BaseFeature implements FeatureInterface
         'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 50]
     ];
 
-    public function register(EventManager $eventManager): void
+    public function __construct(EstimatedReadingTimeService $service)
     {
-        parent::register($eventManager);
-        $this->service = new EstimatedReadingTimeService();
+        $this->service = $service;
     }
 
     /**
@@ -42,7 +40,7 @@ class Feature extends BaseFeature implements FeatureInterface
         }
 
         // Get configuration
-        $siteConfig = $this->container->getVariable('site_config') ?? [];
+        $siteConfig = $container->getVariable('site_config') ?? [];
         $config = $siteConfig['reading_time'] ?? [];
 
         // check excludes

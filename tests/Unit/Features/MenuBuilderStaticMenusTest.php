@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Tests\Unit\Features;
 
 use EICC\StaticForge\Features\MenuBuilder\Feature;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
 use EICC\Utils\Container;
 use PHPUnit\Framework\TestCase;
 
@@ -24,8 +25,9 @@ class MenuBuilderStaticMenusTest extends TestCase
         $logger = $this->createMock(\EICC\Utils\Log::class);
         $this->container->stuff('logger', fn() => $logger);
 
-        $this->menuBuilder = new Feature();
-        $this->menuBuilder->setContainer($this->container);
+        $menuBuilder = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $menuBuilder);
+        $this->menuBuilder = $menuBuilder;
         $this->menuBuilder->register($this->eventManager);
 
         // Set default SITE_BASE_URL for tests

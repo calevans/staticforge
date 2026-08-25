@@ -9,6 +9,8 @@ use EICC\Utils\Container;
 use EICC\Utils\Log;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Twig\Environment;
+use Twig\Loader\ArrayLoader;
 
 class FeatureFactoryTest extends TestCase
 {
@@ -47,6 +49,19 @@ class FeatureFactoryTest extends TestCase
 
         $this->assertInstanceOf(FeatureFactoryTestNeedsLogger::class, $instance);
         $this->assertSame($log, $instance->logger);
+    }
+
+    public function testResolvesTwigEnvironmentViaTheTwigContainerKey(): void
+    {
+        $twig = new Environment(new ArrayLoader([]));
+        $this->container->stuff('twig', function () use ($twig) {
+            return $twig;
+        });
+
+        $instance = $this->factory->make(FeatureFactoryTestNeedsTwig::class);
+
+        $this->assertInstanceOf(FeatureFactoryTestNeedsTwig::class, $instance);
+        $this->assertSame($twig, $instance->twig);
     }
 
     public function testInjectsTheContainerItself(): void
@@ -104,6 +119,13 @@ class FeatureFactoryTestNoDeps
 class FeatureFactoryTestNeedsLogger
 {
     public function __construct(public Log $logger)
+    {
+    }
+}
+
+class FeatureFactoryTestNeedsTwig
+{
+    public function __construct(public Environment $twig)
     {
     }
 }

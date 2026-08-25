@@ -59,6 +59,13 @@ use EICC\StaticForge\Core\ErrorHandler;
 use EICC\StaticForge\Core\Config\SiteConfigLoader;
 use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
+use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
+use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
+use EICC\StaticForge\Features\CategoryIndex\Services\ImageService;
+use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService as CategoryIndexPaginationService;
+use EICC\StaticForge\Features\Tags\Services\PaginationService as TagsPaginationService;
+use EICC\StaticForge\Features\Tags\Services\TagPageService;
+use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\StaticForge\Services\TemplateRenderer;
 use Twig\Loader\FilesystemLoader;
@@ -281,6 +288,56 @@ $container->stuff(TemplateRenderer::class, function () use ($container) {
         $container->get(TemplateVariableBuilder::class),
         $container->get('logger'),
         $container->has(AssetManager::class) ? $container->get(AssetManager::class) : null
+    );
+});
+
+// CategoryIndex Feature: CategoryService holds scan state (scanCategories() ->
+// getCategories()/getCategory()) that the Feature and CategoryPageService must
+// see as the same instance, so both are registered here rather than left to
+// independent autowiring.
+$container->stuff(ImageService::class, function () use ($container) {
+    return new ImageService($container->get('logger'));
+});
+
+$container->stuff(CategoryService::class, function () use ($container) {
+    return new CategoryService($container->get('logger'), $container->get(ImageService::class));
+});
+
+$container->stuff(CategoryIndexPaginationService::class, function () {
+    return new CategoryIndexPaginationService();
+});
+
+$container->stuff(CategoryPageService::class, function () use ($container) {
+    $siteConfig = $container->getVariable('site_config') ?? [];
+
+    return new CategoryPageService(
+        $container->get('logger'),
+        $container->get(CategoryService::class),
+        $container->get(CategoryIndexPaginationService::class),
+        CategoryPageService::resolveItemsPerPage($siteConfig)
+    );
+});
+
+// Tags Feature: same sharing requirement as CategoryIndex above — TagsService
+// accumulates scanned tag data that the Feature and TagPageService must see
+// as the same instance.
+$container->stuff(TagsService::class, function () use ($container) {
+    return new TagsService($container->get('logger'));
+});
+
+$container->stuff(TagsPaginationService::class, function () {
+    return new TagsPaginationService();
+});
+
+$container->stuff(TagPageService::class, function () use ($container) {
+    $siteConfig = $container->getVariable('site_config') ?? [];
+
+    return new TagPageService(
+        $container->get('logger'),
+        $container->get(TagsService::class),
+        $container->get(TagsPaginationService::class),
+        $container->get(TemplateRenderer::class),
+        TagPageService::resolveItemsPerPage($siteConfig)
     );
 });
 
