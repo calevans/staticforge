@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Services\Upload;
 
+use EICC\StaticForge\Core\Events\UploadCheckFileEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\Utils\Log;
 use RecursiveDirectoryIterator;
@@ -88,30 +89,26 @@ class SiteUploader
             // If hashes differ, we upload.
             $shouldUpload = ($remoteHash === null) || ($currentHash !== $remoteHash);
 
-            // Prepare event context
-            $eventData = [
-                'path' => $relativePath,
-                'local_path' => $localPath,
-                'target_path' => $targetPath,
-                'current_hash' => $currentHash,
-                'remote_hash' => $remoteHash,
-                'should_upload' => $shouldUpload,
-                // Plugins can set these:
-                'skip_upload' => false,
-                'handled' => false
-            ];
-
             // Fire event to allow plugins to intervene (e.g. an external asset-offload package)
-            $eventData = $this->eventManager->fire(self::EVENT_UPLOAD_CHECK_FILE, $eventData);
+            $event = new UploadCheckFileEvent(
+                name: self::EVENT_UPLOAD_CHECK_FILE,
+                path: $relativePath,
+                localPath: $localPath,
+                targetPath: $targetPath,
+                currentHash: $currentHash,
+                remoteHash: $remoteHash,
+                shouldUpload: $shouldUpload,
+            );
+            $this->eventManager->fire(self::EVENT_UPLOAD_CHECK_FILE, $event);
 
             // If a plugin handled the upload itself, just record the hash
-            if (!empty($eventData['handled'])) {
+            if ($event->handled) {
                 $this->newManifest[$relativePath] = $currentHash;
                 continue;
             }
 
             // If plugin says skip, we obey
-            if (!empty($eventData['skip_upload'])) {
+            if ($event->skipUpload) {
                 $this->newManifest[$relativePath] = $remoteHash ?? $currentHash;
                 if ($output->isVerbose()) {
                     $output->writeln(sprintf('  Skipped by plugin: %s', $relativePath));
@@ -120,7 +117,7 @@ class SiteUploader
             }
 
             // Check if we should upload
-            if ($eventData['should_upload']) {
+            if ($event->shouldUpload) {
                 if ($isDryRun) {
                     $output->writeln(sprintf('  [DRY RUN] Would upload: %s', $relativePath));
                     // In dry run, we assume success for manifest generation check

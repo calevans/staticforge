@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Tests\Unit\Services\Upload;
 use EICC\StaticForge\Services\Upload\SiteUploader;
 use EICC\StaticForge\Services\Upload\SftpClient;
 use EICC\StaticForge\Services\Upload\UploadCheckService;
+use EICC\StaticForge\Core\Events\UploadCheckFileEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\Utils\Log;
@@ -333,10 +334,12 @@ class SiteUploaderTest extends UnitTestCase
             $this->mockCheckService->method('calculateHash')->willReturn('hash123');
 
             // Plugin (e.g. S3 feature) claims it handled the upload itself
-            $this->mockEventManager->method('fire')->willReturnCallback(function (string $event, array $data) {
-                $data['handled'] = true;
-                return $data;
-            });
+            $this->mockEventManager->method('fire')->willReturnCallback(
+                function (string $eventName, UploadCheckFileEvent $event) {
+                    $event->handled = true;
+                    return $event;
+                }
+            );
 
             // Since the plugin handled it, our own client should never be asked to upload
             $this->mockClient->expects($this->never())->method('uploadFile');
@@ -363,10 +366,12 @@ class SiteUploaderTest extends UnitTestCase
             $this->mockClient->method('readFile')->willReturn(null);
             $this->mockCheckService->method('calculateHash')->willReturn('hash123');
 
-            $this->mockEventManager->method('fire')->willReturnCallback(function (string $event, array $data) {
-                $data['skip_upload'] = true;
-                return $data;
-            });
+            $this->mockEventManager->method('fire')->willReturnCallback(
+                function (string $eventName, UploadCheckFileEvent $event) {
+                    $event->skipUpload = true;
+                    return $event;
+                }
+            );
 
             $this->mockClient->expects($this->never())->method('uploadFile');
 
