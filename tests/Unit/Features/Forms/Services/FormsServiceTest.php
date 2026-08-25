@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Forms\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Forms\Services\FormsService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -29,7 +30,18 @@ class FormsServiceTest extends TestCase
 
         $this->twig->method('getLoader')->willReturn($this->twigLoader);
 
-        $this->service = new FormsService($this->logger, $this->twig);
+        $this->service = new FormsService($this->logger, $this->twig, $this->container);
+    }
+
+    private function makeEvent(string $filePath = '', string $fileContent = ''): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: [],
+            extra: $fileContent !== '' ? ['file_content' => $fileContent] : [],
+        );
     }
 
     public function testGenerateFormHtmlDefaultTemplate(): void
@@ -94,7 +106,7 @@ class FormsServiceTest extends TestCase
     public function testProcessFormsReplacesShortcode(): void
     {
         $content = 'Content before {{ form("contact") }} Content after';
-        $parameters = ['file_content' => $content];
+        $event = $this->makeEvent(fileContent: $content);
 
         $siteConfig = [
             'forms' => [
@@ -113,32 +125,35 @@ class FormsServiceTest extends TestCase
 
         $this->twig->method('render')->willReturn('<form>Contact Form</form>');
 
-        $result = $this->service->processForms($this->container, $parameters);
+        $this->service->processForms($event);
 
-        $this->assertEquals('Content before <form>Contact Form</form> Content after', $result['file_content']);
+        $this->assertEquals(
+            'Content before <form>Contact Form</form> Content after',
+            $event->extra['file_content']
+        );
     }
 
     public function testProcessFormsIgnoresUnknownForm(): void
     {
         $content = '{{ form("unknown") }}';
-        $parameters = ['file_content' => $content];
+        $event = $this->makeEvent(fileContent: $content);
 
         $this->container->method('getVariable')->willReturn([]);
 
         $this->logger->expects($this->once())->method('log')->with('WARNING', $this->stringContains('not found'));
 
-        $result = $this->service->processForms($this->container, $parameters);
+        $this->service->processForms($event);
 
         // Content should remain unchanged if form not found (or at least shortcode remains, logic says continue)
-        $this->assertEquals($content, $result['file_content']);
+        $this->assertEquals($content, $event->extra['file_content']);
     }
 
     public function testProcessFormsReturnsParametersWhenNoContentAndNoFilePath(): void
     {
-        $parameters = [];
-        $result = $this->service->processForms($this->container, $parameters);
+        $event = $this->makeEvent();
 
-        $this->assertSame($parameters, $result);
+        $this->expectNotToPerformAssertions();
+        $this->service->processForms($event);
     }
 
     public function testProcessFormsThrowsWhenSourceDirNotSetAndFileGiven(): void
@@ -148,13 +163,13 @@ class FormsServiceTest extends TestCase
 
         $this->container->method('getVariable')->willReturn(null);
 
-        $parameters = ['file_path' => $filePath];
+        $event = $this->makeEvent(filePath: $filePath);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('SOURCE_DIR not set in container');
 
         try {
-            $this->service->processForms($this->container, $parameters);
+            $this->service->processForms($event);
         } finally {
             unlink($filePath);
         }
@@ -173,13 +188,13 @@ class FormsServiceTest extends TestCase
                 ['SOURCE_DIR', $sourceDir],
             ]);
 
-        $parameters = ['file_path' => $outsideFile];
+        $event = $this->makeEvent(filePath: $outsideFile);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/Security Error/');
 
         try {
-            $this->service->processForms($this->container, $parameters);
+            $this->service->processForms($event);
         } finally {
             unlink($outsideFile);
             rmdir($sourceDir);

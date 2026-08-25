@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Forms\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -13,28 +14,26 @@ class FormsService
 {
     private Log $logger;
     private Environment $twig;
+    private Container $container;
 
-    public function __construct(Log $logger, Environment $twig)
+    public function __construct(Log $logger, Environment $twig, Container $container)
     {
         $this->logger = $logger;
         $this->twig = $twig;
+        $this->container = $container;
     }
 
     /**
      * Process content to replace form shortcodes with rendered forms
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function processForms(Container $container, array $parameters): array
+    public function processForms(RenderEvent $event): void
     {
-        $filePath = $parameters['file_path'] ?? null;
-        $content = $parameters['file_content'] ?? null;
+        $filePath = $event->filePath;
+        $content = $event->extra['file_content'] ?? null;
 
-        if (!$content && $filePath && file_exists($filePath)) {
+        if (!$content && $filePath !== '' && file_exists($filePath)) {
             // Security: Validate that the file path is within the source directory
-            $sourceDir = $container->getVariable('SOURCE_DIR');
+            $sourceDir = $this->container->getVariable('SOURCE_DIR');
             if (!$sourceDir) {
                 throw new \RuntimeException('SOURCE_DIR not set in container');
             }
@@ -49,21 +48,21 @@ class FormsService
 
             if (!is_readable($realFilePath)) {
                 $this->logger->log('WARNING', "Failed to read file (unreadable): {$filePath}");
-                return $parameters;
+                return;
             }
 
             $content = file_get_contents($realFilePath);
         }
 
         if (!$content) {
-            return $parameters;
+            return;
         }
 
         // Check for form shortcode: {{ form('formName') }}
         if (preg_match_all('/\{\{\s*form\([\'"]([a-zA-Z0-9_-]+)[\'"]\)\s*\}\}/', $content, $matches, PREG_SET_ORDER)) {
-            $siteConfig = $container->getVariable('site_config') ?? [];
+            $siteConfig = $this->container->getVariable('site_config') ?? [];
             $formsConfig = $siteConfig['forms'] ?? [];
-            $activeTemplate = $container->getVariable('TEMPLATE') ?? 'staticforce';
+            $activeTemplate = $this->container->getVariable('TEMPLATE') ?? 'staticforce';
 
             foreach ($matches as $match) {
                 $fullMatch = $match[0];
@@ -78,10 +77,8 @@ class FormsService
                 $content = str_replace($fullMatch, $formHtml, $content);
             }
 
-            $parameters['file_content'] = $content;
+            $event->extra['file_content'] = $content;
         }
-
-        return $parameters;
     }
 
     /**

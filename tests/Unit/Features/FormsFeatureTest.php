@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Forms\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use EICC\StaticForge\Core\EventManager;
@@ -47,6 +48,17 @@ class FormsFeatureTest extends UnitTestCase
         $this->feature->register($this->eventManager);
     }
 
+    private function makeEvent(string $fileContent, string $filePath): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: [],
+            extra: ['file_content' => $fileContent],
+        );
+    }
+
     public function testRegisterRegistersEvent(): void
     {
         $listeners = $this->eventManager->getListeners('RENDER');
@@ -68,16 +80,15 @@ class FormsFeatureTest extends UnitTestCase
         ];
         $this->setContainerVariable('site_config', $siteConfig);
 
-        $content = '<h1>Contact Us</h1>{{ form("contact") }}';
-        $parameters = [
-            'file_content' => $content,
-            'file_path' => 'contact.html'
-        ];
+        $event = $this->makeEvent('<h1>Contact Us</h1>{{ form("contact") }}', 'contact.html');
 
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
 
-        $this->assertStringContainsString('<form action="https://api.example.com/submit?FORMID=123">Form Content</form>', $result['file_content']);
-        $this->assertStringNotContainsString('{{ form("contact") }}', $result['file_content']);
+        $this->assertStringContainsString(
+            '<form action="https://api.example.com/submit?FORMID=123">Form Content</form>',
+            $event->extra['file_content']
+        );
+        $this->assertStringNotContainsString('{{ form("contact") }}', $event->extra['file_content']);
     }
 
     public function testHandleRenderWithCustomTemplate(): void
@@ -94,15 +105,11 @@ class FormsFeatureTest extends UnitTestCase
         $this->setContainerVariable('site_config', $siteConfig);
         $this->setContainerVariable('TEMPLATE', 'custom');
 
-        $content = '{{ form("custom") }}';
-        $parameters = [
-            'file_content' => $content,
-            'file_path' => 'custom.html'
-        ];
+        $event = $this->makeEvent('{{ form("custom") }}', 'custom.html');
 
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
 
-        $this->assertStringContainsString('<form class="custom"', $result['file_content']);
+        $this->assertStringContainsString('<form class="custom"', $event->extra['file_content']);
     }
 
     public function testHandleRenderIgnoresUnknownForm(): void
@@ -110,15 +117,12 @@ class FormsFeatureTest extends UnitTestCase
         $this->setContainerVariable('site_config', ['forms' => []]);
 
         $content = '{{ form("unknown") }}';
-        $parameters = [
-            'file_content' => $content,
-            'file_path' => 'test.html'
-        ];
+        $event = $this->makeEvent($content, 'test.html');
 
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
 
         // Should remain unchanged
-        $this->assertEquals($content, $result['file_content']);
+        $this->assertEquals($content, $event->extra['file_content']);
     }
 
     public function testHandleRenderHandlesQueryParamsInUrl(): void
@@ -133,14 +137,13 @@ class FormsFeatureTest extends UnitTestCase
         ];
         $this->setContainerVariable('site_config', $siteConfig);
 
-        $content = '{{ form("test") }}';
-        $parameters = [
-            'file_content' => $content,
-            'file_path' => 'test.html'
-        ];
+        $event = $this->makeEvent('{{ form("test") }}', 'test.html');
 
-        $result = $this->feature->handleRender($this->container, $parameters);
+        $this->feature->handleRender($event);
 
-        $this->assertStringContainsString('action="https://api.example.com/submit?key=abc&amp;FORMID=123"', $result['file_content']);
+        $this->assertStringContainsString(
+            'action="https://api.example.com/submit?key=abc&amp;FORMID=123"',
+            $event->extra['file_content']
+        );
     }
 }
