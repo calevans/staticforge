@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\EstimatedReadingTime;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\EstimatedReadingTime\Feature;
@@ -43,20 +44,33 @@ class FeatureTest extends UnitTestCase
         $this->assertEquals([$this->feature, 'handlePreRender'], $listeners[0]['callback']);
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function makeEvent(string $filePath, array $metadata = []): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: $metadata,
+        );
+    }
+
     public function testHandlePreRenderReturnsContextUnchangedWhenFileMissing(): void
     {
-        $context = ['file_path' => $this->tempDir . '/does-not-exist.md'];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent($this->tempDir . '/does-not-exist.md');
+        $this->feature->handlePreRender($event);
 
-        $this->assertSame($context, $result);
+        $this->assertSame([], $event->metadata);
     }
 
     public function testHandlePreRenderReturnsContextUnchangedWhenNoFilePath(): void
     {
-        $context = [];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent('');
+        $this->feature->handlePreRender($event);
 
-        $this->assertSame($context, $result);
+        $this->assertSame([], $event->metadata);
     }
 
     public function testHandlePreRenderInjectsReadingTimeIntoFileMetadata(): void
@@ -65,12 +79,11 @@ class FeatureTest extends UnitTestCase
         $content = "---\ntitle: Test\n---\n" . str_repeat('word ', 400);
         file_put_contents($filePath, $content);
 
-        $context = ['file_path' => $filePath];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent($filePath);
+        $this->feature->handlePreRender($event);
 
-        $this->assertArrayHasKey('file_metadata', $result);
-        $this->assertSame(2, $result['file_metadata']['reading_time_minutes']);
-        $this->assertSame('2 min read', $result['file_metadata']['reading_time_label']);
+        $this->assertSame(2, $event->metadata['reading_time_minutes']);
+        $this->assertSame('2 min read', $event->metadata['reading_time_label']);
     }
 
     public function testHandlePreRenderUpdatesLegacyMetadataKeyWhenPresent(): void
@@ -78,11 +91,11 @@ class FeatureTest extends UnitTestCase
         $filePath = $this->tempDir . '/post2.md';
         file_put_contents($filePath, str_repeat('word ', 200));
 
-        $context = ['file_path' => $filePath, 'metadata' => ['title' => 'Existing']];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent($filePath, ['title' => 'Existing']);
+        $this->feature->handlePreRender($event);
 
-        $this->assertArrayHasKey('reading_time_minutes', $result['metadata']);
-        $this->assertSame(1, $result['metadata']['reading_time_minutes']);
+        $this->assertArrayHasKey('reading_time_minutes', $event->metadata);
+        $this->assertSame(1, $event->metadata['reading_time_minutes']);
     }
 
     public function testHandlePreRenderRespectsExcludeConfig(): void
@@ -96,11 +109,10 @@ class FeatureTest extends UnitTestCase
             ],
         ]);
 
-        $context = ['file_path' => $filePath];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent($filePath);
+        $this->feature->handlePreRender($event);
 
-        $this->assertSame($context, $result);
-        $this->assertArrayNotHasKey('file_metadata', $result);
+        $this->assertSame([], $event->metadata);
     }
 
     public function testHandlePreRenderRespectsCustomWpmAndLabels(): void
@@ -116,10 +128,10 @@ class FeatureTest extends UnitTestCase
             ],
         ]);
 
-        $context = ['file_path' => $filePath];
-        $result = $this->feature->handlePreRender($this->container, $context);
+        $event = $this->makeEvent($filePath);
+        $this->feature->handlePreRender($event);
 
-        $this->assertSame(1, $result['file_metadata']['reading_time_minutes']);
-        $this->assertSame('1 minute read', $result['file_metadata']['reading_time_label']);
+        $this->assertSame(1, $event->metadata['reading_time_minutes']);
+        $this->assertSame('1 minute read', $event->metadata['reading_time_label']);
     }
 }

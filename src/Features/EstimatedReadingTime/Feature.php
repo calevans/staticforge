@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\EstimatedReadingTime;
 
 use EICC\StaticForge\Core\BaseFeature;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\Utils\Container;
 
@@ -12,42 +14,34 @@ class Feature extends BaseFeature implements FeatureInterface
 {
     protected string $name = 'EstimatedReadingTime';
     private EstimatedReadingTimeService $service;
+    private Container $applicationContainer;
 
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'PRE_RENDER' => ['method' => 'handlePreRender', 'priority' => 50]
-    ];
-
-    public function __construct(EstimatedReadingTimeService $service)
+    public function __construct(EstimatedReadingTimeService $service, Container $applicationContainer)
     {
         $this->service = $service;
+        $this->applicationContainer = $applicationContainer;
     }
 
     /**
      * Calculate reading time and inject into metadata
-     *
-     * @param Container $container
-     * @param array<string, mixed> $context
-     * @return array<string, mixed>
      */
-    public function handlePreRender(Container $container, array $context): array
+    #[EventListener('PRE_RENDER', priority: 50)]
+    public function handlePreRender(RenderEvent $event): void
     {
-        $filePath = $context['file_path'] ?? null;
-        if (!$filePath || !file_exists($filePath)) {
-            return $context;
+        $filePath = $event->filePath;
+        if ($filePath === '' || !file_exists($filePath)) {
+            return;
         }
 
         // Get configuration
-        $siteConfig = $container->getVariable('site_config') ?? [];
+        $siteConfig = $this->applicationContainer->getVariable('site_config') ?? [];
         $config = $siteConfig['reading_time'] ?? [];
 
         // check excludes
         $excludes = $config['exclude'] ?? [];
         foreach ($excludes as $exclude) {
             if (str_contains($filePath, $exclude)) {
-                return $context;
+                return;
             }
         }
 
@@ -57,31 +51,16 @@ class Feature extends BaseFeature implements FeatureInterface
 
         $rawContent = file_get_contents($filePath);
         if ($rawContent === false) {
-            return $context;
+            return;
         }
 
         // Strip YAML frontmatter
         // Matches --- at start, content, then ---
         $content = preg_replace('/^---\s*\n.*?\n---\s*\n/s', '', $rawContent);
 
-        // Strip Title block if it's there? No, title counts as reading time.
-
         $result = $this->service->calculate($content ?? '', $wpm, $singular, $plural);
 
-        // Inject into metadata
-        if (!isset($context['file_metadata'])) {
-            $context['file_metadata'] = [];
-        }
-
-        $context['file_metadata']['reading_time_minutes'] = $result['minutes'];
-        $context['file_metadata']['reading_time_label'] = $result['label'];
-
-        // Also update legacy metadata key if present
-        if (isset($context['metadata'])) {
-            $context['metadata']['reading_time_minutes'] = $result['minutes'];
-            $context['metadata']['reading_time_label'] = $result['label'];
-        }
-
-        return $context;
+        $event->metadata['reading_time_minutes'] = $result['minutes'];
+        $event->metadata['reading_time_label'] = $result['label'];
     }
 }
