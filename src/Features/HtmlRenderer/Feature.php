@@ -7,9 +7,10 @@ namespace EICC\StaticForge\Features\HtmlRenderer;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\ExtensionRegistry;
 use EICC\StaticForge\Features\HtmlRenderer\Services\HtmlRendererService;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -22,13 +23,6 @@ class Feature extends BaseFeature implements FeatureInterface
     protected Log $logger;
     private HtmlRendererService $service;
     private ExtensionRegistry $extensionRegistry;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'RENDER' => ['method' => 'handleRender', 'priority' => 100]
-    ];
 
     public function __construct(Log $logger, HtmlRendererService $service, ExtensionRegistry $extensionRegistry)
     {
@@ -49,15 +43,10 @@ class Feature extends BaseFeature implements FeatureInterface
 
     /**
      * Handle RENDER event for HTML files
-     *
-     * Called dynamically by EventManager when RENDER event fires.
-     *
-     * @phpstan-used Called via EventManager event dispatch
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
      */
-    public function handleRender(Container $container, array $parameters): array
+    #[EventListener('RENDER', priority: 100)]
+    public function handleRender(RenderEvent $event): void
     {
-        return $this->service->processHtmlFile($container, $parameters);
+        $this->service->processHtmlFile($event);
     }
 }

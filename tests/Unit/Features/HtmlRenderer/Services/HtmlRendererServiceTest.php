@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\HtmlRenderer\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\HtmlRenderer\Services\HtmlRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
@@ -27,7 +28,7 @@ class HtmlRendererServiceTest extends TestCase
         $this->templateRenderer = $this->createMock(TemplateRenderer::class);
         $this->container = $this->createMock(Container::class);
 
-        $this->service = new HtmlRendererService($this->logger, $this->templateRenderer);
+        $this->service = new HtmlRendererService($this->logger, $this->templateRenderer, $this->container);
 
         $this->sourceDir = sys_get_temp_dir() . '/staticforge_source_' . uniqid();
         $this->outputDir = sys_get_temp_dir() . '/staticforge_output_' . uniqid();
@@ -111,25 +112,34 @@ class HtmlRendererServiceTest extends TestCase
             ->method('render')
             ->willReturn('<html><body><h1>Test</h1></body></html>');
 
-        $parameters = [
-            'file_path' => $filePath,
-            'file_metadata' => []
-        ];
+        $event = new RenderEvent(
+            name: 'RENDER',
+            filePath: $filePath,
+            fileUrl: '',
+            metadata: [],
+        );
 
-        $result = $this->service->processHtmlFile($this->container, $parameters);
+        $this->service->processHtmlFile($event);
 
-        $this->assertArrayHasKey('rendered_content', $result);
-        $this->assertArrayHasKey('output_path', $result);
+        $this->assertNotNull($event->renderedContent);
+        $this->assertNotNull($event->outputPath);
         // Check for content presence, ignoring whitespace introduced by beautifier
-        $this->assertStringContainsString('Test', $result['rendered_content']);
-        $this->assertStringContainsString('<h1>', $result['rendered_content']);
+        $this->assertStringContainsString('Test', $event->renderedContent);
+        $this->assertStringContainsString('<h1>', $event->renderedContent);
     }
 
     public function testProcessHtmlFileIgnoresNonHtml(): void
     {
-        $parameters = ['file_path' => 'test.md'];
-        $result = $this->service->processHtmlFile($this->container, $parameters);
+        $event = new RenderEvent(
+            name: 'RENDER',
+            filePath: 'test.md',
+            fileUrl: '',
+            metadata: [],
+        );
 
-        $this->assertEquals($parameters, $result);
+        $this->service->processHtmlFile($event);
+
+        $this->assertNull($event->renderedContent);
+        $this->assertNull($event->outputPath);
     }
 }

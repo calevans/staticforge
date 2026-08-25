@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\HtmlRenderer\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Services\BaseRendererService;
 use EICC\StaticForge\Services\TemplateRenderer;
@@ -14,45 +15,38 @@ use Exception;
 class HtmlRendererService extends BaseRendererService
 {
     private TemplateRenderer $templateRenderer;
+    private Container $container;
 
-    public function __construct(Log $logger, TemplateRenderer $templateRenderer)
+    public function __construct(Log $logger, TemplateRenderer $templateRenderer, Container $container)
     {
         parent::__construct($logger);
         $this->templateRenderer = $templateRenderer;
+        $this->container = $container;
     }
 
     /**
-     * Process HTML file content and render it
-     *
-     * @param Container $container
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Process HTML file content and render it, mutating $event in place.
      */
-    public function processHtmlFile(Container $container, array $parameters): array
+    public function processHtmlFile(RenderEvent $event): void
     {
-        $filePath = $parameters['file_path'] ?? null;
-
-        if (!$filePath) {
-            return $parameters;
-        }
+        $filePath = $event->filePath;
 
         // Only process .html files
-        if (pathinfo($filePath, PATHINFO_EXTENSION) !== 'html') {
-            return $parameters;
+        if ($filePath === '' || pathinfo($filePath, PATHINFO_EXTENSION) !== 'html') {
+            return;
         }
 
         try {
             $this->logger->log('INFO', "Processing HTML file: {$filePath}");
 
-            // Get pre-parsed metadata from file discovery
-            $metadata = $parameters['file_metadata'] ?? [];
+            $metadata = $event->metadata;
 
             // Read file content
-            if (isset($parameters['file_content'])) {
-                $content = $parameters['file_content'];
+            if (isset($event->extra['file_content'])) {
+                $content = $event->extra['file_content'];
             } else {
                 // Security: Validate that the file path is within the source directory
-                $sourceDir = $container->getVariable('SOURCE_DIR');
+                $sourceDir = $this->container->getVariable('SOURCE_DIR');
                 if (!$sourceDir) {
                     throw new \RuntimeException('SOURCE_DIR not set in container');
                 }
@@ -82,14 +76,14 @@ class HtmlRendererService extends BaseRendererService
             $metadata = $this->applyDefaultMetadata($metadata);
 
             // Generate output file path
-            $outputPath = $this->generateOutputPath($filePath, $container);
+            $outputPath = $this->generateOutputPath($filePath, $this->container);
 
             // Apply template (pass source file path)
             $renderedContent = $this->templateRenderer->render([
                 'metadata' => $metadata,
                 'content' => $htmlContent,
                 'title' => $metadata['title'] ?? 'Untitled',
-            ], $container, $filePath);
+            ], $this->container, $filePath);
 
             // Beautify HTML output
             $renderedContent = $this->beautifyHtml($renderedContent);
@@ -97,15 +91,13 @@ class HtmlRendererService extends BaseRendererService
             $this->logger->log('INFO', "HTML file rendered: {$filePath}");
 
             // Store rendered content and metadata for Core to write
-            $parameters['rendered_content'] = $renderedContent;
-            $parameters['output_path'] = $outputPath;
-            $parameters['metadata'] = $metadata;
+            $event->renderedContent = $renderedContent;
+            $event->outputPath = $outputPath;
+            $event->metadata = $metadata;
         } catch (Exception $e) {
             $this->logger->log('ERROR', "Failed to process HTML file {$filePath}: " . $e->getMessage());
-            $parameters['error'] = $e->getMessage();
+            $event->extra['error'] = $e->getMessage();
         }
-
-        return $parameters;
     }
 
     /**
