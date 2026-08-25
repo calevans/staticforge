@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\ResponsiveImages\Services;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -23,27 +24,27 @@ final class HtmlImageRewriterService
         private readonly Log $logger,
         private readonly ImageVariantGenerator $generator,
         private readonly ResponsiveImageConfig $config,
+        private readonly Container $container,
     ) {
     }
 
     /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * Rewrites <img> tags in $event->renderedContent in place, mutating $event.
      */
-    public function handlePostRender(Container $container, array $parameters): array
+    public function handlePostRender(RenderEvent $event): void
     {
-        $html = $parameters['rendered_content'] ?? null;
+        $html = $event->renderedContent;
         if (!is_string($html) || stripos($html, '<img') === false) {
-            return $parameters;
+            return;
         }
 
-        $sourceDir = $container->getVariable('SOURCE_DIR');
-        $outputDir = $container->getVariable('OUTPUT_DIR');
-        $templateDir = $container->getVariable('TEMPLATE_DIR');
-        $templateName = $container->getVariable('TEMPLATE') ?? 'sample';
+        $sourceDir = $this->container->getVariable('SOURCE_DIR');
+        $outputDir = $this->container->getVariable('OUTPUT_DIR');
+        $templateDir = $this->container->getVariable('TEMPLATE_DIR');
+        $templateName = $this->container->getVariable('TEMPLATE') ?? 'sample';
 
         if (!is_string($sourceDir) || !is_string($outputDir) || !is_string($templateDir)) {
-            return $parameters;
+            return;
         }
 
         $dom = new DOMDocument();
@@ -54,7 +55,7 @@ final class HtmlImageRewriterService
         $xpath = new DOMXPath($dom);
         $imgs = $xpath->query('//img[@src]');
         if ($imgs === false || $imgs->length === 0) {
-            return $parameters;
+            return;
         }
 
         $changed = false;
@@ -70,13 +71,11 @@ final class HtmlImageRewriterService
         if ($changed) {
             $saved = $dom->saveHTML();
             if ($saved !== false) {
-                $parameters['rendered_content'] = $saved;
-                $filePath = $parameters['file_path'] ?? 'unknown';
+                $event->renderedContent = $saved;
+                $filePath = $event->filePath !== '' ? $event->filePath : 'unknown';
                 $this->logger->log('INFO', "ResponsiveImages: rewrote <img> tags for {$filePath}");
             }
         }
-
-        return $parameters;
     }
 
     private function rewriteOneImage(

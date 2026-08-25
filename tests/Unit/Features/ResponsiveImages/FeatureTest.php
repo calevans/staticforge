@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\ResponsiveImages;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\FeatureFactory;
 use EICC\StaticForge\Features\ResponsiveImages\Feature;
@@ -53,10 +54,17 @@ class FeatureTest extends UnitTestCase
         $this->assertInstanceOf(Feature::class, $feature);
         $feature->register($this->eventManager);
 
-        $parameters = ['rendered_content' => '<p><img src="/x.jpg"></p>'];
-        $result = $feature->handlePostRender($this->container, $parameters);
+        $html = '<p><img src="/x.jpg"></p>';
+        $event = new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: [],
+            renderedContent: $html,
+        );
+        $feature->handlePostRender($event);
 
-        $this->assertSame($parameters, $result);
+        $this->assertSame($html, $event->renderedContent);
     }
 
     public function testGetRequiredConfigAndEnvAreEmpty(): void

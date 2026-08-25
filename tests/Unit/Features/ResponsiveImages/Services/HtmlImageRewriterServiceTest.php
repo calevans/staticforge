@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\ResponsiveImages\Services;
 
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\ResponsiveImages\Services\HtmlImageRewriterService;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ImageVariantGenerator;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
@@ -77,17 +78,29 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         return new SpyImageVariantGenerator($this->logger, $this->makeConfig());
     }
 
+    private function makeEvent(string $renderedContent): RenderEvent
+    {
+        return new RenderEvent(
+            name: 'POST_RENDER',
+            filePath: '',
+            fileUrl: '',
+            metadata: [],
+            renderedContent: $renderedContent,
+        );
+    }
+
     public function testNoImgTagsLeavesContentUnchangedAndSkipsDomWork(): void
     {
         $generator = $this->makeSpyGenerator();
 
         $config = $this->makeConfig();
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p>No images here.</p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $this->assertSame($html, $result['rendered_content']);
+        $this->assertSame($html, $event->renderedContent);
         $this->assertSame(0, $generator->calls);
     }
 
@@ -96,13 +109,15 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         $generator = $this->makeSpyGenerator();
 
         $config = $this->makeConfig();
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p><img src="https://cdn.example.com/pic.jpg" alt="remote"></p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $this->assertStringContainsString('<img src="https://cdn.example.com/pic.jpg"', $result['rendered_content']);
-        $this->assertStringNotContainsString('<picture>', $result['rendered_content']);
+        $this->assertIsString($event->renderedContent);
+        $this->assertStringContainsString('<img src="https://cdn.example.com/pic.jpg"', $event->renderedContent);
+        $this->assertStringNotContainsString('<picture>', $event->renderedContent);
         $this->assertSame(0, $generator->calls);
     }
 
@@ -111,13 +126,15 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         $generator = $this->makeSpyGenerator();
 
         $config = $this->makeConfig();
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p><img src="data:image/png;base64,AAAA" alt="inline"></p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $this->assertStringContainsString('data:image/png;base64,AAAA', $result['rendered_content']);
-        $this->assertStringNotContainsString('<picture>', $result['rendered_content']);
+        $this->assertIsString($event->renderedContent);
+        $this->assertStringContainsString('data:image/png;base64,AAAA', $event->renderedContent);
+        $this->assertStringNotContainsString('<picture>', $event->renderedContent);
         $this->assertSame(0, $generator->calls);
     }
 
@@ -127,12 +144,14 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
 
         $config = $this->makeConfig(['widths' => [400], 'webp' => true]);
         $generator = new ImageVariantGenerator($this->logger, $config);
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p><img src="/assets/images/hero.jpg" alt="Hero Image" class="hero-img"></p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $output = $result['rendered_content'];
+        $this->assertIsString($event->renderedContent);
+        $output = $event->renderedContent;
         $this->assertStringContainsString('<picture>', $output);
         $this->assertStringContainsString('<source type="image/webp"', $output);
         $this->assertStringContainsString('srcset=', $output);
@@ -150,13 +169,15 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
     {
         $config = $this->makeConfig();
         $generator = new ImageVariantGenerator($this->logger, $config);
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p><img src="/assets/images/missing.jpg" alt="missing"></p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $this->assertStringContainsString('src="/assets/images/missing.jpg"', $result['rendered_content']);
-        $this->assertStringNotContainsString('<picture>', $result['rendered_content']);
+        $this->assertIsString($event->renderedContent);
+        $this->assertStringContainsString('src="/assets/images/missing.jpg"', $event->renderedContent);
+        $this->assertStringNotContainsString('<picture>', $event->renderedContent);
     }
 
     public function testPathTraversalAttemptIsRejected(): void
@@ -169,12 +190,14 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         $generator = $this->makeSpyGenerator();
 
         $config = $this->makeConfig();
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<p><img src="/assets/../../secret.jpg" alt="traversal"></p>';
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
 
-        $this->assertStringNotContainsString('<picture>', $result['rendered_content']);
+        $this->assertIsString($event->renderedContent);
+        $this->assertStringNotContainsString('<picture>', $event->renderedContent);
         $this->assertSame(0, $generator->calls);
 
         unlink($secretPath);
@@ -186,15 +209,17 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
 
         $config = $this->makeConfig(['widths' => [400], 'webp' => false]);
         $generator = new ImageVariantGenerator($this->logger, $config);
-        $service = new HtmlImageRewriterService($this->logger, $generator, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
 
         $html = '<div>'
             . '<img src="/assets/images/valid.jpg" alt="valid">'
             . '<img src="/assets/images/invalid.jpg" alt="invalid">'
             . '</div>';
 
-        $result = $service->handlePostRender($this->container, ['rendered_content' => $html]);
-        $output = $result['rendered_content'];
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
+        $this->assertIsString($event->renderedContent);
+        $output = $event->renderedContent;
 
         $this->assertStringContainsString('<picture>', $output);
         $this->assertStringContainsString('alt="valid"', $output);

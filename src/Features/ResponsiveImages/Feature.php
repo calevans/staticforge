@@ -7,10 +7,11 @@ namespace EICC\StaticForge\Features\ResponsiveImages;
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\FeatureInterface;
 use EICC\StaticForge\Features\ResponsiveImages\Services\HtmlImageRewriterService;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -25,13 +26,6 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
     protected Log $logger;
     private HtmlImageRewriterService $service;
     private ResponsiveImageConfig $config;
-
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array $eventListeners = [
-        'POST_RENDER' => ['method' => 'handlePostRender', 'priority' => 150],
-    ];
 
     public function getRequiredConfig(): array
     {
@@ -63,16 +57,13 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
         $this->logger->log('INFO', 'ResponsiveImages Feature registered');
     }
 
-    /**
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
-     */
-    public function handlePostRender(Container $container, array $parameters): array
+    #[EventListener('POST_RENDER', priority: 150)]
+    public function handlePostRender(RenderEvent $event): void
     {
         if (!$this->config->enabled) {
-            return $parameters;
+            return;
         }
 
-        return $this->service->handlePostRender($container, $parameters);
+        $this->service->handlePostRender($event);
     }
 }
