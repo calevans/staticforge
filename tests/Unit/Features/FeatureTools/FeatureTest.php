@@ -13,7 +13,7 @@ use Symfony\Component\Console\Application;
 
 class FeatureTest extends UnitTestCase
 {
-    public function testRegisterCommandsAddsAllThreeCommands(): void
+    public function testRegisterCommandsAddsAllFourCommands(): void
     {
         $featureManager = $this->createMock(FeatureManager::class);
         $this->addToContainer(FeatureManager::class, $featureManager);
@@ -28,6 +28,7 @@ class FeatureTest extends UnitTestCase
 
         $this->assertTrue($application->has('feature:create'));
         $this->assertTrue($application->has('feature:setup'));
+        $this->assertTrue($application->has('feature:migrate'));
         $this->assertTrue($application->has('feature:list'));
     }
 }
