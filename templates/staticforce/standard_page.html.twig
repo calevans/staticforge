@@ -11,7 +11,7 @@
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{{ site_base_url }}assets/css/docs.css">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/docs.css?{{ cache_buster }}">
     <style>
         .standard-content {
             max-width: 800px;

@@ -1,5 +1,15 @@
 // Table of Contents Interactions
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile nav toggle
+    const navToggle = document.querySelector('.navbar-toggle');
+    const navMenu = document.querySelector('.navbar-menu-wrapper');
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', function () {
+            const isOpen = navMenu.classList.toggle('is-open');
+            navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    }
+
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -19,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const id = entry.target.id;
-                document.querySelectorAll('.toc-nav a').forEach(link => {
+                document.querySelectorAll('.toc-list a').forEach(link => {
                     link.classList.remove('active');
                 });
-                const activeLink = document.querySelector(`.toc-nav a[href="#${id}"]`);
+                const activeLink = document.querySelector(`.toc-list a[href="#${id}"]`);
                 if (activeLink) {
                     activeLink.classList.add('active');
                 }

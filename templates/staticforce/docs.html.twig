@@ -23,9 +23,9 @@
 {% extends 'base.html.twig' %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{{ site_base_url }}assets/css/docs.css">
-    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/chapter-nav.css">
-    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/toc.css">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/docs.css?{{ cache_buster }}">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/chapter-nav.css?{{ cache_buster }}">
+    <link rel="stylesheet" href="{{ site_base_url }}assets/css/components/toc.css?{{ cache_buster }}">
 {% endblock %}
 
 {% block body %}

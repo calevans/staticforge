@@ -55,10 +55,6 @@
 {% endif %}
 {% endif %}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="{{ site_base_url }}assets/css/main.css?{{ cache_buster }}">
     {% block extra_head %}{% endblock %}
 </head>
@@ -71,7 +67,12 @@
                 <span>StaticForge</span>
             </a>
             {% if menu_top %}
-            <div class="navbar-menu-wrapper">
+            <button type="button" class="navbar-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navbar-menu">
+                <span class="navbar-toggle-bar"></span>
+                <span class="navbar-toggle-bar"></span>
+                <span class="navbar-toggle-bar"></span>
+            </button>
+            <div class="navbar-menu-wrapper" id="navbar-menu">
                 {{ menu_top|raw }}
             </div>
             {% endif %}
@@ -104,9 +105,9 @@
 
     {% include 'staticforce/_footer.html.twig' %}
 
-    <script src="{{ site_base_url }}assets/js/main.js"></script>
+    <script src="{{ site_base_url }}assets/js/main.js?{{ cache_buster }}"></script>
     {% block search_scripts %}
-    <script src="{{ site_base_url }}assets/js/search.js"></script>
+    <script src="{{ site_base_url }}assets/js/search.js?{{ cache_buster }}"></script>
     <script>
         if (window.StaticForgeSearch) {
             {% if (search.engine|default('minisearch')) == 'fuse' %}

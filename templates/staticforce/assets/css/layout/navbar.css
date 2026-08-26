@@ -82,3 +82,29 @@
     background: var(--primary);
     border-radius: var(--radius-full);
 }
+
+.navbar-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.navbar-toggle-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--gray-700);
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast);
+}
+
+.navbar-toggle:hover .navbar-toggle-bar {
+    background: var(--primary);
+}

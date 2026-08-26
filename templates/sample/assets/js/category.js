@@ -1,30 +1,42 @@
-$(document).ready(function() {
-  const container = $('#category-files');
-  const items = container.find('.file-item');
-  const perPage = parseInt(container.data('per-page')) || 10;
+document.addEventListener('DOMContentLoaded', function () {
+  const container = document.getElementById('category-files');
+  if (!container) {
+    return;
+  }
+
+  const items = Array.from(container.querySelectorAll('.file-item'));
+  const perPage = parseInt(container.dataset.perPage, 10) || 10;
   const totalPages = Math.ceil(items.length / perPage);
+  const pagination = document.getElementById('pagination');
   let currentPage = 1;
 
   function showPage(page) {
-    items.hide();
     const start = (page - 1) * perPage;
     const end = start + perPage;
-    items.slice(start, end).show();
+    items.forEach((item, index) => {
+      item.style.display = index >= start && index < end ? '' : 'none';
+    });
     currentPage = page;
     updatePagination();
   }
 
+  function makeButton(label, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.classList.add('pagination-btn');
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
   function updatePagination() {
-    const pagination = $('#pagination');
-    pagination.empty();
+    pagination.replaceChildren();
 
-    if (totalPages <= 1) return;
+    if (totalPages <= 1) {
+      return;
+    }
 
-    // Previous button
     if (currentPage > 1) {
-      pagination.append(
-        $('<button>').text('Previous').addClass('pagination-btn').click(() => showPage(currentPage - 1))
-      );
+      pagination.appendChild(makeButton('Previous', () => showPage(currentPage - 1)));
     }
 
     // Page numbers (show max 7 buttons: first, ..., current-1, current, current+1, ..., last)
@@ -58,22 +70,20 @@ $(document).ready(function() {
 
     pagesToShow.forEach(page => {
       if (page === '...') {
-        pagination.append($('<span>').text('...').addClass('pagination-ellipsis'));
-      } else {
-        const btn = $('<button>')
-          .text(page)
-          .addClass('pagination-btn')
-          .toggleClass('active', page === currentPage)
-          .click(() => showPage(page));
-        pagination.append(btn);
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.classList.add('pagination-ellipsis');
+        pagination.appendChild(ellipsis);
+        return;
       }
+
+      const btn = makeButton(String(page), () => showPage(page));
+      btn.classList.toggle('active', page === currentPage);
+      pagination.appendChild(btn);
     });
 
-    // Next button
     if (currentPage < totalPages) {
-      pagination.append(
-        $('<button>').text('Next').addClass('pagination-btn').click(() => showPage(currentPage + 1))
-      );
+      pagination.appendChild(makeButton('Next', () => showPage(currentPage + 1)));
     }
   }
 

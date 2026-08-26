@@ -32,8 +32,29 @@
         font-size: 1.5rem;
     }
 
-    .navbar-menu {
+    .navbar-toggle {
+        display: flex;
+    }
+
+    .navbar-menu-wrapper {
         display: none;
+    }
+
+    .navbar-menu-wrapper.is-open {
+        display: block;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-md);
+    }
+
+    .navbar-menu-wrapper.is-open ul {
+        flex-direction: column;
+        gap: var(--spacing-sm);
     }
 
     .footer-container {
