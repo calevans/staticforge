@@ -35,6 +35,26 @@
     z-index: 1;
 }
 
+.hero-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+}
+
+.hero-badge:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
 .hero h1 {
     font-size: 4.5rem;
     font-weight: 900;
