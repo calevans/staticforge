@@ -2,7 +2,7 @@
 title: "What's New in 3.0"
 description: 'A tour of what changed in StaticForge 3.0 — typed events, security hardening, and a completed dependency-injection story.'
 template: docs
-menu: '1.2'
+menu: '2.3'
 og_image: "Fireworks over a futuristic city skyline, version 3.0 celebration, bold and vibrant, digital art, --ar 16:9"
 ---
 

@@ -2,7 +2,7 @@
 title: "Migrating to 3.0"
 description: 'Step-by-step guide to updating a custom Feature from the pre-3.0 array-based event contract to typed events.'
 template: docs
-menu: '1.3'
+menu: '4.3'
 og_image: "Blueprint of a machine being upgraded, mechanical arms swapping old gears for new glowing ones, technical diagram style, --ar 16:9"
 ---
 
