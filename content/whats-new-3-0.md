@@ -8,7 +8,7 @@ og_image: "Fireworks over a futuristic city skyline, version 3.0 celebration, bo
 
 # What's New in 3.0
 
-StaticForge 3.0 is a modernization release, not a rewrite. Every workstream that went into it followed the same rule: behavior stays the same unless a bug is being fixed on purpose. If you're rendering a site today, upgrading and re-running `site:render` should produce byte-identical output — the changes are almost entirely under the hood.
+StaticForge 3.0 is a modernization release, not a rewrite. Every change in it followed the same rule: behavior stays the same unless a bug is being fixed on purpose. If you're rendering a site today, upgrading and re-running `site:render` should produce byte-identical output — the changes are almost entirely under the hood.
 
 The one place that *does* break compatibility is how Features hook into the system. If you've written a custom Feature — in-tree or as an external Composer package — see [Migrating to 3.0](migrating-to-3-0.html) for the upgrade path. Everything else on this page is safe to skim.
 
