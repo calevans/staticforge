@@ -88,8 +88,8 @@ namespace EICC\StaticForge\Features\\{$name};
 
 use EICC\StaticForge\Core\BaseFeature;
 use EICC\StaticForge\Core\FeatureInterface;
-use EICC\StaticForge\Core\EventManager;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
 use EICC\StaticForge\Features\\{$name}\Services\\{$name}Service;
 
 /**
@@ -100,40 +100,21 @@ class Feature extends BaseFeature implements FeatureInterface
     protected string \$name = '{$name}';
     private {$name}Service \$service;
 
-    /**
-     * @var array<string, array{method: string, priority: int}>
-     */
-    protected array \$eventListeners = [
-        // Example: 'PRE_LOOP' => ['method' => 'handleEvent', 'priority' => 100]
-    ];
-
-    /**
-     * Register the feature and initialize services.
-     */
-    public function register(EventManager \$eventManager, Container \$container): void
+    public function __construct({$name}Service \$service)
     {
-        parent::register(\$eventManager, \$container);
-
-        \$logger = \$container->get('logger');
-
-        // Initialize service with dependencies
-        if (\$container->has({$name}Service::class)) {
-            \$this->service = \$container->get({$name}Service::class);
-        } else {
-            \$this->service = new {$name}Service(\$logger);
-            \$container->add({$name}Service::class, \$this->service);
-        }
+        \$this->service = \$service;
     }
 
     /**
-     * Handle an event callback.
-     *
-     * @param array<string, mixed> \$data
-     * @return array<string, mixed>
+     * TODO: change 'PRE_LOOP' to the event you actually need, and swap
+     * Event for a typed event (e.g. RenderEvent) if it carries per-file
+     * data. #[EventListener] attributes are auto-discovered by
+     * BaseFeature — no need to override register() just to wire this up.
      */
-    public function handleEvent(Container \$container, array \$data): array
+    #[EventListener('PRE_LOOP', priority: 100)]
+    public function handleEvent(Event \$event): void
     {
-        return \$this->service->process(\$container, \$data);
+        \$this->service->process();
     }
 }
 PHP;
@@ -148,7 +129,6 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\\{$name}\Services;
 
-use EICC\Utils\Container;
 use EICC\Utils\Log;
 
 /**
@@ -164,18 +144,13 @@ class {$name}Service
     }
 
     /**
-     * Process data for this feature.
-     *
-     * @param array<string, mixed> \$data
-     * @return array<string, mixed>
+     * Process logic for this feature.
      */
-    public function process(Container \$container, array \$data): array
+    public function process(): void
     {
         \$this->logger->log('INFO', "{$name}Service processing...");
 
         // Implement your logic here
-
-        return \$data;
     }
 }
 PHP;
