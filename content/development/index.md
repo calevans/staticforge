@@ -20,7 +20,7 @@ If you want to hack on the core or build your own plugins (Features), start here
     The big picture. How does a request become a static HTML file? It's not magic; it's a pipeline.
 
 *   **[The Technology Stack](tech-stack.html)**
-    The giants whose shoulders we stand on. PHP 8.4, Symfony Console, Twig, and more.
+    The giants whose shoulders we stand on. PHP 8.5, Symfony Console, Twig, and more.
 
 *   **[Bootstrap & Initialization](bootstrap.html)**
     The "Ignition Sequence." What actually happens when you type `bin/staticforge`?

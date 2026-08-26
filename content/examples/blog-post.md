@@ -30,7 +30,7 @@ In this tutorial, you'll learn:
 
 Before you begin, make sure you have:
 
-- PHP 8.4 or higher installed
+- PHP 8.5 or higher installed
 - Composer for dependency management
 - Basic knowledge of Markdown
 - A text editor of your choice

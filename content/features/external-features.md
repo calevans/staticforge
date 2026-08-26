@@ -16,6 +16,9 @@ These features are not included in the core installation to keep the base lightw
 ### **[Chapter Navigation](https://github.com/calevans/staticforge-chapternav)**
 (`calevans/staticforge-chapternav`)<br />
 Automatically generates sequential prev/next navigation links for documentation pages based on menu ordering.<br /><br />
+### **[Gallery](https://github.com/calevans/staticforge-gallery)**
+(`calevans/staticforge-gallery`)<br />
+Adds a `[gallery]` shortcode for building responsive image galleries from a content-relative directory of images, with bundled CSS/JS assets copied into your build automatically.<br /><br />
 ### **[Google Analytics](https://github.com/calevans/staticforge-google-analytics)**
 (`calevans/staticforge-google-analytics`)<br />
 Adds Google Analytics tracking code to your site.<br /><br />
@@ -28,6 +31,9 @@ Adds support for popups on your site.<br /><br />
 ### **[S3 Media Offload](https://github.com/calevans/StaticForgeS3)**
 (`calevans/staticforge-s3`)<br />
 Move media files (images, audio, video) to an AWS S3 bucket. (or compatible service) It updates your content to point to the CDN/S3 URLs, keeping your repository small and your site fast.<br /><br />
+### **[Site Downloader](https://github.com/calevans/staticforge-sitedownloader)**
+(`calevans/staticforge-sitedownloader`)<br />
+Adds a `site:download` command that crawls an existing live website and converts its pages into Markdown content files, downloading linked assets and rewriting internal links along the way — useful for migrating an existing site into StaticForge.<br /><br />
 ### **[Social Metadata](https://github.com/calevans/staticforge-social-metadata)**
 (`calevans/staticforge-social-metadata`)<br />
 Automatically generates Open Graph and Twitter Card metadata tags for your pages. It supports site-wide defaults and per-page overrides via frontmatter to ensure your content looks great when shared on social media.<br /><br />

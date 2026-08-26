@@ -16,15 +16,15 @@ StaticForge has you covered with the `SEO_AUDIT_PAGE` event.
 
 This event fires for **every single HTML file** during an audit. It hands you the DOM and asks, "Do you have any complaints?"
 
-### The Data payload
+### The Event: `SeoAuditPageEvent`
 
-You receive an array with three keys:
+You receive one object with three properties:
 
-| Key | Type | Description |
+| Property | Type | Description |
 | :--- | :--- | :--- |
-| `crawler` | `Symfony\Component\DomCrawler\Crawler` | The DOM crawler instance. This is your scalpel. Use it to inspect the HTML. |
-| `filename` | `string` | The path of the file you are looking at (e.g., `blog/my-post.html`). |
-| `issues` | `array` | The list of problems found so far. Your job is to add to this list. |
+| `$event->crawler` | `Symfony\Component\DomCrawler\Crawler` (read-only) | The DOM crawler instance. This is your scalpel. Use it to inspect the HTML. |
+| `$event->filename` | `string` (read-only) | The path of the file you are looking at (e.g., `blog/my-post.html`). |
+| `$event->issues` | `array` (mutable) | The list of problems found so far. Your job is to append to this list. |
 
 ---
 
@@ -34,44 +34,39 @@ Let's say you want to enforce a rule that every page must have a strict Content 
 
 ### Step 1: Register the Listener
 
-In your Feature class, tell the EventManager you want to help with the audit.
+Put a `#[EventListener]` attribute directly on your handler method — `BaseFeature` scans for it and registers it automatically.
 
 ```php
 // src/Features/SecurityAudit/Feature.php
 
-public function register(EventManager $eventManager, Container $container): void
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\SeoAuditPageEvent;
+
+#[EventListener('SEO_AUDIT_PAGE')]
+public function auditSecurityHeaders(SeoAuditPageEvent $event): void
 {
-    $eventManager->registerListener('SEO_AUDIT_PAGE', [$this, 'auditSecurityHeaders']);
+    // implementation goes in Step 2
 }
 ```
 
 ### Step 2: Write the Logic
 
-Now, implement the method. It receives the data, checks the DOM, and reports any failures.
+Check the DOM and append to `$event->issues` — there's nothing to return.
 
 ```php
-public function auditSecurityHeaders(Container $container, array $params): array
+public function auditSecurityHeaders(SeoAuditPageEvent $event): void
 {
-    // Unpack the tools
-    $crawler = $params['crawler'];
-    $filename = $params['filename'];
-    $issues = $params['issues'];
-
     // Check for the meta tag
-    $csp = $crawler->filter('meta[http-equiv="Content-Security-Policy"]');
+    $csp = $event->crawler->filter('meta[http-equiv="Content-Security-Policy"]');
 
     if ($csp->count() === 0) {
         // REPORT THE CRIME!
-        $issues[] = [
-            'file' => $filename,
+        $event->issues[] = [
+            'file' => $event->filename,
             'type' => 'error', // Use 'error' to fail the build, 'warning' to just yell.
             'message' => 'Missing Content-Security-Policy meta tag.'
         ];
     }
-
-    // Pack it back up and return it
-    $params['issues'] = $issues;
-    return $params;
 }
 ```
 
@@ -79,9 +74,9 @@ public function auditSecurityHeaders(Container $container, array $params): array
 
 ## The Issue Structure
 
-When you report an issue, follow this format strictly:
+Each entry you append to `$event->issues` should follow this format strictly:
 
-*   **`file`**: The filename (passed in params).
+*   **`file`**: The filename (`$event->filename`).
 *   **`type`**:
     *   `'error'`: Critical failure. If the build server sees this, it should fail.
     *   `'warning'`: Something to fix, but not a showstopper.

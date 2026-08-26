@@ -33,28 +33,25 @@ class MyFeatureTest extends IntegrationTestCase
     public function testFeatureIsLoaded(): void
     {
         // 1. Boot the application
-        // This loads .env, siteconfig, and all features.
-        $container = $this->createContainer(__DIR__ . '/../../../../.env');
+        // This loads .env.integration, siteconfig, and all features.
+        $container = $this->createContainer(__DIR__ . '/../../../../.env.integration');
 
         // 2. Get the Feature Manager
         $featureManager = $container->get(FeatureManager::class);
+        $featureManager->loadFeatures();
 
         // 3. Assert your feature is running
-        $this->assertTrue($featureManager->hasFeature('MyFeature'));
+        $this->assertNotNull($featureManager->getFeature('MyFeature'));
     }
 
     public function testFeatureDoesThing(): void
     {
         // Setup container
-        $container = $this->createContainer(__DIR__ . '/../../../../.env');
+        $container = $this->createContainer(__DIR__ . '/../../../../.env.integration');
 
-        // Define some mock data
-        $data = ['content' => 'Hello World'];
-
-        // ... Trigger your event or call your service directly ...
-
-        // Assert the result
-        $this->assertArrayHasKey('modified_content', $data);
+        // ... Trigger your event, or call your service directly, and assert
+        // the real, observable result (rendered content, a written file,
+        // a container variable) ...
     }
 }
 ```
@@ -73,17 +70,19 @@ lando phpunit tests/Integration/Features/MyFeature/MyFeatureTest.php
 
 ## Unit Tests
 
-If you have complex logic (like a math calculation or string parser) that doesn't need the whole system, use a standard Unit Test.
+### Pure Logic (No Container)
 
-Place these in `tests/Unit/Features/MyFeature/`.
+If you have complex logic (like a math calculation or string parser) that doesn't need the whole system, use a standard PHPUnit `TestCase` — no container, no bloat.
+
+Place these in `tests/Unit/Features/MyFeature/Services/`.
 
 ```php
 <?php
 
-namespace EICC\StaticForge\Tests\Unit\Features\MyFeature;
+namespace EICC\StaticForge\Tests\Unit\Features\MyFeature\Services;
 
 use PHPUnit\Framework\TestCase;
-use App\Features\MyFeature\Services\Calculator;
+use EICC\StaticForge\Features\MyFeature\Services\Calculator;
 
 class CalculatorTest extends TestCase
 {
@@ -96,6 +95,51 @@ class CalculatorTest extends TestCase
         $result = $start + $end;
 
         $this->assertEquals(2, $result);
+    }
+}
+```
+
+### Testing a Feature's Event Handlers
+
+To test `Feature.php` itself — its `#[EventListener]` handlers, its `register()` gating logic — extend `UnitTestCase` (which gives you a real, bootstrapped `Container` via `.env.testing`) and construct the Feature through `FeatureFactory`, which autowires its constructor exactly like the real `FeatureManager` does. Build the real typed event, call the handler directly, and assert on the event's mutated state.
+
+```php
+<?php
+
+namespace EICC\StaticForge\Tests\Unit\Features\MyFeature;
+
+use EICC\StaticForge\Core\Events\RenderEvent;
+use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FeatureFactory;
+use EICC\StaticForge\Features\MyFeature\Feature;
+use EICC\StaticForge\Tests\Unit\UnitTestCase;
+
+class FeatureTest extends UnitTestCase
+{
+    private Feature $feature;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $feature = (new FeatureFactory($this->container))->make(Feature::class);
+        $this->assertInstanceOf(Feature::class, $feature);
+        $this->feature = $feature;
+        $this->feature->register(new EventManager());
+    }
+
+    public function testHandlerMutatesMetadata(): void
+    {
+        $event = new RenderEvent(
+            name: 'PRE_RENDER',
+            filePath: 'content/page.md',
+            fileUrl: '',
+            metadata: [],
+        );
+
+        $this->feature->handlePreRender($event);
+
+        $this->assertArrayHasKey('my_computed_value', $event->metadata);
     }
 }
 ```

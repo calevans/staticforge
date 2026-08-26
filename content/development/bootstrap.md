@@ -63,7 +63,7 @@ $container->setVariable('site_config', $siteConfig);
 
 // 6. Register Core Services
 // We fire up the big engines:
-$container->add(EventManager::class, new EventManager($container));
+$container->add(EventManager::class, new EventManager());
 $container->add(AssetManager::class, new AssetManager());
 // ... and others (FeatureManager, fileDiscovery, etc.)
 
@@ -85,18 +85,22 @@ It simply requires the bootstrap file and then hands the container to the applic
 // bin/staticforge.php
 
 // 1. Run the Ignition Sequence
-$container = require_once __DIR__ . '/../src/bootstrap.php';
+$container = require __DIR__ . '/../src/bootstrap.php';
 
 // 2. Create the Console Application
-$app = new Symfony\Component\Console\Application('StaticForge', '2.1.0');
+$app = new Symfony\Component\Console\Application('StaticForge', '3.0.0');
 
 // 3. Register Commands
 // We register the core commands. Features will register their own commands later.
-$app->add(new EICC\StaticForge\Commands\InitCommand());
+$app->addCommand(new EICC\StaticForge\Commands\InitCommand());
 // ...
 
-// 4. Fire Console Init Event
-$container->get(EICC\StaticForge\Core\EventManager::class)->fire('CONSOLE_INIT', ['application' => $app]);
+// 4. Load features, then fire Console Init Event so they can register their own commands
+$container->get(EICC\StaticForge\Core\FeatureManager::class)->loadFeatures();
+$container->get(EICC\StaticForge\Core\EventManager::class)->fire(
+    'CONSOLE_INIT',
+    new EICC\StaticForge\Core\Events\ConsoleInitEvent('CONSOLE_INIT', $app)
+);
 
 // 5. Run the App
 $app->run();
@@ -167,7 +171,7 @@ We use a singleton logger so we don't have 50 different log files open.
 $logger = $container->get('logger');
 
 // Write to it
-$logger->info('Engine started successfully.');
+$logger->log('INFO', 'Engine started successfully.');
 ```
 
 ### Environment Variables

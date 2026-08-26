@@ -16,4 +16,4 @@ StaticForge is primarily a CLI tool. This section details the complete command r
 *   [Site Management](site-management.html) - Rendering and deploying (`site:*`).
 *   [Content Creation](content-creation.html) - Scaffolding new content (`make:*`).
 *   [Auditing](auditing.html) - Verifying site health (`audit:*`).
-*   [System Commands](commands.html) - Utilities and debugging (`system:*`).
+*   [System Commands](commands.html) - Utilities and debugging (`feature:*`).

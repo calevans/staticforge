@@ -23,24 +23,21 @@ A Feature is just a PHP class that extends `BaseFeature`. It has one main job: t
 ### The Basic Structure
 
 ```php
-namespace App\Features\MyCoolFeature;
+namespace EICC\StaticForge\Features\MyCoolFeature;
 
 use EICC\StaticForge\Core\BaseFeature;
-use EICC\Utils\Container;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
 
 class Feature extends BaseFeature
 {
-    // Define your listeners here in the $eventListeners array.
-    // The BaseFeature class will automatically handle registration.
-    protected array $eventListeners = [
-        // Event Name => [Method Name, Priority]
-        'PRE_RENDER' => ['doSomethingCool', 500],
-    ];
-
-    public function doSomethingCool(Container $container, array $data): array
+    // Put an #[EventListener] attribute directly on the handler method.
+    // BaseFeature scans for these and registers them automatically —
+    // no separate registration array needed.
+    #[EventListener('PRE_RENDER', priority: 500)]
+    public function doSomethingCool(RenderEvent $event): void
     {
-        // Do the cool thing
-        return $data;
+        // Do the cool thing — mutate $event directly, nothing to return
     }
 }
 ```
@@ -62,24 +59,43 @@ Boom. You have a new feature structure in `src/Features/MyNewFeature/`. Go fill 
 ### The Manual Way
 
 1.  Create a folder: `src/Features/MyNewFeature`.
-2.  Create a `Feature.php` file inside it.
+2.  Create a `Feature.php` file inside it, namespaced `EICC\StaticForge\Features\MyNewFeature` (matching what `feature:create` itself generates).
 3.  Make sure it extends `BaseFeature`.
-4.  Make sure your `composer.json` autoloads it (usually mapped to `App\`).
+4.  Make sure your `composer.json` autoloads that namespace to `src/Features/`.
 
 ---
 
 ## Hooking into Events
 
-The `register` method is where you subscribe to the "Radio Station" (see [Events](events.html)).
+Most features never need to write a `register()` method at all — `BaseFeature`'s own `register(EventManager $eventManager)` already scans your class for `#[EventListener]` attributes and wires them up (see [Events](events.html)):
 
 ```php
-public function register(EventManager $eventManager, Container $container): void
-{
-    // Run early (Priority 100)
-    $eventManager->on('POST_GLOB', [$this, 'scanFiles'], 100);
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\RenderEvent;
 
-    // Run late (Priority 900)
-    $eventManager->on('POST_RENDER', [$this, 'cleanup'], 900);
+// Run early (Priority 100)
+#[EventListener('POST_GLOB', priority: 100)]
+public function scanFiles(Event $event): void
+{
+    // ...
+}
+
+// Run late (Priority 900)
+#[EventListener('POST_RENDER', priority: 900)]
+public function cleanup(RenderEvent $event): void
+{
+    // ...
+}
+```
+
+Only override `register()` yourself if you need to do something *besides* listener registration at load time — building a service that needs a computed value (like a resolved file path), or gating registration behind a feature-flag check. If you do, call `parent::register($eventManager)` first so the attribute scan still runs:
+
+```php
+public function register(EventManager $eventManager): void
+{
+    parent::register($eventManager);
+
+    // Extra one-time setup goes here
 }
 ```
 
@@ -94,31 +110,49 @@ public function register(EventManager $eventManager, Container $container): void
 
 ## Configuration
 
-You don't want to hardcode settings in your PHP files. Instead, put them in `siteconfig.yaml`.
+You don't want to hardcode settings in your PHP files. Instead, put them under your own top-level key in `siteconfig.yaml` — by convention, the snake_case version of your feature's name.
 
 **siteconfig.yaml:**
 ```yaml
-features:
-  MyCoolFeature:
-    enabled: true
-    show_author: true
-    prefix: "Written by: "
+my_cool_feature:
+  enabled: true
+  show_author: true
+  prefix: "Written by: "
 ```
 
-**In your Feature:**
-```php
-public function doSomethingCool(Container $container, array $data): array
-{
-    // Get the config
-    $config = $this->getConfig();
+**In your Feature:** read it straight off the container's `site_config` variable — there's no separate config-loading API. Constructor-inject `Container`; StaticForge's `FeatureFactory` autowires it automatically.
 
-    if ($config['show_author']) {
-        $prefix = $config['prefix'] ?? 'By: ';
-        // ...
+```php
+use EICC\Utils\Container;
+
+class Feature extends BaseFeature
+{
+    private Container $applicationContainer;
+
+    public function __construct(Container $applicationContainer)
+    {
+        $this->applicationContainer = $applicationContainer;
     }
 
-    return $data;
+    #[EventListener('PRE_RENDER', priority: 500)]
+    public function doSomethingCool(RenderEvent $event): void
+    {
+        $siteConfig = $this->applicationContainer->getVariable('site_config') ?? [];
+        $config = $siteConfig['my_cool_feature'] ?? [];
+
+        if (!empty($config['show_author'])) {
+            $prefix = $config['prefix'] ?? 'By: ';
+            // ...
+        }
+    }
 }
+```
+
+To let a site owner disable your feature entirely (skip loading it, not just toggle behavior inside it), they add its name to the separate `disabled_features` list:
+
+```yaml
+disabled_features:
+  - MyCoolFeature
 ```
 
 ---
@@ -143,7 +177,7 @@ This allows you to completely swap out core functionality without hacking the ve
 
 1.  **Keep it Focused**: A feature should do one thing well. Don't make a "GeneralUtils" feature.
 2.  **Use Services**: If your feature has complex logic, move it into a separate Service class (`MyService.php`) and inject it. Don't put 500 lines of code in the `Feature.php` file.
-3.  **Always Return Data**: Remember the Bucket Brigade. Your event listeners must return the `$data` array.
+3.  **Type Your Event Parameter**: Your listener methods take the real typed event (`Event`, `RenderEvent`, etc.) and mutate it directly — there's no array to remember to return.
 
 ---
 

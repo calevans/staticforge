@@ -17,9 +17,9 @@ Here is a look under the hood at the libraries and tools that make StaticForge t
 ## The Foundation
 
 ### [PHP](https://www.php.net/)
-**Version:** 8.4+
+**Version:** 8.5+
 
-At its core, StaticForge is a PHP application. We chose PHP for its ubiquity, ease of use, and massive ecosystem. But this isn't your grandfather's PHP. We require PHP 8.4 or higher to leverage modern features like typed properties, enums, and readonly classes. This ensures our codebase remains clean, strict, and maintainable.
+At its core, StaticForge is a PHP application. We chose PHP for its ubiquity, ease of use, and massive ecosystem. But this isn't your grandfather's PHP. We require PHP 8.5 or higher to leverage modern features like typed properties, enums, and readonly classes. This ensures our codebase remains clean, strict, and maintainable.
 
 ---
 

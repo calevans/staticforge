@@ -14,7 +14,7 @@ Ready to build something fast? You're in the right place. This guide will take y
 
 Just a few things before we start:
 
-- **PHP 8.4 or higher** installed on your system
+- **PHP 8.5 or higher** installed on your system
 - **Composer** (PHP's package manager)
 - A text editor (VS Code, Sublime, or your favorite)
 - A command line/terminal

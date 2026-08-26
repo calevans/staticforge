@@ -112,7 +112,7 @@ You can disable specific features (both core and custom) by adding them to the `
 
 ```yaml
 disabled_features:
-  - WeatherShortcode
+  - CacheBuster
   - Sitemap
   - SomeOtherFeature
 ```

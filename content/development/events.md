@@ -52,11 +52,10 @@ Here is the sequence of signals that go out every time you build your site.
 *   **UPLOAD_CHECK_FILE**: "Checking a specific file before upload."
     *   **Triggered By**: `site:upload` command.
     *   **Purpose**: Allows external tools to control the upload process.
-    *   **Data**: Contains `local_path`, `target_path`, `current_hash`, `remote_hash`, and `should_upload`.
-    *   **Action**:
-        *   Set `'handled' => true` if you uploaded it yourself (e.g., to S3).
-        *   Set `'skip_upload' => true` to ignore the file entirely.
-        *   Set `'should_upload' => true` to force a standard SFTP upload even if hashes match.
+    *   **Event class**: `UploadCheckFileEvent`, with read-only `$path`, `$localPath`, `$targetPath`, `$currentHash`, `$remoteHash`, and `$shouldUpload` describing the file.
+    *   **Action** (set these two mutable properties):
+        *   Set `$event->handled = true` if you uploaded it yourself (e.g., to S3).
+        *   Set `$event->skipUpload = true` to ignore the file entirely.
 
 ---
 
@@ -78,31 +77,28 @@ The HTML is generated but not saved to disk yet.
 
 ## Creating Your Own Listener
 
-To make your feature listen for an event, you just need to register it in your Feature class.
+To make your feature listen for an event, put a `#[EventListener]` attribute on the method itself — no separate registration array needed.
 
 ```php
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\StaticForge\Core\Events\RenderEvent;
+
 class MyFeature extends BaseFeature
 {
-    // 1. Register the listener
-    protected array $eventListeners = [
-        'PRE_RENDER' => ['method' => 'addReadingTime', 'priority' => 500]
-    ];
-
-    // 2. Define the method
-    public function addReadingTime(Container $container, array $data): array
+    // The event name and priority live right on the handler
+    #[EventListener('PRE_RENDER', priority: 500)]
+    public function addReadingTime(RenderEvent $event): void
     {
-        // Get the content
-        $content = $data['content'];
+        // At PRE_RENDER the file hasn't been converted to HTML yet, so read
+        // the raw source directly off disk
+        $content = file_get_contents($event->filePath) ?: '';
 
         // Calculate reading time
         $wordCount = str_word_count(strip_tags($content));
         $minutes = ceil($wordCount / 200);
 
-        // Add it to the metadata
-        $data['metadata']['reading_time'] = $minutes . ' min read';
-
-        // IMPORTANT: Always return the data!
-        return $data;
+        // Add it to the metadata — mutate the event directly, nothing to return
+        $event->metadata['reading_time'] = $minutes . ' min read';
     }
 }
 ```
@@ -132,43 +128,62 @@ Some features are so polite they even let you interrupt *them*.
 ### COLLECT_MENU_ITEMS
 **Fired By:** MenuBuilder
 **When:** During `POST_GLOB`
+**Event class:** `CollectMenuItemsEvent`, with one mutable property: `$event->menuData`.
 **Why:** You want to add a link to the menu that doesn't exist as a file (e.g., an external link to Twitter).
 
 ### MARKDOWN_CONVERTED
 **Fired By:** MarkdownRenderer
 **When:** During `RENDER`
+**Event class:** `RenderEvent` — the same class PRE_RENDER/POST_RENDER use, scoped to just this file's conversion.
 **Why:** You want to modify the HTML *after* Markdown has done its job but *before* it gets wrapped in a template. (e.g., Adding `class="table"` to all tables).
 
 ### RSS_ITEM_BUILDING
 **Fired By:** RSSFeed
-**When:** During `POST_LOOP`
+**When:** During `POST_LOOP`, once per item in each category feed
+**Event class:** `RssItemBuildingEvent`, with a read-only `$event->item` (the `FeedItem` object — mutate its public properties directly, e.g. `$event->item->enclosure = [...]`) and a read-only `$event->file` (the raw discovered-file data).
 **Why:** You want to add custom tags to your RSS feed (e.g., Podcast enclosures).
+
+### RSS_BUILDER_INIT
+**Fired By:** RSSFeed
+**When:** During `POST_LOOP`, once per category feed, before any items are built
+**Event class:** `RssBuilderInitEvent`, with a read-only `$event->builder` (the `RssBuilder` — call `$event->builder->addExtension(...)` to add custom XML namespaces) and a mutable `$event->categoryMetadata`.
+**Why:** You want to register a feed-level XML extension (e.g., iTunes/Podcast namespaces) before any items are added.
+
+### SEO_AUDIT_PAGE
+**Fired By:** `audit:seo` command
+**When:** Once per rendered page during the audit
+**Event class:** `SeoAuditPageEvent`, with a read-only `$event->crawler` (a Symfony `DomCrawler` over the rendered HTML), a read-only `$event->filename`, and a mutable `$event->issues` array to append your own findings to.
+**Why:** You want your feature to contribute its own checks to `audit:seo` (e.g., flagging missing Open Graph tags).
 
 ---
 
-## Event Data Flow (The Bucket Brigade)
+## Event Data Flow (Passing the Baton)
 
-When an event fires, it passes a `$data` array to the first listener. That listener modifies it and passes it to the next one.
+When an event fires, it builds **one typed `Event` object** — a plain `Event` for signals with no payload (CREATE, POST_GLOB, POST_LOOP, and the like), a `RenderEvent` for per-file signals (PRE_RENDER, RENDER, POST_RENDER, MARKDOWN_CONVERTED), or a purpose-built subclass like `RssItemBuildingEvent` or `SeoAuditPageEvent` for events that carry richer data — and hands that **same object** to every listener in priority order. Each listener mutates its public properties directly; there's nothing to return.
 
 ```php
 // Listener 1 (Priority 100)
-$data['title'] = "Hello";
-return $data;
+public function first(RenderEvent $event): void
+{
+    $event->metadata['title'] = "Hello";
+}
 
 // Listener 2 (Priority 200)
-$data['title'] .= " World";
-return $data;
+public function second(RenderEvent $event): void
+{
+    $event->metadata['title'] .= " World";
+}
 
-// Result: "Hello World"
+// Result: $event->metadata['title'] === "Hello World"
 ```
 
-**Critical Rule:** If you break the chain (by not returning `$data`), the next listener gets nothing, and the system crashes. **Always return the data.**
+Because it's the same object passed by reference through the whole chain, there's no "forgot to return it" failure mode — a listener that does nothing simply leaves the event unchanged for the next one.
 
 ---
 
 ## Best Practices
 
-1.  **Always Return Data**: The event chain is like a bucket brigade. If you don't pass the bucket (return `$data`), the fire doesn't get put out (the app crashes).
+1.  **Type your handler's parameter**: Use the real event class (`Event`, `RenderEvent`, `RssItemBuildingEvent`, etc.) — the `#[EventListener]` attribute doesn't enforce it, but a mismatched type will fatal the moment the event actually fires.
 2.  **Don't Be Greedy**: Only listen to the events you actually need.
 3.  **Check for Existence**: Don't assume `metadata['title']` exists. Always check `isset()` or use the null coalescing operator (`??`).
 

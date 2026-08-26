@@ -21,10 +21,10 @@ StaticForge is built on a plugin architecture called "Features." Everything from
 
 ### Checking Feature Status
 
-Sometimes you need to know exactly what is running. Did you successfully disable the Sitemap? Is the CacheBuster active? The `system:features` command gives you a live look at your configuration.
+Sometimes you need to know exactly what is running. Did you successfully disable the Sitemap? Is the CacheBuster active? The `feature:list` command gives you a live look at your configuration.
 
 ```bash
-php bin/staticforge.php system:features
+php bin/staticforge.php feature:list
 ```
 
 This will output a clean table showing every available feature and whether it is currently **Enabled** or **Disabled** based on your `siteconfig.yaml`.
@@ -39,9 +39,4 @@ This will output a clean table showing every available feature and whether it is
 | ...                | ...      |
 +--------------------+----------+
 ```
-
-**Pro Tip:** If you are old school, you can also use `system:plugins`. It does the exact same thing.
-
-
-
 

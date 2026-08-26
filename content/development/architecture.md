@@ -183,20 +183,28 @@ To build a feature, you just need to:
 
 ### A Simple Example
 
-Here is a feature that runs during the planning stage (`POST_GLOB`) to look at files.
+Here is a feature that runs during the planning stage (`POST_GLOB`) to look at files. `Container` gets constructor-injected (StaticForge's `FeatureFactory` autowires it automatically), so `handlePostGlob` itself only needs the event.
 
 ```php
+use EICC\StaticForge\Core\Events\Event;
+use EICC\StaticForge\Core\Events\EventListener;
+use EICC\Utils\Container;
+
 class MyFeature extends BaseFeature
 {
-    // Tell the system we want to run during the Planning Stage
-    protected array $eventListeners = [
-        'POST_GLOB' => ['method' => 'handlePostGlob', 'priority' => 150]
-    ];
+    private Container $applicationContainer;
 
-    public function handlePostGlob(Container $container, array $parameters): array
+    public function __construct(Container $applicationContainer)
+    {
+        $this->applicationContainer = $applicationContainer;
+    }
+
+    // Tell the system we want to run during the Planning Stage
+    #[EventListener('POST_GLOB', priority: 150)]
+    public function handlePostGlob(Event $event): void
     {
         // Get the list of all files
-        $discoveredFiles = $container->getVariable('discovered_files') ?? [];
+        $discoveredFiles = $this->applicationContainer->getVariable('discovered_files') ?? [];
 
         foreach ($discoveredFiles as $fileData) {
             // Look at the metadata
@@ -204,21 +212,23 @@ class MyFeature extends BaseFeature
 
             // Do something useful!
         }
-
-        return $parameters;
     }
 }
 ```
 
 ### Sharing Data with Templates
 
-If your feature calculates something useful (like a list of related posts), you can pass it to your templates.
+If your feature calculates something useful (like a list of related posts), write it into the container's `features` variable — that's what templates read from.
 
 ```php
 // Inside your handlePostGlob method...
-$parameters['features']['MyFeature'] = [
+$features = $this->applicationContainer->getVariable('features') ?? [];
+$features['MyFeature'] = [
     'related_posts' => $relatedPosts
 ];
+$this->applicationContainer->hasVariable('features')
+    ? $this->applicationContainer->updateVariable('features', $features)
+    : $this->applicationContainer->setVariable('features', $features);
 ```
 
 Then in your Twig template:
