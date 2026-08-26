@@ -25,7 +25,7 @@ The one place that *does* break compatibility is how Features hook into the syst
 
 Every event listener used to receive `(Container $container, array $parameters)` and had to `return $parameters` to keep the pipeline alive. That's gone. Listeners now receive one typed object — `Event`, `RenderEvent`, or a purpose-built subclass like `RssItemBuildingEvent` — and mutate its public properties directly. There's no array to remember to return, and no "forgot to return it, and now the site won't build" failure mode.
 
-This is the biggest change in 3.0, and it's the reason 3.0 is a major version bump rather than a minor one. See [The Nervous System: Events](development/events.html) for the full reference and [Migrating to 3.0](migrating-to-3-0.html) if you need to update your own code.
+This is the biggest change in 3.0, and it's the reason 3.0 is a major version bump rather than a minor one. See [The Nervous System: Events](development/events.html) for the full reference and [Migrating to 3.0](migrating-to-3-0.html) if you need to update your own code — that page also covers `feature:migrate`, a CLI command that converts most of a Feature's old event contract automatically.
 
 ---
 

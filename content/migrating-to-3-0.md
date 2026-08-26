@@ -16,6 +16,33 @@ Everything below is the exact recipe used to migrate all eight first-party exter
 
 ---
 
+## Automating It: `feature:migrate`
+
+That recipe is also available as a CLI command, so you don't have to apply it by hand:
+
+```bash
+# Dry run — reports what would change, doesn't touch anything
+lando php bin/staticforge.php feature:migrate MyFeatureName
+
+# Or point it at any directory with a Feature.php, including an
+# external package checkout outside src/Features/
+lando php bin/staticforge.php feature:migrate ../my-external-package
+
+# Migrate every Feature under src/Features/ in one pass
+lando php bin/staticforge.php feature:migrate --all
+
+# Apply the changes
+lando php bin/staticforge.php feature:migrate MyFeatureName --write
+```
+
+It does the same five mechanical steps below: drops the `$eventListeners` array in favor of `#[EventListener]` attributes, converts the handler signature, maps known array keys onto the new event's typed properties, and simplifies `register()`. Anything it can't map to a known property (a feature-specific key with no equivalent) is left in place as a `TODO(feature:migrate)` comment rather than guessed at, and a file whose shape it doesn't recognize is skipped entirely with a diagnostic — it never partially or incorrectly transforms a file.
+
+After running it with `--write`: review every `TODO(feature:migrate)` comment and warning it printed, run `lando phpcbf` on the changed files to clean up formatting, then work through [Verifying the Migration](#verifying-the-migration) below same as a hand-migration. `git diff` is your review tool — the command doesn't print one itself.
+
+The rest of this page is the manual recipe the tool encodes — useful if you're migrating by hand, reviewing what `--write` changed, or the tool skipped your Feature and told you why.
+
+---
+
 ## The TL;DR
 
 If your Feature has this shape:

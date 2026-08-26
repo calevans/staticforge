@@ -40,3 +40,15 @@ This will output a clean table showing every available feature and whether it is
 +--------------------+----------+
 ```
 
+### Migrating a Feature to 3.0
+
+If you have a custom Feature (in-tree or an external package) still written against the pre-3.0 event contract, `feature:migrate` converts it automatically — dry run by default, so nothing changes until you pass `--write`:
+
+```bash
+php bin/staticforge.php feature:migrate MyFeatureName
+php bin/staticforge.php feature:migrate MyFeatureName --write
+php bin/staticforge.php feature:migrate --all
+```
+
+See [Migrating to 3.0](../migrating-to-3-0.html) for what it converts, what it leaves as a TODO for you to finish by hand, and how to verify the result.
+
