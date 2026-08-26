@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Features\CategoryIndex\Models;
+namespace EICC\StaticForge\Services;
 
 class Pagination
 {

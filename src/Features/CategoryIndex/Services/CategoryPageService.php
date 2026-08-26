@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\CategoryIndex\Services;
 
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
+use EICC\StaticForge\Services\PaginationService;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 

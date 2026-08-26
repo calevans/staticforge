@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Features\Tags\Services;
 
 use EICC\StaticForge\Core\Application;
-use EICC\StaticForge\Features\Tags\Services\PaginationService;
+use EICC\StaticForge\Services\PaginationService;
 use EICC\StaticForge\Features\Tags\Services\TagPageService;
 use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\StaticForge\Services\TemplateRenderer;

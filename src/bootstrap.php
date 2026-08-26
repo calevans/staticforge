@@ -62,8 +62,7 @@ use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
 use EICC\StaticForge\Features\CategoryIndex\Services\ImageService;
-use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService as CategoryIndexPaginationService;
-use EICC\StaticForge\Features\Tags\Services\PaginationService as TagsPaginationService;
+use EICC\StaticForge\Services\PaginationService;
 use EICC\StaticForge\Features\Tags\Services\TagPageService;
 use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
@@ -314,9 +313,9 @@ $container->add(CategoryService::class, function () use ($container) {
     );
 });
 
-$container->add(CategoryIndexPaginationService::class, function () {
+$container->add(PaginationService::class, function () {
     static $instance = null;
-    return $instance ??= new CategoryIndexPaginationService();
+    return $instance ??= new PaginationService();
 });
 
 $container->add(CategoryPageService::class, function () use ($container) {
@@ -330,7 +329,7 @@ $container->add(CategoryPageService::class, function () use ($container) {
     return $instance = new CategoryPageService(
         $container->get('logger'),
         $container->get(CategoryService::class),
-        $container->get(CategoryIndexPaginationService::class),
+        $container->get(PaginationService::class),
         CategoryPageService::resolveItemsPerPage($siteConfig)
     );
 });
@@ -341,11 +340,6 @@ $container->add(CategoryPageService::class, function () use ($container) {
 $container->add(TagsService::class, function () use ($container) {
     static $instance = null;
     return $instance ??= new TagsService($container->get('logger'), $container);
-});
-
-$container->add(TagsPaginationService::class, function () {
-    static $instance = null;
-    return $instance ??= new TagsPaginationService();
 });
 
 $container->add(TagPageService::class, function () use ($container) {
@@ -359,7 +353,7 @@ $container->add(TagPageService::class, function () use ($container) {
     return $instance = new TagPageService(
         $container->get('logger'),
         $container->get(TagsService::class),
-        $container->get(TagsPaginationService::class),
+        $container->get(PaginationService::class),
         $container->get(TemplateRenderer::class),
         TagPageService::resolveItemsPerPage($siteConfig)
     );

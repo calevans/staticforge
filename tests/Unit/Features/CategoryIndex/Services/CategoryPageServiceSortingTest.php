@@ -4,7 +4,7 @@ namespace EICC\StaticForge\Tests\Unit\Features\CategoryIndex\Services;
 
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryPageService;
 use EICC\StaticForge\Features\CategoryIndex\Services\CategoryService;
-use EICC\StaticForge\Features\CategoryIndex\Services\PaginationService;
+use EICC\StaticForge\Services\PaginationService;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
 use EICC\StaticForge\Features\CategoryIndex\Models\CategoryFile;
 use EICC\StaticForge\Core\Application;

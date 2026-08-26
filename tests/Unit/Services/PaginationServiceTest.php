@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace EICC\StaticForge\Tests\Unit\Features\Tags\Services;
+namespace EICC\StaticForge\Tests\Unit\Services;
 
-use EICC\StaticForge\Features\Tags\Services\PaginationService;
+use EICC\StaticForge\Services\PaginationService;
 use PHPUnit\Framework\TestCase;
 
 class PaginationServiceTest extends TestCase

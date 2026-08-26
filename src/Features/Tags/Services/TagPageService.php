@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\Tags\Services;
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Features\Tags\Models\Tag;
 use EICC\StaticForge\Features\Tags\Models\TagFile;
+use EICC\StaticForge\Services\PaginationService;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
