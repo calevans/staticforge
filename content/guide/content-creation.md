@@ -2,6 +2,8 @@
 title: Content Creation
 description: 'How to use the CLI to quickly generate content files.'
 template: docs
+menu: '2.2.2'
+og_image: "A blank page transforming into a structured document, template stamping onto paper, content scaffolding, clean minimal desk, --ar 16:9"
 ---
 
 # Content Creation

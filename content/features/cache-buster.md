@@ -33,3 +33,7 @@ The rendered HTML will look like:
 ```
 
 This forces the browser to treat the file as a new resource whenever you rebuild your site, preventing stale cache issues.
+
+---
+
+[← Back to Features Overview](index.html)

@@ -1,8 +1,8 @@
 ---
-menu: '4.1.3'
 title: 'The Nervous System: Events'
 description: 'Reference for the Event Manager system, available hooks, and the event-driven architecture of StaticForge.'
 template: docs
+menu: '4.1.3'
 og_image: "Neural network firing synapses, abstract visualization of event-driven architecture, glowing nodes connecting, reactive system, vibrant cyan and magenta, --ar 16:9"
 ---
 

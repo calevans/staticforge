@@ -25,7 +25,7 @@ Defined in content file frontmatter using the `menu` field. These menus are auto
 
 ### Named Menus (Static)
 
-Defined in `siteconfig.yaml` for static/external links. See [Site Configuration](/guide/site-config.html) for details.
+Defined in `siteconfig.yaml` for static/external links. See [Site Configuration](../guide/site-config.html) for details.
 
 **Access in templates:** `{{ menu_top }}`, `{{ menu_footer }}`, etc.
 

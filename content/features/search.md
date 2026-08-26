@@ -117,4 +117,4 @@ The `search.js` script automatically initializes MiniSearch, loads the `search.j
 
 The default `search.js` provides a basic implementation. You can customize the look and feel by styling the `#search-input` and `#search-results` elements with CSS.
 
-If you need more advanced behavior (like custom result rendering or different search options), you can modify the `search.js` file or create your own script that utilizes the `minisearch.min.js` library and the generated `search.json` index.
+If you need more advanced behavior (like custom result rendering or different search options), you can modify the `search.js` file or create your own script that uses the `minisearch.min.js` library and the generated `search.json` index.

@@ -10,6 +10,12 @@ og_image: "Minimalist contact form floating in 3d space, paper airplane taking o
 ---
 # Forms Feature
 
+**What it does:** Embeds contact forms and other form types into static pages via a `{{ form() }}` Twig function, with built-in Altcha spam protection.
+
+**Events:** `RENDER` (priority 50)
+
+**How to use:** Define a form in `siteconfig.yaml` and call `{{ form('form_id') }}` from your template.
+
 The Forms feature allows you to easily embed contact forms and other types of forms into your static pages using a simple shortcode. It handles form rendering, configuration, and even includes spam protection via Altcha.
 
 ## Recommended Backend
@@ -51,7 +57,7 @@ forms:
 ### Configuration Options
 
 | Option | Description |
-|Str|---|
+| :--- | :--- |
 | `provider_url` | The base URL of your form processing service. |
 | `form_id` | The unique ID for this specific form. Appended to `provider_url`. |
 | `challenge_url` | (Optional) The URL for the Altcha challenge service. If provided, an Altcha widget will be added to the form. |
@@ -144,3 +150,7 @@ The form comes with default styling that is injected automatically. You can over
 - `.sf-form-message`: The container for success/error messages.
 - `.sf-message-success`: Applied to the message container on success.
 - `.sf-message-error`: Applied to the message container on error.
+
+---
+
+[← Back to Features Overview](index.html)

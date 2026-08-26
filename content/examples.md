@@ -15,19 +15,19 @@ We've included a collection of example files in the `content/examples/` director
 
 Click through to see how StaticForge renders different types of content:
 
-*   [**Blog Post**](/examples/tutorials/blog-post.html)
+*   [**Blog Post**](tutorials/blog-post.html)
     A classic blog layout complete with tags, author metadata, and reading time calculations.
-*   [**Documentation Page**](/examples/documentation/documentation-page.html)
+*   [**Documentation Page**](documentation/documentation-page.html)
     A technical guide layout featuring syntax-highlighted code blocks and alert boxes.
-*   [**Portfolio Item**](/examples/portfolio/portfolio-item.html)
+*   [**Portfolio Item**](portfolio/portfolio-item.html)
     A visual-heavy layout designed to showcase projects or case studies.
-*   [**RSS Enabled Article**](/examples/tutorials/rss-enabled-article.html)
+*   [**RSS Enabled Article**](tutorials/rss-enabled-article.html)
     An example of content that automatically gets picked up by the RSS feed generator.
-*   [**Shortcodes Demo**](/examples/docs-examples/shortcodes.html)
+*   [**Shortcodes Demo**](docs-examples/shortcodes.html)
     See our built-in shortcodes in action—embedding YouTube videos, Tweets, and GitHub Gists with ease.
-*   [**Simple Page**](/examples/simple-page.html)
+*   [**Simple Page**](simple-page.html)
     The bare necessities. A minimal page showing that you don't need complex metadata to get a page online.
-*   [**Landing Page**](/examples/landing-page.html)
+*   [**Landing Page**](landing-page.html)
     A raw HTML page that bypasses the standard Markdown processing, perfect for custom landing pages.
 
 ## Steal These Blueprints

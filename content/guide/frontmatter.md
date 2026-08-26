@@ -2,7 +2,7 @@
 title: 'Frontmatter Guide'
 description: 'How to use YAML frontmatter in StaticForge to define metadata, templates, and variables for your content.'
 template: docs
-menu: '2.1.5'
+menu: '2.1.4'
 og_image: "YAML data structure block floating, metadata header, structured text configuration, file properties, abstract data cube, --ar 16:9"
 ---
 # Frontmatter Guide

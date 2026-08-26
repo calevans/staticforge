@@ -203,11 +203,14 @@ These settings enhance StaticForge but aren't required to run.
 - `INFO` - Standard operations (default)
 - `WARNING` - Only potential issues
 - `ERROR` - Only critical failures
+- `CRITICAL` - Only critical failures that require immediate attention
 
 **Example:**
 ```bash
 LOG_LEVEL="DEBUG"
 ```
+
+**Tip:** Use `DEBUG` when troubleshooting, `INFO` for development, and `WARNING` or `ERROR` for production.
 
 ---
 
@@ -221,6 +224,8 @@ LOG_LEVEL="DEBUG"
 ```bash
 LOG_FILE="logs/site-build.log"
 ```
+
+**Note:** The directory must exist or StaticForge will create it.
 
 ---
 
@@ -280,41 +285,6 @@ SFTP_HOST_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA..."
 ```
 
 See the [Going Live](site-management.html#going-live) section for more details on setting up SFTP, including how host key verification works.
-
----
-
-### LOG_LEVEL
-
-**What it does:** Controls how much detail goes in the log file
-
-**Options:**
-- `DEBUG` - Everything (very verbose)
-- `INFO` - Normal operations (recommended for development)
-- `WARNING` - Only warnings and errors
-- `ERROR` - Only errors
-- `CRITICAL` - Only critical failures
-
-**Example:**
-```bash
-LOG_LEVEL="INFO"
-```
-
-**Tip:** Use `DEBUG` when troubleshooting, `INFO` for development, and `WARNING` or `ERROR` for production.
-
----
-
-### LOG_FILE
-
-**What it does:** Where to save the log file
-
-**Default:** `staticforge.log` (in the project root)
-
-**Example:**
-```bash
-LOG_FILE="logs/staticforge.log"
-```
-
-**Note:** The directory must exist or StaticForge will create it.
 
 ---
 

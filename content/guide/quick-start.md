@@ -184,7 +184,7 @@ If you started the local server in Step 5:
 
 1. Open your browser
 2. Go to `http://localhost:8000/hello-world.html`
-3. See your beautiful new page! 🎉
+3. See your new page rendered in the browser.
 
 **Not using the local server?** Just open `public/hello-world.html` directly in your browser.
 
@@ -318,7 +318,7 @@ StaticForge automatically:
 
 ## What's Next?
 
-**Congratulations!** 🎉 You've created your first static site with StaticForge!
+You've created your first static site with StaticForge.
 
 ### Want a Different Look?
 
@@ -346,5 +346,4 @@ StaticForge copies the template to your `templates/` directory. Activate it by s
 - Check out the other documentation pages
 - Look at the example content in the `content/` directory
 - Explore the templates in `templates/` to see how they work
-
-Happy site building! 🚀
+- See [What's New in 3.0](../whats-new-3-0.html) if you're upgrading from an earlier version

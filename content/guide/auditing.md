@@ -2,9 +2,9 @@
 title: 'Site Auditing'
 description: 'A guide to using StaticForge audit tools to validate integrity, SEO, and security.'
 template: docs
-menu: '2.2.2'
-og_image: "A magnifying glass examining digital code, green checkmarks appearing on a holographic screen, quality assurance, futuristic lab, --ar 16:9"
+menu: '2.2.3'
 hero: assets/images/auditing-hero.jpg
+og_image: "A magnifying glass examining digital code, green checkmarks appearing on a holographic screen, quality assurance, futuristic lab, --ar 16:9"
 ---
 
 # Site Auditing & Quality Assurance

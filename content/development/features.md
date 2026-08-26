@@ -1,8 +1,8 @@
 ---
-template: docs
-menu: '4.1.4'
 title: 'The Plugin System: Features'
 description: 'How to build, register, and manage Features (plugins) to extend StaticForge functionality.'
+template: docs
+menu: '4.1.4'
 og_image: "Modular plugin system concept, interlocking 3D blocks, lego-like structure, puzzle pieces connecting, colorful geometric shapes, clean white background, --ar 16:9"
 ---
 
