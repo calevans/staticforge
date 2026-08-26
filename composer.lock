@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "944981f9d8d4b8f1c8f755afc00faeaf",
+    "content-hash": "510f872a1ae04afc20623f97ba340d92",
     "packages": [
         {
             "name": "dflydev/dot-access-data",
@@ -2486,19 +2486,20 @@
     "packages-dev": [
         {
             "name": "calevans/answer-engine-optimization",
-            "version": "2.2.3",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/calevans/staticforge-answer-engine-optimization.git",
-                "reference": "79f069ba552962a9a9d430191d3d7b5062b8401f"
+                "reference": "fb3d55bdf911cf54e12cdc4ecd565fbc1624c5c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/calevans/staticforge-answer-engine-optimization/zipball/79f069ba552962a9a9d430191d3d7b5062b8401f",
-                "reference": "79f069ba552962a9a9d430191d3d7b5062b8401f",
+                "url": "https://api.github.com/repos/calevans/staticforge-answer-engine-optimization/zipball/fb3d55bdf911cf54e12cdc4ecd565fbc1624c5c0",
+                "reference": "fb3d55bdf911cf54e12cdc4ecd565fbc1624c5c0",
                 "shasum": ""
             },
             "require": {
+                "eicc/staticforge": "^3.0",
                 "eicc/utils": "^1.2",
                 "php": "^8.4"
             },
@@ -2523,26 +2524,26 @@
             "description": "StaticForge Feature: AnswerEngineOptimization",
             "support": {
                 "issues": "https://github.com/calevans/staticforge-answer-engine-optimization/issues",
-                "source": "https://github.com/calevans/staticforge-answer-engine-optimization/tree/2.2.3"
+                "source": "https://github.com/calevans/staticforge-answer-engine-optimization/tree/3.0.0"
             },
-            "time": "2026-06-15T23:43:01+00:00"
+            "time": "2026-08-26T00:25:43+00:00"
         },
         {
             "name": "calevans/staticforge-chapternav",
-            "version": "2.0.0",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/calevans/staticforge-chapternav.git",
-                "reference": "480614f7b1ec439f6e258986da9aa32d6b4005d4"
+                "reference": "7624ce11a5c8f4d1be24d873faa83d1ac4ba2003"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/calevans/staticforge-chapternav/zipball/480614f7b1ec439f6e258986da9aa32d6b4005d4",
-                "reference": "480614f7b1ec439f6e258986da9aa32d6b4005d4",
+                "url": "https://api.github.com/repos/calevans/staticforge-chapternav/zipball/7624ce11a5c8f4d1be24d873faa83d1ac4ba2003",
+                "reference": "7624ce11a5c8f4d1be24d873faa83d1ac4ba2003",
                 "shasum": ""
             },
             "require": {
-                "eicc/staticforge": "^2.0",
+                "eicc/staticforge": "^3.0",
                 "php": "^8.4"
             },
             "require-dev": {
@@ -2567,26 +2568,26 @@
             "description": "StaticForge Feature: ChapterNav",
             "support": {
                 "issues": "https://github.com/calevans/staticforge-chapternav/issues",
-                "source": "https://github.com/calevans/staticforge-chapternav/tree/2.0.0"
+                "source": "https://github.com/calevans/staticforge-chapternav/tree/3.0.0"
             },
-            "time": "2026-08-24T16:09:29+00:00"
+            "time": "2026-08-26T00:43:33+00:00"
         },
         {
             "name": "calevans/staticforge-google-analytics",
-            "version": "2.0.2",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/calevans/staticforge-google-analytics.git",
-                "reference": "85820568fdb682b3f5fc13107dae5cd28559860e"
+                "reference": "f32925156e6e24f7f8ce8cd643c5270163248498"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/calevans/staticforge-google-analytics/zipball/85820568fdb682b3f5fc13107dae5cd28559860e",
-                "reference": "85820568fdb682b3f5fc13107dae5cd28559860e",
+                "url": "https://api.github.com/repos/calevans/staticforge-google-analytics/zipball/f32925156e6e24f7f8ce8cd643c5270163248498",
+                "reference": "f32925156e6e24f7f8ce8cd643c5270163248498",
                 "shasum": ""
             },
             "require": {
-                "eicc/staticforge": ">=2.0.0",
+                "eicc/staticforge": "^3.0",
                 "php": "^8.4"
             },
             "require-dev": {
@@ -2610,26 +2611,26 @@
             "description": "StaticForge Feature: GoogleAnalytics",
             "support": {
                 "issues": "https://github.com/calevans/staticforge-google-analytics/issues",
-                "source": "https://github.com/calevans/staticforge-google-analytics/tree/2.0.2"
+                "source": "https://github.com/calevans/staticforge-google-analytics/tree/3.0.0"
             },
-            "time": "2026-03-17T01:34:43+00:00"
+            "time": "2026-08-26T01:52:01+00:00"
         },
         {
             "name": "calevans/staticforge-social-metadata",
-            "version": "2.0.0",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/calevans/staticforge-social-metadata.git",
-                "reference": "98a870435a20eee0cf87d43f43005b2137fc74fe"
+                "reference": "ad974cfcdf3efa511174d45c4c6c43056d5946ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/calevans/staticforge-social-metadata/zipball/98a870435a20eee0cf87d43f43005b2137fc74fe",
-                "reference": "98a870435a20eee0cf87d43f43005b2137fc74fe",
+                "url": "https://api.github.com/repos/calevans/staticforge-social-metadata/zipball/ad974cfcdf3efa511174d45c4c6c43056d5946ee",
+                "reference": "ad974cfcdf3efa511174d45c4c6c43056d5946ee",
                 "shasum": ""
             },
             "require": {
-                "eicc/staticforge": ">=1.4",
+                "eicc/staticforge": "^3.0",
                 "php": "^8.4"
             },
             "require-dev": {
@@ -2653,9 +2654,9 @@
             "description": "StaticForge Feature: SocialMetadata",
             "support": {
                 "issues": "https://github.com/calevans/staticforge-social-metadata/issues",
-                "source": "https://github.com/calevans/staticforge-social-metadata/tree/2.0.0"
+                "source": "https://github.com/calevans/staticforge-social-metadata/tree/3.0.0"
             },
-            "time": "2026-05-01T14:27:37+00:00"
+            "time": "2026-08-26T01:55:58+00:00"
         },
         {
             "name": "mikey179/vfsstream",
