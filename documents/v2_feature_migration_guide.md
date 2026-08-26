@@ -32,12 +32,17 @@ public function register(EventManager $eventManager, Container $container): void
 
 **After (v2.0):**
 ```php
+protected array $eventListeners = [
+    'RENDER' => ['method' => 'handleRender', 'priority' => 100],
+];
+
 public function register(EventManager $eventManager): void
 {
-    // Only register event listeners here
-    $eventManager->listen('RENDER', [$this, 'handleRender'], 100);
+    parent::register($eventManager);
 }
 ```
+
+`EventManager` has no `listen()` method — `BaseFeature::register()` reads the `$eventListeners` property declaratively and wires each entry up itself. If `register()` doesn't need to do anything beyond that, you can omit it entirely and let `BaseFeature`'s own default run.
 
 ### Step 2: Implement Constructor Injection
 Move all dependency resolution into the `__construct()` method using PHP 8.0 Constructor Property Promotion and PHP 8.4 Asymmetric Visibility.
