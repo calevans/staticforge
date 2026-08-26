@@ -68,6 +68,7 @@ use EICC\StaticForge\Features\Tags\Services\TagsService;
 use EICC\StaticForge\Features\ResponsiveImages\Services\ResponsiveImageConfig;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\StaticForge\Services\TemplateRenderer;
+use EICC\StaticForge\Shortcodes\ShortcodeManager;
 use Twig\Loader\FilesystemLoader;
 
 // Accept optional environment path parameter
@@ -289,6 +290,15 @@ $container->stuff(TemplateRenderer::class, function () use ($container) {
         $container->get('logger'),
         $container->has(AssetManager::class) ? $container->get(AssetManager::class) : null
     );
+});
+
+// Registered under its own class so external Features can $container->get()
+// the same instance ShortcodeProcessorService uses to register a shortcode
+// (typically from a CONSOLE_INIT listener, before ShortcodeProcessor's own
+// register() has necessarily run) — not just an internal implementation
+// detail of ShortcodeProcessorService.
+$container->stuff(ShortcodeManager::class, function () use ($container) {
+    return new ShortcodeManager($container, $container->get(TemplateRenderer::class));
 });
 
 // CategoryIndex Feature: CategoryService holds scan state (scanCategories() ->
