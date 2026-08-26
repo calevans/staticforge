@@ -1,5 +1,5 @@
 ---
-menu: '4.1.6'
+menu: '4.1.9'
 title: 'AI-Assisted Design'
 description: 'Guide to creating custom StaticForge templates using AI assistance and Copilot.'
 template: docs

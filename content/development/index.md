@@ -12,6 +12,11 @@ So, you want to see how the sausage is made? You've come to the right place.
 
 This isn't the "How do I write a blog post?" section. This is the **"How do I bend StaticForge to my will?"** section. Here, we pop the hood, void the warranty, and show you exactly how this machine works.
 
+## Upgrading?
+
+*   **[Migrating to 3.0](../migrating-to-3-0.html)**
+    Have a custom Feature written against 2.x or earlier? The event contract changed. Start here before anything else on this page.
+
 ## The Blueprint
 
 If you want to hack on the core or build your own plugins (Features), start here.
@@ -32,6 +37,12 @@ If you want to hack on the core or build your own plugins (Features), start here
 
 *   **[Feature Development](features.html)**
     Don't fork the core. Build a Feature. It's the plugin system that powers everything.
+
+*   **[Extending SEO Audit](extending-seo-audit.html)**
+    Add your own checks to `audit:seo` via the `SEO_AUDIT_PAGE` event.
+
+*   **[Testing Your Code](testing.html)**
+    Unit and integration tests for the Feature you just built — don't ship it untested.
 
 *   **[Asset Manager](asset-manager.html)**
     The "Traffic Cop" for your CSS and JS. Stop worrying about dependency order.

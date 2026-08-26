@@ -14,6 +14,32 @@ Instead of one giant script that does everything (read files -> parse markdown -
 
 ---
 
+## Quick Reference
+
+Already know the system and just need to look something up? Here's every event in one table. Everything below this expands on it with examples.
+
+| Event | Fired When | Event Class | Payload |
+| :--- | :--- | :--- | :--- |
+| `CREATE` | Application boot, before anything else | `Event` | none |
+| `PRE_GLOB` | Just before file discovery scans `content/` | `Event` | none |
+| `POST_GLOB` | Right after file discovery, with the full file list known | `Event` | none |
+| `PRE_LOOP` | Before the per-file render loop starts | `Event` | none |
+| `PRE_RENDER` | Before a single file is converted | `RenderEvent` | `filePath`, `fileUrl`, `metadata`, `extra` |
+| `RENDER` | Converting a single file (Markdown → HTML, etc.) | `RenderEvent` | same as above, plus `renderedContent`/`outputPath` as they're set |
+| `MARKDOWN_CONVERTED` | Right after Markdown → HTML, before templating | `RenderEvent` | scoped to one file; only `renderedContent`/`metadata` survive back out |
+| `POST_RENDER` | After a file's final HTML is generated, before it's written | `RenderEvent` | full set, `renderedContent`/`outputPath` populated |
+| `POST_LOOP` | After every file has been processed | `Event` | none |
+| `DESTROY` | Application shutdown | `Event` | none |
+| `CONSOLE_INIT` | CLI bootstrap, so Features can register commands | `ConsoleInitEvent` | `application` (the Symfony `Application`) |
+| `COLLECT_MENU_ITEMS` | During `POST_GLOB`, fired by MenuBuilder | `CollectMenuItemsEvent` | `menuData` (mutable) |
+| `ROBOTS_TXT_BUILDING` | Before `robots.txt` is written | `RobotsTxtBuildingEvent` | `rules` (mutable) |
+| `RSS_BUILDER_INIT` | Once per category feed, before items are added | `RssBuilderInitEvent` | `builder`, `categoryMetadata` |
+| `RSS_ITEM_BUILDING` | Once per item, while building an RSS feed | `RssItemBuildingEvent` | `item` (a `FeedItem`), `file` |
+| `SEO_AUDIT_PAGE` | Once per page during `audit:seo` | `SeoAuditPageEvent` | `crawler`, `filename`, `issues` (mutable) |
+| `UPLOAD_CHECK_FILE` | Before each file upload during `site:upload` | `UploadCheckFileEvent` | `path`, `localPath`, `targetPath`, hashes, `skipUpload`/`handled` (mutable) |
+
+---
+
 ## How It Works (The Radio Station Analogy)
 
 Think of the Event Manager as a radio station.

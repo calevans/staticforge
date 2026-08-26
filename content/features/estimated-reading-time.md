@@ -2,6 +2,8 @@
 title: Estimated Reading Time
 description: 'Automatically calculate and display reading time for your content.'
 template: docs
+menu: '3.1.15'
+og_image: "A stopwatch resting on an open book, warm reading light, cozy library atmosphere, clean minimal style, --ar 16:9"
 ---
 # Estimated Reading Time
 

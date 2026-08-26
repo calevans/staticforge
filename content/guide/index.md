@@ -10,6 +10,8 @@ og_image: "Open glowing user manual, guide book leading the way, path to knowled
 
 Welcome to the StaticForge User Guide. This section will walk you through everything from installation to deployment.
 
+Upgrading from an older version? See [What's New in 3.0](../whats-new-3-0.html) for a summary of what changed.
+
 ## What is a "Page"?
 
 In StaticForge, a "page" is just a text file. You don't need a database. You write your content in a simple file, add a little metadata at the top, and save it.
@@ -43,7 +45,7 @@ If you are new to writing in this format, check out the original [Markdown Synta
 *   [Site Configuration](site-config.html) - Configuring your site (`siteconfig.yaml`).
 *   [System Commands](commands.html) - Utility and reference commands.
 *   [Frontmatter Guide](frontmatter.html) - How to add metadata to your content.
-*   [CLI Commands](cli-commands.html) - Reference for rendering, auditing, and system commands.*   Control exactly where your page appears in the menu
+*   [CLI Commands](cli-commands.html) - Reference for rendering, auditing, and system commands.
 
 ---
 
