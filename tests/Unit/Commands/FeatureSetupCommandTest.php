@@ -35,7 +35,7 @@ class FeatureSetupCommandTest extends UnitTestCase
     public function testExecuteWithNonExistentPackage(): void
     {
         $application = new Application();
-        $application->addCommand(new FeatureSetupCommand());
+        $application->addCommand(new FeatureSetupCommand($this->container));
 
         $command = $application->find('feature:setup');
         $commandTester = new CommandTester($command);
@@ -56,7 +56,7 @@ class FeatureSetupCommandTest extends UnitTestCase
         mkdir($packageDir, 0777, true);
 
         $application = new Application();
-        $application->addCommand(new FeatureSetupCommand());
+        $application->addCommand(new FeatureSetupCommand($this->container));
 
         $command = $application->find('feature:setup');
         $commandTester = new CommandTester($command);
@@ -80,7 +80,7 @@ class FeatureSetupCommandTest extends UnitTestCase
         file_put_contents($packageDir . '/siteconfig.yaml.example', 'config: value');
 
         $application = new Application();
-        $application->addCommand(new FeatureSetupCommand());
+        $application->addCommand(new FeatureSetupCommand($this->container));
 
         $command = $application->find('feature:setup');
         $commandTester = new CommandTester($command);

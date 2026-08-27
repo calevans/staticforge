@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\FeatureTools\Commands;
 
+use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,6 +18,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class FeatureSetupCommand extends Command
 {
+    private const EXAMPLE_SUFFIX = '.example';
+
+    protected Container $container;
+
+    public function __construct(Container $container)
+    {
+        parent::__construct();
+        $this->container = $container;
+    }
+
     protected function configure(): void
     {
         $this
@@ -48,6 +59,8 @@ class FeatureSetupCommand extends Command
         $featureName = basename($packageName);
 
         // 1. Handle Single Configuration Files
+        // These keep their .example suffix: they are fragments the user has to
+        // merge into an existing file, so they must not land in place.
         $singleFiles = [
             'siteconfig.yaml.example' => getcwd() . "/siteconfig.yaml.example.{$featureName}",
             '.env.example' => getcwd() . "/.env.example.{$featureName}",
@@ -63,21 +76,62 @@ class FeatureSetupCommand extends Command
         }
 
         // 2. Handle Twig Template Examples
-        $templateDir = $_ENV['TEMPLATE_DIR'] ?? (getcwd() . '/templates');
-        if (!empty($_ENV['TEMPLATE'])) {
-            $templateDir .= '/' . $_ENV['TEMPLATE'];
-        }
+        // TEMPLATE is resolved by bootstrap (siteconfig site.template > .env
+        // TEMPLATE > 'staticforce') and stored in the container. Reading
+        // $_ENV['TEMPLATE'] here would miss a siteconfig-only template and drop
+        // partials into the wrong theme.
+        $templateName = (string)($this->container->getVariable('TEMPLATE') ?? 'staticforce');
+        $templateRoot = (string)($this->container->getVariable('TEMPLATE_DIR') ?? (getcwd() . '/templates'));
+        $templateTargetDir = rtrim($templateRoot, '/') . '/' . $templateName;
 
-        if ($this->copyRecursive($packageDir, $templateDir, '.html.twig.example', $io)) {
-            $filesFound = true;
+        $twigExamples = $this->findExamples($packageDir, '.html.twig.example');
+        if ($twigExamples !== []) {
+            $io->section('Twig partials');
+            $io->text("Active template: {$templateName}");
+            $io->text("Destination:     {$templateTargetDir}");
+
+            // A missing theme directory means the resolved template name does
+            // not match a real theme. Creating it would hide the mistake and
+            // leave the partials somewhere the site never renders from.
+            if (!is_dir($templateTargetDir)) {
+                $io->error("Template directory does not exist: {$templateTargetDir}");
+                $io->note(
+                    "The active template is '{$templateName}'. Check 'site: template:' in siteconfig.yaml "
+                    . "(or TEMPLATE in .env) and make sure that theme directory exists."
+                );
+                return Command::FAILURE;
+            }
+
+            if ($this->copyExamples($twigExamples, $templateTargetDir, $io)) {
+                $filesFound = true;
+            }
         }
 
         // 3. Handle CSS Examples
-        $contentDir = $_ENV['SOURCE_DIR'] ?? (getcwd() . '/content');
-        $cssTargetDir = $contentDir . '/assets/css';
+        $contentDir = (string)($this->container->getVariable('SOURCE_DIR') ?? (getcwd() . '/content'));
+        $cssTargetDir = rtrim($contentDir, '/') . '/assets/css';
 
-        if ($this->copyRecursive($packageDir, $cssTargetDir, '.css.example', $io)) {
-            $filesFound = true;
+        $cssExamples = $this->findExamples($packageDir, '.css.example');
+        if ($cssExamples !== []) {
+            $io->section('Stylesheets');
+            $io->text("Destination:     {$cssTargetDir}");
+
+            // assets/css is an ordinary output location and may legitimately
+            // not exist yet, but its content root must.
+            if (!is_dir($contentDir)) {
+                $io->error("Content directory does not exist: {$contentDir}");
+                $io->note("Check SOURCE_DIR in .env.");
+                return Command::FAILURE;
+            }
+
+            if (!is_dir($cssTargetDir) && !mkdir($cssTargetDir, 0755, true) && !is_dir($cssTargetDir)) {
+                $io->error("Failed to create directory: {$cssTargetDir}");
+                return Command::FAILURE;
+            }
+
+            if ($this->copyExamples($cssExamples, $cssTargetDir, $io)) {
+                $filesFound = true;
+            }
         }
 
         if (!$filesFound) {
@@ -101,26 +155,62 @@ class FeatureSetupCommand extends Command
         return false;
     }
 
-    private function copyRecursive(string $sourceDir, string $targetDir, string $suffix, SymfonyStyle $io): bool
+    /**
+     * Find every example file in the package matching $suffix.
+     *
+     * @return array<int, string> Absolute source paths
+     */
+    private function findExamples(string $sourceDir, string $suffix): array
     {
-        $filesFound = false;
+        $found = [];
 
         try {
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0755, true);
-            }
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($sourceDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+            );
 
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDir));
             foreach ($iterator as $file) {
                 if ($file->isFile() && str_ends_with($file->getFilename(), $suffix)) {
-                    $target = $targetDir . '/' . $file->getFilename();
-                    if ($this->copyFile($file->getPathname(), $target, $io)) {
-                        $filesFound = true;
-                    }
+                    $found[] = $file->getPathname();
                 }
             }
         } catch (\Exception $e) {
-            // Log debug info if needed, but don't crash
+            return $found;
+        }
+
+        sort($found);
+
+        return $found;
+    }
+
+    /**
+     * Copy drop-in files into place, dropping the trailing .example so the
+     * result is usable without a manual rename. An existing file is never
+     * overwritten -- the user may have edited it.
+     *
+     * @param array<int, string> $sources
+     */
+    private function copyExamples(array $sources, string $targetDir, SymfonyStyle $io): bool
+    {
+        $filesFound = false;
+
+        foreach ($sources as $source) {
+            $filename = basename($source);
+            if (str_ends_with($filename, self::EXAMPLE_SUFFIX)) {
+                $filename = substr($filename, 0, -strlen(self::EXAMPLE_SUFFIX));
+            }
+
+            $target = $targetDir . '/' . $filename;
+
+            if (file_exists($target)) {
+                $io->warning("Skipped (already exists): {$target}");
+                $filesFound = true;
+                continue;
+            }
+
+            if ($this->copyFile($source, $target, $io)) {
+                $filesFound = true;
+            }
         }
 
         return $filesFound;
