@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\DevServer\Commands;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'site:devserver',
     description: 'Start development server with proper 404 handling'
 )]
-class DevServerCommand extends Command
+class DevServerCommand extends Command implements SignalableCommandInterface
 {
     private string $routerFile;
     private string $publicDir;
@@ -41,12 +42,6 @@ class DevServerCommand extends Command
 
         // Register cleanup function
         register_shutdown_function([$this, 'cleanup']);
-
-        // Handle signals for graceful shutdown
-        if (function_exists('pcntl_signal')) {
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
-        }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -153,11 +148,34 @@ class DevServerCommand extends Command
         return false;
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function getSubscribedSignals(): array
+    {
+        // ext-pcntl is optional (it is not in composer.json's require), and the
+        // SIG* constants only exist when it is loaded.
+        if (!\function_exists('pcntl_signal')) {
+            return [];
+        }
+
+        return [\SIGINT, \SIGTERM];
+    }
+
+    /**
+     * Registering this method with pcntl_signal() directly used to make every
+     * Ctrl+C fatal: pcntl invokes a handler as (int $signo, array|null $siginfo),
+     * but this signature is inherited from Command and declares int|false as its
+     * second parameter, so the siginfo array hit a TypeError under strict_types.
+     * Symfony's SignalRegistry owns the pcntl callback instead and calls this
+     * with the contract it is actually typed for.
+     */
     public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
         echo "\nShutting down development server...\n";
         $this->cleanup();
-        exit(0);
+
+        return 0;
     }
 
     public function cleanup(): void

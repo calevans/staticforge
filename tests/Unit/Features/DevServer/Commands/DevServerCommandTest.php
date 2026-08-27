@@ -185,4 +185,84 @@ class DevServerCommandTest extends UnitTestCase
         $command->cleanup();
         $this->assertFileDoesNotExist($missingRouterFile);
     }
+    public function testSubscribesToInterruptAndTerminateSignals(): void
+    {
+        $command = new DevServerCommand();
+
+        $this->assertContains(\SIGINT, $command->getSubscribedSignals());
+        $this->assertContains(\SIGTERM, $command->getSubscribedSignals());
+    }
+
+    /**
+     * Regression: initialize() used to call pcntl_signal(SIGINT, [$this,
+     * 'handleSignal']). pcntl invokes a handler as (int $signo, array|null
+     * $siginfo), but handleSignal() inherits Symfony's Command signature and
+     * types its second parameter int|false, so the siginfo array made every
+     * Ctrl+C a fatal TypeError under strict_types. Signal registration belongs
+     * to Symfony's SignalRegistry via SignalableCommandInterface.
+     */
+    public function testInitializeDoesNotInstallItsOwnSignalHandler(): void
+    {
+        if (!\function_exists('pcntl_signal_get_handler')) {
+            $this->markTestSkipped('pcntl not available');
+        }
+
+        mkdir($this->tempCwd . '/public', 0755, true);
+        $before = pcntl_signal_get_handler(\SIGINT);
+
+        $command = new DevServerCommand();
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $input->bind($command->getDefinition());
+        (new ReflectionMethod($command, 'initialize'))
+            ->invoke($command, $input, new \Symfony\Component\Console\Output\NullOutput());
+
+        $this->assertSame(
+            $before,
+            pcntl_signal_get_handler(\SIGINT),
+            'initialize() must not register its own pcntl handler'
+        );
+    }
+
+    /**
+     * Drives a real SIGINT through Symfony's own SignalRegistry -- the component
+     * that actually invokes handleSignal() at runtime -- rather than calling the
+     * method directly, since the bug was in how the handler gets invoked.
+     */
+    public function testRealSigintReachesHandlerAndCleansUp(): void
+    {
+        if (!\function_exists('pcntl_signal') || !\function_exists('posix_kill')) {
+            $this->markTestSkipped('pcntl/posix not available');
+        }
+
+        $routerFile = $this->tempCwd . '/router-probe.php';
+        file_put_contents($routerFile, '<?php');
+
+        $command = new DevServerCommand();
+        (new ReflectionProperty($command, 'routerFile'))->setValue($command, $routerFile);
+
+        $original = pcntl_signal_get_handler(\SIGINT);
+        $result = 'handler-never-ran';
+
+        try {
+            // Mirrors Symfony\Component\Console\Application::doRunCommand().
+            $registry = new \Symfony\Component\Console\SignalRegistry\SignalRegistry();
+            $registry->register(\SIGINT, function (int $signal) use ($command, &$result): void {
+                $result = $command->handleSignal($signal);
+            });
+
+            ob_start();
+            posix_kill((int) getmypid(), \SIGINT);
+            // pcntl_async_signals is enabled by SignalRegistry; dispatch defensively.
+            if (\function_exists('pcntl_signal_dispatch')) {
+                pcntl_signal_dispatch();
+            }
+            $echoed = (string) ob_get_clean();
+        } finally {
+            pcntl_signal(\SIGINT, $original ?: \SIG_DFL);
+        }
+
+        $this->assertSame(0, $result, 'handleSignal must run and return an exit code');
+        $this->assertStringContainsString('Shutting down development server', $echoed);
+        $this->assertFileDoesNotExist($routerFile, 'Router file must be cleaned up on shutdown');
+    }
 }
