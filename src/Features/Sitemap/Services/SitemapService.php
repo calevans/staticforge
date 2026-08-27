@@ -60,7 +60,7 @@ class SitemapService
         $lastmod = date('Y-m-d');
         if (isset($metadata['date'])) {
             // Try to parse date from metadata
-            $timestamp = strtotime($metadata['date']);
+            $timestamp = strtotime((string)$metadata['date']);
             if ($timestamp !== false) {
                 $lastmod = date('Y-m-d', $timestamp);
             }

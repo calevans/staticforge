@@ -6,7 +6,6 @@ namespace EICC\StaticForge\Core;
 
 use EICC\Utils\Container;
 use EICC\Utils\Log;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Discovers content files in configured directories
@@ -113,13 +112,7 @@ class FileDiscovery
 
                 // Check for future dates
                 if (isset($metadata['date'])) {
-                    $dateVal = $metadata['date'];
-                    // Handle pre-parsed timestamps (YAML might do this)
-                    if (is_int($dateVal)) {
-                        $fileTime = $dateVal;
-                    } else {
-                        $fileTime = strtotime((string)$dateVal);
-                    }
+                    $fileTime = strtotime((string)$metadata['date']);
 
                     if ($fileTime !== false && $fileTime > time()) {
                         $this->logger->log('INFO', "Skipping future dated file: {$filePath} (Date: {$metadata['date']})");
@@ -238,7 +231,7 @@ class FileDiscovery
         }
 
         try {
-            $metadata = Yaml::parse($yamlContent);
+            $metadata = YamlParser::parse($yamlContent);
 
             // Ensure we return an array (YAML can parse to null or other types)
             if (!is_array($metadata)) {

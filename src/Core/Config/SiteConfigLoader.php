@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Core\Config;
 
 use EICC\Utils\Log;
-use Symfony\Component\Yaml\Yaml;
+use EICC\StaticForge\Core\YamlParser;
 
 /**
  * Loads siteconfig.yaml (base) and deep-merges every siteconfig.d/*.yaml
@@ -86,7 +86,7 @@ final class SiteConfigLoader
     private function parseFile(string $path): array
     {
         try {
-            $parsed = Yaml::parseFile($path);
+            $parsed = YamlParser::parseFile($path);
         } catch (\Exception $e) {
             throw new \RuntimeException(
                 "Critical Error: Failed to parse siteconfig file at {$path}: " . $e->getMessage(),

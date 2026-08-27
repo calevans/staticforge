@@ -200,13 +200,11 @@ class TagPageService
     private function getFileDate(array $metadata, string $filePath): string
     {
         if (isset($metadata['published_date'])) {
-            return is_int($metadata['published_date'])
-                ? date('Y-m-d', $metadata['published_date'])
-                : (string) $metadata['published_date'];
+            return (string) $metadata['published_date'];
         }
 
         if (isset($metadata['date'])) {
-            return is_int($metadata['date']) ? date('Y-m-d', $metadata['date']) : (string) $metadata['date'];
+            return (string) $metadata['date'];
         }
 
         if (file_exists($filePath)) {

@@ -277,10 +277,10 @@ class RssFeedService
     private function getFileDate(array $metadata, string $filePath): string
     {
         if (!empty($metadata['published_date'])) {
-            return $metadata['published_date'];
+            return (string)$metadata['published_date'];
         }
         if (!empty($metadata['date'])) {
-            return $metadata['date'];
+            return (string)$metadata['date'];
         }
         if (file_exists($filePath)) {
             $mtime = filemtime($filePath);

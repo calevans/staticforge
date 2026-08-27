@@ -10,7 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Yaml\Yaml;
+use EICC\StaticForge\Core\YamlParser;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use SplFileInfo;
@@ -158,7 +158,7 @@ class ContentCommand extends Command
             }
 
             try {
-                $frontmatter = Yaml::parse($matches[1]);
+                $frontmatter = YamlParser::parse($matches[1]);
 
                 // Check required fields
                 $required = ['title']; // Add others if strictly required like 'date' or 'layout'/'template'?
