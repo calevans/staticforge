@@ -99,6 +99,12 @@ class BaseFeatureTest extends UnitTestCase
         $this->assertTrue($this->feature->checkRequirements([]));
     }
 
+    public function testGetConfigHelpDefaultsToNullForAnyKey(): void
+    {
+        $this->assertNull($this->feature->getConfigHelp('any_key'));
+        $this->assertNull($this->feature->getConfigHelp('another_key'));
+    }
+
     public function testRequireFeaturesReturnsFalseWhenFeatureManagerUnavailable(): void
     {
         // Replace the FeatureManager service slot with a callable that throws,

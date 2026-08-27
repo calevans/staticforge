@@ -35,6 +35,17 @@ abstract class BaseFeature implements FeatureInterface
     }
 
     /**
+     * Default no-op implementation. This is what makes adding
+     * getConfigHelp() to ConfigurableFeatureInterface non-breaking: every
+     * existing implementer inherits a valid implementation and keeps
+     * compiling unchanged.
+     */
+    public function getConfigHelp(string $key): ?string
+    {
+        return null;
+    }
+
+    /**
      * Store event manager reference and register listeners
      */
     public function register(EventManager $eventManager): void

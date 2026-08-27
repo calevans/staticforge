@@ -27,4 +27,10 @@ interface ConfigurableFeatureInterface
      * @return string[]
      */
     public function getRequiredEnv(): array;
+
+    /**
+     * Returns copy-pasteable example YAML for the given required-config
+     * key, or null if the feature offers no help for that key.
+     */
+    public function getConfigHelp(string $key): ?string;
 }

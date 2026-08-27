@@ -132,11 +132,9 @@ class ConfigCommand extends Command
                 if (!$this->hasConfigKey($siteConfig, $key)) {
                     $message = "Missing key in siteconfig.yaml: {$key}";
 
-                    if (method_exists($feature, 'getConfigHelp')) {
-                        $help = $feature->getConfigHelp($key);
-                        if ($help) {
-                            $message .= "\n<comment>Example Configuration:</comment>\n" . $help;
-                        }
+                    $help = $feature->getConfigHelp($key);
+                    if ($help) {
+                        $message .= "\n<comment>Example Configuration:</comment>\n" . $help;
                     }
 
                     $errors[] = [
