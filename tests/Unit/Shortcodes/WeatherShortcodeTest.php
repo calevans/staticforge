@@ -19,6 +19,12 @@ class WeatherShortcodeTest extends UnitTestCase
     {
         parent::setUp();
 
+        // A real site:render renders content/examples/shortcodes.md, which warms
+        // the shared /tmp weather cache. A warm cache makes handle() skip its
+        // first HTTP call, so the MockHttpClient responses below get consumed
+        // out of order. Clear on the way in as well as on the way out.
+        $this->clearWeatherCache();
+
         $this->templateDir = sys_get_temp_dir() . '/staticforge_weather_templates_' . uniqid();
         mkdir($this->templateDir . '/test/shortcodes', 0755, true);
 
