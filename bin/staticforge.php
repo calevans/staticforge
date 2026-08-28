@@ -60,7 +60,7 @@ if (!file_exists($bootstrapPath)) {
 $container = require $bootstrapPath;
 
 // Create console application
-$app = new Application('StaticForge', '3.3.1');
+$app = new Application('StaticForge', '3.3.2');
 
 // Add commands
 $app->addCommand(new InitCommand());
