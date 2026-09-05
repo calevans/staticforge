@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\DevServer\Commands;
 
+use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
@@ -21,6 +22,11 @@ class DevServerCommand extends Command implements SignalableCommandInterface
     private string $routerFile;
     private string $publicDir;
 
+    public function __construct(private readonly Container $container)
+    {
+        parent::__construct();
+    }
+
     protected function configure(): void
     {
         $this
@@ -32,7 +38,10 @@ class DevServerCommand extends Command implements SignalableCommandInterface
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $output->writeln("CWD: " . getcwd());
-        $this->publicDir = getcwd() . '/public';
+        $outputDir = $this->container->hasVariable('OUTPUT_DIR')
+            ? $this->container->getVariable('OUTPUT_DIR')
+            : null;
+        $this->publicDir = $outputDir ?: (getcwd() . '/public');
         // Deliberately outside OUTPUT_DIR (public/): a live site:render wipes and
         // regenerates that directory, which would delete the router file out from
         // under a running dev server. The PHP built-in server accepts an absolute

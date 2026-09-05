@@ -29,6 +29,7 @@ class DevServerCommandTest extends UnitTestCase
         $this->tempCwd = sys_get_temp_dir() . '/staticforge_devserver_test_' . uniqid();
         mkdir($this->tempCwd, 0755, true);
         chdir($this->tempCwd);
+        $this->setContainerVariable('OUTPUT_DIR', $this->tempCwd . '/public');
     }
 
     protected function tearDown(): void
@@ -40,7 +41,7 @@ class DevServerCommandTest extends UnitTestCase
 
     public function testConfigureDefinesExpectedOptions(): void
     {
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
 
         $this->assertTrue($command->getDefinition()->hasOption('port'));
         $this->assertTrue($command->getDefinition()->hasOption('host'));
@@ -52,7 +53,7 @@ class DevServerCommandTest extends UnitTestCase
     {
         // No /public directory created under tempCwd
         $application = new Application();
-        $application->addCommand(new DevServerCommand());
+        $application->addCommand(new DevServerCommand($this->container));
 
         $command = $application->find('site:devserver');
         $commandTester = new CommandTester($command);
@@ -77,7 +78,7 @@ class DevServerCommandTest extends UnitTestCase
         $port = (int) substr($name, strrpos($name, ':') + 1);
 
         $application = new Application();
-        $application->addCommand(new DevServerCommand());
+        $application->addCommand(new DevServerCommand($this->container));
 
         $command = $application->find('site:devserver');
         $commandTester = new CommandTester($command);
@@ -93,7 +94,7 @@ class DevServerCommandTest extends UnitTestCase
 
     public function testIsPortInUseReturnsFalseForUnusedPort(): void
     {
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         $method = new ReflectionMethod($command, 'isPortInUse');
 
         // Port 0 / an arbitrarily high unlikely-to-be-bound port
@@ -106,7 +107,7 @@ class DevServerCommandTest extends UnitTestCase
     {
         mkdir($this->tempCwd . '/public', 0755, true);
 
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         $method = new ReflectionMethod($command, 'initialize');
 
         $input = new \Symfony\Component\Console\Input\ArrayInput([]);
@@ -128,12 +129,47 @@ class DevServerCommandTest extends UnitTestCase
         $this->assertStringStartsWith($tempDir, $routerFile);
     }
 
+    public function testInitializeUsesOutputDirFromContainer(): void
+    {
+        $configuredOutputDir = sys_get_temp_dir() . '/staticforge_devserver_outputdir_' . uniqid();
+        mkdir($configuredOutputDir, 0755, true);
+        $this->setContainerVariable('OUTPUT_DIR', $configuredOutputDir);
+
+        $command = new DevServerCommand($this->container);
+        $method = new ReflectionMethod($command, 'initialize');
+
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $input->bind($command->getDefinition());
+        $method->invoke($command, $input, new \Symfony\Component\Console\Output\NullOutput());
+
+        $publicDirProp = new ReflectionProperty($command, 'publicDir');
+
+        $this->assertSame($configuredOutputDir, $publicDirProp->getValue($command));
+
+        $this->removeDirectory($configuredOutputDir);
+    }
+
+    public function testInitializeFallsBackToCwdPublicWhenOutputDirNotSet(): void
+    {
+        $container = new \EICC\Utils\Container();
+        $command = new DevServerCommand($container);
+        $method = new ReflectionMethod($command, 'initialize');
+
+        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+        $input->bind($command->getDefinition());
+        $method->invoke($command, $input, new \Symfony\Component\Console\Output\NullOutput());
+
+        $publicDirProp = new ReflectionProperty($command, 'publicDir');
+
+        $this->assertSame($this->tempCwd . '/public', $publicDirProp->getValue($command));
+    }
+
     public function testGetRouterTemplateResolvesFilesRelativeToWorkingDirectory(): void
     {
         // Regression: the router script must resolve requested files via getcwd(),
         // not __DIR__ - the built-in server sets cwd to the docroot per request,
         // but the router script itself now lives outside that docroot.
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         $method = new ReflectionMethod($command, 'getRouterTemplate');
 
         $template = $method->invoke($command);
@@ -144,7 +180,7 @@ class DevServerCommandTest extends UnitTestCase
 
     public function testGetRouterTemplateContainsExpected404Markup(): void
     {
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         $method = new ReflectionMethod($command, 'getRouterTemplate');
 
         $template = $method->invoke($command);
@@ -160,7 +196,7 @@ class DevServerCommandTest extends UnitTestCase
         $routerFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
         file_put_contents($routerFile, '<?php // router');
 
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
 
         $publicDirProp = new ReflectionProperty($command, 'publicDir');
         $publicDirProp->setValue($command, $this->tempCwd . '/public');
@@ -175,7 +211,7 @@ class DevServerCommandTest extends UnitTestCase
 
     public function testCleanupIsSafeWhenRouterFileMissing(): void
     {
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
 
         $routerFileProp = new ReflectionProperty($command, 'routerFile');
         $missingRouterFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
@@ -187,7 +223,7 @@ class DevServerCommandTest extends UnitTestCase
     }
     public function testSubscribesToInterruptAndTerminateSignals(): void
     {
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
 
         $this->assertContains(\SIGINT, $command->getSubscribedSignals());
         $this->assertContains(\SIGTERM, $command->getSubscribedSignals());
@@ -210,7 +246,7 @@ class DevServerCommandTest extends UnitTestCase
         mkdir($this->tempCwd . '/public', 0755, true);
         $before = pcntl_signal_get_handler(\SIGINT);
 
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         $input = new \Symfony\Component\Console\Input\ArrayInput([]);
         $input->bind($command->getDefinition());
         (new ReflectionMethod($command, 'initialize'))
@@ -237,7 +273,7 @@ class DevServerCommandTest extends UnitTestCase
         $routerFile = $this->tempCwd . '/router-probe.php';
         file_put_contents($routerFile, '<?php');
 
-        $command = new DevServerCommand();
+        $command = new DevServerCommand($this->container);
         (new ReflectionProperty($command, 'routerFile'))->setValue($command, $routerFile);
 
         $original = pcntl_signal_get_handler(\SIGINT);
