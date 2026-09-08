@@ -45,6 +45,8 @@ class Feature extends BaseFeature implements FeatureInterface, ConfigurableFeatu
 search:
   # 'minisearch' (default) or 'fuse'
   engine: minisearch
+  # Collapse multiple section hits from the same page into one result (default: true)
+  dedupe_pages: true
 YAML;
         }
         return null;

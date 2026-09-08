@@ -77,6 +77,7 @@ class FeatureTest extends UnitTestCase
         $help = $this->feature->getConfigHelp('search');
         $this->assertNotNull($help);
         $this->assertStringContainsString('engine: minisearch', $help);
+        $this->assertStringContainsString('dedupe_pages: true', $help);
     }
 
     public function testGetConfigHelpForUnknownKeyReturnsNull(): void

@@ -7,7 +7,8 @@
             inputSelector: '#search-input',
             resultsSelector: '#search-results',
             minisearchPath: '/assets/js/minisearch.min.js',
-            indexPath: '/search.json'
+            indexPath: '/search.json',
+            dedupePages: true
         },
 
         init: function(options) {
@@ -50,7 +51,7 @@
                 .then(data => {
                     this.index = new MiniSearch({
                         fields: ['title', 'text', 'tags', 'category'], // fields to index for full-text search
-                        storeFields: ['title', 'url', 'tags', 'category'], // fields to return with search results
+                        storeFields: ['title', 'pageTitle', 'url', 'tags', 'category'], // fields to return with search results
                         searchOptions: {
                             boost: { title: 2, tags: 1.5 },
                             fuzzy: 0.2
@@ -69,7 +70,29 @@
             }
 
             const results = this.index.search(query);
-            this.renderResults(results);
+            this.renderResults(this.options.dedupePages ? this.dedupeByPage(results) : results);
+        },
+
+        // Collapse multiple section hits from the same page into the best-scoring one,
+        // displayed under the page's own title rather than the winning section's heading.
+        dedupeByPage: function(results) {
+            const bestByPage = new Map();
+
+            results.forEach((result, index) => {
+                const baseUrl = result.url.split('#')[0];
+                const existing = bestByPage.get(baseUrl);
+                // MiniSearch results are already sorted best-first, so the first hit wins
+                if (!existing) {
+                    bestByPage.set(baseUrl, { result, index });
+                }
+            });
+
+            return Array.from(bestByPage.values())
+                .sort((a, b) => a.index - b.index)
+                .map(entry => ({
+                    ...entry.result,
+                    title: entry.result.pageTitle || entry.result.title
+                }));
         },
 
         renderResults: function(results) {

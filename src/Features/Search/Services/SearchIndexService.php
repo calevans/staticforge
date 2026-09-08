@@ -16,7 +16,15 @@ class SearchIndexService
     private Container $container;
 
     /**
-     * @var array<int, array{id: int, title: string, text: string, url: string, tags: string, category: mixed}>
+     * @var array<int, array{
+     *     id: int,
+     *     title: string,
+     *     pageTitle: string,
+     *     text: string,
+     *     url: string,
+     *     tags: string,
+     *     category: mixed
+     * }>
      */
     private array $documents = [];
     private int $idCounter = 1;
@@ -76,6 +84,7 @@ class SearchIndexService
             $doc = [
                 'id' => $this->idCounter++,
                 'title' => $section['title'],
+                'pageTitle' => $pageTitle,
                 'text' => mb_substr(trim($section['text']), 0, 5000),
                 'url' => $sectionUrl,
                 'tags' => $tagsString,

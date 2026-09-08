@@ -115,14 +115,16 @@
                 inputSelector: '#search-input',
                 resultsSelector: '#search-results',
                 fusePath: '{{ site_base_url }}assets/js/fuse.basic.min.js',
-                indexPath: '{{ site_base_url }}search.json'
+                indexPath: '{{ site_base_url }}search.json',
+                dedupePages: {{ (search.dedupe_pages ?? true) ? 'true' : 'false' }}
             });
             {% else %}
             window.StaticForgeSearch.init({
                 inputSelector: '#search-input',
                 resultsSelector: '#search-results',
                 minisearchPath: '{{ site_base_url }}assets/js/minisearch.min.js',
-                indexPath: '{{ site_base_url }}search.json'
+                indexPath: '{{ site_base_url }}search.json',
+                dedupePages: {{ (search.dedupe_pages ?? true) ? 'true' : 'false' }}
             });
             {% endif %}
         }

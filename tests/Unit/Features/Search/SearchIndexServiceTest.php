@@ -105,9 +105,41 @@ class SearchIndexServiceTest extends TestCase
 
         $this->assertCount(1, $json);
         $this->assertEquals('Test Page', $json[0]['title']);
+        $this->assertEquals('Test Page', $json[0]['pageTitle']);
         $this->assertEquals('This is content.', $json[0]['text']);
         $this->assertEquals('https://example.com/test.html', $json[0]['url']);
         $this->assertEquals('foo bar', $json[0]['tags']);
+    }
+
+    public function testCollectPageStampsEveryHeadingSectionWithThePageTitle(): void
+    {
+        $this->container->method('getVariable')
+            ->willReturnMap([
+                ['site_config', []],
+                ['OUTPUT_DIR', $this->tempDir],
+                ['SITE_BASE_URL', 'https://example.com']
+            ]);
+
+        $event = $this->makeEvent(
+            $this->tempDir . '/nerd-herding.html',
+            '<h2 id="speaking">Speaking</h2><p>Conference talks.</p>'
+                . '<h2 id="invest">Invest in your Nerds</h2><p>More conference notes.</p>',
+            ['title' => 'Nerd herding'],
+        );
+
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
+
+        $json = $this->readSearchIndex();
+        $this->assertCount(2, $json);
+
+        $this->assertSame('Speaking', $json[0]['title']);
+        $this->assertSame('Nerd herding', $json[0]['pageTitle']);
+        $this->assertSame('https://example.com/nerd-herding.html#speaking', $json[0]['url']);
+
+        $this->assertSame('Invest in your Nerds', $json[1]['title']);
+        $this->assertSame('Nerd herding', $json[1]['pageTitle']);
+        $this->assertSame('https://example.com/nerd-herding.html#invest', $json[1]['url']);
     }
 
     public function testSkipsPageWithSearchIndexFalse(): void

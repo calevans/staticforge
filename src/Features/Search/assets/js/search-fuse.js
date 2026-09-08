@@ -7,7 +7,8 @@
             inputSelector: '#search-input',
             resultsSelector: '#search-results',
             fusePath: '/assets/js/fuse.basic.min.js',
-            indexPath: '/search.json'
+            indexPath: '/search.json',
+            dedupePages: true
         },
 
         init: function(options) {
@@ -71,10 +72,33 @@
             }
 
             const results = this.index.search(query);
-            // Fuse returns { item: { ... }, refIndex: 0, score: 0.1 }
-            // We map it to just the item for the renderer
-            const mappedResults = results.map(result => result.item);
-            this.renderResults(mappedResults);
+            // Fuse returns { item: { ... }, refIndex: 0, score: 0.1 } sorted best (lowest score) first
+            const deduped = this.options.dedupePages ? this.dedupeByPage(results) : results;
+            this.renderResults(deduped.map(result => result.item));
+        },
+
+        // Collapse multiple section hits from the same page, keeping the lowest (best) score,
+        // displayed under the page's own title rather than the winning section's heading.
+        dedupeByPage: function(results) {
+            const bestByPage = new Map();
+
+            results.forEach((result, index) => {
+                const baseUrl = result.item.url.split('#')[0];
+                const existing = bestByPage.get(baseUrl);
+                if (!existing) {
+                    bestByPage.set(baseUrl, { result, index });
+                }
+            });
+
+            return Array.from(bestByPage.values())
+                .sort((a, b) => a.index - b.index)
+                .map(entry => ({
+                    ...entry.result,
+                    item: {
+                        ...entry.result.item,
+                        title: entry.result.item.pageTitle || entry.result.item.title
+                    }
+                }));
         },
 
         renderResults: function(results) {

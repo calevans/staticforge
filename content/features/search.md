@@ -67,10 +67,12 @@ search:
     - /categories/
     - /404.html
   exclude_content_in: []
+  dedupe_pages: true
 ```
 
 *   **exclude_paths:** A list of URL paths to completely exclude from the index.
 *   **exclude_content_in:** (Optional) A list of paths where content should be excluded, but the page might still be indexed (depending on implementation details, currently behaves similarly to exclude_paths).
+*   **dedupe_pages:** (Optional, default `true`) The index contains one document per heading section on a page, so a term appearing under two different subheadings produces two hits linking to the same page at different `#anchors`. With `dedupe_pages: true`, the client-side search groups results by page URL (ignoring the anchor), keeps only the best-scoring section per page (still deep-linking to that section), and displays it under the page's own title rather than the winning subheading's text. Set this to `false` if you want every matching section to appear as its own result, labeled with its own subheading — useful for sites that rely on deep-linking directly into long pages.
 
 ### Per-Page Configuration
 
