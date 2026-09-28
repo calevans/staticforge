@@ -8,6 +8,7 @@ use EICC\StaticForge\Commands\Make\ContentCreatorCommand;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Yaml\Yaml;
 
 class ContentCreatorCommandTest extends UnitTestCase
 {
@@ -21,6 +22,7 @@ class ContentCreatorCommandTest extends UnitTestCase
         $this->testDir = sys_get_temp_dir() . '/staticforge_content_creator_test_' . uniqid();
         mkdir($this->testDir);
         chdir($this->testDir);
+        $this->setContainerVariable('SOURCE_DIR', $this->testDir . '/content');
     }
 
     protected function tearDown(): void
@@ -121,6 +123,29 @@ class ContentCreatorCommandTest extends UnitTestCase
 
         $this->assertSame(0, $exitCode);
         $this->assertFileExists($this->testDir . '/content/untitled.md');
+    }
+
+    public function testFrontmatterTitleWithBackslashAndDoubleQuoteRoundTripsThroughYaml(): void
+    {
+        $title = 'The "Nerd" C:\Users\Path Story';
+
+        $tester = $this->makeCommandTester();
+        $exitCode = $tester->execute(['title' => $title]);
+
+        $this->assertSame(0, $exitCode);
+
+        $files = glob($this->testDir . '/content/*.md') ?: [];
+        $this->assertCount(1, $files);
+
+        $content = file_get_contents($files[0]);
+        $this->assertNotFalse($content);
+
+        $matched = preg_match('/^---\s*\n(.*?)\n---\s*\n/s', $content, $matches);
+        $this->assertSame(1, $matched, 'Expected frontmatter block to be present');
+        $frontmatter = Yaml::parse($matches[1]);
+
+        $this->assertIsArray($frontmatter);
+        $this->assertSame($title, $frontmatter['title']);
     }
 
     public function testCreatesTargetDirectoryWhenMissing(): void

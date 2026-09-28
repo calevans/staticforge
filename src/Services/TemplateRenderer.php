@@ -78,6 +78,11 @@ class TemplateRenderer
 
             $twig = $this->getTwig($container, $templateDir, $activeTemplate);
 
+            // Empty content stays empty so themes can still test {% if content %}
+            if ($parsedContent['content'] !== '') {
+                $parsedContent['content'] = ContentMarkers::wrap($parsedContent['content']);
+            }
+
             // Build template variables dynamically from all sources
             $templateVars = $this->variableBuilder->build($parsedContent, $container, $sourceFile);
 
@@ -141,6 +146,7 @@ class TemplateRenderer
         ) {
             $twig = $container->get('twig');
             if ($twig instanceof TwigEnvironment) {
+                $this->addFallbackPaths($twig);
                 return $twig;
             }
         }
@@ -156,20 +162,42 @@ class TemplateRenderer
         // Add the active template directory so includes work
         $loader->addPath($templateDir . '/' . $activeTemplate);
 
-        $this->cachedTwig = new TwigEnvironment($loader, [
+        $twig = new TwigEnvironment($loader, [
             'debug' => true,
             'strict_variables' => false,
             'autoescape' => 'html',
             'cache' => false,
         ]);
+        $this->addFallbackPaths($twig);
+        $this->cachedTwig = $twig;
         $this->cachedTemplateDir = $templateDir;
         $this->cachedActiveTemplate = $activeTemplate;
 
-        return $this->cachedTwig;
+        return $twig;
     }
 
     /**
-     * Inject assets into HTML if they haven't been rendered by the template
+     * Built-in shortcode templates ship with the package, appended last so a
+     * theme's own shortcodes/*.twig still takes precedence.
+     */
+    private function addFallbackPaths(TwigEnvironment $twig): void
+    {
+        $loader = $twig->getLoader();
+        if (!$loader instanceof FilesystemLoader) {
+            return;
+        }
+
+        $shortcodeTemplates = dirname(__DIR__) . "/Shortcodes/templates";
+        if (!in_array($shortcodeTemplates, $loader->getPaths(), true)) {
+            $loader->addPath($shortcodeTemplates);
+        }
+    }
+
+    /**
+     * Inject any registered assets the template didn't render itself. The
+     * exact strings AssetManager produces are deterministic for this build,
+     * so their presence is the test - not whether the theme links some other
+     * stylesheet of its own.
      */
     private function injectAssets(string $html): string
     {
@@ -177,54 +205,36 @@ class TemplateRenderer
             return $html;
         }
 
-        // Check if styles were rendered
-        if (strpos($html, '<!-- ASSETS:STYLES -->') === false && strpos($html, '<link rel="stylesheet"') === false) {
-            // We can't easily know if specific styles were rendered, but we can check if the variable was used.
-            // A better approach is to check if the AssetManager's output is present.
-            // However, since we pass the strings to the template, we can't know for sure.
-            // Strategy: Look for </head>. If found, inject styles and head scripts before it.
-
-            $styles = $this->assetManager->getStyles();
-            $headScripts = $this->assetManager->getScripts(false);
-
-            if ($styles || $headScripts) {
-                $injection = $styles . $headScripts;
-                // Only inject if not already present (simple check)
-                // This is imperfect but handles the "forgot to add {{ styles }}" case.
-                // We assume if the user added {{ styles }}, the content is there.
-                // But since we generate the content fresh, we can't compare easily.
-                // Let's rely on a marker or just inject if missing.
-
-                // Actually, TemplateVariableBuilder passes the strings.
-                // If the template didn't output them, they are missing.
-                // We can try to detect if the specific asset strings are in the HTML.
-                // But that's expensive.
-
-                // Let's just look for </head> and inject.
-                // To avoid duplication, we could wrap the output in a comment marker in AssetManager,
-                // but AssetManager returns raw HTML strings.
-
-                // For now, we will just inject before </head> and </body>.
-                // Users should use the variables for control. This is a fallback.
-
-                // Simple heuristic: If the HTML doesn't contain the exact string returned by getStyles(), inject it.
-                // This works because getStyles() returns a deterministic string for the current state.
-
-                if ($styles && strpos($html, $styles) === false) {
-                    $html = str_replace('</head>', $styles . '</head>', $html);
-                }
-                if ($headScripts && strpos($html, $headScripts) === false) {
-                    $html = str_replace('</head>', $headScripts . '</head>', $html);
-                }
+        $headInjection = '';
+        foreach ([$this->assetManager->getStyles(), $this->assetManager->getScripts(false)] as $markup) {
+            if ($markup !== '' && !str_contains($html, $markup)) {
+                $headInjection .= $markup;
             }
         }
+        if ($headInjection !== '') {
+            $html = $this->insertBefore($html, '</head>', $headInjection, false);
+        }
 
-        $scripts = $this->assetManager->getScripts(true);
-        if ($scripts && strpos($html, $scripts) === false) {
-            $html = str_replace('</body>', $scripts . '</body>', $html);
+        $footerScripts = $this->assetManager->getScripts(true);
+        if ($footerScripts !== '' && !str_contains($html, $footerScripts)) {
+            $html = $this->insertBefore($html, '</body>', $footerScripts, true);
         }
 
         return $html;
+    }
+
+    /**
+     * Insert $markup before one occurrence of $tag (first or last), rather
+     * than every occurrence - page content can legitimately contain the tag.
+     */
+    private function insertBefore(string $html, string $tag, string $markup, bool $last): string
+    {
+        $pos = $last ? strripos($html, $tag) : stripos($html, $tag);
+        if ($pos === false) {
+            return $html;
+        }
+
+        return substr($html, 0, $pos) . $markup . substr($html, $pos);
     }
 
     /**
@@ -232,7 +242,7 @@ class TemplateRenderer
      */
     private function slugifyCategory(string $category): string
     {
-        // Convert to lowercase and replace spaces/underscores with hyphens
-        return strtolower(str_replace([' ', '_'], '-', $category));
+        // Must match CategoriesService::sanitizeCategoryName(), which names the category_templates keys
+        return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($category)) ?? '', '-');
     }
 }

@@ -175,7 +175,9 @@ class ContentCommand extends Command
                 }
 
                 // Check Draft Status (Warning)
-                if (isset($frontmatter['draft']) && $frontmatter['draft'] === true) {
+                $isDraft = isset($frontmatter['draft'])
+                    && filter_var($frontmatter['draft'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true;
+                if ($isDraft) {
                      $issues[] = [
                         'file' => $relativePath,
                         'type' => 'warning',

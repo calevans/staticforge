@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\Forms\Services;
 
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use Twig\Environment;
@@ -58,27 +59,50 @@ class FormsService
             return;
         }
 
-        // Check for form shortcode: {{ form('formName') }}
-        if (preg_match_all('/\{\{\s*form\([\'"]([a-zA-Z0-9_-]+)[\'"]\)\s*\}\}/', $content, $matches, PREG_SET_ORDER)) {
-            $siteConfig = $this->container->getVariable('site_config') ?? [];
-            $formsConfig = $siteConfig['forms'] ?? [];
-            $activeTemplate = $this->container->getVariable('TEMPLATE') ?? 'staticforce';
+        $replaced = $this->replaceForms(
+            $content,
+            static fn (string $formHtml): string => HtmlPlaceholders::reserve($event, $formHtml)
+        );
+        if ($replaced !== $content) {
+            $event->extra['file_content'] = $replaced;
+        }
 
-            foreach ($matches as $match) {
-                $fullMatch = $match[0];
-                $formName = $match[1];
+        // A form inside a shortcode's body is already parked as HTML, out of file_content's reach
+        HtmlPlaceholders::transform(
+            $event,
+            fn (string $html): string => $this->replaceForms($html, static fn (string $formHtml): string => $formHtml)
+        );
+    }
 
-                if (!isset($formsConfig[$formName])) {
-                    $this->logger->log('WARNING', "Form '{$formName}' not found in siteconfig.yaml");
-                    continue;
-                }
+    /**
+     * Replace each {{ form('formName') }} in $text with the rendered form, passed through $wrap.
+     *
+     * @param callable(string): string $wrap
+     */
+    private function replaceForms(string $text, callable $wrap): string
+    {
+        if (!preg_match_all('/\{\{\s*form\([\'"]([a-zA-Z0-9_-]+)[\'"]\)\s*\}\}/', $text, $matches, PREG_SET_ORDER)) {
+            return $text;
+        }
 
-                $formHtml = $this->generateFormHtml($formsConfig[$formName], $activeTemplate);
-                $content = str_replace($fullMatch, $formHtml, $content);
+        $siteConfig = $this->container->getVariable('site_config') ?? [];
+        $formsConfig = $siteConfig['forms'] ?? [];
+        $activeTemplate = $this->container->getVariable('TEMPLATE') ?? 'staticforce';
+
+        foreach ($matches as $match) {
+            $fullMatch = $match[0];
+            $formName = $match[1];
+
+            if (!isset($formsConfig[$formName])) {
+                $this->logger->log('WARNING', "Form '{$formName}' not found in siteconfig.yaml");
+                continue;
             }
 
-            $event->extra['file_content'] = $content;
+            $formHtml = $this->generateFormHtml($formsConfig[$formName], $activeTemplate);
+            $text = str_replace($fullMatch, $wrap($formHtml), $text);
         }
+
+        return $text;
     }
 
     /**

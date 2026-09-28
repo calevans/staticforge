@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Services\Upload;
 
 use EICC\StaticForge\Core\Events\UploadCheckFileEvent;
 use EICC\StaticForge\Core\EventManager;
+use EICC\StaticForge\Core\FileProcessor;
 use EICC\Utils\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -320,8 +321,10 @@ class SiteUploader
                 RecursiveIteratorIterator::SELF_FIRST
             );
 
+            $fingerprintFile = rtrim($directory, '/\\') . DIRECTORY_SEPARATOR
+                . FileProcessor::BUILD_FINGERPRINT_FILE;
             foreach ($iterator as $file) {
-                if ($file->isFile()) {
+                if ($file->isFile() && $file->getPathname() !== $fingerprintFile) {
                     $files[] = $file->getPathname();
                 }
             }

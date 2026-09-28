@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\HtmlRenderer\Services;
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Services\BaseRendererService;
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -70,7 +71,7 @@ class HtmlRendererService extends BaseRendererService
             }
 
             // Extract content (skip frontmatter)
-            $htmlContent = $this->extractHtmlContent($content);
+            $htmlContent = HtmlPlaceholders::restore($event, $this->extractHtmlContent($content));
 
             // Apply default metadata
             $metadata = $this->applyDefaultMetadata($metadata);

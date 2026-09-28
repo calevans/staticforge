@@ -54,7 +54,8 @@ class ContentCreatorCommand extends Command
         $isDraft = (bool)$input->getOption('draft');
 
         // 1. Determine Directory
-        $baseDir = 'content';
+        $sourceDir = $this->container->getVariable('SOURCE_DIR');
+        $baseDir = is_string($sourceDir) && $sourceDir !== '' ? rtrim($sourceDir, '/') : 'content';
         $targetDir = $baseDir . ($type ? '/' . $type : '');
 
         // Ensure directory exists
@@ -137,7 +138,10 @@ class ContentCreatorCommand extends Command
             if (is_bool($value)) {
                 $valStr = $value ? 'true' : 'false';
             } else {
-                $valStr = is_string($value) ? '"' . str_replace('"', '\"', $value) . '"' : $value;
+                // A JSON string is a valid YAML double-quoted scalar, backslashes and all
+                $valStr = is_string($value)
+                    ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                    : $value;
             }
             $yaml .= sprintf("%s: %s\n", $key, $valStr);
         }

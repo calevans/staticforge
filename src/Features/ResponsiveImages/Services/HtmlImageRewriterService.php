@@ -71,7 +71,8 @@ final class HtmlImageRewriterService
         if ($changed) {
             $saved = $dom->saveHTML();
             if ($saved !== false) {
-                $event->renderedContent = $saved;
+                // The encoding hint passed to loadHTML() survives as a node and is serialized back out
+                $event->renderedContent = str_replace('<?xml encoding="utf-8" ?>', '', $saved);
                 $filePath = $event->filePath !== '' ? $event->filePath : 'unknown';
                 $this->logger->log('INFO', "ResponsiveImages: rewrote <img> tags for {$filePath}");
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Services;
 
+use EICC\StaticForge\Core\AssetManager;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\StaticForge\Services\TemplateVariableBuilder;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -160,6 +161,130 @@ class TemplateRendererTest extends UnitTestCase
         $result = $this->renderer->render($parsedContent, $this->container);
 
         $this->assertStringContainsString('Marker: from-container', $result);
+    }
+
+    public function testRenderTemplateResolvesBuiltInYoutubeShortcodeTemplateWhenThemeHasNone(): void
+    {
+        $result = $this->renderer->renderTemplate(
+            'shortcodes/youtube.twig',
+            ['id' => 'abc123', 'width' => '560', 'height' => '315', 'title' => 'A video'],
+            $this->container
+        );
+
+        $this->assertStringContainsString('src="https://www.youtube.com/embed/abc123"', $result);
+        $this->assertStringContainsString('<iframe', $result);
+    }
+
+    public function testRenderTemplateUrlEncodesYoutubeId(): void
+    {
+        $result = $this->renderer->renderTemplate(
+            'shortcodes/youtube.twig',
+            ['id' => 'abc 123/x', 'width' => '560', 'height' => '315', 'title' => 'A video'],
+            $this->container
+        );
+
+        $this->assertStringContainsString('src="https://www.youtube.com/embed/abc%20123%2Fx"', $result);
+    }
+
+    public function testRenderTemplatePrefersThemesOwnYoutubeShortcodeTemplate(): void
+    {
+        mkdir($this->testTemplateDir . '/test/shortcodes', 0755, true);
+        file_put_contents(
+            $this->testTemplateDir . '/test/shortcodes/youtube.twig',
+            '<div class="theme-youtube">{{ id }}</div>'
+        );
+
+        $result = $this->renderer->renderTemplate(
+            'shortcodes/youtube.twig',
+            ['id' => 'abc123', 'width' => '560', 'height' => '315', 'title' => 'A video'],
+            $this->container
+        );
+
+        $this->assertSame('<div class="theme-youtube">abc123</div>', trim($result));
+        $this->assertStringNotContainsString('<iframe', $result);
+    }
+
+    public function testRenderWrapsContentInContentMarkers(): void
+    {
+        $parsedContent = [
+            'metadata' => ['template' => 'base'],
+            'content' => '<p>Article body</p>',
+            'title' => 'Marked Page',
+        ];
+
+        $result = $this->renderer->render($parsedContent, $this->container);
+
+        $this->assertStringContainsString(
+            '<!--sf:content--><p>Article body</p><!--/sf:content-->',
+            $result
+        );
+    }
+
+    public function testRenderLeavesEmptyContentUnwrapped(): void
+    {
+        $result = $this->renderer->render(
+            ["metadata" => ["template" => "base"], "content" => "", "title" => "Empty"],
+            $this->container
+        );
+
+        $this->assertStringNotContainsString("sf:content", $result);
+    }
+
+    public function testRenderInjectsAssetManagerStylesBeforeClosingHeadTagEvenWhenThemeAlreadyLinksAStylesheet(): void
+    {
+        file_put_contents(
+            $this->testTemplateDir . '/test/withstyles.html.twig',
+            '<!DOCTYPE html><html><head><title>{{ title }}</title>'
+            . '<link rel="stylesheet" href="/theme.css"></head>'
+            . '<body>{{ content|raw }}</body></html>'
+        );
+
+        $assetManager = new AssetManager();
+        $assetManager->addStyle('site', '/assets/site.css');
+        $logger = $this->container->get('logger');
+        $renderer = new TemplateRenderer(new TemplateVariableBuilder(), $logger, $assetManager);
+
+        $parsedContent = [
+            'metadata' => ['template' => 'withstyles'],
+            'content' => '<p>Body</p>',
+            'title' => 'Styled Page',
+        ];
+
+        $result = $renderer->render($parsedContent, $this->container);
+
+        $this->assertStringContainsString('<link rel="stylesheet" href="/theme.css">', $result);
+        $stylesMarkup = $assetManager->getStyles();
+        $this->assertStringContainsString($stylesMarkup, $result);
+
+        $headEnd = strpos($result, '</head>');
+        $this->assertNotFalse($headEnd);
+        $this->assertLessThan($headEnd, strpos($result, $stylesMarkup));
+    }
+
+    public function testRenderOnlyInjectsAssetsOnceEvenWhenContentContainsAClosingHeadTagLiterally(): void
+    {
+        file_put_contents(
+            $this->testTemplateDir . '/test/withheadinbody.html.twig',
+            '<!DOCTYPE html><html><head><title>{{ title }}</title></head>'
+            . '<body>{{ content|raw }}</body></html>'
+        );
+
+        $assetManager = new AssetManager();
+        $assetManager->addStyle('site', '/assets/site.css');
+        $logger = $this->container->get('logger');
+        $renderer = new TemplateRenderer(new TemplateVariableBuilder(), $logger, $assetManager);
+
+        $parsedContent = [
+            'metadata' => ['template' => 'withheadinbody'],
+            // Page content literally quotes a closing </head> tag as text
+            'content' => '<p>See the code: &lt;/head&gt; and also </head> literally</p>',
+            'title' => 'Tricky Page',
+        ];
+
+        $result = $renderer->render($parsedContent, $this->container);
+
+        $stylesMarkup = $assetManager->getStyles();
+        $this->assertSame(1, substr_count($result, $stylesMarkup));
     }
 
     private function createTestTemplates(): void

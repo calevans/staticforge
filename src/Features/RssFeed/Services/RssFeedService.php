@@ -9,6 +9,7 @@ use EICC\StaticForge\Core\Events\RssBuilderInitEvent;
 use EICC\StaticForge\Core\Events\RssItemBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
+use EICC\StaticForge\Services\ContentMarkers;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
 use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
 use EICC\Utils\Container;
@@ -49,7 +50,9 @@ class RssFeedService
 
         $outputPath = $event->outputPath;
         $filePath = $event->filePath;
+        // The article only, not the theme around it; unmarked pages keep the old behavior
         $renderedContent = $event->renderedContent ?? '';
+        $renderedContent = ContentMarkers::extract($renderedContent) ?? $renderedContent;
         $title = $metadata['title'] ?? 'Untitled';
 
         if (!$outputPath || !$filePath) {
@@ -202,7 +205,7 @@ class RssFeedService
             );
 
             $item->description = $file['description'];
-            $item->content = $file['content'];
+            $item->content = $this->absolutizeUrls($file['content'], $siteBaseUrl);
             $item->author = $file['metadata']['author'] ?? null;
 
             // Fire event to allow other features (like Podcast) to modify the item
@@ -276,11 +279,11 @@ class RssFeedService
      */
     private function getFileDate(array $metadata, string $filePath): string
     {
-        if (!empty($metadata['published_date'])) {
-            return (string)$metadata['published_date'];
-        }
-        if (!empty($metadata['date'])) {
-            return (string)$metadata['date'];
+        // An unparseable date would otherwise sort and publish as 1970-01-01
+        foreach (['published_date', 'date'] as $key) {
+            if (!empty($metadata[$key]) && strtotime((string)$metadata[$key]) !== false) {
+                return (string)$metadata[$key];
+            }
         }
         if (file_exists($filePath)) {
             $mtime = filemtime($filePath);
@@ -289,6 +292,34 @@ class RssFeedService
             }
         }
         return date('Y-m-d');
+    }
+
+    /**
+     * Feed readers resolve against the feed, not the site, so root-relative
+     * src/href values ("/assets/x.png") must carry the site origin.
+     */
+    private function absolutizeUrls(string $html, string $siteBaseUrl): string
+    {
+        $base = rtrim($siteBaseUrl, '/') . '/';
+
+        $html = preg_replace(
+            '/\b(src|href)=(["\'])\/(?!\/)/i',
+            // Escaped so a $ or backslash in the configured URL isn't read as a backreference
+            '$1=$2' . str_replace(['\\', '$'], ['\\\\', '\\$'], $base),
+            $html
+        ) ?? $html;
+
+        // srcset holds a comma-separated list of "url width" candidates (cached pages
+        // already carry ResponsiveImages' <picture> markup)
+        return preg_replace_callback(
+            '/\bsrcset=(["\'])(.*?)\1/is',
+            static fn (array $m): string => 'srcset=' . $m[1] . preg_replace(
+                '/(^|,)(\s*)\/(?!\/)/',
+                '$1$2' . str_replace(['\\', '$'], ['\\\\', '\\$'], $base),
+                $m[2]
+            ) . $m[1],
+            $html
+        ) ?? $html;
     }
 
     private function getFileUrl(string $outputPath, string $outputDir): string

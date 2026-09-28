@@ -84,6 +84,46 @@ class FileDiscoveryDraftTest extends UnitTestCase
         $this->assertEquals($this->tempDir . '/draft.md', $files[0]['path']);
     }
 
+    public function testSkipsFileWithQuotedStringDraftTrue(): void
+    {
+        $content = "---\ntitle: Quoted Draft\ndraft: \"true\"\n---\nContent";
+        file_put_contents($this->tempDir . '/quoted-draft.md', $content);
+
+        $content = "---\ntitle: Published Post\ndraft: false\n---\nContent";
+        file_put_contents($this->tempDir . '/published.md', $content);
+
+        $this->fileDiscovery->discoverFiles();
+        $files = $this->container->getVariable('discovered_files');
+
+        $this->assertCount(1, $files);
+        $this->assertEquals($this->tempDir . '/published.md', $files[0]['path']);
+    }
+
+    public function testSkipsFileWithYesStyleStringDraftValue(): void
+    {
+        $content = "---\ntitle: Yes Draft\ndraft: yes\n---\nContent";
+        file_put_contents($this->tempDir . '/yes-draft.md', $content);
+
+        $this->fileDiscovery->discoverFiles();
+        $files = $this->container->getVariable('discovered_files');
+
+        $this->assertCount(0, $files);
+    }
+
+    public function testIncludesQuotedStringDraftValueWhenShowDraftsEnabled(): void
+    {
+        $this->setContainerVariable('SHOW_DRAFTS', true);
+
+        $content = "---\ntitle: Quoted Draft\ndraft: \"true\"\n---\nContent";
+        file_put_contents($this->tempDir . '/quoted-draft.md', $content);
+
+        $this->fileDiscovery->discoverFiles();
+        $files = $this->container->getVariable('discovered_files');
+
+        $this->assertCount(1, $files);
+        $this->assertEquals($this->tempDir . '/quoted-draft.md', $files[0]['path']);
+    }
+
     public function testIncludesFilesWithoutDraftStatus(): void
     {
         // Create a file without draft status

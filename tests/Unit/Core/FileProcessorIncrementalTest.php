@@ -72,6 +72,8 @@ class FileProcessorIncrementalTest extends UnitTestCase
             ['path' => $sourcePath, 'url' => 'test.html', 'metadata' => []],
         ]);
 
+        $this->primeBuild($tracker, $outputPath, 'cached output content');
+
         $this->fileProcessor->processFiles();
 
         $this->assertSame(0, $tracker->renderCount, 'RENDER should not fire on a cache hit');
@@ -81,7 +83,7 @@ class FileProcessorIncrementalTest extends UnitTestCase
         $this->assertTrue($tracker->lastPostRenderEvent->cacheHit);
 
         $stats = $this->errorHandler->getErrorStats();
-        $this->assertSame(1, $stats['files_processed']);
+        $this->assertSame(2, $stats['files_processed'], 'Priming build plus the cached build');
     }
 
     public function testFullRendersWhenSourceNewerThanOutput(): void
@@ -150,10 +152,6 @@ class FileProcessorIncrementalTest extends UnitTestCase
         file_put_contents($sourcePath, 'source content');
         touch($sourcePath, time() - 100);
 
-        file_put_contents($outputPath, 'cached content');
-        touch($outputPath, time());
-        chmod($outputPath, 0000);
-
         $this->setContainerVariable('INCREMENTAL_BUILD', true);
 
         $tracker = new IncrementalEventTrackingListener($this->container);
@@ -164,6 +162,9 @@ class FileProcessorIncrementalTest extends UnitTestCase
         $this->setContainerVariable('discovered_files', [
             ['path' => $sourcePath, 'url' => 'test.html', 'metadata' => []],
         ]);
+
+        $this->primeBuild($tracker, $outputPath, 'cached content');
+        chmod($outputPath, 0000);
 
         try {
             $this->fileProcessor->processFiles();
@@ -203,6 +204,57 @@ class FileProcessorIncrementalTest extends UnitTestCase
 
         $this->assertSame(1, $tracker->renderCount, 'RENDER must always fire when incremental mode is off');
         $this->assertSame(1, $tracker->postRenderCount);
+    }
+
+    public function testFullRendersWhenAnotherPagesFrontmatterChanged(): void
+    {
+        $sourcePath = $this->sourceDir . '/test.html';
+        $outputPath = $this->outputDir . '/test.html';
+        $otherPath = $this->sourceDir . '/other.html';
+
+        file_put_contents($sourcePath, 'source content');
+        touch($sourcePath, time() - 100);
+        file_put_contents($otherPath, 'other content');
+
+        $this->setContainerVariable('INCREMENTAL_BUILD', true);
+
+        $tracker = new IncrementalEventTrackingListener($this->container);
+        $this->eventManager->registerListener('RENDER', [$tracker, 'handleRender'], 100);
+        $this->eventManager->registerListener('POST_RENDER', [$tracker, 'handlePostRender'], 100);
+
+        $this->setContainerVariable('discovered_files', [
+            ['path' => $sourcePath, 'url' => 'test.html', 'metadata' => []],
+        ]);
+        $this->primeBuild($tracker, $outputPath, 'cached content');
+
+        // A title elsewhere (menus, nav) changed, so this page may be stale even though its source is not
+        $this->setContainerVariable('discovered_files', [
+            ['path' => $sourcePath, 'url' => 'test.html', 'metadata' => []],
+            ['path' => $otherPath, 'url' => 'other.html', 'metadata' => ['title' => 'New']],
+        ]);
+
+        $this->fileProcessor->processFiles();
+
+        $this->assertSame(2, $tracker->renderCount, 'Frontmatter changes must invalidate every cached page');
+    }
+
+    /**
+     * Run one full build so the global-inputs fingerprint is recorded, then put
+     * $cachedContent back as a newer-than-source output and zero the counters.
+     */
+    private function primeBuild(
+        IncrementalEventTrackingListener $tracker,
+        string $outputPath,
+        string $cachedContent
+    ): void {
+        $this->fileProcessor->processFiles();
+
+        file_put_contents($outputPath, $cachedContent);
+        touch($outputPath, time() + 10);
+
+        $tracker->renderCount = 0;
+        $tracker->postRenderCount = 0;
+        $tracker->lastPostRenderEvent = null;
     }
 
     public function testAtomicWriteSurvivesPartialFailure(): void

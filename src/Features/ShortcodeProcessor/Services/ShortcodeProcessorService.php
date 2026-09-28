@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\ShortcodeProcessor\Services;
 
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\PathGuard;
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\StaticForge\Shortcodes\ShortcodeManager;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -86,7 +87,10 @@ class ShortcodeProcessorService
         $body = $parts['body'];
 
         // Process shortcodes in body
-        $processedBody = $this->shortcodeManager->process($body);
+        $processedBody = $this->shortcodeManager->process(
+            $body,
+            static fn (string $html): string => HtmlPlaceholders::reserve($event, $html)
+        );
 
         // Reconstruct content
         $newContent = $frontmatter . $processedBody;

@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\Search\Services;
 
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
+use EICC\StaticForge\Services\ContentMarkers;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -108,16 +109,25 @@ class SearchIndexService
             return [];
         }
 
+        // Only the page's own content - the theme's menus and sidebars would
+        // otherwise match every search. Pages from a renderer that doesn't mark
+        // its content fall back to the whole page minus the usual chrome.
+        $content = ContentMarkers::extract($html);
+        $chrome = '//script | //style | //head';
+        if ($content === null) {
+            $content = $html;
+            $chrome .= ' | //nav | //aside | //header | //footer';
+        }
+
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
         // Hack for UTF-8
-        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
 
         $xpath = new \DOMXPath($dom);
 
-        // Remove script, style, head
-        $nodesToRemove = $xpath->query('//script | //style | //head');
+        $nodesToRemove = $xpath->query($chrome);
         if ($nodesToRemove !== false) {
             foreach ($nodesToRemove as $node) {
                 if ($node instanceof \DOMNode && $node->parentNode) {

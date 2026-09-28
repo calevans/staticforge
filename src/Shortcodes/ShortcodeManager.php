@@ -28,7 +28,10 @@ class ShortcodeManager
         $this->container = $container;
         $this->logger = $container->get('logger');
         $this->templateRenderer = $templateRenderer;
-        $this->markdownProcessor = new MarkdownProcessor();
+        // The container instance honors siteconfig markdown.trust_html
+        $this->markdownProcessor = $container->has(MarkdownProcessor::class)
+            ? $container->get(MarkdownProcessor::class)
+            : new MarkdownProcessor();
     }
 
     public function register(ShortcodeInterface $shortcode): void
@@ -44,7 +47,10 @@ class ShortcodeManager
         $this->logger->log('DEBUG', "Registered shortcode: [[{$shortcode->getName()}]]");
     }
 
-    public function process(string $content): string
+    /**
+     * @param (callable(string): string)|null $wrapOutput Applied to each rendered shortcode's HTML
+     */
+    public function process(string $content, ?callable $wrapOutput = null): string
     {
         if (empty($this->shortcodes)) {
             return $content;
@@ -58,7 +64,9 @@ class ShortcodeManager
         // 5. Optional closing bracket (escaping)
         $pattern = '/(\[?)\[\[\s*([a-zA-Z0-9_-]+)([^\]]*?)\]\](?:([\s\S]*?)\[\[\/\2\]\])?(\]?)/';
 
-        $result = preg_replace_callback($pattern, function ($matches) {
+        $wrapOutput ??= static fn (string $html): string => $html;
+
+        $result = preg_replace_callback($pattern, function ($matches) use ($wrapOutput) {
             $fullMatch = $matches[0];
             $escapeOpen = $matches[1];
             $tagName = $matches[2];
@@ -80,10 +88,10 @@ class ShortcodeManager
             $attributes = $this->parseAttributes($attributesStr);
 
             try {
-                return $this->shortcodes[$tagName]->handle($attributes, $innerContent);
+                return $wrapOutput($this->shortcodes[$tagName]->handle($attributes, $innerContent));
             } catch (\Exception $e) {
                 $this->logger->log('ERROR', "Shortcode [[{$tagName}]] failed: " . $e->getMessage());
-                return "<!-- Shortcode error: {$tagName} -->";
+                return $wrapOutput("<!-- Shortcode error: {$tagName} -->");
             }
         }, $content);
 

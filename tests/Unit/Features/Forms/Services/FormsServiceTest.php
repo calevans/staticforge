@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Features\Forms\Services;
 
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Forms\Services\FormsService;
 use EICC\Utils\Container;
@@ -129,7 +130,29 @@ class FormsServiceTest extends TestCase
 
         $this->assertEquals(
             'Content before <form>Contact Form</form> Content after',
-            $event->extra['file_content']
+            HtmlPlaceholders::restore($event, $event->extra['file_content'])
+        );
+    }
+
+    public function testProcessFormsExpandsFormInsideParkedShortcodeHtml(): void
+    {
+        $event = $this->makeEvent(fileContent: "Intro");
+        $token = HtmlPlaceholders::reserve($event, "<div class=\"alert\">{{ form('contact') }}</div>");
+        $event->extra["file_content"] = "Intro " . $token;
+
+        $this->container->method("getVariable")
+            ->willReturnMap([
+                ["site_config", ["forms" => ["contact" => ["provider_url" => "url", "form_id" => "1"]]]],
+                ["TEMPLATE", "default"]
+            ]);
+
+        $this->twig->method("render")->willReturn("<form>Contact Form</form>");
+
+        $this->service->processForms($event);
+
+        $this->assertSame(
+            "Intro <div class=\"alert\"><form>Contact Form</form></div>",
+            HtmlPlaceholders::restore($event, $event->extra["file_content"])
         );
     }
 

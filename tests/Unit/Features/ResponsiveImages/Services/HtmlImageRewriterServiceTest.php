@@ -203,6 +203,22 @@ class HtmlImageRewriterServiceTest extends UnitTestCase
         unlink($secretPath);
     }
 
+    public function testRewrittenOutputNeverContainsTheXmlEncodingHintUsedToLoadTheDom(): void
+    {
+        $this->createFixtureJpeg($this->sourceDir . '/assets/images/hero.jpg', 1000);
+
+        $config = $this->makeConfig(['widths' => [400], 'webp' => true]);
+        $generator = new ImageVariantGenerator($this->logger, $config);
+        $service = new HtmlImageRewriterService($this->logger, $generator, $config, $this->container);
+
+        $html = '<p><img src="/assets/images/hero.jpg" alt="Hero Image"></p>';
+        $event = $this->makeEvent($html);
+        $service->handlePostRender($event);
+
+        $this->assertIsString($event->renderedContent);
+        $this->assertStringNotContainsString('<?xml encoding="utf-8" ?>', $event->renderedContent);
+    }
+
     public function testMultipleImagesOnlyValidOneRewritten(): void
     {
         $this->createFixtureJpeg($this->sourceDir . '/assets/images/valid.jpg', 1000);

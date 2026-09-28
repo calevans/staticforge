@@ -106,7 +106,8 @@ class DevServerCommand extends Command implements SignalableCommandInterface
     private function startServer(string $host, int $port, SymfonyStyle $io): void
     {
         $command = sprintf(
-            'php -S %s:%d -t %s %s 2>&1',
+            '%s -S %s:%d -t %s %s 2>&1',
+            escapeshellarg(PHP_BINARY),
             escapeshellarg($host),
             $port,
             escapeshellarg($this->publicDir),

@@ -10,6 +10,7 @@ use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Features\MarkdownRenderer\ContentExtractor;
 use EICC\StaticForge\Features\MarkdownRenderer\MarkdownProcessor;
 use EICC\StaticForge\Services\BaseRendererService;
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\StaticForge\Services\TemplateRenderer;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -89,6 +90,7 @@ class MarkdownRendererService extends BaseRendererService
 
             // Convert Markdown to HTML
             $htmlContent = $this->markdownProcessor->convert($markdownContent);
+            $htmlContent = HtmlPlaceholders::restore($event, $htmlContent);
 
             // Fix heading IDs (move from anchor to header)
             $htmlContent = $this->fixHeadingIds($htmlContent);

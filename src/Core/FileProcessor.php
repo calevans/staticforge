@@ -15,6 +15,12 @@ use EICC\Utils\Log;
  */
 class FileProcessor
 {
+    /**
+     * Lives in OUTPUT_DIR so --clean resets it along with the output it describes.
+     * Build state, not site content: deployment skips it.
+     */
+    public const BUILD_FINGERPRINT_FILE = '.staticforge-build';
+
     private Container $container;
     private Log $logger;
     private EventManager $eventManager;
@@ -27,6 +33,13 @@ class FileProcessor
      * @var array<string, string>
      */
     private array $processedOutputPaths = [];
+
+    /**
+     * Whether everything outside a page's own source (templates, config, other
+     * pages' frontmatter) is unchanged since the last clean incremental build.
+     * Without it, a template or menu edit would leave every cached page stale.
+     */
+    private bool $globalInputsUnchanged = false;
 
     public function __construct(Container $container, EventManager $eventManager, OutputWriter $outputWriter)
     {
@@ -81,6 +94,19 @@ class FileProcessor
         // Reset processed output paths for this run
         $this->processedOutputPaths = [];
 
+        // Recorded on every successful build, not just incremental ones, so a plain
+        // build followed by --incremental can reuse its output.
+        $fingerprint = $this->buildGlobalFingerprint($files);
+        $fingerprintPath = $this->container->getVariable('OUTPUT_DIR') . '/' . self::BUILD_FINGERPRINT_FILE;
+        $this->globalInputsUnchanged = false;
+        if ($this->isIncrementalEnabled()) {
+            $this->globalInputsUnchanged = is_file($fingerprintPath)
+                && file_get_contents($fingerprintPath) === $fingerprint;
+            if (!$this->globalInputsUnchanged) {
+                $this->logger->log('INFO', 'Templates, config or frontmatter changed - rendering every file');
+            }
+        }
+
         $successCount = 0;
         $failCount = 0;
 
@@ -94,6 +120,14 @@ class FileProcessor
                 $this->errorHandler->handleFileError($e, $filePath, 'process');
                 $failCount++;
                 // Continue processing other files
+            }
+        }
+
+        if ($failCount === 0) {
+            try {
+                $this->outputWriter->write($fingerprintPath, $fingerprint);
+            } catch (\Throwable $e) {
+                $this->logger->log('WARNING', 'Could not record build fingerprint: ' . $e->getMessage());
             }
         }
 
@@ -152,7 +186,7 @@ class FileProcessor
         // will actually exist on disk rather than the un-rewritten path.
         $cacheCheckPath = $event->extra['expected_output_path'] ?? $expectedOutputPath;
 
-        if ($this->isIncrementalEnabled() && $this->canReuseCachedOutput($filePath, $cacheCheckPath)) {
+        if ($this->globalInputsUnchanged && $this->canReuseCachedOutput($filePath, $cacheCheckPath)) {
             $this->substituteCachedRender($event, $cacheCheckPath);
         } else {
             // RENDER event
@@ -182,6 +216,69 @@ class FileProcessor
         if (!$event->cacheHit) {
             $this->writeOutputFile($event->outputPath, $event->renderedContent);
         }
+    }
+
+    /**
+     * Hash of every build input a page can depend on besides its own source file.
+     * Frontmatter is included because menus, category listings and chapter nav
+     * are built from other pages' metadata; body edits only affect their own page.
+     *
+     * @param array<int, array{path: string, url: string, metadata: array<string, mixed>}> $files
+     */
+    private function buildGlobalFingerprint(array $files): string
+    {
+        $parts = [
+            json_encode($this->container->getVariable('site_config')),
+            (string) $this->container->getVariable('TEMPLATE'),
+            (string) $this->container->getVariable('SITE_BASE_URL'),
+        ];
+
+        $appRoot = rtrim((string) $this->container->getVariable('app_root'), '/');
+        // .env covers settings outside site_config; composer.lock covers installed feature packages
+        foreach ([$appRoot . '/composer.lock', $appRoot . '/.env'] as $inputFile) {
+            $parts[] = is_file($inputFile) ? $inputFile . ':' . filemtime($inputFile) : '';
+        }
+
+        $featuresDir = $this->container->getVariable('FEATURES_DIR') ?? $appRoot . '/src/Features';
+        foreach (
+            [
+                $this->container->getVariable('TEMPLATE_DIR'),
+                $featuresDir,
+                $appRoot . '/Features',
+                dirname(__DIR__) . '/Shortcodes/templates',
+            ] as $dir
+        ) {
+            $parts[] = is_string($dir) ? $this->directorySignature($dir) : '';
+        }
+
+        foreach ($files as $file) {
+            $parts[] = $file['path'] . ':' . json_encode($file['metadata']);
+        }
+
+        return hash('sha256', implode("\n", $parts));
+    }
+
+    /**
+     * Every file under $dir with its mtime, so any edit, addition or removal changes it.
+     */
+    private function directorySignature(string $dir): string
+    {
+        if (!is_dir($dir)) {
+            return '';
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+        $entries = [];
+        foreach ($iterator as $file) {
+            if ($file instanceof \SplFileInfo && $file->isFile()) {
+                $entries[] = $file->getPathname() . ':' . $file->getMTime();
+            }
+        }
+        sort($entries);
+
+        return implode("\n", $entries);
     }
 
     /**

@@ -105,7 +105,10 @@ class FileDiscovery
                     $showDrafts = filter_var($showDrafts, FILTER_VALIDATE_BOOLEAN);
                 }
 
-                if (isset($metadata['draft']) && $metadata['draft'] === true && !$showDrafts) {
+                // Quoted or yes/on values (draft: "true") must not publish a draft
+                $isDraft = isset($metadata['draft'])
+                    && filter_var($metadata['draft'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true;
+                if ($isDraft && !$showDrafts) {
                     $this->logger->log('DEBUG', "Skipping draft file: {$filePath}");
                     continue;
                 }

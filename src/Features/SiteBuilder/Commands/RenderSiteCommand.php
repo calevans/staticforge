@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\SiteBuilder\Commands;
 
 use EICC\StaticForge\Core\Application;
+use EICC\StaticForge\Core\ErrorHandler;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -177,6 +178,18 @@ class RenderSiteCommand extends Command
                 throw new Exception('Site generation failed - check logs for details');
             }
 
+            // Per-page failures are logged and skipped so the rest of the site still builds,
+            // but the build as a whole must not report success with pages missing.
+            $failedFiles = $this->container->get(ErrorHandler::class)->getErrorStats()['files_failed'];
+            if (!empty($failedFiles)) {
+                $output->writeln('');
+                $output->writeln('<error>' . count($failedFiles) . ' file(s) failed to render:</error>');
+                foreach ($failedFiles as $failedFile) {
+                    $output->writeln("  - {$failedFile}");
+                }
+                throw new Exception('Site generation completed with failed files - check logs for details');
+            }
+
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
 
@@ -294,6 +307,8 @@ class RenderSiteCommand extends Command
             throw new \RuntimeException('OUTPUT_DIR not set in container');
         }
 
+        $this->assertSafeToClean($outputDir, $container);
+
         if (is_dir($outputDir)) {
             $this->removeDirectory($outputDir);
         }
@@ -303,7 +318,37 @@ class RenderSiteCommand extends Command
     }
 
     /**
-     * Recursively remove a directory and its contents
+     * --output is user-supplied, so refuse to wipe anything that is, or contains,
+     * the project itself, its content or its templates.
+     */
+    private function assertSafeToClean(string $outputDir, Container $container): void
+    {
+        $target = realpath($outputDir);
+        if ($target === false) {
+            return;
+        }
+
+        $protected = [
+            $container->getVariable('app_root'),
+            $container->getVariable('SOURCE_DIR'),
+            $container->getVariable('TEMPLATE_DIR'),
+        ];
+
+        foreach ($protected as $dir) {
+            $resolved = is_string($dir) ? realpath($dir) : false;
+            if ($resolved === false) {
+                continue;
+            }
+            $targetPrefix = rtrim($target, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            if (str_starts_with($resolved . DIRECTORY_SEPARATOR, $targetPrefix)) {
+                throw new \RuntimeException("Refusing to clean {$outputDir}: it is or contains {$resolved}");
+            }
+        }
+    }
+
+    /**
+     * Recursively remove a directory and its contents. Symlinks are removed,
+     * never followed - following one would empty its target.
      */
     private function removeDirectory(string $dir): bool
     {
@@ -311,11 +356,15 @@ class RenderSiteCommand extends Command
             return false;
         }
 
-        $files = array_diff(scandir($dir), ['.', '..']);
+        $entries = scandir($dir);
+        if ($entries === false) {
+            throw new \RuntimeException("Cannot read directory while cleaning: {$dir}");
+        }
+        $files = array_diff($entries, ['.', '..']);
 
         foreach ($files as $file) {
             $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path)) {
+            if (is_dir($path) && !is_link($path)) {
                 $this->removeDirectory($path);
             } else {
                 unlink($path);

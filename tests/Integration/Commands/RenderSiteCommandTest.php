@@ -415,4 +415,167 @@ title: "Both Override"
 
         $this->assertTrue($container->getVariable('SHOW_DRAFTS'));
     }
+
+    /**
+     * --clean must refuse to run when OUTPUT_DIR is the same directory as SOURCE_DIR.
+     */
+    public function testCleanRefusesWhenOutputDirEqualsSourceDir(): void
+    {
+        $application = new Application();
+        $container = $this->container;
+        $application->addCommand(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--output' => $this->testContentDir,
+            '--clean' => true,
+        ]);
+
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Site generation failed', $output);
+        $this->assertStringContainsString('Refusing to clean', $output);
+
+        // Content must survive the refused clean.
+        $this->assertFileExists($this->testContentDir . '/test.html');
+    }
+
+    /**
+     * --clean must refuse when OUTPUT_DIR is an ancestor directory that contains
+     * SOURCE_DIR, since removing it would also destroy the site's own content.
+     */
+    public function testCleanRefusesWhenOutputDirContainsSourceDir(): void
+    {
+        $parentDir = dirname($this->testContentDir);
+
+        $application = new Application();
+        $container = $this->container;
+        $application->addCommand(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--output' => $parentDir,
+            '--clean' => true,
+        ]);
+
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Site generation failed', $output);
+        $this->assertStringContainsString('Refusing to clean', $output);
+
+        // Content must survive the refused clean.
+        $this->assertFileExists($this->testContentDir . '/test.html');
+    }
+
+    /**
+     * --clean must refuse when OUTPUT_DIR contains app_root (the project itself).
+     */
+    public function testCleanRefusesWhenOutputDirContainsAppRoot(): void
+    {
+        $appRoot = $this->container->getVariable('app_root');
+        $this->assertIsString($appRoot);
+        $parentOfAppRoot = dirname((string)realpath($appRoot));
+
+        $application = new Application();
+        $container = $this->container;
+        $application->addCommand(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--output' => $parentOfAppRoot,
+            '--clean' => true,
+        ]);
+
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Site generation failed', $output);
+        $this->assertStringContainsString('Refusing to clean', $output);
+    }
+
+    /**
+     * Removing OUTPUT_DIR must remove a symlink that lives inside it without
+     * following the symlink and deleting the files it points at.
+     */
+    public function testCleanRemovesSymlinkInsideOutputDirWithoutDeletingItsTarget(): void
+    {
+        $symlinkTargetDir = sys_get_temp_dir() . '/staticforge_symlink_target_' . uniqid();
+        mkdir($symlinkTargetDir, 0755, true);
+        file_put_contents($symlinkTargetDir . '/precious.txt', 'do not delete me');
+
+        $symlinkPath = $this->testOutputDir . '/linked';
+        $this->assertTrue(symlink($symlinkTargetDir, $symlinkPath));
+
+        file_put_contents($this->testOutputDir . '/existing.html', 'old content');
+
+        $application = new Application();
+        $container = $this->container;
+        $application->addCommand(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+            '--clean' => true,
+        ]);
+
+        $this->assertEquals(0, $result);
+
+        // The symlink itself is gone (the output directory was recreated from scratch).
+        $this->assertFileDoesNotExist($symlinkPath);
+        $this->assertFalse(is_link($symlinkPath));
+
+        // The symlink's target directory and its contents must survive untouched.
+        $this->assertFileExists($symlinkTargetDir . '/precious.txt');
+        $this->assertSame('do not delete me', file_get_contents($symlinkTargetDir . '/precious.txt'));
+
+        $this->removeDirectory($symlinkTargetDir);
+    }
+
+    /**
+     * A single page that fails to render (e.g. a bad frontmatter template) must
+     * not be silently swallowed - the whole build has to fail even though the
+     * other pages rendered fine.
+     */
+    public function testReturnsNonZeroWhenAPageFailsToRender(): void
+    {
+        file_put_contents(
+            $this->testContentDir . '/bad-page.html',
+            '<!--
+---
+title: "Bad Page"
+template: "does-not-exist"
+---
+-->
+<p>This page references a template that does not exist.</p>'
+        );
+
+        $application = new Application();
+        $container = $this->container;
+        $application->addCommand(new RenderSiteCommand($container));
+
+        $command = $application->find('site:render');
+        $commandTester = new CommandTester($command);
+
+        $result = $commandTester->execute([
+            'command' => $command->getName(),
+        ]);
+
+        $this->assertEquals(1, $result);
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('file(s) failed to render', $output);
+        $this->assertStringContainsString('bad-page.html', $output);
+
+        // The good page must still have been rendered despite the other failure.
+        $this->assertFileExists($this->testOutputDir . '/test.html');
+    }
 }

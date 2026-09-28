@@ -49,14 +49,33 @@ HTML;
 
         $toc = $event->metadata['toc'];
 
-        // Check structure
-        $this->assertStringContainsString('<ul class="toc-list">', $toc);
-        $this->assertStringContainsString('<li><a href="#section-1">Section 1</a></li>', $toc);
-        $this->assertStringContainsString('<li><a href="#subsection-1-1">Subsection 1.1</a></li>', $toc);
-        $this->assertStringContainsString('<li><a href="#section-2">Section 2</a></li>', $toc);
+        // The h3 list is nested inside the h2's <li>, never directly inside a <ul>
+        $this->assertSame(
+            '<ul class="toc-list">'
+            . '<li><a href="#section-1">Section 1</a>'
+            . '<ul><li><a href="#subsection-1-1">Subsection 1.1</a></li></ul></li>'
+            . '<li><a href="#section-2">Section 2</a></li>'
+            . '</ul>',
+            $toc
+        );
+    }
 
-        // Check nesting
-        $this->assertStringContainsString('<ul>', $toc); // Nested list for h3
+    public function testGenerateTocKeepsLeadingH3AtTopLevel(): void
+    {
+        $toc = $this->service->generateToc('<h3 id="a">A</h3><h2 id="b">B</h2>');
+
+        $this->assertSame(
+            '<ul class="toc-list"><li><a href="#a">A</a></li><li><a href="#b">B</a></li></ul>',
+            $toc
+        );
+    }
+
+    public function testGenerateTocEscapesHeadingId(): void
+    {
+        $toc = $this->service->generateToc('<h2 id="x&quot; onclick=&quot;alert(1)">X</h2>');
+
+        $this->assertStringContainsString('href="#x&quot; onclick=&quot;alert(1)"', $toc);
+        $this->assertStringNotContainsString('" onclick="', $toc);
     }
 
     public function testHandleMarkdownConvertedWithPermalinks(): void

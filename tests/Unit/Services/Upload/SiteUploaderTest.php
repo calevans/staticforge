@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Tests\Unit\Services\Upload;
 
+use EICC\StaticForge\Core\FileProcessor;
 use EICC\StaticForge\Services\Upload\SiteUploader;
 use EICC\StaticForge\Services\Upload\SftpClient;
 use EICC\StaticForge\Services\Upload\UploadCheckService;
@@ -62,6 +63,26 @@ class SiteUploaderTest extends UnitTestCase
             @unlink($tmpDir . '/subdir/file2.txt');
             @rmdir($tmpDir . '/subdir');
             @unlink($tmpDir . '/file1.txt');
+            @rmdir($tmpDir);
+        }
+    }
+
+    public function testGetFilesToUploadExcludesBuildFingerprintFile(): void
+    {
+        $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
+        mkdir($tmpDir);
+        touch($tmpDir . '/file1.txt');
+        touch($tmpDir . '/' . FileProcessor::BUILD_FINGERPRINT_FILE);
+
+        try {
+            $files = $this->uploader->getFilesToUpload($tmpDir);
+
+            $this->assertCount(1, $files);
+            $this->assertContains($tmpDir . '/file1.txt', $files);
+            $this->assertNotContains($tmpDir . '/' . FileProcessor::BUILD_FINGERPRINT_FILE, $files);
+        } finally {
+            @unlink($tmpDir . '/file1.txt');
+            @unlink($tmpDir . '/' . FileProcessor::BUILD_FINGERPRINT_FILE);
             @rmdir($tmpDir);
         }
     }

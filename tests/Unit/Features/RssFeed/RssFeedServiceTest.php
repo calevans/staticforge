@@ -228,6 +228,119 @@ class RssFeedServiceTest extends UnitTestCase
         $this->removeDirectory($outputDir);
     }
 
+    public function testGetFileDateFallsBackWhenDateIsUnparseable(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'getFileDate');
+
+        $tempFile = sys_get_temp_dir() . '/staticforge_rss_unparseable_' . uniqid() . '.md';
+        touch($tempFile);
+
+        $metadata = ['date' => 'not-a-real-date'];
+        $result = $method->invoke($this->service, $metadata, $tempFile);
+
+        // An unparseable date must not silently become the 1970 epoch.
+        $this->assertNotSame('not-a-real-date', $result);
+        $this->assertNotFalse(strtotime($result));
+        $this->assertNotSame('1970-01-01', $result);
+
+        unlink($tempFile);
+    }
+
+    public function testGetFileDateFallsBackToTodayWhenDateUnparseableAndFileMissing(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'getFileDate');
+
+        $metadata = ['published_date' => 'not-a-real-date'];
+        $result = $method->invoke($this->service, $metadata, '/nonexistent/path/file.md');
+
+        $this->assertSame(date('Y-m-d'), $result);
+    }
+
+    public function testAbsolutizeUrlsMakesRootRelativeSrcAndHrefAbsolute(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'absolutizeUrls');
+
+        $html = '<img src="/assets/pic.png"><a href="/blog/post.html">link</a>';
+        $result = $method->invoke($this->service, $html, 'https://example.com/');
+
+        $this->assertSame(
+            '<img src="https://example.com/assets/pic.png"><a href="https://example.com/blog/post.html">link</a>',
+            $result
+        );
+    }
+
+    public function testAbsolutizeUrlsHandlesSrcsetCandidatesAndDollarInBaseUrl(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'absolutizeUrls');
+
+        $html = '<source srcset="/img/a-400.webp 400w, /img/a-800.webp 800w, //cdn.x/a.webp 1200w">';
+        $result = $method->invoke($this->service, $html, 'https://example.com/$1/');
+
+        $this->assertSame(
+            '<source srcset="https://example.com/$1/img/a-400.webp 400w, '
+            . 'https://example.com/$1/img/a-800.webp 800w, //cdn.x/a.webp 1200w">',
+            $result
+        );
+    }
+
+    public function testAbsolutizeUrlsLeavesProtocolRelativeUrlsUntouched(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'absolutizeUrls');
+
+        $html = '<img src="//cdn.example.com/pic.png">';
+        $result = $method->invoke($this->service, $html, 'https://example.com/');
+
+        $this->assertSame('<img src="//cdn.example.com/pic.png">', $result);
+    }
+
+    public function testAbsolutizeUrlsLeavesFullyQualifiedUrlsUntouched(): void
+    {
+        $method = new ReflectionMethod(RssFeedService::class, 'absolutizeUrls');
+
+        $html = '<a href="https://other-site.com/page.html">link</a>';
+        $result = $method->invoke($this->service, $html, 'https://example.com/');
+
+        $this->assertSame('<a href="https://other-site.com/page.html">link</a>', $result);
+    }
+
+    public function testGenerateRssFeedsContentEncodedContainsOnlyMarkedContentNotTemplateNav(): void
+    {
+        $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();
+        mkdir($outputDir, 0755, true);
+
+        $logger = $this->createMock(Log::class);
+        $eventManager = $this->createMock(EventManager::class);
+        $eventManager->method('fire')->willReturnArgument(1);
+        $container = new \EICC\Utils\Container();
+        $container->setVariable('OUTPUT_DIR', $outputDir);
+        $service = new RssFeedService($logger, $eventManager, new OutputWriter($container, $logger), $container);
+
+        $container->setVariable('SITE_BASE_URL', 'https://example.com');
+        $container->setVariable('site_config', ['site' => ['name' => 'My Site']]);
+        $container->setVariable('discovered_files', []);
+
+        $fullPageHtml = '<html><body><nav>Home | About | Contact</nav>'
+            . '<!--sf:content--><p>Only the article body.</p><!--/sf:content-->'
+            . '<footer>Site footer</footer></body></html>';
+
+        $event = $this->makeEvent(
+            $outputDir . '/tech/article1.html',
+            '/source/article1.md',
+            $fullPageHtml,
+            ['category' => 'Tech', 'title' => 'Article 1', 'date' => '2024-01-01'],
+        );
+        $service->collectCategoryFiles($event);
+        $service->generateRssFeeds();
+
+        $xml = file_get_contents($outputDir . '/tech/rss.xml');
+        $this->assertNotFalse($xml);
+        $this->assertStringContainsString('Only the article body.', $xml);
+        $this->assertStringNotContainsString('Home | About | Contact', $xml);
+        $this->assertStringNotContainsString('Site footer', $xml);
+
+        $this->removeDirectory($outputDir);
+    }
+
     public function testGenerateRssFeedsWritesRssFileForCategory(): void
     {
         $outputDir = sys_get_temp_dir() . '/staticforge_rss_unit_' . uniqid();

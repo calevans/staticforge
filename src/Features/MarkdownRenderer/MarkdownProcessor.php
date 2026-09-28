@@ -36,6 +36,8 @@ class MarkdownProcessor
                 'insert' => 'after',
             ],
             'html_input' => $trustHtml ? 'allow' : 'escape',
+            // Untrusted Markdown must not produce javascript:/vbscript:/data: links either
+            'allow_unsafe_links' => $trustHtml,
         ]);
 
         $this->converter = new MarkdownConverter($environment);

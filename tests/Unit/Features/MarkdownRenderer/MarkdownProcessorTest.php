@@ -60,4 +60,10 @@ class MarkdownProcessorTest extends TestCase
         $this->assertStringNotContainsString('<div class="raw">', $html);
         $this->assertStringContainsString('&lt;div class="raw"&gt;', $html);
     }
+    public function testTrustHtmlFalseDropsUnsafeLinks(): void
+    {
+        $html = (new MarkdownProcessor(false))->convert("[x](javascript:alert(1))");
+
+        $this->assertStringNotContainsString("javascript:", $html);
+    }
 }

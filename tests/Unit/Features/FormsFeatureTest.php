@@ -2,6 +2,7 @@
 
 namespace EICC\StaticForge\Tests\Unit\Features;
 
+use EICC\StaticForge\Services\HtmlPlaceholders;
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Features\Forms\Feature;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
@@ -86,9 +87,9 @@ class FormsFeatureTest extends UnitTestCase
 
         $this->assertStringContainsString(
             '<form action="https://api.example.com/submit?FORMID=123">Form Content</form>',
-            $event->extra['file_content']
+            HtmlPlaceholders::restore($event, $event->extra['file_content'])
         );
-        $this->assertStringNotContainsString('{{ form("contact") }}', $event->extra['file_content']);
+        $this->assertStringNotContainsString('{{ form("contact") }}', HtmlPlaceholders::restore($event, $event->extra['file_content']));
     }
 
     public function testHandleRenderWithCustomTemplate(): void
@@ -109,7 +110,7 @@ class FormsFeatureTest extends UnitTestCase
 
         $this->feature->handleRender($event);
 
-        $this->assertStringContainsString('<form class="custom"', $event->extra['file_content']);
+        $this->assertStringContainsString('<form class="custom"', HtmlPlaceholders::restore($event, $event->extra['file_content']));
     }
 
     public function testHandleRenderIgnoresUnknownForm(): void
@@ -143,7 +144,7 @@ class FormsFeatureTest extends UnitTestCase
 
         $this->assertStringContainsString(
             'action="https://api.example.com/submit?key=abc&amp;FORMID=123"',
-            $event->extra['file_content']
+            HtmlPlaceholders::restore($event, $event->extra['file_content'])
         );
     }
 }

@@ -67,7 +67,8 @@ class FeatureManager
         }
 
         // Load user features first (higher priority - can disable library features)
-        $userFeaturesDir = $this->container->getVariable('FEATURES_DIR') ?? 'src/Features';
+        $userFeaturesDir = $this->container->getVariable('FEATURES_DIR')
+            ?? $this->container->getVariable('app_root') . 'src/Features';
         if (is_dir($userFeaturesDir)) {
             $this->loadFeaturesFromDirectory($userFeaturesDir, 'Custom');
         }
@@ -234,7 +235,7 @@ class FeatureManager
             $this->featureTypes[$feature->getName()] = $type;
             $this->featureStatuses[$feature->getName()] = 'enabled';
             $this->logger->log('INFO', "Loaded feature: {$feature->getName()}");
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->log('ERROR', "Failed to load feature from {$directoryName}: " . $e->getMessage());
         }
     }
@@ -375,8 +376,7 @@ class FeatureManager
             $this->featureTypes[$feature->getName()] = 'Composer';
             $this->featureStatuses[$feature->getName()] = 'enabled';
             $this->logger->log('INFO', "Loaded composer feature: {$feature->getName()} from {$packageName}");
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->log('ERROR', "Failed to load composer feature {$className}: " . $e->getMessage());
         }
     }

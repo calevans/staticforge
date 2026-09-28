@@ -55,7 +55,7 @@ class TableOfContentsService
         }
 
         $toc = '<ul class="toc-list">';
-        $currentLevel = 2;
+        $currentDepth = 0;
         $itemsAdded = 0;
 
         foreach ($headings as $heading) {
@@ -104,21 +104,34 @@ class TableOfContentsService
                 continue;
             }
 
-            if ($level > $currentLevel) {
+            // Sub-lists must sit inside the parent <li>, and a level can't be
+            // skipped, so an h3 with no preceding h2 stays at the top level.
+            $depth = min($level - 2, $itemsAdded > 0 ? $currentDepth + 1 : 0);
+            if ($depth > $currentDepth) {
                 $toc .= '<ul>';
-            } elseif ($level < $currentLevel) {
-                $toc .= '</ul>';
+            } else {
+                if ($itemsAdded > 0) {
+                    $toc .= '</li>';
+                }
+                for (; $currentDepth > $depth; $currentDepth--) {
+                    $toc .= '</ul></li>';
+                }
             }
 
-            $toc .= sprintf('<li><a href="#%s">%s</a></li>', $id, htmlspecialchars($text));
-            $currentLevel = $level;
+            $toc .= sprintf(
+                '<li><a href="#%s">%s</a>',
+                htmlspecialchars($id, ENT_QUOTES, 'UTF-8'),
+                htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
+            );
+            $currentDepth = $depth;
             $itemsAdded++;
         }
 
-        // Close remaining tags
-        while ($currentLevel > 2) {
-            $toc .= '</ul>';
-            $currentLevel--;
+        if ($itemsAdded > 0) {
+            $toc .= '</li>';
+        }
+        for (; $currentDepth > 0; $currentDepth--) {
+            $toc .= '</ul></li>';
         }
         $toc .= '</ul>';
 

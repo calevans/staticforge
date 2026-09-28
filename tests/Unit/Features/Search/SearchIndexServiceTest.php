@@ -291,6 +291,71 @@ class SearchIndexServiceTest extends TestCase
         $this->assertCount(0, $json);
     }
 
+    public function testCollectPageWithMarkersExcludesTextOutsideTheMarkers(): void
+    {
+        $this->container->method('getVariable')
+            ->willReturnMap([
+                ['site_config', []],
+                ['OUTPUT_DIR', $this->tempDir],
+                ['SITE_BASE_URL', 'https://example.com']
+            ]);
+
+        $fullPage = '<html><body><nav>Home | About | Contact</nav>'
+            . '<!--sf:content--><p>Only this belongs in the index.</p><!--/sf:content-->'
+            . '<footer>Site footer text</footer></body></html>';
+
+        $event = $this->makeEvent(
+            $this->tempDir . '/marked.html',
+            $fullPage,
+            ['title' => 'Marked Page'],
+        );
+
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
+
+        $json = $this->readSearchIndex();
+        $this->assertCount(1, $json);
+        $this->assertStringContainsString('Only this belongs in the index.', $json[0]['text']);
+        $this->assertStringNotContainsString('Home | About | Contact', $json[0]['text']);
+        $this->assertStringNotContainsString('Site footer text', $json[0]['text']);
+    }
+
+    public function testCollectPageWithoutMarkersExcludesNavAsideHeaderAndFooterChrome(): void
+    {
+        $this->container->method('getVariable')
+            ->willReturnMap([
+                ['site_config', []],
+                ['OUTPUT_DIR', $this->tempDir],
+                ['SITE_BASE_URL', 'https://example.com']
+            ]);
+
+        // No sf:content markers - the fallback chrome stripping must handle it.
+        $unmarkedPage = '<html><body>'
+            . '<header>Site Header</header>'
+            . '<nav>Home | About | Contact</nav>'
+            . '<aside>Sidebar widget text</aside>'
+            . '<p>The real article body.</p>'
+            . '<footer>Site footer text</footer>'
+            . '</body></html>';
+
+        $event = $this->makeEvent(
+            $this->tempDir . '/unmarked.html',
+            $unmarkedPage,
+            ['title' => 'Unmarked Page'],
+        );
+
+        $this->service->collectPage($event);
+        $this->service->buildIndex();
+
+        $json = $this->readSearchIndex();
+        $this->assertCount(1, $json);
+        $this->assertStringContainsString('The real article body.', $json[0]['text']);
+        $this->assertStringNotContainsString('Site Header', $json[0]['text']);
+        $this->assertStringNotContainsString('Home | About | Contact', $json[0]['text']);
+        $this->assertStringNotContainsString('Sidebar widget text', $json[0]['text']);
+        $this->assertStringNotContainsString('Site footer text', $json[0]['text']);
+    }
+
     public function testBuildIndexLogsErrorWhenOutputDirNotSet(): void
     {
         $this->container->method('getVariable')->willReturn(null);
