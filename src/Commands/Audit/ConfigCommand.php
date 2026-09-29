@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Commands\Audit;
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\FeatureManager;
 use EICC\StaticForge\Features\SiteFeed\Models\FeedSettings;
+use EICC\StaticForge\Services\Upload\UploadSettings;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -170,6 +171,14 @@ class ConfigCommand extends Command
         foreach ($this->validateFeedConfig($siteConfig['feed'] ?? null) as $message) {
             $errors[] = [
                 'scope' => 'Feature: SiteFeed',
+                'type' => 'Config',
+                'message' => $message,
+            ];
+        }
+
+        foreach (UploadSettings::fromConfig($siteConfig['upload'] ?? null)->errors as $message) {
+            $errors[] = [
+                'scope' => 'Upload',
                 'type' => 'Config',
                 'message' => $message,
             ];

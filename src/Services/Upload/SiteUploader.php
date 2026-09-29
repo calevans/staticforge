@@ -10,6 +10,7 @@ use EICC\StaticForge\Core\FileProcessor;
 use EICC\Utils\Log;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SiteUploader
@@ -17,13 +18,14 @@ class SiteUploader
     private const MANIFEST_FILENAME = 'staticforge-manifest.json';
     public const EVENT_UPLOAD_CHECK_FILE = 'UPLOAD_CHECK_FILE';
 
-    private SftpClient $client;
+    private SftpClientInterface $client;
     private Log $logger;
     private UploadCheckService $checkService;
     private EventManager $eventManager;
 
     private int $uploadedCount = 0;
     private int $errorCount = 0;
+    private int $deleteFailureCount = 0;
     /** @var array<int, string> */
     private array $errors = [];
 
@@ -32,8 +34,11 @@ class SiteUploader
      */
     private array $newManifest = [];
 
+    /** null, 'non_interactive' or 'declined' when the delete guard stopped remote deletions */
+    private ?string $deleteGuardAbort = null;
+
     public function __construct(
-        SftpClient $client,
+        SftpClientInterface $client,
         Log $logger,
         UploadCheckService $checkService,
         EventManager $eventManager
@@ -53,10 +58,18 @@ class SiteUploader
      * @param OutputInterface $output
      * @return int Error count
      */
-    public function upload(string $inputDir, string $remotePath, bool $isDryRun, OutputInterface $output): int
-    {
+    public function upload(
+        string $inputDir,
+        string $remotePath,
+        bool $isDryRun,
+        OutputInterface $output,
+        ?UploadOptions $options = null
+    ): int {
+        $options ??= new UploadOptions();
+        $this->deleteGuardAbort = null;
         $this->uploadedCount = 0;
         $this->errorCount = 0;
+        $this->deleteFailureCount = 0;
         $this->errors = [];
         $this->newManifest = [];
 
@@ -113,7 +126,7 @@ class SiteUploader
             if ($event->skipUpload) {
                 $this->newManifest[$relativePath] = $remoteHash ?? $currentHash;
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('  Skipped by plugin: %s', $relativePath));
+                    $output->writeln(sprintf('  Skipped by plugin: %s', $this->display($relativePath)));
                 }
                 continue;
             }
@@ -121,7 +134,7 @@ class SiteUploader
             // Check if we should upload
             if ($event->shouldUpload) {
                 if ($isDryRun) {
-                    $output->writeln(sprintf('  [DRY RUN] Would upload: %s', $relativePath));
+                    $output->writeln(sprintf('  [DRY RUN] Would upload: %s', $this->display($relativePath)));
                     // In dry run, we assume success for manifest generation check
                     $this->newManifest[$relativePath] = $currentHash;
                 } else {
@@ -129,12 +142,12 @@ class SiteUploader
                         $this->uploadedCount++;
                         $this->newManifest[$relativePath] = $currentHash;
                         if ($output->isVerbose()) {
-                             $output->writeln(sprintf('  Uploaded: %s', $relativePath));
+                             $output->writeln(sprintf('  Uploaded: %s', $this->display($relativePath)));
                         }
                     } else {
                         $this->errorCount++;
                         // Record error but don't stop everything?
-                        $errorMsg = sprintf('Failed to upload: %s', $relativePath);
+                        $errorMsg = sprintf('Failed to upload: %s', $this->display($relativePath));
                         $this->errors[] = $errorMsg;
                         $failedPaths[] = $relativePath;
                         $output->writeln(sprintf('  <error>%s</error>', $errorMsg));
@@ -145,7 +158,7 @@ class SiteUploader
                 // File unchanged
                 $this->newManifest[$relativePath] = $currentHash;
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('  Skipping (unchanged): %s', $relativePath));
+                    $output->writeln(sprintf('  Skipping (unchanged): %s', $this->display($relativePath)));
                 }
             }
         }
@@ -153,14 +166,17 @@ class SiteUploader
         // Order is files -> deletes -> manifest, and deletes only after a fully clean upload: a
         // changed file whose re-upload failed is missing from the new manifest, so cleanup would
         // otherwise delete the live remote copy of it.
-        if ($this->errorCount === 0) {
-            $this->processManifestCleanup(
+        $carriedOver = [];
+        $uploadFailed = $this->errorCount > 0;
+        if (!$uploadFailed) {
+            $carriedOver = $this->processManifestCleanup(
                 $remotePath,
                 $remoteManifest,
                 $this->newManifest,
                 $output,
                 $isDryRun,
-                $failedPaths
+                $failedPaths,
+                $options
             );
         } else {
             $output->writeln(sprintf(
@@ -170,17 +186,25 @@ class SiteUploader
         }
 
         // Update manifest
-        if (!$isDryRun && $this->errorCount === 0) {
-            $this->updateRemoteManifest($remotePath, $this->newManifest, $output);
+        if (!$isDryRun && !$uploadFailed) {
+            // Stale entries that were not deleted stay recorded so a later run can still clean them up
+            $this->updateRemoteManifest($remotePath, $this->newManifest + $carriedOver, $output);
             $this->secureRemoteManifest($remotePath, $output);
         }
 
         $output->writeln('');
-        $output->writeln(sprintf(
-            '<info>Upload complete: %d files uploaded, %d errors</info>',
-            $this->uploadedCount,
-            $this->errorCount
-        ));
+        if ($this->deleteGuardAbort === 'non_interactive' && $this->errorCount === 0) {
+            $output->writeln(sprintf(
+                '<info>Upload complete: %d files uploaded, deletions held back by the delete guard</info>',
+                $this->uploadedCount
+            ));
+        } else {
+            $output->writeln(sprintf(
+                '<info>Upload complete: %d files uploaded, %d errors</info>',
+                $this->uploadedCount,
+                $this->errorCount
+            ));
+        }
 
         if ($this->errorCount > 0) {
             $output->writeln('<error>Errors occurred during upload:</error>');
@@ -190,6 +214,26 @@ class SiteUploader
         }
 
         return $this->errorCount;
+    }
+
+    /**
+     * 'non_interactive' or 'declined' when the delete guard stopped remote deletions in the last run.
+     */
+    public function getDeleteGuardAbort(): ?string
+    {
+        return $this->deleteGuardAbort;
+    }
+
+    public function getDeleteFailureCount(): int
+    {
+        return $this->deleteFailureCount;
+    }
+
+    private function display(string $path): string
+    {
+        $clean = preg_replace('/[\x00-\x1f\x7f]/', '?', $path) ?? '';
+
+        return OutputFormatter::escape($clean);
     }
 
     /**
@@ -231,7 +275,7 @@ class SiteUploader
         foreach ($data as $path => $hash) {
             $path = (string) $path;
             if (!$this->isSafeRelativePath($path)) {
-                $output->writeln(sprintf('<error>Ignoring unsafe manifest entry: %s</error>', $path));
+                $output->writeln(sprintf('<error>Ignoring unsafe manifest entry: %s</error>', $this->display($path)));
                 continue;
             }
             $manifest[$path] = is_string($hash) ? $hash : null;
@@ -242,7 +286,7 @@ class SiteUploader
 
     private function isSafeRelativePath(string $path): bool
     {
-        if ($path === '' || str_contains($path, "\0") || preg_match('#^([/\\\\]|[a-zA-Z]:)#', $path) === 1) {
+        if ($path === '' || preg_match('/[\x00-\x1f\x7f]/', $path) === 1 || preg_match('#^([/\\\\]|[a-zA-Z]:)#', $path) === 1) {
             return false;
         }
 
@@ -259,6 +303,7 @@ class SiteUploader
      * @param array<string, ?string> $oldManifest
      * @param array<string, ?string> $newManifest
      * @param array<int, string> $keepPaths Never deleted, whatever the manifests say
+     * @return array<string, ?string> Stale entries (old hashes) that were NOT deleted and must stay recorded
      */
     private function processManifestCleanup(
         string $remotePath,
@@ -266,37 +311,103 @@ class SiteUploader
         array $newManifest,
         OutputInterface $output,
         bool $isDryRun,
-        array $keepPaths = []
-    ): void {
+        array $keepPaths,
+        UploadOptions $options
+    ): array {
         // Files in old manifest that are NOT in new manifest (i.e. deleted locally)
-        // Check keys which are paths
-        $oldFiles = array_keys($oldManifest);
-        $newFiles = array_keys($newManifest);
-
         // Server-side files this class manages itself are never stale
-        $filesToDelete = array_diff($oldFiles, $newFiles, [self::MANIFEST_FILENAME, '.htaccess'], $keepPaths);
+        $filesToDelete = array_values(array_diff(
+            array_keys($oldManifest),
+            array_keys($newManifest),
+            [self::MANIFEST_FILENAME, '.htaccess'],
+            $keepPaths
+        ));
 
-        if (empty($filesToDelete)) {
-            return;
+        $count = count($filesToDelete);
+        if ($count === 0) {
+            return [];
         }
 
-        $output->writeln(sprintf('<info>Cleaning up %d stale files...</info>', count($filesToDelete)));
-
+        $carryOver = [];
         foreach ($filesToDelete as $file) {
-            if ($isDryRun) {
-                $output->writeln(sprintf('  [DRY RUN] Would delete: %s', $file));
-                continue;
+            $carryOver[$file] = $oldManifest[$file];
+        }
+
+        if ($options->noDelete) {
+            $output->writeln(sprintf('<comment>Skipping %d remote deletions (--no-delete)</comment>', $count));
+            return $carryOver;
+        }
+
+        $limit = $options->maxDelete ?? max(10, (int) ceil(count($oldManifest) * 0.25));
+        $tripped = $count > $limit && !$options->forceDelete;
+
+        if ($isDryRun) {
+            foreach ($filesToDelete as $file) {
+                $output->writeln(sprintf('  [DRY RUN] Would delete: %s', $this->display($file)));
+            }
+            $output->writeln(sprintf(
+                '<info>[DRY RUN] %d stale files would be deleted (limit %d).</info>',
+                $count,
+                $limit
+            ));
+            if ($tripped) {
+                $output->writeln(
+                    '<comment>[DRY RUN] The delete guard would trip; a real run would delete nothing '
+                    . 'unless --force-delete is given (or upload.max_delete raised).</comment>'
+                );
+            }
+            return [];
+        }
+
+        if ($tripped) {
+            $output->writeln(sprintf(
+                '<comment>Delete guard: %d stale files exceed the limit of %d.</comment>',
+                $count,
+                $limit
+            ));
+
+            if ($options->confirmDelete === null) {
+                $this->deleteGuardAbort = 'non_interactive';
+                $output->writeln(sprintf(
+                    '<error>Aborting remote deletions: %d files would be deleted (limit %d). Re-run with '
+                    . '--force-delete, or raise upload.max_delete in siteconfig.yaml. '
+                    . 'Uploaded files and the manifest were kept; the stale entries stay recorded.</error>',
+                    $count,
+                    $limit
+                ));
+                return $carryOver;
             }
 
+            if (!($options->confirmDelete)($count)) {
+                $this->deleteGuardAbort = 'declined';
+                $output->writeln(sprintf(
+                    '<comment>Remote deletions declined; %d stale entries stay recorded in the manifest.</comment>',
+                    $count
+                ));
+                return $carryOver;
+            }
+        }
+
+        $output->writeln(sprintf('<info>Cleaning up %d stale files...</info>', $count));
+
+        $failedDeletes = [];
+        foreach ($filesToDelete as $file) {
             $fullPath = $remotePath . '/' . $file;
             if ($this->client->deleteFile($fullPath)) {
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('  Deleted: %s', $file));
+                    $output->writeln(sprintf('  Deleted: %s', $this->display($file)));
                 }
             } else {
-                $output->writeln(sprintf('  <error>Failed to delete: %s</error>', $file));
+                $this->deleteFailureCount++;
+                $this->errorCount++;
+                $errorMsg = sprintf('Failed to delete: %s', $this->display($file));
+                $this->errors[] = $errorMsg;
+                $failedDeletes[$file] = $oldManifest[$file];
+                $output->writeln(sprintf('  <error>%s</error>', $errorMsg));
             }
         }
+
+        return $failedDeletes;
     }
 
     /**

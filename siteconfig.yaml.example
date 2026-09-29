@@ -213,3 +213,10 @@ responsive_images:
 #   formats: [rss, atom, json]
 #   exclude_categories: []    # category slugs, e.g. [podcast]
 #   category_formats: [rss]   # add atom/json for /{category}/feed.atom and feed.json
+
+# Upload (site:upload)
+# Credentials stay in .env; these keys only tune deletion behaviour.
+# upload:
+#   max_delete: null          # null = max(10, 25% of the remote manifest). Stale files above this
+#                             # stop remote deletions unless --force-delete is given.
+#   strategy: in_place        # only in_place is available in this version

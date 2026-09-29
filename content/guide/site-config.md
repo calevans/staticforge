@@ -404,6 +404,21 @@ feed:
 
 `SITE_BASE_URL` must be set, or no feeds are written. Which pages appear, the autodiscovery links, and the events you can hook are covered in [RSS Feed](../features/rss-feed.html). Run `audit:config` to validate these keys.
 
+### Upload
+
+The `upload` key tunes how `site:upload` deletes stale remote files. Credentials stay in `.env`. The whole key is optional.
+
+```yaml
+upload:
+  max_delete: 50
+  strategy: in_place
+```
+
+*   `max_delete` - The most stale remote files one run may delete. An integer of `0` or more, or leave it unset. Unset means the larger of 10 or 25% of the files in the previous manifest. A count equal to the limit is allowed; above it, deletions stop unless you pass `--force-delete`. A quoted number such as `"50"` is rejected.
+*   `strategy` - Only `in_place` is available in this version. `atomic` is not available yet and gives a "not available in this version" error.
+
+Invalid values stop `site:upload` before anything is built or uploaded. Run `audit:config` to validate them. See [Deploy Safety](site-management.html) for how the guard behaves.
+
 ### Calendars (Currently a No-op)
 
 `siteconfig.yaml` accepts a `calendars:` key for defining named calendars, but no in-tree Calendar feature reads it yet. It is parsed without error and reserved for future use; the `[[calendar name="..."]]` shortcode is not processed.

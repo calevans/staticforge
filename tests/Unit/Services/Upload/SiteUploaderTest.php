@@ -199,6 +199,7 @@ class SiteUploaderTest extends UnitTestCase
             $this->mockEventManager->method('fire')->will($this->returnArgument(1));
 
             // Since legacy manifest maps to null hashes, the file should be re-uploaded
+            $this->mockClient->method('deleteFile')->willReturn(true);
             $this->mockClient->expects($this->once())
                 ->method('uploadFile')
                 ->willReturn(true);
@@ -418,9 +419,7 @@ class SiteUploaderTest extends UnitTestCase
 
             $errorCount = $this->uploader->upload($tmpDir, '/remote', false, $output);
 
-            // Cleanup failures don't count toward the returned error count today,
-            // but should still be surfaced to the operator via output.
-            $this->assertEquals(0, $errorCount);
+            $this->assertEquals(1, $errorCount);
             $display = $output->fetch();
             $this->assertStringContainsString('Failed to delete: stale-file.txt', $display);
         } finally {

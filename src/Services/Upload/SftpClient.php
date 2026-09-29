@@ -8,7 +8,7 @@ use EICC\Utils\Log;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SFTP;
 
-class SftpClient
+class SftpClient implements SftpClientInterface
 {
     private Log $logger;
     private ?SFTP $sftp = null;

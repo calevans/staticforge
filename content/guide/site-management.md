@@ -110,6 +110,66 @@ php vendor/bin/staticforge.php site:upload --url="https://staging.mysite.com"
 *   **SSH Keys**: Ensure your private key file has strict permissions (`chmod 600`).
 *   **Host key changed since last connection**: uploads refuse to proceed rather than silently trust a new key. If you rebuilt or replaced the server, delete the stale entry from the recorded known-hosts file (or `SFTP_HOST_KEY` if you're pinning explicitly) and reconnect to trust the new key.
 
+### Deploy Safety
+
+Because `site:upload` deletes remote files that are no longer part of your site, a mistake can be expensive. If a build accidentally comes out nearly empty (a wrong `--input`, a broken content folder), the next upload would compare it to the last deploy and wipe most of your live site. The delete guard stops that.
+
+**How it works.** After the files are uploaded, `site:upload` counts the stale remote files (files in the previous manifest that your new build no longer contains). If the count is larger than the limit, nothing is deleted. The default limit is the larger of 10 or 25% of the files in the previous manifest, so a count equal to the limit still goes through. New and changed files are always uploaded first, and the stale entries stay recorded in the remote manifest, so a later run can still clean them up.
+
+You have three controls:
+
+| Control | Effect |
+|---|---|
+| `--no-delete` | Upload new and changed files, never delete anything. Stale entries stay recorded. |
+| `--force-delete` | Delete stale files even when the count is over the limit. |
+| `upload.max_delete` | Set the limit yourself in `siteconfig.yaml` (see [Site Configuration](site-config.html)). `0` means any deletion trips the guard. |
+
+If you pass both flags, `--no-delete` wins. `--force-delete` skips the guard, and the guard applies otherwise.
+
+**In a terminal**, a tripped guard asks a question and defaults to no:
+
+```
+Delete 42 remote files? (yes/no) [no]
+```
+
+Answering yes deletes them. Answering no (or just pressing Enter) skips the deletions and exits with status 0. The uploads already happened.
+
+**In cron or CI** there is no one to ask. A tripped guard prints an error explaining what to do and the command exits with a non-zero status, so your pipeline notices. Files were still uploaded and the manifest was still written. Choose one:
+
+```bash
+# Scheduled job: deploy, but never delete
+php vendor/bin/staticforge.php site:upload --no-delete
+
+# Scheduled job: allow deletes, but only up to 50 files
+# (upload.max_delete: 50 in siteconfig.yaml)
+php vendor/bin/staticforge.php site:upload
+```
+
+**Preview first.** `--dry-run` (the same as `--test`) uploads nothing, deletes nothing, and never prompts. It lists each file it would upload and delete, prints the stale count against the limit, and tells you if the guard would trip:
+
+```bash
+php vendor/bin/staticforge.php site:upload --dry-run
+```
+
+**Failed uploads.** If any file fails to upload, StaticForge deletes nothing and does not write the manifest, so the live copy of a file whose re-upload failed is never removed. Fix the problem and run the upload again.
+
+#### Recovery: cleaning up stale files later
+
+If you used `--no-delete`, declined the prompt, or a non-interactive run aborted, the stale files are still on the server and still recorded. Once you have checked that the build is what you expect, run `site:upload` again. Deletions happen if the count is within the limit.
+
+#### Deleting many files on purpose
+
+If you really did remove a large part of your site, run:
+
+```bash
+php vendor/bin/staticforge.php site:upload --force-delete
+```
+
+Or raise `upload.max_delete` in `siteconfig.yaml` for a while. Run `--dry-run` first to see the exact list.
+
+#### Configuration checks
+
+The `upload` settings are validated before the site is built or the server is contacted. An invalid value stops `site:upload` with an error, and `audit:config` reports the same problems. Only `strategy: in_place` exists in this version; `atomic` is rejected as not available yet.
 
 ### Serving a 404 Page
 

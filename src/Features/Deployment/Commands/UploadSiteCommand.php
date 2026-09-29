@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Features\Deployment\Commands;
 
 use EICC\StaticForge\Services\Upload\SftpClient;
+use EICC\StaticForge\Services\Upload\SftpClientInterface;
 use EICC\StaticForge\Services\Upload\SftpConfigLoader;
 use EICC\StaticForge\Services\Upload\SiteUploader;
+use EICC\StaticForge\Services\Upload\UploadOptions;
+use EICC\StaticForge\Services\Upload\UploadSettings;
 use EICC\StaticForge\Core\Application;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -16,16 +19,17 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UploadSiteCommand extends Command
 {
     protected Container $container;
     protected Log $logger;
     protected SftpConfigLoader $configLoader;
-    protected SftpClient $sftpClient;
+    protected SftpClientInterface $sftpClient;
     protected SiteUploader $siteUploader;
 
-    public function __construct(Container $container)
+    public function __construct(Container $container, ?SftpClientInterface $sftpClient = null)
     {
         parent::__construct();
         $this->container = $container;
@@ -33,7 +37,7 @@ class UploadSiteCommand extends Command
 
         // Initialize helpers
         $this->configLoader = new SftpConfigLoader();
-        $this->sftpClient = new SftpClient($this->logger);
+        $this->sftpClient = $sftpClient ?? new SftpClient($this->logger);
 
         $checkService = new \EICC\StaticForge\Services\Upload\UploadCheckService();
         $eventManager = $this->container->get(\EICC\StaticForge\Core\EventManager::class);
@@ -58,6 +62,19 @@ class UploadSiteCommand extends Command
             InputOption::VALUE_NONE,
             'Perform a dry run (connect, verify, list files) without uploading'
         )
+        ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Same as --test')
+        ->addOption(
+            'no-delete',
+            null,
+            InputOption::VALUE_NONE,
+            'Upload new and changed files but never delete remote files (stale entries stay recorded)'
+        )
+        ->addOption(
+            'force-delete',
+            null,
+            InputOption::VALUE_NONE,
+            'Delete stale remote files even when the count exceeds the delete guard limit'
+        )
         ->addOption(
             'url',
             null,
@@ -71,7 +88,7 @@ class UploadSiteCommand extends Command
         $tempDir = null;
 
         try {
-            $isTest = $input->getOption('test');
+            $isTest = (bool) $input->getOption('test') || (bool) $input->getOption('dry-run');
             $urlOverride = $input->getOption('url');
 
             // Check for UPLOAD_URL in environment if not provided via CLI
@@ -83,6 +100,15 @@ class UploadSiteCommand extends Command
                 $output->writeln(
                     '<error>Upload URL is required. Please set UPLOAD_URL in .env or use --url option.</error>'
                 );
+                return Command::FAILURE;
+            }
+
+            $siteConfig = $this->container->getVariable('site_config');
+            $settings = UploadSettings::fromConfig(is_array($siteConfig) ? ($siteConfig['upload'] ?? null) : null);
+            if ($settings->errors !== []) {
+                foreach ($settings->errors as $message) {
+                    $output->writeln(sprintf('<error>%s</error>', $message));
+                }
                 return Command::FAILURE;
             }
 
@@ -148,13 +174,31 @@ class UploadSiteCommand extends Command
             $errorCount = $this->siteUploader->upload(
                 $config['input_dir'],
                 $config['remote_path'],
-                (bool)$isTest,
-                $output
+                $isTest,
+                $output,
+                new UploadOptions(
+                    noDelete: (bool) $input->getOption('no-delete'),
+                    forceDelete: (bool) $input->getOption('force-delete'),
+                    maxDelete: $settings->maxDelete,
+                    confirmDelete: $this->canPrompt($input)
+                        ? static fn (int $count): bool => (new SymfonyStyle($input, $output))
+                            ->confirm(sprintf('Delete %d remote files?', $count), false)
+                        : null
+                )
             );
 
             $this->sftpClient->disconnect();
 
-            if ($errorCount > 0) {
+            $deleteFailures = $this->siteUploader->getDeleteFailureCount();
+            if ($deleteFailures > 0) {
+                $output->writeln(sprintf(
+                    '<error>%d remote deletion(s) failed; the entries stay recorded and will be retried '
+                    . 'on the next run.</error>',
+                    $deleteFailures
+                ));
+            }
+
+            if ($errorCount > 0 || $this->siteUploader->getDeleteGuardAbort() === 'non_interactive') {
                 return Command::FAILURE;
             }
 
@@ -171,6 +215,11 @@ class UploadSiteCommand extends Command
                 $this->recursiveDelete($tempDir);
             }
         }
+    }
+
+    protected function canPrompt(InputInterface $input): bool
+    {
+        return $input->isInteractive() && defined('STDIN') && stream_isatty(STDIN);
     }
 
     /**
