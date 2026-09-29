@@ -27,7 +27,7 @@ StaticForge divides auditing into four distinct phases:
 
 ## Phase 1: Configuration Audit
 
-The `audit:config` command validates your project structure, environment variables (`.env`), and feature settings. It ensures you haven't missed critical settings like `SITE_BASE_URL`. If your project has a `content/404.md` (or `404.html`), it also warns when `SITE_BASE_URL` is not a full URL, because 404 pages are served from any path and need absolute links.
+The `audit:config` command validates your project structure, environment variables (`.env`), and feature settings. It ensures you haven't missed critical settings like `SITE_BASE_URL`. If your project has a `content/404.md` (or `404.html`), it also warns when `SITE_BASE_URL` is not a full URL, because 404 pages are served from any path and need absolute links. It also validates the `feed` key in `siteconfig.yaml`: `enabled` must be true or false, `limit` a positive integer, `formats` and `category_formats` lists of `rss`, `atom`, or `json`, and `exclude_categories` a list of category names.
 
 **When to run:** When setting up a new machine, deploying for the first time, or troubleshooting weird behavior.
 

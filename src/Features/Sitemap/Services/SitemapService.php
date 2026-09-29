@@ -62,7 +62,7 @@ class SitemapService
         $relativePath = ltrim(substr($outputPath, strlen($outputDir)), '/');
 
         // Construct canonical URL, rewriting index.html paths to directory URLs
-        if ($relativePath === '404.html') {
+        if ($relativePath === '404.html' || ($metadata['template'] ?? null) === '404') {
             return;
         }
 

@@ -35,6 +35,8 @@ Already know the system and just need to look something up? Here's every event i
 | `ROBOTS_TXT_BUILDING` | Before `robots.txt` is written | `RobotsTxtBuildingEvent` | `rules` (mutable) |
 | `RSS_BUILDER_INIT` | Once per category feed, before items are added | `RssBuilderInitEvent` | `builder`, `categoryMetadata` |
 | `RSS_ITEM_BUILDING` | Once per item, while building an RSS feed | `RssItemBuildingEvent` | `item` (a `FeedItem`), `file` |
+| `SITE_FEED_INIT` | Once per site or category feed, before items are built | `SiteFeedInitEvent` | `format`, `scope`, `channel` (mutable) |
+| `SITE_FEED_ITEM_BUILDING` | Once per item in each site or category feed | `SiteFeedItemBuildingEvent` | `format`, `scope`, `item` (a `SiteFeedItem`) |
 | `SEO_AUDIT_PAGE` | Once per page during `audit:seo` | `SeoAuditPageEvent` | `crawler`, `filename`, `issues` (mutable) |
 | `UPLOAD_CHECK_FILE` | Before each file upload during `site:upload` | `UploadCheckFileEvent` | `path`, `localPath`, `targetPath`, hashes, `skipUpload`/`handled` (mutable) |
 
@@ -174,6 +176,18 @@ Some features are so polite they even let you interrupt *them*.
 **When:** During `POST_LOOP`, once per category feed, before any items are built
 **Event class:** `RssBuilderInitEvent`, with a read-only `$event->builder` (the `RssBuilder` — call `$event->builder->addExtension(...)` to add custom XML namespaces) and a mutable `$event->categoryMetadata`.
 **Why:** You want to register a feed-level XML extension (e.g., iTunes/Podcast namespaces) before any items are added.
+
+### SITE_FEED_INIT
+**Fired By:** SiteFeed
+**When:** During `POST_LOOP`, once for every site-wide feed (`/feed.xml`, `/feed.atom`, `/feed.json`) and every optional category Atom/JSON feed, before its items are built
+**Event class:** `SiteFeedInitEvent`, with a read-only `$event->format` (`rss`, `atom`, or `json`), a read-only `$event->scope` (`site`, or the category slug), and a mutable `$event->channel` array. Change `title`, `link`, `description`, `author`, `language`, or `feed_url` to alter the feed header.
+**Why:** You want to change a feed's title, description, or author for one format or one category. This event does not fire for the category `rss.xml` files; those use `RSS_BUILDER_INIT`.
+
+### SITE_FEED_ITEM_BUILDING
+**Fired By:** SiteFeed
+**When:** During `POST_LOOP`, once per item in each feed named above
+**Event class:** `SiteFeedItemBuildingEvent`, with a read-only `$event->format`, a read-only `$event->scope`, and a read-only `$event->item` (a `SiteFeedItem`). Mutate the item's public properties directly (`title`, `url`, `summary`, `contentHtml`, `published`, `updated`, `author`, `tags`). The item is a copy made for that one feed, so a change affects only the feed named by `format` and `scope`. The source page's frontmatter is available as `$event->item->metadata`.
+**Why:** You want to adjust individual entries, such as appending a footer to the HTML content of one feed format.
 
 ### SEO_AUDIT_PAGE
 **Fired By:** `audit:seo` command

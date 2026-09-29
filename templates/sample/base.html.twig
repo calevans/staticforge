@@ -25,6 +25,7 @@
     {% if head_scripts %}{{ head_scripts | raw }}{% endif %}
 
     <link rel="stylesheet" href="{{ site_base_url }}assets/css/main.css?{{ cache_buster }}">
+    {% if feed_links %}{% for l in feed_links %}<link rel="alternate" type="{{ l.type }}" title="{{ l.title }}" href="{{ l.href }}">{% endfor %}{% endif %}
 
     {% block head %}{% endblock %}
 </head>

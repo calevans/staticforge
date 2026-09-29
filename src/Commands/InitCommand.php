@@ -132,6 +132,22 @@ class InitCommand extends Command
 
         if (file_exists($examplePath)) {
             copy($examplePath, $configPath);
+            // On for new sites only; existing sites never get feeds without opting in
+            $appended = file_put_contents($configPath, <<<YAML
+
+# Site feeds: /feed.xml (RSS), /feed.atom, /feed.json
+feed:
+  enabled: true
+  limit: 20
+  formats: [rss, atom, json]
+  exclude_categories: []
+  category_formats: [rss]
+
+YAML, FILE_APPEND);
+            if ($appended === false) {
+                $io->warning('Could not write the feed settings to siteconfig.yaml');
+                return;
+            }
             $io->success('Created siteconfig.yaml configuration file from siteconfig.yaml.example');
         } else {
             $io->warning("siteconfig.yaml.example not found at {$examplePath}. Skipping siteconfig.yaml creation.");

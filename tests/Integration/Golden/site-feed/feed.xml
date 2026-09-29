@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Feed Site</title>
+    <link>https://feed.example.com/</link>
+    <description>Latest posts from Feed Site</description>
+    <atom:link href="https://feed.example.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Sat, 01 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <item>
+      <title>Standalone</title>
+      <link>https://feed.example.com/standalone.html</link>
+      <guid isPermaLink="true">https://feed.example.com/standalone.html</guid>
+      <pubDate>Wed, 01 May 2024 00:00:00 +0000</pubDate>
+      <description>A page that opted in.</description>
+      <content:encoded>
+            &lt;p&gt;Standalone body.&lt;/p&gt;
+            </content:encoded>
+    </item>
+    <item>
+      <title>Cafe ☕ 日本語 🎉 &amp; &lt;Friends&gt;</title>
+      <link>https://feed.example.com/blog/blog-unicode.html</link>
+      <guid isPermaLink="true">https://feed.example.com/blog/blog-unicode.html</guid>
+      <pubDate>Mon, 01 Apr 2024 00:00:00 +0000</pubDate>
+      <description>Unicode: café ☕ 日本語 🎉 — “quotes” and more.</description>
+      <content:encoded>
+            &lt;p&gt;Unicode: café ☕ 日本語 🎉 — “quotes” and more.&lt;/p&gt;
+            </content:encoded>
+      <category>Blog</category>
+    </item>
+    <item>
+      <title>Second Post</title>
+      <link>https://feed.example.com/blog/blog-2.html</link>
+      <guid isPermaLink="true">https://feed.example.com/blog/blog-2.html</guid>
+      <pubDate>Thu, 01 Feb 2024 00:00:00 +0000</pubDate>
+      <description>Second body with bold. Home</description>
+      <content:encoded>
+            &lt;p&gt;Second body with &lt;strong&gt;bold&lt;/strong&gt;.&lt;/p&gt;
+            &lt;p&gt;
+                &lt;img src=&quot;https://feed.example.com/assets/logo.png&quot; alt=&quot;Logo&quot; /&gt;
+            &lt;/p&gt;
+            &lt;p&gt;&lt;a href=&quot;https://feed.example.com/about.html&quot;&gt;Home&lt;/a&gt;&lt;/p&gt;
+            </content:encoded>
+      <dc:creator>Ada Lovelace</dc:creator>
+      <category>Blog</category>
+      <category>php</category>
+      <category>feeds</category>
+    </item>
+    <item>
+      <title>First Post</title>
+      <link>https://feed.example.com/blog/blog-1.html</link>
+      <guid isPermaLink="true">https://feed.example.com/blog/blog-1.html</guid>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 +0000</pubDate>
+      <description>First body.</description>
+      <content:encoded>
+            &lt;p&gt;First body.&lt;/p&gt;
+            </content:encoded>
+      <category>Blog</category>
+    </item>
+  </channel>
+</rss>

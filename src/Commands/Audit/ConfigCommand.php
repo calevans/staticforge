@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Commands\Audit;
 
 use EICC\StaticForge\Core\ConfigurableFeatureInterface;
 use EICC\StaticForge\Core\FeatureManager;
+use EICC\StaticForge\Features\SiteFeed\Models\FeedSettings;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -166,6 +167,14 @@ class ConfigCommand extends Command
 
         $io->text(sprintf('Scanned %d configurable features.', $checkedFeatures));
 
+        foreach ($this->validateFeedConfig($siteConfig['feed'] ?? null) as $message) {
+            $errors[] = [
+                'scope' => 'Feature: SiteFeed',
+                'type' => 'Config',
+                'message' => $message,
+            ];
+        }
+
         // A 404 page is served from any path, so relative URLs on it break
         $sourceDir = $this->container->hasVariable('SOURCE_DIR')
             ? (string) $this->container->getVariable('SOURCE_DIR')
@@ -212,6 +221,16 @@ class ConfigCommand extends Command
         }
 
         return Command::FAILURE;
+    }
+
+    /**
+     * Same rules as the build: whatever SiteFeed would warn about, the audit reports.
+     *
+     * @return list<string>
+     */
+    private function validateFeedConfig(mixed $feed): array
+    {
+        return FeedSettings::fromConfig($feed)->warnings;
     }
 
     /**

@@ -104,7 +104,7 @@ Automatically generates a `robots.txt` file to control search engine crawling. K
 
 ### [RSS Feed](rss-feed.html)
 
-Automatically generates RSS feeds for each category. Enable readers to subscribe to your content updates.
+Automatically generates RSS feeds for each category, plus optional site-wide RSS, Atom, and JSON feeds. Enable readers to subscribe to your content updates.
 
 [Read more about RSS Feed →](rss-feed.html)
 
@@ -164,7 +164,7 @@ Want to add your own functionality? See the [Feature Development Guide](../devel
 | **[Category Index](category-index.html)** | Category `.md` file | Index page | Listing all category files |
 | **[Tags](tags.html)** | `tags` in frontmatter | Meta tags, tag data | SEO, tag clouds, related content |
 | **[Robots.txt Generator](robots-txt.html)** | `robots` in frontmatter | robots.txt file | SEO, search engine control |
-| **[RSS Feed](rss-feed.html)** | `category` in frontmatter | `rss.xml` per category | Syndication, feed readers, notifications |
+| **[RSS Feed](rss-feed.html)** | `category` in frontmatter | `rss.xml` per category; optional `feed.xml`, `feed.atom`, `feed.json` | Syndication, feed readers, notifications |
 | **[Sitemap Generator](sitemap.html)** | `sitemap` in frontmatter | `sitemap.xml` file | SEO, search engine indexing |
 | **[Search](search.html)** | Content files | `search.json` & assets | Client-side full-text search |
 

@@ -383,6 +383,27 @@ The `404` template lists a few helpful links under "Popular sections". Set them 
 
 The 404 page itself is created as described in [404 Pages](404-pages.html). Run `audit:config` to confirm `SITE_BASE_URL` is a full URL, which 404 pages require.
 
+### Site Feeds
+
+The `feed` key turns on site-wide RSS, Atom, and JSON feeds at `/feed.xml`, `/feed.atom`, and `/feed.json`. They are off unless you enable them. Sites created with `site:init` have them enabled already.
+
+```yaml
+feed:
+  enabled: true
+  limit: 20
+  formats: [rss, atom, json]
+  exclude_categories: []
+  category_formats: [rss]
+```
+
+*   `enabled` - `true` to write the site feeds. Default `false`.
+*   `limit` - Number of newest items in each site feed. Positive integer, default `20`.
+*   `formats` - Which site feeds to write: any of `rss`, `atom`, `json`. Default all three.
+*   `exclude_categories` - Categories to keep out of the site feeds. Default none.
+*   `category_formats` - Add `atom` and/or `json` to also write `/{category}/feed.atom` and `/{category}/feed.json`. Default `[rss]`, which leaves only the existing category `rss.xml`.
+
+`SITE_BASE_URL` must be set, or no feeds are written. Which pages appear, the autodiscovery links, and the events you can hook are covered in [RSS Feed](../features/rss-feed.html). Run `audit:config` to validate these keys.
+
 ### Calendars (Currently a No-op)
 
 `siteconfig.yaml` accepts a `calendars:` key for defining named calendars, but no in-tree Calendar feature reads it yet. It is parsed without error and reserved for future use; the `[[calendar name="..."]]` shortcode is not processed.

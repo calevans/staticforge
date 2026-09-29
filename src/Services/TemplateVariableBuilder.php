@@ -23,6 +23,7 @@ class TemplateVariableBuilder
         'SITE_BASE_URL',
         'cache_buster',
         'features',
+        'feed_links',
     ];
 
     /**

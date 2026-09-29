@@ -200,3 +200,16 @@ responsive_images:
   # Minimum source image width (px) below which the feature leaves the
   # <img> tag untouched (not worth generating srcset for tiny icons).
   min_source_width: 400
+
+# Site Feeds
+# Writes /feed.xml (RSS 2.0), /feed.atom (Atom 1.0) and /feed.json (JSON Feed 1.1).
+# Off unless enabled. A page is included when it has a `date` and either a
+# `category` or `feed: true`. Drafts, noindex, robots: no, sitemap: false,
+# and the 404 page are always left out. `feed: false` on a page leaves it out of
+# the site-wide feeds only; category Atom/JSON and category rss.xml ignore it.
+# feed:
+#   enabled: true
+#   limit: 20                 # newest items in the site feeds
+#   formats: [rss, atom, json]
+#   exclude_categories: []    # category slugs, e.g. [podcast]
+#   category_formats: [rss]   # add atom/json for /{category}/feed.atom and feed.json
