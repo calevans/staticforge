@@ -45,6 +45,7 @@ If you are new to writing in this format, check out the original [Markdown Synta
 *   [Site Configuration](site-config.html) - Configuring your site (`siteconfig.yaml`).
 *   [System Commands](commands.html) - Utility and reference commands.
 *   [Frontmatter Guide](frontmatter.html) - How to add metadata to your content.
+*   [404 Pages](404-pages.html) - Add a custom "page not found" page and serve it correctly.
 *   [CLI Commands](cli-commands.html) - Reference for rendering, auditing, and system commands.
 
 ---
@@ -65,5 +66,6 @@ StaticForge is a CLI-first tool, which means you have a lot of power at your fin
 
 Once you've mastered the basics, you can start exploring the really cool stuff:
 
+*   **[404 Pages](404-pages.html)**: Give visitors a helpful page when a link is broken.
 *   **[Features](../features/index.html)**: Discover built-in superpowers like Search, Forms, and SEO generators.
 *   **[Development](../development/index.html)**: Want to go deeper? Dive into the code to create custom templates, build your own features, or even contribute to the core.

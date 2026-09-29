@@ -187,6 +187,35 @@ MARKDOWN;
 
         file_put_contents($indexPath, $indexContent);
         $io->success('Created sample content file: content/index.md');
+
+        $this->createNotFoundContent($io, $force);
+    }
+
+    private function createNotFoundContent(SymfonyStyle $io, bool $force): void
+    {
+        $notFoundPath = 'content/404.md';
+
+        if (file_exists($notFoundPath) && !$force) {
+            $io->note('content/404.md already exists. Use --force to overwrite.');
+            return;
+        }
+
+        $notFoundContent = <<<MARKDOWN
+---
+title: 'Page not found'
+description: 'The page you were looking for does not exist.'
+template: 404
+noindex: true
+sitemap: false
+search_index: false
+no_llms: true
+---
+
+Sorry, we could not find that page.
+MARKDOWN;
+
+        file_put_contents($notFoundPath, $notFoundContent);
+        $io->success('Created sample content file: content/404.md');
     }
 
     private function recursiveCopy(string $src, string $dst, SymfonyStyle $io, bool $force): void

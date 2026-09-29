@@ -266,3 +266,27 @@ Submit your package to [Packagist.org](https://packagist.org). Use the keyword `
 ---
 
 [← Back to Documentation](index.html)
+
+## The `404` Template
+
+A page with `template: 404` in its frontmatter (normally `content/404.md`) is rendered to `public/404.html` using your theme's `404.html.twig`. See [404 Pages](../guide/404-pages.html) for the content file and server setup.
+
+**Every theme must provide its own `404.html.twig`.** Both bundled themes (`staticforce` and `sample`) include one, but a custom or third-party theme does not get one automatically.
+
+What the bundled templates do, and what yours should follow:
+
+*   **Extend the base layout** like any other template.
+*   **Build every URL from `site_base_url`.** A 404 page is served from any path on your site, so relative links and asset paths break. Example: `<a href="{{ site_base_url }}">Home</a>`. `site_base_url` comes from `SITE_BASE_URL` in `.env`.
+*   **Read the link list from `404_links`.** This is a top-level `siteconfig.yaml` list of `title`/`url` items. Twig variable names cannot start with a digit, so read it through the context: `_context['404_links']`. Fall back to `menu.top` (a title-to-URL map) and finally to a single home link.
+*   **Treat `http...` URLs as external** and prefix everything else with `site_base_url`.
+
+```twig
+{% set custom_links = _context['404_links'] ?? null %}
+{% if custom_links is iterable and custom_links|length > 0 %}
+    {% for item in custom_links %}
+        <a href="{{ item.url starts with 'http' ? item.url : site_base_url ~ item.url|trim('/', 'left') }}">{{ item.title }}</a>
+    {% endfor %}
+{% endif %}
+```
+
+The base layouts emit `<meta name="robots" content="noindex, follow">` when the page has `noindex: true`, so a 404 page written with the recommended frontmatter stays out of search results.

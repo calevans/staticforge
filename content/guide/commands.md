@@ -52,3 +52,13 @@ php bin/staticforge.php feature:migrate --all
 
 See [Migrating to 3.0](../migrating-to-3-0.html) for what it converts, what it leaves as a TODO for you to finish by hand, and how to verify the result.
 
+
+---
+
+## Related Commands
+
+Some commands that support day-to-day work live on other pages:
+
+*   `site:devserver`, `site:render`, `site:upload`: [Site Management & Deployment](site-management.html)
+*   `make:htaccess`, which includes the `ErrorDocument 404 /404.html` rule: [404 Pages](404-pages.html)
+*   `audit:config` and `audit:live`, including the check that unknown URLs return 404: [Auditing](auditing.html)

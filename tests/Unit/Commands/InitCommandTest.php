@@ -132,4 +132,82 @@ class InitCommandTest extends UnitTestCase
         $this->assertNotFalse($content);
         $this->assertStringContainsString('SITE_NAME=NewContent', $content);
     }
+
+    private function runInit(bool $force = false): CommandTester
+    {
+        file_put_contents($this->testDir . '/.env.example', 'SITE_NAME=Test');
+        file_put_contents($this->testDir . '/siteconfig.yaml.example', 'site: name: Test');
+
+        $application = new Application();
+        $application->addCommand(new InitCommand());
+        $tester = new CommandTester($application->find('site:init'));
+        $tester->execute($force ? ['--force' => true] : []);
+
+        return $tester;
+    }
+
+    public function testNewSiteIsSeededWithShipped404Content(): void
+    {
+        $this->runInit();
+
+        $expected = <<<'MD'
+---
+title: 'Page not found'
+description: 'The page you were looking for does not exist.'
+template: 404
+noindex: true
+sitemap: false
+search_index: false
+no_llms: true
+---
+
+Sorry, we could not find that page.
+MD;
+        $this->assertSame($expected, file_get_contents($this->testDir . '/content/404.md'));
+    }
+
+    public function testExisting404ContentIsNotOverwrittenWithoutForce(): void
+    {
+        mkdir($this->testDir . '/content');
+        file_put_contents($this->testDir . '/content/404.md', 'MY CUSTOM 404');
+
+        $this->runInit();
+
+        $this->assertSame('MY CUSTOM 404', file_get_contents($this->testDir . '/content/404.md'));
+    }
+
+    public function testExisting404ContentIsNotOverwrittenWhenIndexExistsWithoutForce(): void
+    {
+        mkdir($this->testDir . '/content');
+        file_put_contents($this->testDir . '/content/index.md', 'MY INDEX');
+        file_put_contents($this->testDir . '/content/404.md', 'MY CUSTOM 404');
+
+        $this->runInit();
+
+        $this->assertSame('MY INDEX', file_get_contents($this->testDir . '/content/index.md'));
+        $this->assertSame('MY CUSTOM 404', file_get_contents($this->testDir . '/content/404.md'));
+    }
+
+    public function testExistingSiteWithIndexIsNotSeededWith404WithoutForce(): void
+    {
+        mkdir($this->testDir . '/content');
+        file_put_contents($this->testDir . '/content/index.md', 'MY INDEX');
+
+        $this->runInit();
+
+        $this->assertFileDoesNotExist($this->testDir . '/content/404.md');
+    }
+
+    public function testForceOverwrites404Content(): void
+    {
+        mkdir($this->testDir . '/content');
+        file_put_contents($this->testDir . '/content/404.md', 'MY CUSTOM 404');
+
+        $this->runInit(true);
+
+        $content = file_get_contents($this->testDir . '/content/404.md');
+        $this->assertNotFalse($content);
+        $this->assertStringContainsString('template: 404', $content);
+        $this->assertStringNotContainsString('MY CUSTOM 404', $content);
+    }
 }

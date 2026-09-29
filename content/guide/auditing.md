@@ -27,7 +27,7 @@ StaticForge divides auditing into four distinct phases:
 
 ## Phase 1: Configuration Audit
 
-The `audit:config` command validates your project structure, environment variables (`.env`), and feature settings. It ensures you haven't missed critical settings like `SITE_BASE_URL`.
+The `audit:config` command validates your project structure, environment variables (`.env`), and feature settings. It ensures you haven't missed critical settings like `SITE_BASE_URL`. If your project has a `content/404.md` (or `404.html`), it also warns when `SITE_BASE_URL` is not a full URL, because 404 pages are served from any path and need absolute links.
 
 **When to run:** When setting up a new machine, deploying for the first time, or troubleshooting weird behavior.
 
@@ -95,6 +95,7 @@ The `audit:live` command is unique because it checks your **hosted** website, no
 *   **HSTS**: Ensures SSL is enforced.
 *   **X-Content-Type-Options**: Prevents MIME-sniffing attacks.
 *   **X-Frame-Options**: Prevents clickjacking.
+*   **Soft 404**: Requests two random addresses that do not exist (one plain, one ending in `.html`) and expects `404` for both. A redirect or a `200` is reported as an error. See [404 Pages](404-pages.html).
 
 **When to run:** Immediately after deploying to production.
 

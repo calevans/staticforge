@@ -109,3 +109,13 @@ php vendor/bin/staticforge.php site:upload --url="https://staging.mysite.com"
 *   **Permission Denied**: Ensure the SFTP user has write permissions to `SFTP_REMOTE_PATH`.
 *   **SSH Keys**: Ensure your private key file has strict permissions (`chmod 600`).
 *   **Host key changed since last connection**: uploads refuse to proceed rather than silently trust a new key. If you rebuilt or replaced the server, delete the stale entry from the recorded known-hosts file (or `SFTP_HOST_KEY` if you're pinning explicitly) and reconnect to trust the new key.
+
+
+### Serving a 404 Page
+
+A deploy is not complete until unknown URLs return your 404 page with a real `404` status. Generate the server rule for Apache with `make:htaccess` (it now includes an `ErrorDocument 404 /404.html` line), and use `audit:live` after deploying to confirm it works. Neither command changes an `.htaccess` that already exists on your server. See [404 Pages](404-pages.html) for the full setup, including nginx and the sub-path caveat.
+
+```bash
+php vendor/bin/staticforge.php make:htaccess --write
+php vendor/bin/staticforge.php audit:live
+```

@@ -81,6 +81,16 @@ class HtaccessCommand extends Command
         Header set Cache-Control "max-age=604800, public"
     </FilesMatch>
 </IfModule>
+
+# ----------------------------------------------------------------------
+# 4. Custom 404 page
+# ----------------------------------------------------------------------
+# Use a local path ONLY. A full URL (https://...) makes Apache send a 302
+# redirect instead of a 404 status.
+# Sites installed in a sub-path must change this to /subpath/404.html.
+# The file must exist (public/404.html, built from content/404.md with
+# 'template: 404'); see the 404 guide.
+ErrorDocument 404 /404.html
 EOT;
 
         if ($input->getOption('write')) {

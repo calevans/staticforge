@@ -56,6 +56,7 @@ StaticForge Initialization
 [OK] Created configuration: siteconfig.yaml
 [OK] Installed default template: staticforce
 [OK] Created sample content: content/index.md
+[OK] Created sample content file: content/404.md
 
 Success! Your project is ready.
 ```
@@ -65,6 +66,7 @@ This command does the heavy lifting for you:
 - Copies example configuration files (`.env.example` to `.env`, `siteconfig.yaml.example` to `siteconfig.yaml`)
 - Installs bundled templates
 - Creates a sample homepage so you're not starting with a blank screen
+- Creates a sample 404 page (`content/404.md`) so visitors who follow a broken link see something helpful; see [404 Pages](404-pages.html) for the server setup that goes with it
 
 ### Step 3: Configure Your Site (Optional)
 

@@ -364,6 +364,25 @@ search:
     - /404.html
 ```
 
+### 404 Page Links
+
+The `404` template lists a few helpful links under "Popular sections". Set them with a top-level `404_links` list:
+
+```yaml
+404_links:
+  - title: "Getting Started"
+    url: "guide/quick-start.html"
+  - title: "Blog"
+    url: "https://blog.example.com/"
+```
+
+*   Each item needs a `title` and a `url`; items missing either are skipped.
+*   A `url` starting with `http` is used as written. Anything else is relative to `SITE_BASE_URL`.
+*   If `404_links` is absent or empty, the template uses your top-level `menu`, then a single home link.
+*   In a custom template the list is read as `_context['404_links']`, because a variable name cannot start with a digit in Twig.
+
+The 404 page itself is created as described in [404 Pages](404-pages.html). Run `audit:config` to confirm `SITE_BASE_URL` is a full URL, which 404 pages require.
+
 ### Calendars (Currently a No-op)
 
 `siteconfig.yaml` accepts a `calendars:` key for defining named calendars, but no in-tree Calendar feature reads it yet. It is parsed without error and reserved for future use; the `[[calendar name="..."]]` shortcode is not processed.

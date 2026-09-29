@@ -97,4 +97,39 @@ class HtaccessCommandTest extends UnitTestCase
         $this->assertSame(1, $exitCode);
         $this->assertStringContainsString('Failed to write', $tester->getDisplay());
     }
+
+    public function testOutputContainsLocalPathErrorDocument404(): void
+    {
+        $tester = $this->makeCommandTester();
+        $tester->execute([]);
+
+        $this->assertMatchesRegularExpression('/^ErrorDocument 404 \/404\.html$/m', $tester->getDisplay());
+    }
+
+    public function testNoErrorDocumentDirectiveUsesAFullUrl(): void
+    {
+        $tester = $this->makeCommandTester();
+        $tester->execute([]);
+
+        preg_match_all('/^\s*ErrorDocument\s.*$/m', $tester->getDisplay(), $matches);
+        $this->assertNotEmpty($matches[0]);
+        foreach ($matches[0] as $line) {
+            $this->assertDoesNotMatchRegularExpression('#https?://#i', $line);
+        }
+    }
+
+    public function testExistingHtaccessFilesAreByteIdenticalAfterRunWithoutWrite(): void
+    {
+        $original = "# hand written\r\nErrorDocument 404 https://example.com/x\n\0binary\xff";
+        foreach (['.htaccess', 'htaccess.txt'] as $name) {
+            file_put_contents($this->testDir . '/' . $name, $original);
+        }
+
+        $tester = $this->makeCommandTester();
+        $this->assertSame(0, $tester->execute([]));
+
+        foreach (['.htaccess', 'htaccess.txt'] as $name) {
+            $this->assertSame($original, file_get_contents($this->testDir . '/' . $name), $name);
+        }
+    }
 }

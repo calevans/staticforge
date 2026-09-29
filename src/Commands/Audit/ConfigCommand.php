@@ -166,6 +166,24 @@ class ConfigCommand extends Command
 
         $io->text(sprintf('Scanned %d configurable features.', $checkedFeatures));
 
+        // A 404 page is served from any path, so relative URLs on it break
+        $sourceDir = $this->container->hasVariable('SOURCE_DIR')
+            ? (string) $this->container->getVariable('SOURCE_DIR')
+            : '';
+        if (
+            $sourceDir !== ''
+            && (is_file($sourceDir . '/404.md') || is_file($sourceDir . '/404.html'))
+        ) {
+            $baseUrl = (string) ($_ENV['SITE_BASE_URL'] ?? getenv('SITE_BASE_URL') ?: '');
+            $parts = parse_url($baseUrl);
+            if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+                $io->warning(
+                    '404 pages need an absolute base URL because they are served from any path. '
+                    . "Set SITE_BASE_URL to a full URL (https://example.com/) in .env; it is currently '$baseUrl'."
+                );
+            }
+        }
+
         // --- Summary ---
         $io->section('Audit Summary');
 

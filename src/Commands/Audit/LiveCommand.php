@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands\Audit;
 
+use EICC\StaticForge\Services\Http\CurlHttpProbe;
+use EICC\StaticForge\Services\Http\HttpProbeInterface;
 use EICC\StaticForge\Services\UrlSafetyValidator;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,10 +25,13 @@ class LiveCommand extends Command
     protected SymfonyStyle $io;
     protected bool $insecure = false;
 
-    public function __construct(Container $container)
+    protected HttpProbeInterface $probe;
+
+    public function __construct(Container $container, ?HttpProbeInterface $probe = null)
     {
         parent::__construct();
         $this->container = $container;
+        $this->probe = $probe ?? new CurlHttpProbe();
     }
 
     protected function configure(): void
@@ -92,6 +97,7 @@ class LiveCommand extends Command
             $issues = array_merge($issues, $this->checkSecurityHeaders($url));
             $issues = array_merge($issues, $this->checkPerformanceHeaders($url));
             $issues = array_merge($issues, $this->checkDeploymentIntegrity($url));
+            $issues = array_merge($issues, $this->checkSoftNotFound($url));
         }
 
         // Output Results
@@ -211,7 +217,6 @@ class LiveCommand extends Command
             }
         }
 
-        curl_close($ch);
         return $result;
     }
 
@@ -487,5 +492,57 @@ class LiveCommand extends Command
         }
 
         return $issues;
+    }
+
+    /**
+     * Unknown URLs must answer 404. Probes a random extensionless path and a random .html
+     * path (servers often treat them differently). TLS verification follows --insecure
+     * exactly like the other live checks; redirects are never followed.
+     *
+     * @return array<int, array{type: string, scope: string, message: string}>
+     */
+    protected function checkSoftNotFound(string $url): array
+    {
+        $this->io->text("  > Checking that unknown URLs return 404...");
+
+        $token = 'staticforge-audit-' . bin2hex(random_bytes(8));
+
+        foreach ([$token, $token . '.html'] as $path) {
+            $result = $this->probe->probe($url . $path, !$this->insecure);
+            $status = $result['status'];
+
+            if ($status === 0) {
+                return [[
+                    'type' => 'warning',
+                    'scope' => 'Soft-404',
+                    'message' => "Could not check unknown-URL handling: " . $result['error'],
+                ]];
+            }
+
+            if ($status >= 300 && $status < 400) {
+                return [[
+                    'type' => 'error',
+                    'scope' => 'Soft-404',
+                    'message' => "Unknown URLs redirect (/{$path} returned {$status}). Do not redirect unknown "
+                        . "URLs to /404.html or the home page; serve the 404 page with status 404.",
+                ]];
+            }
+
+            if ($status !== 404) {
+                // 2xx is the classic soft 404; other 4xx/5xx (401/403/410/5xx) are a different problem
+                $explanation = $status >= 200 && $status < 300
+                    ? "An SPA-style rewrite or host setting is answering for pages that do not exist, which "
+                        . "search engines treat as soft 404s."
+                    : "A firewall, login wall or server error may be answering before the site does.";
+
+                return [[
+                    'type' => 'error',
+                    'scope' => 'Soft-404',
+                    'message' => "Unknown URL /{$path} returned {$status} instead of 404. " . $explanation,
+                ]];
+            }
+        }
+
+        return [['type' => 'success', 'scope' => 'Soft-404', 'message' => 'Unknown URLs return 404.']];
     }
 }

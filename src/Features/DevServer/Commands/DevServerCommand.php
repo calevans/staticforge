@@ -228,6 +228,13 @@ if (is_dir($filePath)) {
 http_response_code(404);
 header("Content-Type: text/html; charset=UTF-8");
 
+// Serve the site\'s own 404 page (fixed docroot path, never request-derived)
+$notFoundPage = getcwd() . "/404.html";
+if (is_file($notFoundPage)) {
+    readfile($notFoundPage);
+    exit;
+}
+
 $escapedUri = htmlspecialchars($requestUri, ENT_QUOTES, "UTF-8");
 
 echo \'<!DOCTYPE html>

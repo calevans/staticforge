@@ -1,0 +1,78 @@
+{#
+    Template: 404
+    =============
+    Single-column "page not found" layout. Use with content/404.md
+    (template: 404). Every URL is built from site_base_url, so the
+    site must set SITE_BASE_URL (including any sub-path).
+
+    Popular sections come from, in order: `404_links` in siteconfig.yaml
+    (list of {title, url}), then menu.top (title: url map), then the home link.
+    URLs starting with http:// or https:// are used as-is; others are relative to site_base_url.
+#}
+{% extends 'base.html.twig' %}
+
+{% block search_bar %}{% endblock %}
+
+{% block body %}
+    {% set custom_links = _context['404_links'] ?? null %}
+    {% set raw_links = [] %}
+    {% if custom_links is iterable and custom_links|length > 0 %}
+        {% for item in custom_links %}
+            {% if item.title is defined and item.url is defined %}
+                {% set raw_links = raw_links|merge([{title: item.title, url: item.url}]) %}
+            {% endif %}
+        {% endfor %}
+    {% elseif menu.top is defined and menu.top is iterable %}
+        {% for item_title, item_url in menu.top %}
+            {% set raw_links = raw_links|merge([{title: item_title, url: item_url}]) %}
+        {% endfor %}
+    {% endif %}
+    {% if raw_links|length == 0 %}
+        {% set raw_links = [{title: 'Home', url: ''}] %}
+    {% endif %}
+
+    <main class="error-404">
+        <p class="error-404-label">404</p>
+        <h1>Page not found</h1>
+        <p>The page you asked for does not exist or has moved.</p>
+
+        <a class="error-404-button" href="{{ site_base_url }}">Go to the homepage</a>
+
+        <div class="error-404-search" id="error-404-search" hidden>
+            <label for="search-input">Search the site</label>
+            <input type="search" id="search-input" class="search-input" placeholder="Search the site..." autocomplete="off">
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="error-404-links" aria-label="Helpful links">
+            <h2>Popular sections</h2>
+            <ul>
+            {% for link in raw_links %}
+                {% set link_url = link.url|default('')|trim %}
+                {% if link_url matches '~^https?://~i' %}
+                <li><a href="{{ link_url }}">{{ link.title }}</a></li>
+                {% else %}
+                <li><a href="{{ site_base_url }}{{ link_url|trim('/', 'left') }}">{{ link.title }}</a></li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+        </nav>
+
+        <noscript>
+            <p>Search needs JavaScript. Browse the <a href="{{ site_base_url }}sitemap.xml">sitemap</a> instead.</p>
+        </noscript>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        (function () {
+            var box = document.getElementById('error-404-search');
+            if (!box) { return; }
+            box.hidden = false;
+            if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+                document.getElementById('search-input').focus();
+            }
+        }());
+    </script>
+{% endblock %}

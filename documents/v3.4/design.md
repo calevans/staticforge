@@ -303,7 +303,7 @@ no_llms: true        # AEO package opt-out (external); keeps 404 out of llms.txt
 `audit:live` requests a random nonexistent URL under the site and asserts status 404; failure explains SPA-style rewrites returning 200. Never redirect unknown URLs to `/404.html` or home. The manual states this and lists per-host behavior.
 
 All outbound checks (soft-404, feed autodiscovery, manifest exposure, atomic canary) go through one injected `HttpProbeInterface` (container-provided, fakeable in tests) with these requirements:
-- TLS certificate verification on (as `audit:live` already does since `232e1ba`); never disabled by a flag.
+- TLS certificate verification on (as `audit:live` already does since `232e1ba`). **As built (3.4.0):** the soft-404 probe honours the existing explicit `--insecure` opt-in exactly like the other live checks (which warn when it is set); without that flag verification is always on. The stricter "never by a flag" rule was not applied because it would make one check behave differently from the rest of `audit:live`.
 - 10 s total timeout (connect and read).
 - Redirects are **not followed**. A 3xx on the random URL is a soft-404 failure ("unknown URLs redirect"), not a pass.
 - Requests only to the host of `SITE_BASE_URL`; discovered links (autodiscovery `href`) pointing at any other host are reported and not fetched.

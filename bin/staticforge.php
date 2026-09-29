@@ -43,6 +43,7 @@ use EICC\StaticForge\Commands\Audit\ConfigCommand;
 use EICC\StaticForge\Commands\Audit\ContentCommand;
 use EICC\StaticForge\Commands\Audit\LinksCommand;
 use EICC\StaticForge\Commands\Audit\LiveCommand;
+use EICC\StaticForge\Services\Http\CurlHttpProbe;
 use EICC\StaticForge\Commands\Audit\SeoCommand;
 use EICC\StaticForge\Commands\Make\ContentCreatorCommand;
 use EICC\StaticForge\Commands\Make\HtaccessCommand;
@@ -68,7 +69,7 @@ $app->addCommand(new ConfigCommand($container));
 $app->addCommand(new ContentCommand($container));
 $app->addCommand(new ContentCreatorCommand($container));
 $app->addCommand(new LinksCommand($container));
-$app->addCommand(new LiveCommand($container));
+$app->addCommand(new LiveCommand($container, new CurlHttpProbe()));
 $app->addCommand(new SeoCommand($container));
 $app->addCommand(new HtaccessCommand($container));
 
