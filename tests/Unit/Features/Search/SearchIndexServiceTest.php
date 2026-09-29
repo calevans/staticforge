@@ -82,6 +82,66 @@ class SearchIndexServiceTest extends TestCase
         );
     }
 
+    public function testSearchIndexIsWrittenCompactWithUnicodeAndSlashesUnescaped(): void
+    {
+        $this->container->method("getVariable")
+            ->willReturnMap([
+                ["site_config", []],
+                ["OUTPUT_DIR", $this->tempDir],
+                ["SITE_BASE_URL", "https://example.com"]
+            ]);
+
+        $this->service->collectPage($this->makeEvent(
+            $this->tempDir . "/cafe.html",
+            "<h1>Café 😀</h1><p>Naïve résumé.</p>",
+            ["title" => "Café 😀"],
+        ));
+        $this->service->buildIndex();
+
+        $raw = (string) file_get_contents($this->tempDir . "/search.json");
+
+        $this->assertStringNotContainsString("\n", $raw, "Index must not be pretty printed");
+        $this->assertStringNotContainsString("\\u00e9", $raw);
+        $this->assertStringContainsString("Café", $raw);
+        $this->assertStringContainsString("https://example.com/cafe.html", $raw);
+        $this->assertStringNotContainsString("https:\\/\\/", $raw);
+        $this->assertSame("Café 😀", $this->readSearchIndex()[0]["title"]);
+    }
+
+    public function testEmptyIndexIsValidJson(): void
+    {
+        $this->container->method("getVariable")
+            ->willReturnMap([
+                ["site_config", []],
+                ["OUTPUT_DIR", $this->tempDir],
+                ["SITE_BASE_URL", "https://example.com"],
+            ]);
+
+        $this->service->buildIndex();
+
+        $this->assertSame("[]", file_get_contents($this->tempDir . "/search.json"));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function shippedSearchScripts(): array
+    {
+        $dir = dirname(__DIR__, 4) . "/src/Features/Search/assets/js";
+
+        return ["minisearch" => [$dir . "/search.js"], "fuse" => [$dir . "/search-fuse.js"]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider("shippedSearchScripts")]
+    public function testShippedSearchScriptsRenderResultsSafelyAndStayQuiet(string $path): void
+    {
+        $js = (string) file_get_contents($path);
+
+        $this->assertStringNotContainsString("innerHTML", $js, "Results must be built with textContent");
+        $this->assertStringNotContainsString("console.log", $js);
+        $this->assertStringContainsString("textContent", $js);
+    }
+
     public function testCollectPageAddsDocument(): void
     {
         $this->container->method('getVariable')

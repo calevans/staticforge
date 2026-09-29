@@ -58,7 +58,6 @@
                         }
                     });
                     this.index.addAll(data);
-                    console.log('StaticForge Search Index Loaded');
                 })
                 .catch(err => console.error('Failed to load search index', err));
         },

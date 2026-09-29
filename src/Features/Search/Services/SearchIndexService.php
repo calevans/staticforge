@@ -204,7 +204,7 @@ class SearchIndexService
         $this->logger->log('INFO', 'Building search index with ' . count($this->documents) . ' documents');
 
         // Write search.json
-        $json = json_encode($this->documents, JSON_PRETTY_PRINT);
+        $json = json_encode($this->documents, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($json === false) {
             $this->logger->log('ERROR', 'Failed to encode search index to JSON');
             return;

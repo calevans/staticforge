@@ -60,7 +60,6 @@
                         ignoreLocation: true, // Search anywhere in the string
                         minMatchCharLength: 2
                     });
-                    console.log('StaticForge Search Index Loaded (Fuse.js)');
                 })
                 .catch(err => console.error('Failed to load search index', err));
         },
