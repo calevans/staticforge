@@ -143,6 +143,11 @@ HTML;
 
     public function testUnchangedFilesSurviveIncrementalRebuildInAllAggregates(): void
     {
+        // Sources must be strictly older than their output or the cache (rightly) refuses to trust them.
+        foreach (glob($this->testContentDir . "/*") ?: [] as $source) {
+            touch($source, time() - 10);
+        }
+
         // Step 1: full build, no --incremental.
         $result = $this->runRenderCommand();
         $this->assertEquals(0, $result);

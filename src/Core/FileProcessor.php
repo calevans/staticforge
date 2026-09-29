@@ -273,7 +273,7 @@ class FileProcessor
         $entries = [];
         foreach ($iterator as $file) {
             if ($file instanceof \SplFileInfo && $file->isFile()) {
-                $entries[] = $file->getPathname() . ':' . $file->getMTime();
+                $entries[] = $file->getPathname() . ':' . $file->getMTime() . ':' . $file->getSize();
             }
         }
         sort($entries);
@@ -302,7 +302,7 @@ class FileProcessor
             return false;
         }
 
-        return $outputMtime >= $sourceMtime;
+        return $outputMtime > $sourceMtime;
     }
 
     /**

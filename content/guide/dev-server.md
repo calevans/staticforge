@@ -141,7 +141,6 @@ Any URL that does not exist returns `public/404.html` with a real `404` status. 
 *   Change detection polls the file system about twice a second rather than using OS notifications.
 *   Rebuilds are incremental. If the output ever looks out of step with your source, stop the server and run `php bin/staticforge.php site:render --clean`.
 *   Starting the server does not build anything. Until your first change, you see whatever is already in the output directory.
-*   Saving a file twice within the same second can be missed by the incremental build, so an edit may appear one save late. Saving again fixes it.
 *   The dev server only serves files that really live inside the output directory. A symbolic link in `public/` that points outside it, for example `public/media` linking to `../storage`, returns `404`. Earlier releases served it.
 *   PHP files in the output directory are run, not sent as text. That is how PHP's built-in server has always worked, so you can still test a form handler there. Keep PHP out of `public/` if you do not want that.
 *   The `--host` checks only apply in watch mode. Without `--watch`, `--host=0.0.0.0` binds to every interface with no warning.
