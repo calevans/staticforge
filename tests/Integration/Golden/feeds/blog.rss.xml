@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Golden Site - Blog</title>
+    <link>https://golden.example.com/blog/</link>
+    <description>Blog articles from Golden Site</description>
+    <language>en-us</language>
+    <lastBuildDate>LAST_BUILD_DATE</lastBuildDate>
+    <atom:link href="https://golden.example.com/blog/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Cafe ☕ 日本語 🎉 &amp; &lt;Friends&gt;</title>
+      <link>https://golden.example.com/blog/blog-unicode.html</link>
+      <guid>https://golden.example.com/blog/blog-unicode.html</guid>
+      <pubDate>Mon, 01 Apr 2024 00:00:00 +0000</pubDate>
+      <description>Unicode: café ☕ 日本語 🎉 — “quotes” &amp;amp; ampersand. Home</description>
+      <content:encoded><![CDATA[
+            <p>Unicode: café ☕ 日本語 🎉 — “quotes” &amp; ampersand.</p>
+            <p>
+                <img src="https://golden.example.com/assets/logo.png" alt="Logo" />
+            </p>
+            <p><a href="https://golden.example.com/about.html">Home</a></p>
+            ]]></content:encoded>
+    </item>
+    <item>
+      <title>Second Post</title>
+      <link>https://golden.example.com/blog/blog-2.html</link>
+      <guid>https://golden.example.com/blog/blog-2.html</guid>
+      <pubDate>Thu, 01 Feb 2024 00:00:00 +0000</pubDate>
+      <description>Second body with bold.</description>
+      <content:encoded><![CDATA[
+            <p>Second body with <strong>bold</strong>.</p>
+            ]]></content:encoded>
+    </item>
+    <item>
+      <title>First Post</title>
+      <link>https://golden.example.com/blog/blog-1.html</link>
+      <guid>https://golden.example.com/blog/blog-1.html</guid>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 +0000</pubDate>
+      <description>First body.</description>
+      <content:encoded><![CDATA[
+            <p>First body.</p>
+            ]]></content:encoded>
+    </item>
+    <item>
+      <title>Undated Post</title>
+      <link>https://golden.example.com/blog/blog-undated.html</link>
+      <guid>https://golden.example.com/blog/blog-undated.html</guid>
+      <pubDate>Thu, 15 Jun 2023 00:00:00 +0000</pubDate>
+      <description>No date here.</description>
+      <content:encoded><![CDATA[
+            <p>No date here.</p>
+            ]]></content:encoded>
+    </item>
+    <item>
+      <title>Raw CDATA Terminator</title>
+      <link>https://golden.example.com/blog/blog-cdata.html</link>
+      <guid>https://golden.example.com/blog/blog-cdata.html</guid>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <description>Code sample: a[b[0]]&gt;c and marker.</description>
+      <content:encoded><![CDATA[
+            <p>
+                Code sample: <code>a[b[0]]]]><![CDATA[>c</code> and 
+                <![CDATA[ raw ]]]]><![CDATA[>
+                marker.
+            </p>
+            ]]></content:encoded>
+    </item>
+  </channel>
+</rss>

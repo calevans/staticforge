@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Golden Site - Podcast</title>
+    <link>https://golden.example.com/podcast/</link>
+    <description>Podcast articles from Golden Site</description>
+    <language>en-us</language>
+    <lastBuildDate>LAST_BUILD_DATE</lastBuildDate>
+    <atom:link href="https://golden.example.com/podcast/rss.xml" rel="self" type="application/rss+xml"/>
+    <itunes:explicit>false</itunes:explicit>
+    <item>
+      <title>Episode Three</title>
+      <link>https://golden.example.com/podcast/ep-3.html</link>
+      <guid>https://golden.example.com/podcast/ep-3.html</guid>
+      <pubDate>Sun, 03 Mar 2024 00:00:00 +0000</pubDate>
+      <description>Notes three ✓.</description>
+      <content:encoded><![CDATA[<p>Show notes three ]]]]><![CDATA[> tricky</p>]]></content:encoded>
+      <enclosure url="https://golden.example.com/episodes/three.mp3" length="333333" type="audio/mpeg"/>
+      <itunes:duration>00:01:00</itunes:duration>
+    </item>
+    <item>
+      <title>Episode Two</title>
+      <link>https://golden.example.com/podcast/ep-2.html</link>
+      <guid>https://golden.example.com/podcast/ep-2.html</guid>
+      <pubDate>Fri, 02 Feb 2024 00:00:00 +0000</pubDate>
+      <description>Notes two.</description>
+      <enclosure url="https://cdn.example.org/two.mp3" length="222222" type="audio/mpeg"/>
+      <itunes:duration>00:01:00</itunes:duration>
+    </item>
+    <item>
+      <title>Episode One</title>
+      <link>https://golden.example.com/podcast/ep-1.html</link>
+      <guid>https://golden.example.com/podcast/ep-1.html</guid>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 +0000</pubDate>
+      <description>Notes one.</description>
+      <content:encoded><![CDATA[<p>Show notes one</p>]]></content:encoded>
+      <enclosure url="https://golden.example.com/episodes/one.mp3" length="111111" type="audio/mpeg"/>
+      <itunes:duration>00:01:00</itunes:duration>
+    </item>
+    <item>
+      <title>Bonus without audio_url</title>
+      <link>https://golden.example.com/podcast/ep-bonus.html</link>
+      <guid>https://golden.example.com/podcast/ep-bonus.html</guid>
+      <pubDate>Mon, 25 Dec 2023 00:00:00 +0000</pubDate>
+      <description>Bonus.</description>
+      <content:encoded><![CDATA[
+            <p>Bonus.</p>
+            ]]></content:encoded>
+    </item>
+    <item>
+      <title>Undated Episode</title>
+      <link>https://golden.example.com/podcast/ep-undated.html</link>
+      <guid>https://golden.example.com/podcast/ep-undated.html</guid>
+      <pubDate>Thu, 15 Jun 2023 00:00:00 +0000</pubDate>
+      <description>Undated episode.</description>
+      <enclosure url="https://golden.example.com/episodes/undated.mp3" length="5" type="audio/mpeg"/>
+      <itunes:duration>00:01:00</itunes:duration>
+    </item>
+  </channel>
+</rss>
