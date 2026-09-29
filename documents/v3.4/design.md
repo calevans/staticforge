@@ -33,7 +33,12 @@ Baseline: 3.3.6 (`232e1ba`).
 
 ## Owner decisions (resolved)
 
-**Resolved 2026-09-28: Cal said "go with your recommendation" — the recommendation column applies to O1–O7.** O7 stays partly open: the podcast marker key is still unknown, so until it is confirmed only `feed.exclude_categories` applies.
+**Resolved 2026-09-28: Cal said "go with your recommendation" — the recommendation column applies to O1–O7.** O7 marker CONFIRMED 2026-09-28 from ../staticforge-podcast (3.1.0, requires `eicc/staticforge ^3.0`): a podcast category's definition file (`type: category`) carries `podcast: true` (`PodcastFeedService::handleRssBuilderInit`). Its episodes carry `audio_file` or `video_file`. The site feed excludes any category whose definition has `podcast: true` by default; `feed.exclude_categories` remains for other cases. (`../heartsntales.com` still runs core 2.0.1 with the old package and uses `rss_type: podcast`; that key is obsolete for the 3.x package and the site will need `podcast: true` when it upgrades.)
+
+**Podcast package facts that constrain 3.4 (verified in ../staticforge-podcast/src):**
+- It listens to `RSS_BUILDER_INIT` and `RSS_ITEM_BUILDING` (priority 100) and reads `$event->file['metadata']` (`audio_url`, `media_length`, `media_type`, `podcast_show_notes_html`). The category-feed path must keep providing exactly these. The site feed must NOT fire these events (its `RSS_BUILDER_INIT` handler logs a warning for a feed with empty category metadata).
+- Show notes are captured at `MARKDOWN_CONVERTED` (priority 900) from the converted HTML, after the heading-id fix and after `HtmlPlaceholders::restore`. So G (parser swap) changes show-notes bytes and the enclosure/`content:encoded` of every episode, which is why G stays in 3.5. It does not depend on the full-page HTML, so the 3.3.5 content-marker change did not affect it.
+- It also hooks `PRE_RENDER` (50), `PRE_LOOP`, `POST_LOOP` (110), `DESTROY` and `CREATE`. The real regression fixture for B is this package at `../staticforge-podcast` plus the real content in `../heartsntales.com/content`.
 
 Each item stays in the design as specified.
 
