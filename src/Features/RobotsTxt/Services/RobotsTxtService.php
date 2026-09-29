@@ -8,7 +8,9 @@ use EICC\StaticForge\Core\Events\RobotsTxtBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Core\PathGuard;
+use EICC\StaticForge\Exceptions\InvalidSlugException;
 use EICC\StaticForge\Services\CategorySlugGuard;
+use EICC\StaticForge\Services\Slugger;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -208,15 +210,10 @@ class RobotsTxtService
      */
     private function sanitizeCategoryName(string $category): string
     {
-        // Convert to lowercase
-        $sanitized = strtolower($category);
-
-        // Replace spaces and special characters with hyphens
-        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized) ?? $sanitized;
-
-        // Remove leading/trailing hyphens
-        $sanitized = trim($sanitized, '-');
-
-        return $sanitized;
+        try {
+            return Slugger::category($category);
+        } catch (InvalidSlugException) {
+            return '';
+        }
     }
 }

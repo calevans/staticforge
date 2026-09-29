@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Commands\Make;
 
+use EICC\StaticForge\Services\Slugger;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -52,6 +53,12 @@ class ContentCreatorCommand extends Command
         $date = is_string($dateOption) ? $dateOption : (string)$dateOption;
 
         $isDraft = (bool)$input->getOption('draft');
+
+        // --type becomes a directory under the source dir, so it must not climb out of it
+        if ($type !== '' && !$this->isSafeTypePath($type)) {
+            $this->io->error(sprintf('Invalid --type "%s": use a relative path inside the content directory.', $type));
+            return Command::FAILURE;
+        }
 
         // 1. Determine Directory
         $sourceDir = $this->container->getVariable('SOURCE_DIR');
@@ -103,29 +110,24 @@ class ContentCreatorCommand extends Command
         return Command::SUCCESS;
     }
 
+    private function isSafeTypePath(string $type): bool
+    {
+        if (str_contains($type, "\0") || str_contains($type, '\\') || str_starts_with($type, '/')) {
+            return false;
+        }
+
+        foreach (explode('/', $type) as $segment) {
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function slugify(string $text): string
     {
-        // Convert to lowercase
-        $slug = strtolower($text);
-        // Replace non-letter or digits by -
-        $slug = preg_replace('~[^\pL\d]+~u', '-', $slug) ?? $slug;
-        // Transliterate
-        $transliterated = iconv('utf-8', 'us-ascii//TRANSLIT', $slug);
-        if ($transliterated !== false) {
-            $slug = $transliterated;
-        }
-        // Remove unwanted characters
-        $slug = preg_replace('~[^-\w]+~', '', $slug) ?? $slug;
-        // Trim
-        $slug = trim($slug, '-');
-        // Remove duplicate -
-        $slug = preg_replace('~-+~', '-', $slug) ?? $slug;
-
-        if (empty($slug)) {
-            return 'untitled';
-        }
-
-        return $slug;
+        return Slugger::filename($text);
     }
 
     /**

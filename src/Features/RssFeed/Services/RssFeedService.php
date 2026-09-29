@@ -10,6 +10,7 @@ use EICC\StaticForge\Core\Events\RssItemBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Services\ContentMarkers;
+use EICC\StaticForge\Services\Slugger;
 use EICC\StaticForge\Features\RssFeed\Models\FeedChannel;
 use EICC\StaticForge\Features\RssFeed\Models\FeedItem;
 use EICC\Utils\Container;
@@ -237,13 +238,7 @@ class RssFeedService
 
     private function sanitizeCategoryName(string $category): string
     {
-        $sanitized = strtolower($category);
-        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized);
-        if ($sanitized === null) {
-            $sanitized = 'category';
-        }
-        $sanitized = trim($sanitized, '-');
-        return $sanitized === '' ? 'category' : $sanitized;
+        return Slugger::rssCategory($category);
     }
 
     /**

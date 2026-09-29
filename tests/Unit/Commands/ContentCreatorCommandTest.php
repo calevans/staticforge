@@ -158,4 +158,39 @@ class ContentCreatorCommandTest extends UnitTestCase
         $this->assertSame(0, $exitCode);
         $this->assertDirectoryExists($this->testDir . '/content/docs');
     }
-}
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function unsafeTypes(): array
+    {
+        return [
+            "parent" => ["../outside"],
+            "deep parent" => ["blog/../../outside"],
+            "absolute" => ["/tmp/outside"],
+            "dot" => ["."],
+            "backslash" => ["..\\outside"],
+            "empty segment" => ["blog//x"],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider("unsafeTypes")]
+    public function testRejectsTypeThatEscapesTheContentDirectory(string $type): void
+    {
+        $tester = $this->makeCommandTester();
+        $exitCode = $tester->execute(["title" => "Escape", "--type" => $type]);
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString("Invalid --type", $tester->getDisplay());
+        $this->assertFileDoesNotExist($this->testDir . "/outside/escape.md");
+        $this->assertFileDoesNotExist("/tmp/outside/escape.md");
+    }
+
+    public function testStillAcceptsNestedTypeDirectories(): void
+    {
+        $tester = $this->makeCommandTester();
+        $exitCode = $tester->execute(["title" => "Nested", "--type" => "docs/examples"]);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertFileExists($this->testDir . "/content/docs/examples/nested.md");
+    }}

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Categories\Services;
 
+use EICC\StaticForge\Exceptions\InvalidSlugException;
 use EICC\StaticForge\Services\CategorySlugGuard;
+use EICC\StaticForge\Services\Slugger;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -170,15 +172,10 @@ class CategoriesService
      */
     public function sanitizeCategoryName(string $category): string
     {
-        // Convert to lowercase
-        $sanitized = strtolower($category);
-
-        // Replace spaces and special characters with hyphens
-        $sanitized = preg_replace('/[^a-z0-9]+/', '-', $sanitized) ?? '';
-
-        // Remove leading/trailing hyphens
-        $sanitized = trim($sanitized, '-');
-
-        return $sanitized;
+        try {
+            return Slugger::category($category);
+        } catch (InvalidSlugException) {
+            return '';
+        }
     }
 }

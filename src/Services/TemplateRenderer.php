@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Services;
 
+use EICC\StaticForge\Exceptions\InvalidSlugException;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 use EICC\StaticForge\Core\AssetManager;
@@ -242,7 +243,10 @@ class TemplateRenderer
      */
     private function slugifyCategory(string $category): string
     {
-        // Must match CategoriesService::sanitizeCategoryName(), which names the category_templates keys
-        return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($category)) ?? '', '-');
+        try {
+            return Slugger::category($category);
+        } catch (InvalidSlugException) {
+            return '';
+        }
     }
 }
