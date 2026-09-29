@@ -136,6 +136,8 @@ php bin/staticforge.php make:htaccess --write
 php bin/staticforge.php make:htaccess --write --output=my-htaccess.txt
 ```
 
+`make:htaccess` only prints or saves the text. `site:render` never puts an `.htaccess` in `public/`, and `site:upload` neither sends one nor changes or deletes the one on your server. So an existing site does not get the 404 line by itself: after upgrading, run `make:htaccess --write` to refresh `htaccess.txt` (an older copy will not have the line), then add it to the server's `.htaccess` by hand.
+
 Nothing modifies an `.htaccess` you already have on the server. Copy the `ErrorDocument` line into your existing file yourself (or merge the generated file). If you can edit the virtual host instead, put the same line inside the `<VirtualHost>` block and reload Apache. That works even when `.htaccess` files are disabled (`AllowOverride None`).
 
 Two rules for that line:
