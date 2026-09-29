@@ -15,11 +15,8 @@ final class ProcessBuildRunner implements BuildRunnerInterface
     private string $output = '';
     private ?int $exitCode = null;
 
-    public function __construct(
-        private readonly string $appRoot,
-        private readonly bool $includeDrafts = false,
-        private readonly ?string $devBaseUrl = null
-    ) {
+    public function __construct(private readonly string $appRoot, private readonly bool $includeDrafts = false)
+    {
     }
 
     public function start(bool $clean): void
@@ -41,8 +38,7 @@ final class ProcessBuildRunner implements BuildRunnerInterface
             $argv,
             [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
-            $this->appRoot,
-            $this->devBaseUrl === null ? null : array_merge(getenv(), ['STATICFORGE_DEV_BASE_URL' => $this->devBaseUrl])
+            $this->appRoot
         );
         if (!is_resource($process)) {
             throw new \RuntimeException('Failed to start the build process');

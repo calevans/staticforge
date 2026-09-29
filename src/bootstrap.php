@@ -90,14 +90,6 @@ foreach ($possibleEnvPaths as $path) {
     }
 }
 
-// The dev server's watch builds must link assets to the dev server, not the production URL in .env.
-// Only a loopback http URL is honored, and it overrides .env for that one process.
-$devBaseUrl = getenv('STATICFORGE_DEV_BASE_URL');
-if (is_string($devBaseUrl) && preg_match('#^http://(localhost|127\.0\.0\.1|\[::1\]):\d{1,5}/$#', $devBaseUrl) === 1) {
-    $_ENV['SITE_BASE_URL'] = $devBaseUrl;
-    putenv('SITE_BASE_URL=' . $devBaseUrl);
-}
-
 // Calculate appRoot by traversing up from current directory to find composer.json or .env
 $searchPath = getcwd();
 $appRoot = null;

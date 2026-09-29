@@ -43,7 +43,7 @@ class DevServerCommandRunLoopTest extends DevServerCommandTestCase
             . 'fwrite(STDOUT, "unterminated last words");',
         ]);
 
-        $stopped = $this->callPrivate($command, 'runLoop', $io, false, false, 8000);
+        $stopped = $this->callPrivate($command, 'runLoop', $io, false, false);
 
         $console = $output->fetch();
         $this->assertFalse($stopped);
@@ -58,7 +58,7 @@ class DevServerCommandRunLoopTest extends DevServerCommandTestCase
         [$output, $io] = $this->bufferedIo();
         $this->attachChild($command, [PHP_BINARY, '-r', 'fwrite(STDERR, "Failed to listen\n");']);
 
-        $stopped = $this->callPrivate($command, 'runLoop', $io, true, false, 8000);
+        $stopped = $this->callPrivate($command, 'runLoop', $io, true, false);
 
         $this->assertFalse($stopped);
         $this->assertStringContainsString('Failed to listen', $output->fetch());
@@ -93,7 +93,7 @@ class DevServerCommandRunLoopTest extends DevServerCommandTestCase
         [, $io] = $this->bufferedIo();
         $this->attachChild($command, [PHP_BINARY, '-r', 'usleep(1200000);']);
 
-        $this->callPrivate($command, 'runLoop', $io, true, false, 8000);
+        $this->callPrivate($command, 'runLoop', $io, true, false);
 
         $this->assertGreaterThan(3, $clock->reads(), 'the loop must have ticked several times');
         $this->assertSame([], $runner->starts);
@@ -116,7 +116,7 @@ class DevServerCommandRunLoopTest extends DevServerCommandTestCase
         [, $io] = $this->bufferedIo();
         $this->attachChild($command, [PHP_BINARY, '-r', 'usleep(2500000);']);
 
-        $this->callPrivate($command, 'runLoop', $io, true, false, 8000);
+        $this->callPrivate($command, 'runLoop', $io, true, false);
 
         $this->assertTrue($touched, 'the scripted change never happened; the loop did not tick enough');
         $this->assertSame([false], $runner->starts);
@@ -142,7 +142,7 @@ class DevServerCommandRunLoopTest extends DevServerCommandTestCase
         [$output, $io] = $this->bufferedIo();
         $this->attachChild($command, [PHP_BINARY, '-r', 'usleep(3500000);']);
 
-        $this->callPrivate($command, 'runLoop', $io, true, false, 8000);
+        $this->callPrivate($command, 'runLoop', $io, true, false);
 
         $this->assertSame(2, $step, 'the build never finished inside the loop');
         $this->assertSame([false], $runner->starts, 'a failed build must not be retried automatically');
