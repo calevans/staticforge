@@ -124,7 +124,7 @@ class DevServerCommand extends Command implements SignalableCommandInterface
             $io->newLine();
 
             $this->startServer($host, $port);
-            $stopped = $this->runLoop($io, $watch, (bool) $input->getOption('include-drafts'));
+            $stopped = $this->runLoop($io, $watch, (bool) $input->getOption('include-drafts'), $port);
         } catch (\Exception $e) {
             $io->error("Failed to start server: " . $e->getMessage());
             $this->cleanup();
@@ -289,7 +289,7 @@ class DevServerCommand extends Command implements SignalableCommandInterface
     /**
      * @return bool true when the server was stopped on purpose, false when it exited by itself
      */
-    private function runLoop(SymfonyStyle $io, bool $watch, bool $includeDrafts): bool
+    private function runLoop(SymfonyStyle $io, bool $watch, bool $includeDrafts, int $port): bool
     {
         $appRoot = rtrim((string) $this->container->getVariable('app_root'), '/');
         $buffers = [1 => '', 2 => ''];
@@ -301,7 +301,7 @@ class DevServerCommand extends Command implements SignalableCommandInterface
         $startedAt = 0;
 
         if ($watch) {
-            $runner = $this->runner ??= new ProcessBuildRunner($appRoot, $includeDrafts);
+            $runner = $this->runner ??= new ProcessBuildRunner($appRoot, $includeDrafts, "http://localhost:{$port}/");
             $provider = new FileSignatureProvider(
                 $this->watchedRoots(),
                 array_values(array_filter([$this->publicDir, $this->stateDir?->path()]))
