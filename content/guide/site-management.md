@@ -173,7 +173,7 @@ The `upload` settings are validated before the site is built or the server is co
 
 ### Serving a 404 Page
 
-A deploy is not complete until unknown URLs return your 404 page with a real `404` status. Generate the server rule for Apache with `make:htaccess` (it now includes an `ErrorDocument 404 /404.html` line), and use `audit:live` after deploying to confirm it works. Neither command changes an `.htaccess` that already exists on your server. See [404 Pages](404-pages.html) for the full setup, including nginx and the sub-path caveat.
+A deploy is not complete until unknown URLs return your 404 page with a real `404` status. On Apache, `site:upload` sets this up for you. For a full example file run `make:htaccess`, and use `audit:live` after deploying to confirm it works. `site:upload` adds the `ErrorDocument` line to the `.htaccess` in your remote folder when it has no `ErrorDocument 404` of its own, and changes nothing else in that file. See [404 Pages](404-pages.html) for the full setup, including nginx and the sub-path caveat.
 
 ```bash
 php vendor/bin/staticforge.php make:htaccess --write

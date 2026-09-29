@@ -189,7 +189,7 @@ class SiteUploader
         if (!$isDryRun && !$uploadFailed) {
             // Stale entries that were not deleted stay recorded so a later run can still clean them up
             $this->updateRemoteManifest($remotePath, $this->newManifest + $carriedOver, $output);
-            $this->secureRemoteManifest($remotePath, $output);
+            $this->syncRemoteHtaccess($remotePath, $options->errorDocumentPath, $output);
         }
 
         $output->writeln('');
@@ -432,35 +432,89 @@ class SiteUploader
         }
     }
 
-    private function secureRemoteManifest(string $remotePath, OutputInterface $output): void
+    /**
+     * Site-absolute path of the 404 page for a site served from $siteUrl, or null when the URL has no usable path.
+     */
+    public static function errorDocumentPathForUrl(string $siteUrl): ?string
+    {
+        $path = parse_url($siteUrl, PHP_URL_PATH);
+        if ($path === false) {
+            return null;
+        }
+
+        $candidate = rtrim((string) $path, '/') . '/404.html';
+
+        return self::isSafeErrorDocumentPath($candidate) ? $candidate : null;
+    }
+
+    private static function isSafeErrorDocumentPath(string $path): bool
+    {
+        return preg_match('#^(?:/[A-Za-z0-9._~-]+)*/404\.html\z#', $path) === 1 && !str_contains($path, '..');
+    }
+
+    /**
+     * Adds the lines StaticForge needs to the server's .htaccess without touching anything else in it:
+     * protection for the manifest, and an ErrorDocument 404 line when the site has a 404 page and the
+     * file has no ErrorDocument 404 line of its own. A line inside an <IfModule> or similar block also counts,
+     * so an existing setup is never overridden.
+     */
+    private function syncRemoteHtaccess(string $remotePath, ?string $errorDocumentPath, OutputInterface $output): void
     {
         $htaccessPath = $remotePath . '/.htaccess';
-        $block = "\n<Files \"" . self::MANIFEST_FILENAME . "\">\n    Require all denied\n</Files>\n";
+        $exists = $this->client->fileExists($htaccessPath);
+        $content = '';
 
-        // Check existence first to prevent accidental overwrites
-        if ($this->client->fileExists($htaccessPath)) {
+        // Read first to prevent accidental overwrites
+        if ($exists) {
             $content = $this->client->readFile($htaccessPath);
 
             if ($content === null) {
-                $output->writeln('<error>Warning: .htaccess exists but cannot be read. Skipping security update.</error>');
+                $output->writeln(
+                    '<error>Warning: .htaccess exists but cannot be read. Skipping security update.</error>'
+                );
                 return;
             }
+        }
 
-            if (strpos($content, self::MANIFEST_FILENAME) === false) {
-                if ($output->isVerbose()) {
-                    $output->writeln('<info>Securing manifest in existing .htaccess...</info>');
-                }
-                if (!$this->client->putContent($htaccessPath, $content . $block)) {
-                    $output->writeln('<error>Failed to update .htaccess</error>');
-                }
+        $additions = '';
+        $notes = [];
+
+        if (strpos($content, self::MANIFEST_FILENAME) === false) {
+            $additions .= "\n<Files \"" . self::MANIFEST_FILENAME . "\">\n    Require all denied\n</Files>\n";
+            $notes[] = $exists
+                ? 'Securing manifest in existing .htaccess...'
+                : 'Creating .htaccess to secure manifest...';
+        }
+
+        if ($errorDocumentPath !== null && !self::isSafeErrorDocumentPath($errorDocumentPath)) {
+            $output->writeln(
+                '<comment>Not adding an ErrorDocument line: the 404 page path derived from the upload URL '
+                . 'contains characters that are not allowed.</comment>'
+            );
+        } elseif (
+            $errorDocumentPath !== null
+            && preg_match('/^[ \t]*ErrorDocument[ \t]+404\b/mi', $content) !== 1
+        ) {
+            $additions .= "\n# Custom 404 page (added by StaticForge)\nErrorDocument 404 {$errorDocumentPath}\n";
+            $output->writeln(sprintf(
+                '<info>Adding "ErrorDocument 404 %s" to the server .htaccess.</info>',
+                $errorDocumentPath
+            ));
+        }
+
+        if ($additions === '') {
+            return;
+        }
+
+        if ($output->isVerbose()) {
+            foreach ($notes as $note) {
+                $output->writeln('<info>' . $note . '</info>');
             }
-        } else {
-            if ($output->isVerbose()) {
-                $output->writeln('<info>Creating .htaccess to secure manifest...</info>');
-            }
-            if (!$this->client->putContent($htaccessPath, ltrim($block))) {
-                $output->writeln('<error>Failed to create .htaccess</error>');
-            }
+        }
+
+        $body = $exists ? $content . $additions : ltrim($additions);
+        if (!$this->client->putContent($htaccessPath, $body)) {
+            $output->writeln('<error>Failed to ' . ($exists ? 'update' : 'create') . ' .htaccess</error>');
         }
     }
 

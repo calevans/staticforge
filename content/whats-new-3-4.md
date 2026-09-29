@@ -55,7 +55,7 @@ Set `SITE_BASE_URL` in `.env` to the dev server address (for example `http://loc
 
 The `staticforce` and `sample` themes now include a `404` template. Create `content/404.md` with `template: 404` and StaticForge builds `public/404.html`. It has a search box (in `staticforce`) and a list of popular sections you can set with `404_links` in `siteconfig.yaml`.
 
-- `make:htaccess` adds the matching `ErrorDocument 404 /404.html` line.
+- `make:htaccess` includes the matching `ErrorDocument 404 /404.html` line, and (from 3.4.1) `site:upload` adds that line to the `.htaccess` on your server if it has no `ErrorDocument 404` of its own. Nothing else in the file is touched.
 - The dev server serves the page with a real 404 status.
 - `audit:live` checks that your live site answers unknown addresses with a 404, not a redirect or a 200.
 - `site:init` writes a sample `content/404.md` for new sites.
@@ -88,7 +88,7 @@ See [Deploy Safety](guide/site-management.html).
 
 1. Update StaticForge and run `site:render`. Nothing else is required.
 2. To use site feeds, add `feed:` with `enabled: true` to `siteconfig.yaml`. If you publish a podcast, put `podcast: true` in the category's definition file so its episodes stay out of the site feeds.
-3. To add a 404 page, create `content/404.md` (see [404 Pages](guide/404-pages.html)) and run `make:htaccess` to get the Apache line.
+3. To add a 404 page, create `content/404.md` (see [404 Pages](guide/404-pages.html)) and run `site:upload`. On Apache it adds the `ErrorDocument` line to your server's `.htaccess` (see the guide for nginx).
 4. `audit:live` now makes two extra requests to check for a real 404. A site that answers 200 or redirects for a missing page will fail that check.
 5. If you rely on a symbolic link inside `public/` while using the dev server, copy the files instead. Links that point outside the output folder now return 404.
 

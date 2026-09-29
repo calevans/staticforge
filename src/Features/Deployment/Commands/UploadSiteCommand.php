@@ -183,6 +183,9 @@ class UploadSiteCommand extends Command
                     confirmDelete: $this->canPrompt($input)
                         ? static fn (int $count): bool => (new SymfonyStyle($input, $output))
                             ->confirm(sprintf('Delete %d remote files?', $count), false)
+                        : null,
+                    errorDocumentPath: is_file($config['input_dir'] . '/404.html')
+                        ? SiteUploader::errorDocumentPathForUrl($urlOverride)
                         : null
                 )
             );

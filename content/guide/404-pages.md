@@ -136,9 +136,20 @@ php bin/staticforge.php make:htaccess --write
 php bin/staticforge.php make:htaccess --write --output=my-htaccess.txt
 ```
 
-`make:htaccess` only prints or saves the text. `site:render` never puts an `.htaccess` in `public/`, and `site:upload` neither sends one nor changes or deletes the one on your server. So an existing site does not get the 404 line by itself: after upgrading, run `make:htaccess --write` to refresh `htaccess.txt` (an older copy will not have the line), then add it to the server's `.htaccess` by hand.
+`make:htaccess` only prints or saves the text. `site:render` never puts an `.htaccess` in `public/`, and `site:upload` never sends one or replaces the one on your server.
 
-Nothing modifies an `.htaccess` you already have on the server. Copy the `ErrorDocument` line into your existing file yourself (or merge the generated file). If you can edit the virtual host instead, put the same line inside the `<VirtualHost>` block and reload Apache. That works even when `.htaccess` files are disabled (`AllowOverride None`).
+**`site:upload` adds the 404 line for you.** When your site has a `404.html`, the upload adds `ErrorDocument 404 /404.html` to the end of the `.htaccess` in your remote folder, and prints a line saying so. It only ever adds to the file:
+
+*   Everything already in the file is left exactly as it is.
+*   If the file already has an `ErrorDocument 404` line of its own, nothing is added. A line inside an `<IfModule>` or similar block counts too, so an existing setup is never overridden.
+*   If the site lives in a sub-path (for example `UPLOAD_URL` is `https://example.com/docs`), the line uses that path: `ErrorDocument 404 /docs/404.html`.
+*   The path comes from `UPLOAD_URL` (or `--url`). If it contains spaces or other unusual characters, the upload prints a notice and skips the line.
+*   If the file does not exist yet, it is created.
+*   Dry runs and uploads with errors change nothing.
+
+The `.htaccess` must be in the folder you upload to (`SFTP_REMOTE_PATH`). If your web server reads its rules from a parent folder or the virtual host, add the line there yourself. That also applies if `.htaccess` files are disabled (`AllowOverride None`): put the line inside the `<VirtualHost>` block and reload Apache.
+
+To see or copy the full recommended file, run `make:htaccess --write` and read `htaccess.txt`.
 
 Two rules for that line:
 
