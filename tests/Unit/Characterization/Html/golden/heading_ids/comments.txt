@@ -1,0 +1,1 @@
+<!-- <h2 id="hidden">hidden</h2> --><h2 id="c"><a href="#c" class="heading-permalink" aria-hidden="true">#</a>Visible</h2><!--[if IE]><p>ie</p><![endif]--><p>tail</p>

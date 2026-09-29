@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Default Title",
+        "anchor": "",
+        "text": " ]>"
+    },
+    {
+        "title": "#XXE &xxe;",
+        "anchor": "",
+        "text": " # text"
+    }
+]

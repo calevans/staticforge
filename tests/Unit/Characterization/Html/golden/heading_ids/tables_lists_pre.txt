@@ -1,0 +1,2 @@
+<h2 id="t"><a href="#t" class="heading-permalink" aria-hidden="true">#</a>Structure</h2><table><tr><td>a</td><td>b</td></tr></table><ul><li>one</li><li>two<ul><li>nested</li></ul></li></ul><pre>  keep   spaces
+  and newlines</pre>

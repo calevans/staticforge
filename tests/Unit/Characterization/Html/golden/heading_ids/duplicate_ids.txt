@@ -1,0 +1,1 @@
+<h2 id="dup"><a href="#dup" class="heading-permalink" aria-hidden="true">#</a>Dup 1</h2><h2 id="dup"><a href="#dup" class="heading-permalink" aria-hidden="true">#</a>Dup 2</h2>

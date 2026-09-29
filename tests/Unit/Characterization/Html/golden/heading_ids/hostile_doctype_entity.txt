@@ -1,0 +1,2 @@
+<!DOCTYPE html>
+<p>]&gt;</p><h2 id="x"><a href="#x" class="heading-permalink" aria-hidden="true">#</a>XXE &amp;xxe;</h2><p>text</p>

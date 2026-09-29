@@ -1,0 +1,1 @@
+<h2><a href="#only-href" class="heading-permalink">#</a>Href only</h2>

@@ -1,0 +1,1 @@
+<h2 id=unquoted class=x>Unquoted</h2><p title="unterminated>text</p><h3 id='single'>Single</h3><a href=/x>bare</a><p><img src="/assets/images/hero.jpg" alt="hero &amp; friends" class="wide" loading="lazy"></p>

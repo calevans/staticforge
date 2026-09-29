@@ -1,0 +1,1 @@
+<h2 id="n"><a href="#n" class="heading-permalink" aria-hidden="true">#</a><em>Nested <strong>inline <code>code</code></strong></em> heading</h2><p><a href="/x"><span>deep <b>bold <i>italic</i></b></span></a></p>

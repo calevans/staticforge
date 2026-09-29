@@ -1,0 +1,1 @@
+<p><img src="https://cdn.example.com/a.jpg"><img src="//cdn.example.com/b.jpg"><img src="data:image/png;base64,AAAA"></p>

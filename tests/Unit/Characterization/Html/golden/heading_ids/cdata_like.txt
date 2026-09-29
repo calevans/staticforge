@@ -1,0 +1,1 @@
+<h2 id="cd"><a href="#cd" class="heading-permalink" aria-hidden="true">#</a>CDATA</h2><p>&lt;![CDATA[ raw ]]&gt; text</p>

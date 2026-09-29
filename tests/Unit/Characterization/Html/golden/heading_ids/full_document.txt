@@ -1,0 +1,2 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>T</title><meta charset="utf-8"></head><body><nav><a href="/">Home</a></nav><h2 id="doc"><a href="#doc" class="heading-permalink" aria-hidden="true">#</a>Doc</h2><p>Body text.</p><footer>Footer text</footer></body></html>

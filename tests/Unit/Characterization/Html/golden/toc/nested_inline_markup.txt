@@ -1,0 +1,1 @@
+<ul class="toc-list"><li><a href="#n">Nested inline code heading</a></li></ul>

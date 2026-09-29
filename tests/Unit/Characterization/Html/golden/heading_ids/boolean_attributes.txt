@@ -1,0 +1,1 @@
+<h2 id="b"><a href="#b" class="heading-permalink" aria-hidden="true">#</a>Boolean</h2><p><input disabled checked readonly><details open><summary>s</summary>t</details><script async defer src="/a.js"></script><video controls autoplay muted></video></p>

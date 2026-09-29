@@ -1,0 +1,22 @@
+[
+    {
+        "title": "#H3 first",
+        "anchor": "",
+        "text": " #"
+    },
+    {
+        "title": "#H2",
+        "anchor": "",
+        "text": " #"
+    },
+    {
+        "title": "#H4 ignored by toc",
+        "anchor": "",
+        "text": " #"
+    },
+    {
+        "title": "#H3",
+        "anchor": "",
+        "text": " #"
+    }
+]

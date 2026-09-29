@@ -1,0 +1,7 @@
+[
+    {
+        "title": "Default Title",
+        "anchor": "",
+        "text": " Just some text, no tags at all."
+    }
+]

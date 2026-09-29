@@ -1,0 +1,1 @@
+<ul class="toc-list"><li><a href="#dup">Dup 1</a></li><li><a href="#dup">Dup 2</a></li></ul>

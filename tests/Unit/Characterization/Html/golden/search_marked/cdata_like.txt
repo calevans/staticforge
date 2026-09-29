@@ -1,0 +1,7 @@
+[
+    {
+        "title": "#CDATA",
+        "anchor": "",
+        "text": " # <![CDATA[ raw ]]> text"
+    }
+]

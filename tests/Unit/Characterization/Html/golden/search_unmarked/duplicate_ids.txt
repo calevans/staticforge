@@ -1,0 +1,12 @@
+[
+    {
+        "title": "#Dup 1",
+        "anchor": "",
+        "text": " #"
+    },
+    {
+        "title": "#Dup 2",
+        "anchor": "",
+        "text": " #"
+    }
+]

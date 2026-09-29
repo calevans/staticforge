@@ -1,0 +1,1 @@
+<h2 id="ss"><a href="#ss" class="heading-permalink" aria-hidden="true">#</a>Script</h2><script>if (a < b && c > d) { document.write("<h2>fake"); }</script><style>h2 > a { color: red; } /* <h3>no */</style><p>after</p>

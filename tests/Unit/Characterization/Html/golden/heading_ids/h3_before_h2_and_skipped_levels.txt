@@ -1,0 +1,1 @@
+<h3 id="h3first"><a href="#h3first" class="heading-permalink" aria-hidden="true">#</a>H3 first</h3><h2 id="h2"><a href="#h2" class="heading-permalink" aria-hidden="true">#</a>H2</h2><h4 id="h4"><a href="#h4" class="heading-permalink" aria-hidden="true">#</a>H4 ignored by toc</h4><h3 id="h3"><a href="#h3" class="heading-permalink" aria-hidden="true">#</a>H3</h3>
