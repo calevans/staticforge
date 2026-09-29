@@ -47,6 +47,7 @@ If you are new to writing in this format, check out the original [Markdown Synta
 *   [Frontmatter Guide](frontmatter.html) - How to add metadata to your content.
 *   [404 Pages](404-pages.html) - Add a custom "page not found" page and serve it correctly.
 *   [CLI Commands](cli-commands.html) - Reference for rendering, auditing, and system commands.
+*   [Dev Server and Live Reload](dev-server.html) - Preview locally and reload the browser on every change.
 
 ---
 
@@ -57,7 +58,7 @@ Ready to show the world?
 ### [Command Reference](commands.html)
 StaticForge is a CLI-first tool, which means you have a lot of power at your fingertips. This reference page documents every command available to you, including:
 *   `site:render`: The command that builds your site.
-*   `site:devserver`: A built-in server to preview your work locally.
+*   `site:devserver`: A built-in server to preview your work locally, with optional live reload (`--watch`).
 *   `site:upload`: The magic command that deploys your site to production via SFTP.
 
 ---
@@ -66,6 +67,7 @@ StaticForge is a CLI-first tool, which means you have a lot of power at your fin
 
 Once you've mastered the basics, you can start exploring the really cool stuff:
 
+*   **[Dev Server and Live Reload](dev-server.html)**: Rebuild and reload your browser automatically while you write.
 *   **[404 Pages](404-pages.html)**: Give visitors a helpful page when a link is broken.
 *   **[Features](../features/index.html)**: Discover built-in superpowers like Search, Forms, and SEO generators.
 *   **[Development](../development/index.html)**: Want to go deeper? Dive into the code to create custom templates, build your own features, or even contribute to the core.

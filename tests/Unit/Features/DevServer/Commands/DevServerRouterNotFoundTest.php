@@ -36,9 +36,9 @@ class DevServerRouterNotFoundTest extends UnitTestCase
     private function routerSource(): string
     {
         $command = new DevServerCommand($this->container);
-        $method = new \ReflectionMethod($command, 'getRouterTemplate');
+        (new \ReflectionProperty($command, 'publicDir'))->setValue($command, $this->docroot);
 
-        return (string) $method->invoke($command);
+        return $command->buildRouterSource('localhost', false, $this->docroot . '/../state-unused.json');
     }
 
     /**
@@ -85,19 +85,19 @@ PHP;
 
     public function testRouterServesFixedPath404HtmlWithStatus404(): void
     {
-        $source = $this->routerSource();
+        file_put_contents($this->docroot . '/404.html', 'SITE 404');
 
-        $this->assertStringContainsString('http_response_code(404)', $source);
-        $this->assertStringContainsString('getcwd() . "/404.html"', $source);
-        $this->assertStringContainsString('readfile($notFoundPage)', $source);
+        $result = $this->runRouter('/missing');
+
+        $this->assertSame(404, $result['status']);
+        $this->assertSame('SITE 404', $result['body']);
     }
 
     public function testRouterStillEscapesRequestPathOnFallbackPage(): void
     {
-        $this->assertStringContainsString(
-            'htmlspecialchars($requestUri, ENT_QUOTES, "UTF-8")',
-            $this->routerSource()
-        );
+        $result = $this->runRouter('/a"b');
+
+        $this->assertStringContainsString('a&quot;b', $result['body']);
     }
 
     public function testRouterSourceIsValidPhp(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EICC\StaticForge\Tests\Unit\Features\DevServer\Commands;
 
 use EICC\StaticForge\Features\DevServer\Commands\DevServerCommand;
+use EICC\StaticForge\Features\DevServer\Services\PrivateStateDir;
 use EICC\StaticForge\Tests\Unit\UnitTestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -103,30 +104,20 @@ class DevServerCommandTest extends UnitTestCase
         $this->assertFalse($result);
     }
 
-    public function testInitializePlacesRouterFileOutsidePublicDir(): void
+    public function testPrivateStateDirLivesOutsidePublicDir(): void
     {
         mkdir($this->tempCwd . '/public', 0755, true);
 
-        $command = new DevServerCommand($this->container);
-        $method = new ReflectionMethod($command, 'initialize');
-
-        $input = new \Symfony\Component\Console\Input\ArrayInput([]);
-        $input->bind($command->getDefinition());
-        $output = new \Symfony\Component\Console\Output\NullOutput();
-        $method->invoke($command, $input, $output);
-
-        $publicDirProp = new ReflectionProperty($command, 'publicDir');
-        $routerFileProp = new ReflectionProperty($command, 'routerFile');
-
-        $publicDir = $publicDirProp->getValue($command);
-        $routerFile = $routerFileProp->getValue($command);
-
         // Regression: a live site:render wipes and regenerates publicDir, which
         // would delete the router file out from under a running dev server.
-        $tempDir = sys_get_temp_dir();
-        $this->assertNotEmpty($tempDir);
-        $this->assertStringStartsNotWith($publicDir, $routerFile);
-        $this->assertStringStartsWith($tempDir, $routerFile);
+        $dir = PrivateStateDir::create();
+        try {
+            $this->assertStringStartsNotWith($this->tempCwd . '/public', $dir->path());
+            $this->assertTrue(str_starts_with($dir->path(), sys_get_temp_dir()));
+            $this->assertSame(0700, fileperms($dir->path()) & 0777);
+        } finally {
+            $dir->remove();
+        }
     }
 
     public function testInitializeUsesOutputDirFromContainer(): void
@@ -164,62 +155,48 @@ class DevServerCommandTest extends UnitTestCase
         $this->assertSame($this->tempCwd . '/public', $publicDirProp->getValue($command));
     }
 
-    public function testGetRouterTemplateResolvesFilesRelativeToWorkingDirectory(): void
+    public function testRouterSourceDelegatesToRouterClassWithDocroot(): void
     {
-        // Regression: the router script must resolve requested files via getcwd(),
-        // not __DIR__ - the built-in server sets cwd to the docroot per request,
-        // but the router script itself now lives outside that docroot.
         $command = new DevServerCommand($this->container);
-        $method = new ReflectionMethod($command, 'getRouterTemplate');
+        (new ReflectionProperty($command, 'publicDir'))->setValue($command, $this->tempCwd . '/public');
 
-        $template = $method->invoke($command);
+        $source = $command->buildRouterSource('localhost', false, '/x/state.json');
 
-        $this->assertStringContainsString('getcwd()', $template);
-        $this->assertStringNotContainsString('__DIR__', $template);
+        $this->assertStringContainsString('DevServerRouter', $source);
+        $this->assertStringContainsString(var_export($this->tempCwd . '/public', true), $source);
+        $this->assertStringNotContainsString('__DIR__', $source);
     }
 
-    public function testGetRouterTemplateContainsExpected404Markup(): void
+    public function testConfigureDefinesWatchOptions(): void
     {
-        $command = new DevServerCommand($this->container);
-        $method = new ReflectionMethod($command, 'getRouterTemplate');
+        $definition = (new DevServerCommand($this->container))->getDefinition();
 
-        $template = $method->invoke($command);
-
-        $this->assertStringContainsString('http_response_code(404)', $template);
-        $this->assertStringContainsString('404 - Page Not Found', $template);
-        $this->assertStringContainsString('REQUEST_URI', $template);
+        $this->assertTrue($definition->hasOption('watch'));
+        $this->assertTrue($definition->hasOption('allow-remote'));
+        $this->assertTrue($definition->hasOption('include-drafts'));
     }
 
-    public function testCleanupRemovesRouterFileWhenPresent(): void
+    public function testCleanupRemovesPrivateDirWhenPresent(): void
     {
-        mkdir($this->tempCwd . '/public', 0755, true);
-        $routerFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
-        file_put_contents($routerFile, '<?php // router');
+        $dir = PrivateStateDir::create();
+        $dir->write('router.php', '<?php // router');
+        $routerFile = $dir->file('router.php');
 
         $command = new DevServerCommand($this->container);
-
-        $publicDirProp = new ReflectionProperty($command, 'publicDir');
-        $publicDirProp->setValue($command, $this->tempCwd . '/public');
-
-        $routerFileProp = new ReflectionProperty($command, 'routerFile');
-        $routerFileProp->setValue($command, $routerFile);
+        (new ReflectionProperty($command, 'stateDir'))->setValue($command, $dir);
 
         $this->assertFileExists($routerFile);
         $command->cleanup();
         $this->assertFileDoesNotExist($routerFile);
+        $this->assertDirectoryDoesNotExist($dir->path());
     }
 
-    public function testCleanupIsSafeWhenRouterFileMissing(): void
+    public function testCleanupIsSafeWhenNothingWasCreated(): void
     {
         $command = new DevServerCommand($this->container);
 
-        $routerFileProp = new ReflectionProperty($command, 'routerFile');
-        $missingRouterFile = sys_get_temp_dir() . '/staticforge-devserver-router-test-' . uniqid() . '.php';
-        $routerFileProp->setValue($command, $missingRouterFile);
-
-        // Should not throw even though the file was never created
         $command->cleanup();
-        $this->assertFileDoesNotExist($missingRouterFile);
+        $this->expectNotToPerformAssertions();
     }
     public function testSubscribesToInterruptAndTerminateSignals(): void
     {
@@ -227,6 +204,19 @@ class DevServerCommandTest extends UnitTestCase
 
         $this->assertContains(\SIGINT, $command->getSubscribedSignals());
         $this->assertContains(\SIGTERM, $command->getSubscribedSignals());
+    }
+
+    public function testSubscribesToHangupAndQuitSoAClosedTerminalCleansUp(): void
+    {
+        if (!\function_exists('pcntl_signal')) {
+            $this->markTestSkipped('pcntl not available');
+        }
+        $command = new DevServerCommand($this->container);
+
+        $this->assertEqualsCanonicalizing(
+            [\SIGINT, \SIGTERM, \SIGHUP, \SIGQUIT],
+            $command->getSubscribedSignals()
+        );
     }
 
     /**
@@ -270,11 +260,12 @@ class DevServerCommandTest extends UnitTestCase
             $this->markTestSkipped('pcntl/posix not available');
         }
 
-        $routerFile = $this->tempCwd . '/router-probe.php';
-        file_put_contents($routerFile, '<?php');
+        $dir = PrivateStateDir::create();
+        $dir->write('router.php', '<?php');
+        $routerFile = $dir->file('router.php');
 
         $command = new DevServerCommand($this->container);
-        (new ReflectionProperty($command, 'routerFile'))->setValue($command, $routerFile);
+        (new ReflectionProperty($command, 'stateDir'))->setValue($command, $dir);
 
         $original = pcntl_signal_get_handler(\SIGINT);
         $result = 'handler-never-ran';

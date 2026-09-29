@@ -4,10 +4,22 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\DevServer\Commands;
 
+use EICC\StaticForge\Features\DevServer\Services\BuildRequest;
+use EICC\StaticForge\Features\DevServer\Services\BuildRunnerInterface;
+use EICC\StaticForge\Features\DevServer\Services\ClockInterface;
+use EICC\StaticForge\Features\DevServer\Services\ErrorSanitizer;
+use EICC\StaticForge\Features\DevServer\Services\FileSignatureProvider;
+use EICC\StaticForge\Features\DevServer\Services\HostDecision;
+use EICC\StaticForge\Features\DevServer\Services\HostPolicy;
+use EICC\StaticForge\Features\DevServer\Services\PrivateStateDir;
+use EICC\StaticForge\Features\DevServer\Services\ProcessBuildRunner;
+use EICC\StaticForge\Features\DevServer\Services\SystemClock;
+use EICC\StaticForge\Features\DevServer\Services\WatchLoop;
 use EICC\Utils\Container;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,12 +31,27 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class DevServerCommand extends Command implements SignalableCommandInterface
 {
-    private string $routerFile;
-    private string $publicDir;
+    private const MAX_LINE_BYTES = 8192;
 
-    public function __construct(private readonly Container $container)
-    {
+    private ?PrivateStateDir $stateDir = null;
+    private string $publicDir;
+    private ClockInterface $clock;
+    private ?SymfonyStyle $io = null;
+
+    /** @var resource|null */
+    private $serverProcess = null;
+    /** @var array<int, resource> */
+    private array $serverPipes = [];
+
+    private int $stateVersion = 1;
+
+    public function __construct(
+        private readonly Container $container,
+        private ?BuildRunnerInterface $runner = null,
+        ?ClockInterface $clock = null
+    ) {
         parent::__construct();
+        $this->clock = $clock ?? new SystemClock();
     }
 
     protected function configure(): void
@@ -32,6 +59,14 @@ class DevServerCommand extends Command implements SignalableCommandInterface
         $this
             ->addOption('port', 'p', InputOption::VALUE_OPTIONAL, 'Port to serve on', '8000')
             ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'Host to bind to', 'localhost')
+            ->addOption('watch', null, InputOption::VALUE_NONE, 'Rebuild on source changes and reload the browser')
+            ->addOption(
+                'allow-remote',
+                null,
+                InputOption::VALUE_NONE,
+                'With --watch, allow binding a non-loopback host (site and build errors reachable from the network)'
+            )
+            ->addOption('include-drafts', null, InputOption::VALUE_NONE, 'With --watch, include drafts in rebuilds')
             ->setHelp('This command starts a development server with proper 404 handling for static files.');
     }
 
@@ -42,28 +77,26 @@ class DevServerCommand extends Command implements SignalableCommandInterface
             ? $this->container->getVariable('OUTPUT_DIR')
             : null;
         $this->publicDir = $outputDir ?: (getcwd() . '/public');
-        // Deliberately outside OUTPUT_DIR (public/): a live site:render wipes and
-        // regenerates that directory, which would delete the router file out from
-        // under a running dev server. The PHP built-in server accepts an absolute
-        // router-script path regardless of the -t docroot, so this doesn't need to
-        // live inside it. PID-suffixed to avoid collision across concurrent instances.
-        $this->routerFile = sys_get_temp_dir() . '/staticforge-devserver-router-' . getmypid() . '.php';
 
-        // Register cleanup function
         register_shutdown_function([$this, 'cleanup']);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = $this->io = new SymfonyStyle($input, $output);
 
-        $host = $input->getOption('host');
+        $host = (string) $input->getOption('host');
         $port = (int) $input->getOption('port');
+        $watch = (bool) $input->getOption('watch');
 
         // Check if public directory exists
         if (!is_dir($this->publicDir)) {
             $io->error("Public directory not found: {$this->publicDir}");
             $io->note('Run "php bin/staticforge.php site:render" first to generate the site.');
+            return Command::FAILURE;
+        }
+
+        if ($watch && !$this->checkWatchPreconditions($io, $host, (bool) $input->getOption('allow-remote'))) {
             return Command::FAILURE;
         }
 
@@ -74,8 +107,15 @@ class DevServerCommand extends Command implements SignalableCommandInterface
         }
 
         try {
-            // Create router file
-            $this->createRouterFile();
+            $stateDir = $this->stateDir = PrivateStateDir::create();
+            $stateFile = $stateDir->file('state.json');
+            if ($watch) {
+                $this->writeState('ok', '');
+            }
+            $stateDir->write(
+                'router.php',
+                $this->buildRouterSource($host, $watch, $stateFile, (bool) $input->getOption('allow-remote'))
+            );
 
             $io->success("Development server starting...");
             $io->info("Server: http://{$host}:{$port}");
@@ -83,68 +123,422 @@ class DevServerCommand extends Command implements SignalableCommandInterface
             $io->warning("Press Ctrl+C to stop the server");
             $io->newLine();
 
-            // Start the server
-            $this->startServer($host, $port, $io);
+            $this->startServer($host, $port);
+            $stopped = $this->runLoop($io, $watch, (bool) $input->getOption('include-drafts'));
         } catch (\Exception $e) {
             $io->error("Failed to start server: " . $e->getMessage());
             $this->cleanup();
             return Command::FAILURE;
         }
 
-        return Command::SUCCESS;
+        $this->cleanup();
+
+        return $stopped ? Command::SUCCESS : Command::FAILURE;
     }
 
-    private function createRouterFile(): void
+    private function checkWatchPreconditions(SymfonyStyle $io, string $host, bool $allowRemote): bool
     {
-        $routerContent = $this->getRouterTemplate();
-
-        if (file_put_contents($this->routerFile, $routerContent) === false) {
-            throw new \RuntimeException("Failed to create router file: {$this->routerFile}");
+        if (PHP_OS_FAMILY === 'Windows') {
+            $io->error('--watch is not supported on native Windows. Use WSL2 or Lando.');
+            return false;
         }
+
+        $conflict = $this->outputDirConflict();
+        if ($conflict !== null) {
+            $io->error($conflict);
+            return false;
+        }
+
+        switch (HostPolicy::decide($host, $allowRemote, getenv('LANDO') === 'ON')) {
+            case HostDecision::Refuse:
+                $io->error(
+                    "Refusing to bind {$host} with --watch: it is reachable from the network. "
+                    . 'Use --allow-remote if that is intended.'
+                );
+                return false;
+            case HostDecision::WarnLando:
+                $io->warning("Binding {$host} under Lando: the site and build errors are reachable from the "
+                    . 'container network.');
+                break;
+            case HostDecision::WarnRemote:
+                $io->warning("--allow-remote: the site and build errors are reachable from the network via {$host}.");
+                break;
+            case HostDecision::Run:
+                break;
+        }
+
+        return true;
     }
 
-    private function startServer(string $host, int $port, SymfonyStyle $io): void
+    private function outputDirConflict(): ?string
     {
-        $command = sprintf(
-            '%s -S %s:%d -t %s %s 2>&1',
-            escapeshellarg(PHP_BINARY),
-            escapeshellarg($host),
-            $port,
-            escapeshellarg($this->publicDir),
-            escapeshellarg($this->routerFile)
-        );
+        $output = realpath($this->publicDir);
+        if ($output === false) {
+            return null;
+        }
 
-        // Change to public directory for the server
-        $oldCwd = getcwd();
-        chdir($this->publicDir);
-
-        $process = popen($command, 'r');
-
-        if (!$process) {
-            if ($oldCwd !== false) {
-                chdir($oldCwd);
+        foreach (['SOURCE_DIR', 'TEMPLATE_DIR'] as $name) {
+            $value = $this->container->hasVariable($name) ? $this->container->getVariable($name) : null;
+            $dir = is_string($value) && $value !== '' ? realpath($value) : false;
+            if ($dir === false) {
+                continue;
             }
+            if (
+                $output === $dir
+                || str_starts_with($output, $dir . '/')
+                || str_starts_with($dir, $output . '/')
+            ) {
+                return "Cannot use --watch: OUTPUT_DIR ({$output}) is inside, equal to or a parent of "
+                    . "{$name} ({$dir}); "
+                    . 'every build would retrigger itself.';
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function watchedRoots(): array
+    {
+        $appRoot = rtrim((string) $this->container->getVariable('app_root'), '/');
+        $roots = [$appRoot . '/siteconfig.yaml', $appRoot . '/siteconfig.d', $appRoot . '/.env'];
+        foreach (['SOURCE_DIR', 'TEMPLATE_DIR'] as $name) {
+            $value = $this->container->hasVariable($name) ? $this->container->getVariable($name) : null;
+            if (is_string($value) && $value !== '') {
+                $roots[] = $value;
+            }
+        }
+
+        return $roots;
+    }
+
+    public function buildRouterSource(string $host, bool $watch, string $stateFile, bool $allowRemote = false): string
+    {
+        $loader = (new \ReflectionClass(\Composer\Autoload\ClassLoader::class))->getFileName();
+        $autoload = dirname((string) $loader) . '/../autoload.php';
+        $allowed = HostPolicy::allowedHosts(
+            $host,
+            getenv('LANDO') === 'ON',
+            getenv('LANDO_INFO') !== false ? (string) getenv('LANDO_INFO') : null
+        );
+        $appRoot = $this->container->hasVariable('app_root') ? (string) $this->container->getVariable('app_root') : '';
+
+        return "<?php\n\ndeclare(strict_types=1);\n\n"
+            . '// Generated by site:devserver; removed on shutdown. Do not edit.' . "\n"
+            . 'require_once ' . var_export($autoload, true) . ";\n\n"
+            . '$router = new \\EICC\\StaticForge\\Features\\DevServer\\Services\\DevServerRouter('
+            . var_export($this->publicDir, true) . ', '
+            . var_export($watch, true) . ', '
+            . var_export($stateFile, true) . ', '
+            . var_export($allowed, true) . ', '
+            . var_export($appRoot, true) . ', '
+            . var_export($allowRemote, true) . ");\n\n"
+            . "return \$router->dispatch(\$_SERVER);\n";
+    }
+
+    private function startServer(string $host, int $port): void
+    {
+        if ($this->stateDir === null) {
+            throw new \RuntimeException('Private state directory missing');
+        }
+
+        $bind = str_contains($host, ':') && !str_starts_with($host, '[') ? "[{$host}]" : $host;
+        $argv = [PHP_BINARY, '-S', "{$bind}:{$port}", '-t', $this->publicDir, $this->stateDir->file('router.php')];
+
+        $process = proc_open(
+            $argv,
+            [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes,
+            $this->publicDir,
+            $this->serverEnvironment()
+        );
+        if (!is_resource($process)) {
             throw new \RuntimeException("Failed to start PHP server");
         }
 
-        // Read server output and display
-        while (!feof($process)) {
-            $line = fgets($process);
-            if ($line !== false) {
-                $io->text(trim($line));
+        stream_set_blocking($pipes[1], false);
+        stream_set_blocking($pipes[2], false);
+        $this->serverProcess = $process;
+        $this->serverPipes = [1 => $pipes[1], 2 => $pipes[2]];
+    }
+
+    /**
+     * The server child serves files and runs the router; it never needs the
+     * secrets (SFTP, keys) that live in the parent's environment.
+     *
+     * @return array<string, string>
+     */
+    private function serverEnvironment(): array
+    {
+        $env = [];
+        foreach (getenv() as $name => $value) {
+            $name = (string) $name;
+            if (
+                in_array($name, ['PATH', 'HOME', 'TMPDIR', 'LANG', 'TZ'], true)
+                || str_starts_with($name, 'LC_')
+            ) {
+                $env[$name] = (string) $value;
+            }
+        }
+
+        return $env;
+    }
+
+    /**
+     * @return bool true when the server was stopped on purpose, false when it exited by itself
+     */
+    private function runLoop(SymfonyStyle $io, bool $watch, bool $includeDrafts): bool
+    {
+        $appRoot = rtrim((string) $this->container->getVariable('app_root'), '/');
+        $buffers = [1 => '', 2 => ''];
+        $provider = null;
+        $runner = null;
+        $loop = null;
+        $nextTick = 0;
+        $current = null;
+        $startedAt = 0;
+
+        if ($watch) {
+            $runner = $this->runner ??= new ProcessBuildRunner($appRoot, $includeDrafts);
+            $provider = new FileSignatureProvider(
+                $this->watchedRoots(),
+                array_values(array_filter([$this->publicDir, $this->stateDir?->path()]))
+            );
+            $loop = new WatchLoop($this->clock);
+            $io->text('Watching for changes...');
+        }
+
+        while ($this->serverProcess !== null && proc_get_status($this->serverProcess)['running']) {
+            $read = array_values($this->serverPipes);
+            if ($read === []) {
+                usleep(100000);
+            } else {
+                $write = null;
+                $except = null;
+                if (@stream_select($read, $write, $except, 0, 100000) > 0) {
+                    foreach ($this->serverPipes as $id => $pipe) {
+                        if (in_array($pipe, $read, true)) {
+                            $this->pump($io, $id, $buffers, $watch);
+                        }
+                    }
+                }
             }
 
-            // Allow signal handling
             if (function_exists('pcntl_signal_dispatch')) {
                 pcntl_signal_dispatch();
             }
+            if ($this->serverProcess === null) {
+                return true;
+            }
 
-            usleep(100000); // 100ms
+            if ($watch && $provider !== null && $loop !== null && $runner !== null) {
+                // Checked every iteration (not just per scan) so the build pipes are drained often.
+                if ($current !== null && !$runner->isRunning()) {
+                    $ok = $this->finishBuild($io, $runner, $current, $startedAt, $appRoot);
+                    $loop->buildFinished($ok);
+                    $current = null;
+                }
+
+                $now = $this->clock->nowMs();
+                if ($now < $nextTick) {
+                    continue;
+                }
+
+                $signature = $provider->signature();
+                $nextTick = $this->clock->nowMs() + $provider->intervalMs();
+
+                $request = $loop->tick($signature, $runner->isRunning());
+                if ($request !== null) {
+                    $current = $request;
+                    $startedAt = $this->clock->nowMs();
+                    $this->writeState('building', '');
+                    $runner->start($request->clean);
+                }
+            }
         }
 
-        pclose($process);
-        if ($oldCwd !== false) {
-            chdir($oldCwd);
+        if ($this->serverProcess === null) {
+            return true;
+        }
+
+        $this->drainServerPipes($io, $buffers, $watch);
+        foreach ($buffers as $id => $rest) {
+            $this->printLine($io, $rest, $watch);
+            $buffers[$id] = '';
+        }
+        $io->error('The development server exited unexpectedly.');
+
+        return false;
+    }
+
+    /**
+     * @param array<int, string> $buffers
+     */
+    private function drainServerPipes(SymfonyStyle $io, array &$buffers, bool $watch): void
+    {
+        foreach (array_keys($this->serverPipes) as $id) {
+            for ($i = 0; $i < 64 && isset($this->serverPipes[$id]); $i++) {
+                $chunk = fread($this->serverPipes[$id], 8192);
+                if ($chunk === false || $chunk === '') {
+                    break;
+                }
+                $this->consume($io, $id, $chunk, $buffers, $watch);
+            }
+        }
+    }
+
+    /**
+     * @param array<int, string> $buffers
+     */
+    private function pump(SymfonyStyle $io, int $id, array &$buffers, bool $watch): void
+    {
+        $chunk = fread($this->serverPipes[$id], 8192);
+        if ($chunk === false || $chunk === '') {
+            if (feof($this->serverPipes[$id])) {
+                fclose($this->serverPipes[$id]);
+                unset($this->serverPipes[$id]);
+            }
+            return;
+        }
+
+        $this->consume($io, $id, $chunk, $buffers, $watch);
+    }
+
+    /**
+     * @param array<int, string> $buffers
+     */
+    private function consume(SymfonyStyle $io, int $id, string $chunk, array &$buffers, bool $watch): void
+    {
+        $buffers[$id] .= $chunk;
+        while (($pos = strpos($buffers[$id], "\n")) !== false) {
+            $line = substr($buffers[$id], 0, $pos);
+            $buffers[$id] = substr($buffers[$id], $pos + 1);
+            $this->printLine($io, $line, $watch);
+        }
+        if (strlen($buffers[$id]) > self::MAX_LINE_BYTES) {
+            $this->printLine($io, $buffers[$id], $watch);
+            $buffers[$id] = '';
+        }
+    }
+
+    private function printLine(SymfonyStyle $io, string $line, bool $watch): void
+    {
+        $line = trim((string) preg_replace('/[\x00-\x08\x0b-\x1f\x7f]/', '', mb_scrub($line)));
+        if ($line !== '' && !$this->isPollNoise($line, $watch)) {
+            $io->text(OutputFormatter::escape(mb_substr($line, 0, self::MAX_LINE_BYTES)));
+        }
+    }
+
+    private function isPollNoise(string $line, bool $watch): bool
+    {
+        if (str_contains($line, '/__staticforge/')) {
+            return true;
+        }
+
+        // The built-in server logs the connection lines without a path, so the
+        // once-a-second reload poll would otherwise flood the terminal.
+        return $watch && preg_match('/ (Accepted|Closing)$/', $line) === 1;
+    }
+
+    private function finishBuild(
+        SymfonyStyle $io,
+        BuildRunnerInterface $runner,
+        BuildRequest $request,
+        int $startedAt,
+        string $appRoot
+    ): bool {
+        $ok = $runner->exitCode() === 0;
+        $error = '';
+        $seconds = number_format(($this->clock->nowMs() - $startedAt) / 1000, 1);
+        $first = $this->relative($request->firstPath(), $appRoot);
+        $total = count($request->changed) + count($request->deleted);
+        $more = $total > 1 ? ' (+' . ($total - 1) . ' more)' : '';
+        $why = $this->fullRebuildReasons($request, $appRoot);
+
+        if ($ok) {
+            $this->stateVersion++;
+            $this->writeState('ok', '');
+        } else {
+            $error = $this->extractError($runner->output(), $appRoot);
+            $this->writeState('failed', $error);
+        }
+
+        $io->text(sprintf(
+            '[%s] %s %ss %s%s%s',
+            date('H:i:s'),
+            $ok ? 'OK' : 'FAILED',
+            $seconds,
+            $first,
+            $more,
+            $why === '' ? '' : ' [' . $why . ']'
+        ));
+        if ($error !== '') {
+            $io->text(OutputFormatter::escape($error));
+        }
+
+        return $ok;
+    }
+
+    private function fullRebuildReasons(BuildRequest $request, string $appRoot): string
+    {
+        $reasons = [];
+        if ($request->deleted !== []) {
+            $reasons[] = 'source deleted/renamed: --clean';
+        }
+
+        $templateDir = $this->container->hasVariable('TEMPLATE_DIR')
+            ? (string) realpath((string) $this->container->getVariable('TEMPLATE_DIR'))
+            : '';
+        foreach ([...$request->changed, ...$request->deleted] as $path) {
+            $rel = $this->relative($path, $appRoot);
+            if ($rel === '.env' || str_starts_with($rel, 'siteconfig')) {
+                $reasons['config'] = 'config changed: full re-render';
+            } elseif ($templateDir !== '' && str_starts_with($path, $templateDir . '/')) {
+                $reasons['templates'] = 'templates changed: full re-render';
+            }
+        }
+
+        return implode(', ', $reasons);
+    }
+
+    private function relative(string $path, string $appRoot): string
+    {
+        return str_starts_with($path, $appRoot . '/') ? substr($path, strlen($appRoot) + 1) : $path;
+    }
+
+    private function extractError(string $output, string $appRoot): string
+    {
+        $output = (string) preg_replace('/\e\[[0-9;]*m/', '', mb_scrub($output));
+        $lines = array_values(array_filter(
+            array_map('trim', preg_split('/\R/', $output) ?: []),
+            static fn(string $line): bool => $line !== ''
+        ));
+        $errors = array_values(array_filter(
+            $lines,
+            static fn(string $line): bool => preg_match('/error|exception|fail/i', $line) === 1
+        ));
+
+        $picked = array_slice($errors !== [] ? $errors : array_slice($lines, -5), 0, 5);
+
+        return ErrorSanitizer::sanitize(implode("\n", $picked), $appRoot);
+    }
+
+    private function writeState(string $status, string $error): void
+    {
+        try {
+            $json = json_encode(
+                ['v' => $this->stateVersion, 'status' => $status, 'error' => mb_scrub($error)],
+                JSON_INVALID_UTF8_SUBSTITUTE
+            );
+            if ($json === false) {
+                // Keep the previous state file rather than resetting the version to 0.
+                throw new \RuntimeException('Could not encode the watch state: ' . json_last_error_msg());
+            }
+            $this->stateDir?->write('state.json', $json);
+        } catch (\Throwable $e) {
+            $this->io?->warning('Could not update the reload state: ' . OutputFormatter::escape($e->getMessage()));
         }
     }
 
@@ -169,7 +563,7 @@ class DevServerCommand extends Command implements SignalableCommandInterface
             return [];
         }
 
-        return [\SIGINT, \SIGTERM];
+        return [\SIGINT, \SIGTERM, \SIGHUP, \SIGQUIT];
     }
 
     /**
@@ -190,145 +584,26 @@ class DevServerCommand extends Command implements SignalableCommandInterface
 
     public function cleanup(): void
     {
-        if (file_exists($this->routerFile)) {
-            unlink($this->routerFile);
-        }
-    }
+        $this->runner?->stop();
 
-    private function getRouterTemplate(): string
-    {
-        return '<?php
-/**
- * Development router for StaticForge
- * Handles proper 404 responses for non-existent static files
- *
- * WARNING: This file is automatically generated and managed by the site:devserver command.
- * Do not edit manually - changes will be lost when the server restarts.
- */
+        if ($this->serverProcess !== null) {
+            proc_terminate($this->serverProcess);
+            $deadline = microtime(true) + 2.0;
+            while (microtime(true) < $deadline && proc_get_status($this->serverProcess)['running']) {
+                usleep(50000);
+            }
+            if (proc_get_status($this->serverProcess)['running']) {
+                proc_terminate($this->serverProcess, 9);
+            }
+            foreach ($this->serverPipes as $pipe) {
+                fclose($pipe);
+            }
+            proc_close($this->serverProcess);
+            $this->serverProcess = null;
+            $this->serverPipes = [];
+        }
 
-$requestUri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
-// The built-in server sets the working directory to the -t docroot for every
-// request, regardless of where this router script itself lives on disk.
-$filePath = getcwd() . $requestUri;
-
-// If the file exists, let the server handle it normally
-if (is_file($filePath)) {
-    return false; // Let PHP serve the file
-}
-
-// If it\'s a directory, check for index.html
-if (is_dir($filePath)) {
-    $indexFile = rtrim($filePath, "/") . "/index.html";
-    if (is_file($indexFile)) {
-        return false; // Let PHP serve the directory
-    }
-}
-
-// File doesn\'t exist - return proper 404
-http_response_code(404);
-header("Content-Type: text/html; charset=UTF-8");
-
-// Serve the site\'s own 404 page (fixed docroot path, never request-derived)
-$notFoundPage = getcwd() . "/404.html";
-if (is_file($notFoundPage)) {
-    readfile($notFoundPage);
-    exit;
-}
-
-$escapedUri = htmlspecialchars($requestUri, ENT_QUOTES, "UTF-8");
-
-echo \'<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found | Static Forge</title>
-    <style>
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 50px 20px;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        h1 {
-            font-size: 4rem;
-            margin: 0 0 20px 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin: 0 0 30px 0;
-            opacity: 0.9;
-        }
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            opacity: 0.8;
-            margin-bottom: 20px;
-        }
-        .url {
-            font-family: monospace;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            word-break: break-all;
-        }
-        a {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            margin-top: 20px;
-        }
-        a:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-        .dev-note {
-            font-size: 0.9rem;
-            opacity: 0.6;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>404</h1>
-        <h2>Page Not Found</h2>
-        <p>The page <span class="url">\' . $escapedUri . \'</span> could not be found.</p>
-        <p>It may have been moved, deleted, or you may have entered the wrong URL.</p>
-        <a href="/">← Back to Home</a>
-        <div class="dev-note">
-            <strong>Development Mode:</strong> This 404 page is served by the StaticForge development server.
-        </div>
-    </div>
-</body>
-</html>\';
-
-exit;
-';
+        $this->stateDir?->remove();
+        $this->stateDir = null;
     }
 }

@@ -125,6 +125,8 @@ php vendor/bin/staticforge.php site:devserver
 
 Open your browser to `http://localhost:8000` to see your new site!
 
+Tip: add `--watch` to rebuild and reload the browser whenever you save a change. See [Dev Server and Live Reload](dev-server.html).
+
 ---
 
 ## Creating Your First Page
