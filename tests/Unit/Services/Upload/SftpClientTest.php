@@ -208,6 +208,20 @@ class SftpClientTest extends UnitTestCase
         $this->assertFalse($result);
     }
 
+    public function testDeleteFileNeverDeletesRecursively(): void
+    {
+        $sftp = $this->createMock(SFTP::class);
+        $sftp->method('file_exists')->willReturn(true);
+        $sftp->expects($this->once())
+            ->method('delete')
+            ->with('/remote/assets', false)
+            ->willReturn(false);
+
+        (new \ReflectionProperty(SftpClient::class, 'sftp'))->setValue($this->client, $sftp);
+
+        $this->assertFalse($this->client->deleteFile('/remote/assets'));
+    }
+
     public function testPutContentFailsWhenNotConnected(): void
     {
         $result = $this->client->putContent('/remote/file.txt', 'content');

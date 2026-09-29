@@ -243,6 +243,46 @@ class SiteUploaderTest extends UnitTestCase
         }
     }
 
+    public function testUploadIgnoresManifestEntriesOutsideRemotePath(): void
+    {
+        $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
+        mkdir($tmpDir);
+        touch($tmpDir . '/file1.txt');
+
+        try {
+            $output = new BufferedOutput();
+
+            // A tampered remote manifest: only old/stale.txt is a legitimate stale file. The rest
+            // would delete outside /remote, the whole tree, or files this class manages itself.
+            $this->mockClient->method('readFile')->willReturn(json_encode([
+                'file1.txt' => 'hash123',
+                '../../etc/passwd' => 'x',
+                '/etc/hosts' => 'x',
+                'sub\\..\\..\\secret' => 'x',
+                'C:/boot.ini' => 'x',
+                '.' => 'x',
+                './.' => 'x',
+                '.htaccess' => 'x',
+                'staticforge-manifest.json' => 'x',
+                'old/stale.txt' => 'x',
+            ]));
+            $this->mockCheckService->method('calculateHash')->willReturn('hash123');
+            $this->mockEventManager->method('fire')->will($this->returnArgument(1));
+
+            $this->mockClient->expects($this->once())
+                ->method('deleteFile')
+                ->with('/remote/old/stale.txt')
+                ->willReturn(true);
+
+            $this->uploader->upload($tmpDir, '/remote', false, $output);
+
+            $this->assertSame(6, substr_count($output->fetch(), 'Ignoring unsafe manifest entry'));
+        } finally {
+            unlink($tmpDir . '/file1.txt');
+            rmdir($tmpDir);
+        }
+    }
+
     public function testUploadCleansUpStaleRemoteFiles(): void
     {
         $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();

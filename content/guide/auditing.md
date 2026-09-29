@@ -91,6 +91,7 @@ php bin/staticforge.php audit:seo
 The `audit:live` command is unique because it checks your **hosted** website, not your local files. It verifies that your web server is sending the correct security headers.
 
 **Checks performed:**
+*   **SSL certificate**: Verifies the certificate is trusted and issued for your hostname, and warns when it expires within 14 days. With `--insecure`, only the expiry date is reported.
 *   **HSTS**: Ensures SSL is enforced.
 *   **X-Content-Type-Options**: Prevents MIME-sniffing attacks.
 *   **X-Frame-Options**: Prevents clickjacking.

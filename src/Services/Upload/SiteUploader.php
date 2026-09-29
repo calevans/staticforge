@@ -204,10 +204,37 @@ class SiteUploader
             }
             // Convert list [path1, path2] to map [path1 => null, path2 => null]
             // This forces re-upload/check but ensures structure is correct
-            return array_fill_keys($data, null);
+            $data = array_fill_keys(array_filter($data, 'is_string'), null);
         }
 
-        return $data;
+        // Manifest paths become remote delete targets during cleanup, and the file
+        // lives on the server, so a tampered entry must not reach outside $remotePath.
+        $manifest = [];
+        foreach ($data as $path => $hash) {
+            $path = (string) $path;
+            if (!$this->isSafeRelativePath($path)) {
+                $output->writeln(sprintf('<error>Ignoring unsafe manifest entry: %s</error>', $path));
+                continue;
+            }
+            $manifest[$path] = is_string($hash) ? $hash : null;
+        }
+
+        return $manifest;
+    }
+
+    private function isSafeRelativePath(string $path): bool
+    {
+        if ($path === '' || str_contains($path, "\0") || preg_match('#^([/\\\\]|[a-zA-Z]:)#', $path) === 1) {
+            return false;
+        }
+
+        foreach (preg_split('#[/\\\\]#', $path) ?: [] as $segment) {
+            if ($segment === '..' || $segment === '.' || $segment === '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -226,7 +253,8 @@ class SiteUploader
         $oldFiles = array_keys($oldManifest);
         $newFiles = array_keys($newManifest);
 
-        $filesToDelete = array_diff($oldFiles, $newFiles);
+        // Server-side files this class manages itself are never stale
+        $filesToDelete = array_diff($oldFiles, $newFiles, [self::MANIFEST_FILENAME, '.htaccess']);
 
         if (empty($filesToDelete)) {
             return;

@@ -54,13 +54,18 @@ class HtaccessCommand extends Command
     # HSTS (Strict-Transport-Security)
     # Tells browser to ONLY use HTTPS for the next year.
     # We use 'always set' to ensure it applies to redirect responses too.
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # Add "; includeSubDomains" only once every subdomain serves HTTPS - it would
+    # lock browsers out of any that don't.
+    Header always set Strict-Transport-Security "max-age=31536000"
 
     # Prevent MIME-Type Sniffing
     Header always set X-Content-Type-Options "nosniff"
 
     # Prevent Clickjacking
     Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Send only the origin, not the full URL, to other sites
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
 # ----------------------------------------------------------------------

@@ -246,38 +246,40 @@ class LiveCommand extends Command
         $this->io->text("  > Checking connectivity and SSL...");
 
         try {
-            // Context for SSL info extraction
-            $context = stream_context_create([
-                'ssl' => [
-                    'capture_peer_cert' => true,
-                    'verify_peer' => false,
-                    'verify_peer_name' => false
-                ]
-            ]);
-
             $urlParts = parse_url($url);
             if ($urlParts === false || !isset($urlParts['host'])) {
                 $issues[] = ['type' => 'error', 'scope' => 'Connectivity', 'message' => "Could not parse URL: {$url}"];
                 return $issues;
             }
             $host = $urlParts['host'];
-            $port = ($urlParts['scheme'] ?? '') === 'https' ? 443 : 80;
+            $isHttps = ($urlParts['scheme'] ?? '') === 'https';
+            $port = $urlParts['port'] ?? ($isHttps ? 443 : 80);
 
             // Use native socket to get Cert info easily, HttpClient abstracts this heavily
-            if (($urlParts['scheme'] ?? '') === 'https') {
-                $client = stream_socket_client(
-                    "ssl://{$host}:{$port}",
-                    $errno,
-                    $errstr,
-                    10,
-                    STREAM_CLIENT_CONNECT,
-                    $context
-                );
+            if ($isHttps) {
+                // Verify chain and hostname first; an expiry date alone says nothing about
+                // whether browsers will trust the certificate.
+                [$client, $errstr] = $this->openTlsConnection($host, $port, !$this->insecure);
+
+                if (!$client && !$this->insecure) {
+                    // Reconnect unverified only to read the certificate for the report below
+                    [$client] = $this->openTlsConnection($host, $port, false);
+                    if ($client) {
+                        $issues[] = [
+                            'type' => 'error',
+                            'scope' => 'SSL',
+                            'message' => "SSL certificate failed verification (untrusted, self-signed, "
+                                . "or not valid for {$host})" . ($errstr !== '' ? ": {$errstr}" : ''),
+                        ];
+                    }
+                }
 
                 if (!$client) {
                      $issues[] = ['type' => 'error', 'scope' => 'Connectivity', 'message' => "Could not connect to {$host}: $errstr"];
                      return $issues;
                 }
+
+                $verified = empty($issues) && !$this->insecure;
 
                 $params = stream_context_get_params($client);
                 $cert = $params['options']['ssl']['peer_certificate'] ?? null;
@@ -295,8 +297,14 @@ class LiveCommand extends Command
                      $issues[] = ['type' => 'error', 'scope' => 'SSL', 'message' => "SSL Certificate has expired!"];
                 } elseif ($daysUntilExpiry < 14) {
                      $issues[] = ['type' => 'warning', 'scope' => 'SSL', 'message' => "SSL Certificate expires soon ({$daysUntilExpiry} days)."];
-                } else {
+                } elseif ($verified) {
                      $issues[] = ['type' => 'success', 'scope' => 'SSL', 'message' => "SSL Certificate is valid for {$daysUntilExpiry} days."];
+                } else {
+                     $issues[] = [
+                        'type' => 'warning',
+                        'scope' => 'SSL',
+                        'message' => "SSL Certificate expires in {$daysUntilExpiry} days (not verified).",
+                     ];
                 }
             } else {
                  $issues[] = ['type' => 'warning', 'scope' => 'SSL', 'message' => "Site is not using HTTPS."];
@@ -306,6 +314,34 @@ class LiveCommand extends Command
         }
 
         return $issues;
+    }
+
+    /**
+     * @return array{0: resource|false, 1: string}
+     */
+    protected function openTlsConnection(string $host, int $port, bool $verify): array
+    {
+        $context = stream_context_create([
+            'ssl' => [
+                'capture_peer_cert' => true,
+                'verify_peer' => $verify,
+                'verify_peer_name' => $verify,
+                // parse_url() keeps IPv6 literals bracketed; certificates don't
+                'peer_name' => trim($host, '[]'),
+                'SNI_enabled' => true,
+            ],
+        ]);
+
+        $client = @stream_socket_client(
+            "ssl://{$host}:{$port}",
+            $errno,
+            $errstr,
+            10,
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
+
+        return [$client, (string) $errstr];
     }
 
     /**

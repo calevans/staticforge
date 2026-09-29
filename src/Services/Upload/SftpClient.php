@@ -279,7 +279,9 @@ class SftpClient
             if (!$this->getSftp()->file_exists($remotePath)) {
                 return true; // Already gone
             }
-            return $this->getSftp()->delete($remotePath);
+            // Non-recursive: the manifest only ever names files, so a directory here is
+            // a corrupt or tampered entry and must not take its whole tree with it.
+            return $this->getSftp()->delete($remotePath, false);
         } catch (\Exception $e) {
             $this->logger->log('ERROR', 'Failed to delete file', ['path' => $remotePath, 'error' => $e->getMessage()]);
             return false;
