@@ -1,6 +1,6 @@
 # StaticForge 3.4 — Design
 
-Status: REVISION 3 — consolidated + security-reviewed. Owner decisions O1–O7 RESOLVED 2026-09-28: Cal chose "go with your recommendation" for all seven (defaults in the table below apply). Section 2 (3.3.7) is being implemented; 3.4.0 work has not started.
+Status: IMPLEMENTED in 3.4.0 (deferred: D3 atomic deploy and G HTML parser to 3.5; F2 search.split on hold). Owner decisions O1-O7 resolved 2026-09-28.
 Author: Claude (orchestrator/architect). Owner: Cal Evans.
 Baseline: 3.3.6 (`232e1ba`).
 

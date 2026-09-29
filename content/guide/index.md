@@ -10,7 +10,7 @@ og_image: "Open glowing user manual, guide book leading the way, path to knowled
 
 Welcome to the StaticForge User Guide. This section will walk you through everything from installation to deployment.
 
-Upgrading from an older version? See [What's New in 3.0](../whats-new-3-0.html) for a summary of what changed.
+Upgrading from an older version? See [What's New in 3.4](../whats-new-3-4.html) and [What's New in 3.0](../whats-new-3-0.html) for a summary of what changed.
 
 ## What is a "Page"?
 
