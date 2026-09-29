@@ -8,6 +8,7 @@ use EICC\StaticForge\Core\Events\RobotsTxtBuildingEvent;
 use EICC\StaticForge\Core\EventManager;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Core\PathGuard;
+use EICC\StaticForge\Services\CategorySlugGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -161,6 +162,13 @@ class RobotsTxtService
                     if ($category) {
                         // Disallow entire category directory
                         $categorySlug = $this->sanitizeCategoryName($category);
+                        if (CategorySlugGuard::isUnsafe($categorySlug)) {
+                            $this->logger->log(
+                                'WARNING',
+                                "RobotsTxt: no usable directory for category \"{$category}\", skipping"
+                            );
+                            continue;
+                        }
                         $categoryPath = '/' . $categorySlug . '/';
                         $this->disallowedPaths[] = $categoryPath;
                         $this->logger->log('DEBUG', "RobotsTxt: Disallowing category: {$categoryPath}");

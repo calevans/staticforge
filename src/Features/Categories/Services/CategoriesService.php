@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EICC\StaticForge\Features\Categories\Services;
 
+use EICC\StaticForge\Services\CategorySlugGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -39,7 +40,7 @@ class CategoriesService
                 $categorySlug = pathinfo($fileData['path'], PATHINFO_FILENAME);
 
                 // If this category file has a template, store it
-                if (isset($metadata['template'])) {
+                if (isset($metadata['template']) && !CategorySlugGuard::isUnsafe($categorySlug)) {
                     $categoryTemplates[$categorySlug] = $metadata['template'];
                     $this->logger->log(
                         'INFO',
@@ -141,6 +142,12 @@ class CategoriesService
 
         // Sanitize category name (remove special characters, lowercase)
         $sanitizedCategory = $this->sanitizeCategoryName($category);
+        if (CategorySlugGuard::isUnsafe($sanitizedCategory)) {
+            // An empty slug would write the page into its own directory, over same-named pages
+            throw new \InvalidArgumentException(
+                "Category \"{$category}\" has no usable characters for a directory name"
+            );
+        }
 
         // Check if the output path already ends with the category directory
         // This prevents double-nesting like public/docs/docs/

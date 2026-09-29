@@ -60,7 +60,7 @@ class TemplateRenderer
                     "Template lookup: category={$parsedContent['metadata']['category']}, " .
                     "slug={$categorySlug}, available=" . json_encode(array_keys($categoryTemplates))
                 );
-                if (isset($categoryTemplates[$categorySlug])) {
+                if (!CategorySlugGuard::isUnsafe($categorySlug) && isset($categoryTemplates[$categorySlug])) {
                     $templateName = $categoryTemplates[$categorySlug];
                     $this->logger->log(
                         'INFO',

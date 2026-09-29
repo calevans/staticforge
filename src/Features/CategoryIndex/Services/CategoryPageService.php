@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\CategoryIndex\Services;
 use EICC\StaticForge\Core\Application;
 use EICC\StaticForge\Features\CategoryIndex\Models\Category;
 use EICC\StaticForge\Services\PaginationService;
+use EICC\StaticForge\Services\CategorySlugGuard;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -49,6 +50,10 @@ class CategoryPageService
     public function deferFile(string $filePath, array $metadata, Container $container): void
     {
         $slug = pathinfo($filePath, PATHINFO_FILENAME);
+        if (CategorySlugGuard::isUnsafe($slug)) {
+            // e.g. "..md" gives slug "." and would write public/./index.html over the home page
+            throw new \InvalidArgumentException("Category file name is not a usable directory name: {$filePath}");
+        }
 
         $outputDir = $container->getVariable('OUTPUT_DIR');
         if (!$outputDir) {

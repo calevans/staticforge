@@ -47,6 +47,25 @@ class CategoriesServiceTest extends TestCase
         );
     }
 
+    public function testCategorizeOutputPathRejectsCategoryWithNoUsableCharacters(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service->categorizeOutputPath("/var/www/public/about.html", "!!!");
+    }
+
+    public function testProcessCategoryTemplatesIgnoresDotOnlyDefinitionFileNames(): void
+    {
+        $container = new Container();
+        $container->setVariable("discovered_files", [
+            ["path" => "/content/...md", "url" => "x", "metadata" => ["type" => "category", "template" => "evil"]],
+            ["path" => "/content/tech.md", "url" => "y", "metadata" => ["type" => "category", "template" => "tech"]],
+        ]);
+
+        $this->service->processCategoryTemplates($container);
+
+        $this->assertSame(["tech" => "tech"], $container->getVariable("category_templates"));
+    }
     public function testProcessCategoryTemplates(): void
     {
         $discoveredFiles = [

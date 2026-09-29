@@ -77,6 +77,7 @@ class SiteUploader
         $output->writeln(sprintf('<info>Processing %d files...</info>', count($files)));
 
         // Process files
+        $failedPaths = [];
         foreach ($files as $localPath) {
             $relativePath = substr($localPath, strlen($normalizedInputDir) + 1);
             $targetPath = $remotePath . '/' . $relativePath;
@@ -135,6 +136,7 @@ class SiteUploader
                         // Record error but don't stop everything?
                         $errorMsg = sprintf('Failed to upload: %s', $relativePath);
                         $this->errors[] = $errorMsg;
+                        $failedPaths[] = $relativePath;
                         $output->writeln(sprintf('  <error>%s</error>', $errorMsg));
                         // Do not addToManifest if failed, so it attempts next time
                     }
@@ -148,8 +150,24 @@ class SiteUploader
             }
         }
 
-        // Handle Cleanup (Files in old manifest but not in new manifest)
-        $this->processManifestCleanup($remotePath, $remoteManifest, $this->newManifest, $output, $isDryRun);
+        // Order is files -> deletes -> manifest, and deletes only after a fully clean upload: a
+        // changed file whose re-upload failed is missing from the new manifest, so cleanup would
+        // otherwise delete the live remote copy of it.
+        if ($this->errorCount === 0) {
+            $this->processManifestCleanup(
+                $remotePath,
+                $remoteManifest,
+                $this->newManifest,
+                $output,
+                $isDryRun,
+                $failedPaths
+            );
+        } else {
+            $output->writeln(sprintf(
+                '<comment>%d upload error(s); skipping remote deletions.</comment>',
+                $this->errorCount
+            ));
+        }
 
         // Update manifest
         if (!$isDryRun && $this->errorCount === 0) {
@@ -240,13 +258,15 @@ class SiteUploader
     /**
      * @param array<string, ?string> $oldManifest
      * @param array<string, ?string> $newManifest
+     * @param array<int, string> $keepPaths Never deleted, whatever the manifests say
      */
     private function processManifestCleanup(
         string $remotePath,
         array $oldManifest,
         array $newManifest,
         OutputInterface $output,
-        bool $isDryRun
+        bool $isDryRun,
+        array $keepPaths = []
     ): void {
         // Files in old manifest that are NOT in new manifest (i.e. deleted locally)
         // Check keys which are paths
@@ -254,7 +274,7 @@ class SiteUploader
         $newFiles = array_keys($newManifest);
 
         // Server-side files this class manages itself are never stale
-        $filesToDelete = array_diff($oldFiles, $newFiles, [self::MANIFEST_FILENAME, '.htaccess']);
+        $filesToDelete = array_diff($oldFiles, $newFiles, [self::MANIFEST_FILENAME, '.htaccess'], $keepPaths);
 
         if (empty($filesToDelete)) {
             return;

@@ -154,4 +154,23 @@ class RobotsTxtServiceTest extends UnitTestCase
         $content = $this->readFile(vfsStream::url('test/output/robots.txt'));
         $this->assertStringContainsString('Disallow: /secret-category/', $content);
     }
-}
+
+    public function testCategoryWithNoUsableDirectoryNameGetsNoDisallowRule(): void
+    {
+        vfsStream::create(["content" => []], $this->root);
+        $this->setContainerVariable("discovered_files", [
+            ["path" => vfsStream::url("test/content/..md"), "url" => "x", "metadata" => ["type" => "category", "robots" => "no"]],
+            ["path" => vfsStream::url("test/content/x.md"), "url" => "y", "metadata" => ["type" => "category", "robots" => "no", "category" => "!!!"]],
+        ]);
+        $this->setContainerVariable("SOURCE_DIR", vfsStream::url("test/content"));
+
+        $this->service->scanForRobotsMetadata();
+
+        $this->setContainerVariable("OUTPUT_DIR", vfsStream::url("test/output"));
+        $this->setContainerVariable("SITE_BASE_URL", "https://example.com");
+        $this->service->generateRobotsTxt();
+
+        $content = $this->readFile(vfsStream::url("test/output/robots.txt"));
+        $this->assertStringNotContainsString("Disallow: //", $content);
+        $this->assertStringNotContainsString("Disallow: /./", $content);
+    }}

@@ -243,6 +243,82 @@ class SiteUploaderTest extends UnitTestCase
         }
     }
 
+    public function testFailedUploadOfChangedFileNeverDeletesAnything(): void
+    {
+        $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
+        mkdir($tmpDir);
+        touch($tmpDir . '/changed.html');
+
+        try {
+            $output = new BufferedOutput();
+
+            // changed.html is in the old manifest with a different hash, so it is re-uploaded;
+            // stale.html no longer exists locally. The re-upload fails.
+            $this->mockClient->method('readFile')->willReturn(json_encode([
+                'changed.html' => 'oldhash',
+                'stale.html' => 'oldhash',
+            ]));
+            $this->mockCheckService->method('calculateHash')->willReturn('newhash');
+            $this->mockEventManager->method('fire')->will($this->returnArgument(1));
+            $this->mockClient->method('uploadFile')->willReturn(false);
+
+            $this->mockClient->expects($this->never())->method('deleteFile');
+            $this->mockClient->expects($this->never())->method('putContent');
+
+            $errorCount = $this->uploader->upload($tmpDir, '/remote', false, $output);
+
+            $this->assertSame(1, $errorCount);
+            $this->assertStringContainsString('skipping remote deletions', $output->fetch());
+        } finally {
+            unlink($tmpDir . '/changed.html');
+            rmdir($tmpDir);
+        }
+    }
+
+    public function testFailedUploadOfNewFileAlsoSkipsDeletions(): void
+    {
+        $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
+        mkdir($tmpDir);
+        touch($tmpDir . '/new.html');
+
+        try {
+            $this->mockClient->method('readFile')->willReturn(json_encode(['stale.html' => 'oldhash']));
+            $this->mockCheckService->method('calculateHash')->willReturn('hash');
+            $this->mockEventManager->method('fire')->will($this->returnArgument(1));
+            $this->mockClient->method('uploadFile')->willReturn(false);
+
+            $this->mockClient->expects($this->never())->method('deleteFile');
+
+            $this->assertSame(1, $this->uploader->upload($tmpDir, '/remote', false, new BufferedOutput()));
+        } finally {
+            unlink($tmpDir . '/new.html');
+            rmdir($tmpDir);
+        }
+    }
+
+    public function testDryRunNeverDeletesStaleFiles(): void
+    {
+        $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();
+        mkdir($tmpDir);
+        touch($tmpDir . '/file1.txt');
+
+        try {
+            $this->mockClient->method('readFile')->willReturn(json_encode([
+                'file1.txt' => 'hash123',
+                'stale.html' => 'oldhash',
+            ]));
+            $this->mockCheckService->method('calculateHash')->willReturn('hash123');
+            $this->mockEventManager->method('fire')->will($this->returnArgument(1));
+
+            $this->mockClient->expects($this->never())->method('deleteFile');
+
+            $this->uploader->upload($tmpDir, '/remote', true, new BufferedOutput());
+        } finally {
+            unlink($tmpDir . '/file1.txt');
+            rmdir($tmpDir);
+        }
+    }
+
     public function testUploadIgnoresManifestEntriesOutsideRemotePath(): void
     {
         $tmpDir = sys_get_temp_dir() . '/staticforge_test_' . uniqid();

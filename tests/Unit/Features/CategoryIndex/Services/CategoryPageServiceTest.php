@@ -74,6 +74,29 @@ class CategoryPageServiceTest extends UnitTestCase
         $this->assertEquals('/path/to/tech.md', $deferred[0]['file_path']);
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function unsafeCategoryFileNames(): array
+    {
+        return ["dot" => ["/path/to/..md"], "two dots" => ["/path/to/...md"], "hidden" => ["/path/to/.md"]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider("unsafeCategoryFileNames")]
+    public function testDeferFileRejectsDotOnlySlug(string $path): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->service->deferFile($path, [], $this->container);
+    }
+
+    public function testDeferFileStillAcceptsUnderscoreAndMixedCaseNames(): void
+    {
+        $this->service->deferFile("/path/to/My_Cat.md", [], $this->container);
+
+        $prop = (new \ReflectionClass($this->service))->getProperty("deferredFiles");
+        $this->assertCount(1, $prop->getValue($this->service));
+    }
     public function testProcessDeferredFiles(): void
     {
         // Setup deferred file
