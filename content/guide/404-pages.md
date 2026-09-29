@@ -12,6 +12,8 @@ Sooner or later a visitor will follow a broken link or mistype an address. A goo
 
 This page shows how to add one, how to customize it, and, most importantly, how to make sure your web server answers with a real `404` status code.
 
+**A 404 page does nothing until you configure your web server.** StaticForge only builds `404.html`. Your server has to be told to send it for missing URLs. Until you do, visitors get the server's own plain "Not Found" page. See [Configuring Your Web Server](#content-configuring-your-web-server): on Apache it is one line, `ErrorDocument 404 /404.html`.
+
 ## Contents
 
 *   [Creating the Page](#content-creating-the-page)
@@ -113,7 +115,7 @@ php bin/staticforge.php audit:config
 
 ## Configuring Your Web Server
 
-Generating `public/404.html` is only half the job. Your server must be told to send that file **with a 404 status** whenever a URL does not exist.
+Generating `public/404.html` is only half the job. Your server must be told to send that file **with a 404 status** whenever a URL does not exist. Uploading the file is not enough: `https://example.com/404.html` will load, but `https://example.com/no-such-page` will still show the server's default error page until you add the setting for your server below.
 
 ### Apache
 
@@ -134,7 +136,7 @@ php bin/staticforge.php make:htaccess --write
 php bin/staticforge.php make:htaccess --write --output=my-htaccess.txt
 ```
 
-Nothing modifies an `.htaccess` you already have on the server. Copy the `ErrorDocument` line into your existing file yourself (or merge the generated file).
+Nothing modifies an `.htaccess` you already have on the server. Copy the `ErrorDocument` line into your existing file yourself (or merge the generated file). If you can edit the virtual host instead, put the same line inside the `<VirtualHost>` block and reload Apache. That works even when `.htaccess` files are disabled (`AllowOverride None`).
 
 Two rules for that line:
 
@@ -147,9 +149,21 @@ Add this to your `server` block:
 
 ```nginx
 error_page 404 /404.html;
+
+location = /404.html {
+    internal;
+}
 ```
 
-nginx keeps the 404 status when it serves the page.
+Then test and reload nginx:
+
+```bash
+sudo nginx -t && sudo nginx -s reload
+```
+
+nginx keeps the 404 status when it serves the page. The `internal` location means visitors only see the page as an error response, so `/404.html` itself is not directly reachable. Leave that block out if you want the page to also load at `/404.html`.
+
+If your site is installed in a sub-path, change both lines to match, for example `error_page 404 /docs/404.html;`.
 
 ### Dev Server
 
