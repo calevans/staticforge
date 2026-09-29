@@ -35,6 +35,9 @@ class SeoCommand extends Command
     /** @var array<string, array<int, string>> */
     protected array $descriptions = [];
 
+    /** @var array<int, string> */
+    protected array $disallowedPaths = [];
+
     public function __construct(Container $container)
     {
         parent::__construct();
@@ -69,6 +72,8 @@ class SeoCommand extends Command
 
         $htmlFiles = $this->findHtmlFiles($this->outputDir);
         $this->io->note(sprintf('Found %d HTML files to audit.', count($htmlFiles)));
+
+        $this->disallowedPaths = $this->loadDisallowedPaths();
 
         $issues = [];
         $errors = 0;
@@ -174,11 +179,51 @@ class SeoCommand extends Command
     }
 
     /**
+     * @return array<int, string>
+     */
+    protected function loadDisallowedPaths(): array
+    {
+        $robotsFile = $this->outputDir . '/robots.txt';
+        $lines = is_file($robotsFile) ? file($robotsFile, FILE_IGNORE_NEW_LINES) : false;
+        if ($lines === false) {
+            return [];
+        }
+
+        $paths = [];
+        $applies = false;
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (stripos($line, 'User-agent:') === 0) {
+                $applies = trim(substr($line, 11)) === '*';
+            } elseif ($applies && stripos($line, 'Disallow:') === 0) {
+                $paths[] = trim(substr($line, 9));
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
      * @return array<int, array{file: string, type: string, message: string}>
      */
     protected function auditFile(Crawler $crawler, string $filename, InputInterface $input): array
     {
         $issues = [];
+
+        // 0. noindex hidden by a robots.txt Disallow
+        if ($crawler->filter('meta[name="robots"][content*="noindex"]')->count() > 0) {
+            $webPath = '/' . ltrim($filename, '/');
+            foreach ($this->disallowedPaths as $disallowed) {
+                if ($disallowed !== '' && str_starts_with($webPath, $disallowed)) {
+                    $issues[] = [
+                        'file' => $filename,
+                        'type' => 'warning',
+                        'message' => 'Disallow hides the noindex from crawlers'
+                    ];
+                    break;
+                }
+            }
+        }
 
         // 1. Title
         try {

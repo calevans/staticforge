@@ -135,4 +135,40 @@ class TemplateVariableBuilderTest extends UnitTestCase
         $this->assertSame('<ul><li>Home</li></ul>', $result['menu1']);
         $this->assertSame('<ul><li>Top</li></ul>', $result['menu_top']);
     }
-}
+
+    /**
+     * @return array<string, array{mixed, bool}>
+     */
+    public static function noindexValues(): array
+    {
+        return [
+            "true" => [true, true],
+            "string true" => ["true", true],
+            "yes" => ["yes", true],
+            "one" => [1, true],
+            "false" => [false, false],
+            "string false" => ["false", false],
+            "no" => ["no", false],
+            "unrecognised" => ["maybe", false],
+            "array" => [["x"], false],
+            "null" => [null, false],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider("noindexValues")]
+    public function testNoindexIsNormalisedToTheSameBooleanTheSitemapUses(mixed $raw, bool $expected): void
+    {
+        $vars = $this->builder->build(
+            ["metadata" => ["noindex" => $raw], "content" => "", "title" => "T"],
+            $this->container
+        );
+
+        $this->assertSame($expected, $vars["noindex"]);
+    }
+
+    public function testNoindexStaysUndefinedWhenThePageDoesNotSetIt(): void
+    {
+        $vars = $this->builder->build(["metadata" => [], "content" => "", "title" => "T"], $this->container);
+
+        $this->assertArrayNotHasKey("noindex", $vars);
+    }}

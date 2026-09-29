@@ -83,6 +83,11 @@ class TemplateVariableBuilder
         // Merge file metadata (description, tags, etc. - these override as well)
         if (isset($parsedContent['metadata']) && is_array($parsedContent['metadata'])) {
             $templateVars = array_merge($templateVars, $parsedContent['metadata']);
+
+            // Same reading as SitemapService, so a page is never noindex in HTML but listed in the sitemap
+            if (array_key_exists('noindex', $templateVars)) {
+                $templateVars['noindex'] = MetadataFlags::isTrue($templateVars['noindex']);
+            }
         }
 
         // Inject AssetManager variables

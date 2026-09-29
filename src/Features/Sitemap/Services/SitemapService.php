@@ -6,6 +6,7 @@ namespace EICC\StaticForge\Features\Sitemap\Services;
 
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
+use EICC\StaticForge\Services\MetadataFlags;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -41,6 +42,14 @@ class SitemapService
             return;
         }
 
+        if (
+            MetadataFlags::isFalse($metadata['sitemap'] ?? null)
+            || MetadataFlags::isTrue($metadata['noindex'] ?? null)
+            || MetadataFlags::robotsBlocked($metadata['robots'] ?? null)
+        ) {
+            return;
+        }
+
         // Get site URL from config or default to /
         $siteUrl = rtrim($this->container->getVariable('SITE_BASE_URL') ?? '', '/');
 
@@ -53,28 +62,44 @@ class SitemapService
         $relativePath = ltrim(substr($outputPath, strlen($outputDir)), '/');
 
         // Construct canonical URL, rewriting index.html paths to directory URLs
-        $loc = $this->normalizeUrl($relativePath, $siteUrl);
-
-        // Get last modification date
-        // Prefer 'date' from metadata, fallback to file mtime if available, else now
-        $lastmod = date('Y-m-d');
-        if (isset($metadata['date'])) {
-            // Try to parse date from metadata
-            $timestamp = strtotime((string)$metadata['date']);
-            if ($timestamp !== false) {
-                $lastmod = date('Y-m-d', $timestamp);
-            }
-        } elseif ($event->filePath !== '' && file_exists($event->filePath)) {
-            $mtime = filemtime($event->filePath);
-            if ($mtime !== false) {
-                $lastmod = date('Y-m-d', $mtime);
-            }
+        if ($relativePath === '404.html') {
+            return;
         }
 
+        $loc = $this->normalizeUrl($relativePath, $siteUrl);
+
+        $lastmod = $this->resolveLastmod($metadata, $event->filePath);
         $this->urls[] = [
             'loc' => $loc,
             'lastmod' => $lastmod
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function resolveLastmod(array $metadata, string $filePath): string
+    {
+        foreach (['updated', 'date'] as $key) {
+            $value = $metadata[$key] ?? null;
+            if (is_scalar($value) || $value instanceof \DateTimeInterface) {
+                $timestamp = $value instanceof \DateTimeInterface
+                    ? $value->getTimestamp()
+                    : strtotime((string)$value);
+                if ($timestamp !== false) {
+                    return date('Y-m-d', $timestamp);
+                }
+            }
+        }
+
+        if ($filePath !== '' && file_exists($filePath)) {
+            $mtime = filemtime($filePath);
+            if ($mtime !== false) {
+                return date('Y-m-d', $mtime);
+            }
+        }
+
+        return date('Y-m-d');
     }
 
     private function normalizeUrl(string $relativePath, string $siteUrl): string

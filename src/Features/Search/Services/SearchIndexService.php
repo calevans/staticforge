@@ -7,6 +7,7 @@ namespace EICC\StaticForge\Features\Search\Services;
 use EICC\StaticForge\Core\Events\RenderEvent;
 use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Services\ContentMarkers;
+use EICC\StaticForge\Services\MetadataFlags;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
 
@@ -223,7 +224,7 @@ class SearchIndexService
         $outputPath = $event->outputPath ?? '';
 
         // Check frontmatter exclusion
-        if (isset($metadata['search_index']) && $metadata['search_index'] === false) {
+        if (MetadataFlags::isFalse($metadata['search_index'] ?? null)) {
             return false;
         }
 

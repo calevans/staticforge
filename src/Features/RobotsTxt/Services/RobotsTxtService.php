@@ -10,6 +10,7 @@ use EICC\StaticForge\Core\OutputWriter;
 use EICC\StaticForge\Core\PathGuard;
 use EICC\StaticForge\Exceptions\InvalidSlugException;
 use EICC\StaticForge\Services\CategorySlugGuard;
+use EICC\StaticForge\Services\MetadataFlags;
 use EICC\StaticForge\Services\Slugger;
 use EICC\Utils\Container;
 use EICC\Utils\Log;
@@ -126,14 +127,16 @@ class RobotsTxtService
         $metadata = $fileData['metadata'];
 
         // Check robots field
-        $robots = $metadata['robots'] ?? 'yes';
-        $robots = strtolower(trim($robots));
-
-        if ($robots === 'no') {
+        if (MetadataFlags::robotsBlocked($metadata['robots'] ?? null)) {
             // Calculate the web path for this file
             $webPath = $this->calculateWebPath($filePath, $sourceDir);
             if ($webPath) {
                 $this->disallowedPaths[] = $webPath;
+                if (str_ends_with($webPath, '/index.html') && $webPath !== '/index.html') {
+                    // "$" anchors the rule to the directory URL itself: a bare prefix would also block every
+                    // page below it, which the author did not ask for
+                    $this->disallowedPaths[] = substr($webPath, 0, -strlen('index.html')) . '$';
+                }
                 $this->logger->log('DEBUG', "RobotsTxt: Disallowing path: {$webPath}");
             }
         }
@@ -154,10 +157,7 @@ class RobotsTxtService
             // Check if this is a category definition file
             $type = $metadata['type'] ?? '';
             if ($type === 'category') {
-                $robots = $metadata['robots'] ?? 'yes';
-                $robots = strtolower(trim($robots));
-
-                if ($robots === 'no') {
+                if (MetadataFlags::robotsBlocked($metadata['robots'] ?? null)) {
                     // Get category slug/name
                     $category = $metadata['category'] ?? $this->getCategoryFromFilename($fileData['path']);
 
